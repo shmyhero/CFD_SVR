@@ -16,11 +16,21 @@ namespace CFD_API
             // Web API routes
             config.MapHttpAttributeRoutes();
 
+
+            //web api routes
+            config.Routes.MapHttpRoute(
+                name: "MiscStuff",
+                routeTemplate: "api/misc/{action}",
+                defaults: new { controller = "misc" }
+                );
+
+            //default route
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+
         }
         public static void ConfigureJSONFormatter(HttpConfiguration config)
         {

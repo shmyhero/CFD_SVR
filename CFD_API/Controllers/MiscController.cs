@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using CFD_API.Controllers.Attributes;
 
 namespace CFD_API.Controllers
 {
@@ -28,6 +29,24 @@ namespace CFD_API.Controllers
                     //+" -- DB=[" + dbName + "]" 
                     //+" -- top-table cabling: brought to you by The A-Team."
                 );
+        }
+
+        [HttpGet]
+        [ActionName("err")]
+        public HttpResponseMessage TestErr()
+        {
+            //ApiGlobal.LogLine("about to throw test exception...");
+            string s = null;
+            string s2 = s.ToString();
+            return Request.CreateResponse(HttpStatusCode.InternalServerError);
+        }
+
+        [HttpGet]
+        [ActionName("https")]
+        [RequireHttps]
+        public HttpResponseMessage TestHttps()
+        {
+            return Request.CreateResponse(HttpStatusCode.OK, "url scheme: " + Request.RequestUri.Scheme);
         }
     }
 }
