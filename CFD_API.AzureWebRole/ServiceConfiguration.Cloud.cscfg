@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ServiceConfiguration serviceName="CFD_API.AzureWebRole" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2015-04.2.6">
-  <Role name="CFD_API">
+  <Role name="CFD_API" vmName="CFD-API">
     <Instances count="1" />
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="BlobEndpoint=https://cfdstorage.blob.core.chinacloudapi.cn/;QueueEndpoint=https://cfdstorage.queue.core.chinacloudapi.cn/;TableEndpoint=https://cfdstorage.table.core.chinacloudapi.cn/;AccountName=cfdstorage;AccountKey=8RxDUBSev10Z2LjeAx/HQvLcl9zkQvhw5Lh/dGgMcYhPPiBizuWOT37JDh283i98Rf2TpnE9WuDL2LpMh1QJ4w==" />
     </ConfigurationSettings>
   </Role>
+  <NetworkConfiguration>
+    <VirtualNetworkSite name="SH" />
+    <AddressAssignments>
+      <InstanceAddress roleName="CFD_API">
+        <Subnets>
+          <Subnet name="Subnet-1" />
+        </Subnets>
+      </InstanceAddress>
+    </AddressAssignments>
+  </NetworkConfiguration>
 </ServiceConfiguration>
