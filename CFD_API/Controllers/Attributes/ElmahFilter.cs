@@ -16,7 +16,7 @@ namespace CFD_API.Controllers.Attributes
                 return;
 
             base.OnException(actionExecutedContext);
-            Elmah.ErrorLog.GetDefault(HttpContext.Current).Log(new Elmah.Error(actionExecutedContext.Exception));
+            //Elmah.ErrorLog.GetDefault(HttpContext.Current).Log(new Elmah.Error(actionExecutedContext.Exception));
             ErrorSignal.FromCurrentContext().Raise(actionExecutedContext.Exception);
         }
     }
