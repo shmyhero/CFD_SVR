@@ -7,6 +7,7 @@ using System.Web.Routing;
 using System.Web.Security;
 using System.Web.SessionState;
 using System.Web.Http;
+using CFD_API.Controllers.Attributes;
 
 namespace CFD_API
 {
@@ -20,6 +21,8 @@ namespace CFD_API
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 
             WebApiConfig.ConfigureJSONFormatter(GlobalConfiguration.Configuration);
+
+            GlobalConfiguration.Configuration.Filters.Add(new ElmahHandledErrorLoggerFilter());
         }
     }
 }

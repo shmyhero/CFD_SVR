@@ -38,7 +38,7 @@ namespace CFD_API.Controllers
             //ApiGlobal.LogLine("about to throw test exception...");
             string s = null;
             string s2 = s.ToString();
-            return Request.CreateResponse(HttpStatusCode.InternalServerError);
+            return Request.CreateResponse(HttpStatusCode.OK, s2);
         }
 
         [HttpGet]
