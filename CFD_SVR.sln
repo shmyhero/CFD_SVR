@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_API", "CFD_API\CFD_API.
 EndProject
 Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "CFD_API.AzureWebRole", "CFD_API.AzureWebRole\CFD_API.AzureWebRole.ccproj", "{5E39FC33-4C7A-48F2-91D7-BC211664219D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_COMMON", "CFD_COMMON\CFD_COMMON.csproj", "{C46068B7-6D4B-4F7D-AA63-E42CEE169372}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{5E39FC33-4C7A-48F2-91D7-BC211664219D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E39FC33-4C7A-48F2-91D7-BC211664219D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E39FC33-4C7A-48F2-91D7-BC211664219D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C46068B7-6D4B-4F7D-AA63-E42CEE169372}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C46068B7-6D4B-4F7D-AA63-E42CEE169372}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C46068B7-6D4B-4F7D-AA63-E42CEE169372}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C46068B7-6D4B-4F7D-AA63-E42CEE169372}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

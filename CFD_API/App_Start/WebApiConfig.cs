@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web.Http;
+using System.Web.Mvc;
+using Autofac;
+using Autofac.Integration.WebApi;
+using CFD_COMMON.Models.Context;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -41,6 +46,43 @@ namespace CFD_API
             var converters = json.SerializerSettings.Converters;
             converters.Add(new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss" });
             config.Formatters.Remove(config.Formatters.XmlFormatter);
+        }
+
+        public static void ConfigureDependencyResolver(HttpConfiguration config)
+        {
+            var builder = new ContainerBuilder();
+            var assembly = Assembly.GetExecutingAssembly();
+
+            //register all the controllers
+            builder.RegisterApiControllers(assembly).PropertiesAutowired();
+            //builder.RegisterControllers(assembly);
+
+            // instantiate a tradeheroEntities on each incoming request
+            builder.Register<CFDEntities>(c => CFDEntities.Create()).InstancePerRequest();
+            //builder.Register<tradeheroNewsEntities>(c => tradeheroNewsEntities.Create()).InstancePerRequest();
+            //builder.Register<StatisticEntities>(c => StatisticEntities.Create()).InstancePerRequest();
+            //builder.Register<IRedisClient>(c => redisClientManager.GetClient()).InstancePerRequest();
+
+            //// JSON formatter settings for MVC controllers
+            //builder.Register<JsonSerializerSettings>(c => config.Formatters.JsonFormatter.SerializerSettings).InstancePerRequest();
+
+            //builder.RegisterType<DefaultCacheKeyGenerator>().As<ICacheKeyGenerator>().SingleInstance();
+            //builder.RegisterType<RedisCacheProvider>().As<ICacheProvider>().InstancePerRequest();
+            //builder.RegisterType<CacheInterceptor>().InstancePerRequest();
+
+            //var assemblies = assembly.GetReferencedAssemblies().Select(Assembly.Load).ToArray();
+            //builder.RegisterAssemblyTypes(assemblies)
+            //    .Where(t => t.IsSubclassOf(typeof(TradeHeroService)))
+            //    .EnableClassInterceptors().InterceptedBy(typeof(CacheInterceptor))
+            //    .InstancePerRequest().PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
+
+            // Build the container.
+            // Create the dependency resolver 
+            var container = builder.Build();
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+
+            //var mvcResolver = new AutofacDependencyResolver(container);
+            //DependencyResolver.SetResolver(mvcResolver);
         }
     }
 }

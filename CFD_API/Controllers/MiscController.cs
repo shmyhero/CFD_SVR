@@ -5,17 +5,23 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using CFD_API.Controllers.Attributes;
+using CFD_COMMON.Models.Context;
 
 namespace CFD_API.Controllers
 {
-    public class MiscController : ApiController
+    public class MiscController : CFDController
     {
+        public MiscController(CFDEntities db)
+            : base(db)
+        {
+        }
+
         [HttpGet]
         [ActionName("version")]
         public HttpResponseMessage GetVersion()
         {
             //ApiGlobal.LogLine("");
-            //string dbName = db.Database.Connection.Database;
+            string dbName = db.Database.Connection.Database;
             
             return Request.CreateResponse(
                 HttpStatusCode.OK,
@@ -26,7 +32,7 @@ namespace CFD_API.Controllers
                 "TH API STATUS: OK [build=RELEASE]" +
 #endif
                     " -- v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
-                    //+" -- DB=[" + dbName + "]" 
+                    +" -- DB=[" + dbName + "]" 
                     //+" -- top-table cabling: brought to you by The A-Team."
                 );
         }

@@ -21,6 +21,7 @@ namespace CFD_API
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 
             WebApiConfig.ConfigureJSONFormatter(GlobalConfiguration.Configuration);
+            WebApiConfig.ConfigureDependencyResolver(GlobalConfiguration.Configuration);
 
             GlobalConfiguration.Configuration.Filters.Add(new ElmahHandledErrorLoggerFilter());
         }
