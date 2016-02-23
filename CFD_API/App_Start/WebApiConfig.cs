@@ -28,6 +28,11 @@ namespace CFD_API
                 routeTemplate: "api/misc/{action}",
                 defaults: new { controller = "misc" }
                 );
+            config.Routes.MapHttpRoute(
+                name: "Utility",
+                routeTemplate: "api/{action}",
+                defaults: new { controller = "util" }
+                );
 
             //default route
             config.Routes.MapHttpRoute(

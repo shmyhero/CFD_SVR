@@ -156,6 +156,7 @@
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
     <Compile Include="Controllers\UserController.cs" />
+    <Compile Include="Controllers\UtilController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

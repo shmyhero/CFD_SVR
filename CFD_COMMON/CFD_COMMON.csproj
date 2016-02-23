@@ -51,10 +51,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CFDGlobal.cs" />
+    <Compile Include="Localization\TransKeys.cs" />
+    <Compile Include="Localization\Translations.cs" />
     <Compile Include="Models\Context\CFDEntities.cs" />
     <Compile Include="Models\Context\CFDEntitiesFactory.cs" />
+    <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\User.cs" />
+    <Compile Include="Models\Entities\VerifyCode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\Phone.cs" />
+    <Compile Include="Utils\YunPianMessenger.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

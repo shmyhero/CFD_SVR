@@ -14,6 +14,8 @@ namespace CFD_COMMON.Models.Context
         {
         }
 
+        public virtual DbSet<Device> Devices { get; set; }
+        public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
