@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace CFD_COMMON.Utils
 {
@@ -24,10 +25,10 @@ namespace CFD_COMMON.Utils
         {
             get
             {
-                //if (RoleEnvironment.IsAvailable)
-                //{
-                //    return RoleEnvironment.GetConfigurationSettingValue(API_KEY);
-                //}
+                if (RoleEnvironment.IsAvailable)
+                {
+                    return RoleEnvironment.GetConfigurationSettingValue(API_KEY);
+                }
 
                 var appsettings = ConfigurationManager.AppSettings;
                 if (appsettings[API_KEY] == null)
@@ -43,10 +44,10 @@ namespace CFD_COMMON.Utils
         {
             get
             {
-                //if (RoleEnvironment.IsAvailable)
-                //{
-                //    return RoleEnvironment.GetConfigurationSettingValue(TEMPLATE_ID);
-                //}
+                if (RoleEnvironment.IsAvailable)
+                {
+                    return RoleEnvironment.GetConfigurationSettingValue(TEMPLATE_ID);
+                }
 
                 var appsettings = ConfigurationManager.AppSettings;
                 if (appsettings[TEMPLATE_ID] == null)
