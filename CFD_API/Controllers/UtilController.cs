@@ -13,13 +13,14 @@ using CFD_COMMON.Utils;
 
 namespace CFD_API.Controllers
 {
+    [RoutePrefix("api")]
     public class UtilController : CFDController
     {
         public UtilController(CFDEntities db) : base(db)
         {
         }
 
-        [ActionName("sendCode")]
+        [Route("sendCode")]
         [HttpPost]
         //[RequireHttps]
         public HttpResponseMessage SendCode(string phone)
