@@ -28,20 +28,6 @@ namespace CFD_API.Controllers
             if (!Phone.IsValidPhoneNumber(phone))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKeys.INVALID_PHONE_NUMBER)));
 
-            ////if (db.Users.Any(u => u.phoneNumber == phoneNumber))
-            ////    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, this.LocalizedString(ApiStringKeys.ERR_biz_EXISTING_PHONE_NUMBER)));
-
-            //string code = null;
-            var oneDayAgo = DateTime.UtcNow.AddDays(-1);
-            var verifyCodes = db.VerifyCodes.Where(c => c.Phone == phone && c.SentAt > oneDayAgo);
-
-            //if (!verifyCodes.Any())
-            //{
-            //    // No existing verify code within one day, generate one
-            //    var ran = new Random((int)(DateTime.UtcNow.Ticks & 0xffffffffL));
-            //    code = string.Format("{0:0000}", ran.Next(10000));
-            //}
-
             string code = string.Empty;
 
             ////send last code instead of regenerating if within ?
@@ -58,15 +44,6 @@ namespace CFD_API.Controllers
 
             var r = new Random();
             code = r.Next(10000).ToString("0000");
-
-            //else if (verifyCodes.Count() < 3)
-            //{
-            //    // Use newest verify code if exists
-            //    var verifyCode = verifyCodes.OrderByDescending(c => c.dateTimeUtc).First();
-            //    // only if it's sent more than one minute ago
-            //    if (DateTime.UtcNow.Subtract(verifyCode.dateTimeUtc) > TimeSpan.FromMinutes(1))
-            //        code = verifyCode.code;
-            //}
 
             if (!string.IsNullOrWhiteSpace(code))
             {

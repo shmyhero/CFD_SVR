@@ -19,8 +19,8 @@ namespace CFD_API.Controllers
         [ActionName("signupByPhone")]
         public SignupResultDTO SignupByPhone(SignupByPhoneFormDTO form)
         {
-            var fiveMinutesAgo = DateTime.UtcNow.AddMinutes(-5);
-            var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > fiveMinutesAgo);
+            var dtValidSince = DateTime.UtcNow.AddMinutes(-60);
+            var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
 
             var result = new SignupResultDTO();
 
@@ -60,7 +60,7 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         //[RequireHttps]
-        [ActionName("signupByWechat")]
+        [ActionName("signupByWeChat")]
         public SignupResultDTO SignupByWeChat(SignupByWeChatFormDTO form)
         {
             var result = new SignupResultDTO();
@@ -90,10 +90,11 @@ namespace CFD_API.Controllers
             return result;
         }
 
-        [HttpPost]
+        [HttpGet]
         //[RequireHttps]
-        [ActionName("login")]
-        public UserDTO Login(LoginFormDTO form)
+        [ActionName("me")]
+        //[]
+        public UserDTO GetMe(LoginFormDTO form)
         {
             var user = db.Users.FirstOrDefault(o => o.Id == form.userId && o.Token == form.token);
 
