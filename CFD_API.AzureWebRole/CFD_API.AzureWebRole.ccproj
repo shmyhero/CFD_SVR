@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <PublishProfile Include="Profiles\cfd-webapiProduction.azurePubxml" />
+    <PublishProfile Include="Profiles\cfd-webapiStaging.azurePubxml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CFD_API\CFD_API.csproj">
