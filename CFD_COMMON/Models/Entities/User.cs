@@ -26,16 +26,13 @@ namespace CFD_COMMON.Models.Entities
 
         public DateTime? LastLoginAt { get; set; }
 
+        [StringLength(200)]
+        public string PicUrl { get; set; }
+
         [StringLength(50)]
         public string WeChatOpenId { get; set; }
 
-        [StringLength(200)]
-        public string WeChatToken { get; set; }
-
         [StringLength(50)]
         public string WeChatUnionId { get; set; }
-
-        [StringLength(50)]
-        public string WeChatNickname { get; set; }
     }
 }

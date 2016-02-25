@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
@@ -33,7 +35,9 @@ namespace CFD_API.Controllers
                     var userService = new UserService(db);
                     userService.CreateUserByPhone(form.phone);
 
+                    //refetch
                     user = db.Users.FirstOrDefault(o => o.Phone == form.phone);
+
                     user.Nickname = "u" + user.Id.ToString("00000000");
                     db.SaveChanges();
 
@@ -65,27 +69,39 @@ namespace CFD_API.Controllers
         {
             var result = new SignupResultDTO();
 
-            //var user = db.Users.FirstOrDefault(o => o.Phone == form.phone);
+            var user = db.Users.FirstOrDefault(o => o.WeChatOpenId == form.openid);
 
-            //if (user == null)//phone doesn't exist
-            //{
-            //    var userService = new UserService(db);
-            //    userService.CreateUserByPhone(form.phone);
+            if (user == null) //openid not exist
+            {
+                var userService = new UserService(db);
+                userService.CreateUserByWeChat(form.openid, form.unionid);
 
-            //    user = db.Users.FirstOrDefault(o => o.Phone == form.phone);
-            //    user.Nickname = "u" + user.Id.ToString("00000000");
-            //    db.SaveChanges();
+                //refetch
+                user = db.Users.FirstOrDefault(o => o.WeChatOpenId == form.openid);
 
-            //    result.success = true;
-            //    result.isNewUser = true;
-            //    result.token = user.Token;
-            //}
-            //else//phone exists
-            //{
-            //    result.success = true;
-            //    result.isNewUser = false;
-            //    result.token = user.Token;
-            //}
+                user.Nickname = form.nickname;
+                //check duplicate nickname
+                while (db.Users.Any(o => o.Id != user.Id && o.Nickname == user.Nickname))
+                {
+                    user.Nickname = form.nickname + (new Random().Next(10000));
+                }
+
+                //user.PicUrl
+
+                db.SaveChanges();
+
+                result.success = true;
+                result.isNewUser = true;
+                result.userId = user.Id;
+                result.token = user.Token;
+            }
+            else //openid exists
+            {
+                result.success = true;
+                result.isNewUser = false;
+                result.userId = user.Id;
+                result.token = user.Token;
+            }
 
             return result;
         }
@@ -96,9 +112,20 @@ namespace CFD_API.Controllers
         //[]
         public UserDTO GetMe(LoginFormDTO form)
         {
-            var user = db.Users.FirstOrDefault(o => o.Id == form.userId && o.Token == form.token);
+            //var user = db.Users.FirstOrDefault(o => o.Id == form.userId && o.Token == form.token);
 
-            return new UserDTO();
+            return new UserDTO {id = 1234, nickname = "test user"};
+        }
+
+        [HttpPost]
+        //[RequireHttps]
+        [ActionName("nickname")]
+        //[]
+        public HttpResponseMessage SetNickname(string nickname)
+        {
+            //var user = db.Users.FirstOrDefault(o => o.Id == form.userId && o.Token == form.token);
+
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
     }
 }

@@ -8,7 +8,10 @@
 
     public class SignupByWeChatFormDTO
     {
-        
+        public string openid { get; set; }
+        public string unionid { get; set; }
+        public string nickname { get; set; }
+        public string headimgurl { get; set; }
     }
 
     public class LoginFormDTO

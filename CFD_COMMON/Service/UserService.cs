@@ -42,5 +42,30 @@ namespace CFD_COMMON.Service
                 }
             }
         }
+
+        public void CreateUserByWeChat(string openid, string unionid)
+        {
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+            {
+                using (var dbIsolated = CFDEntities.Create())
+                {
+                    var userIsolated = dbIsolated.Users.FirstOrDefault(o => o.WeChatOpenId == openid);
+                    if (userIsolated == null)
+                    {
+                        userIsolated = new User
+                        {
+                            CreatedAt = DateTime.UtcNow,
+                            WeChatOpenId = openid,
+                            WeChatUnionId = unionid,
+                            Token = Guid.NewGuid().ToString("N")
+                        };
+                        dbIsolated.Users.Add(userIsolated);
+
+                        dbIsolated.SaveChanges();
+                        scope.Complete();
+                    }
+                }
+            }
+        }
     }
 }
