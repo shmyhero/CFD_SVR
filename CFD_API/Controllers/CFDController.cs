@@ -1,33 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
+using AutoMapper;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_API.Controllers
 {
     public class CFDController : ApiController
     {
         public CFDEntities db { get; protected set; }
+        public IMapper Mapper { get; protected set; }
 
-        public CFDController(CFDEntities db)
+        public CFDController(CFDEntities db, IMapper mapper)
+        {
+            this.db = db;
+            this.Mapper = mapper;
+        }
+
+        protected CFDController(CFDEntities db)
         {
             this.db = db;
         }
 
-        public string __(TransKeys transKey)
+        public int UserId
         {
-            if (Translations.Values.ContainsKey(transKey))
-                return Translations.Values[transKey];
-            else
-                return transKey.ToString();
+            get { return Convert.ToInt32(HttpContext.Current.User.Identity.Name); }
         }
 
-        //public CFDController()
-        //{
-        //    db=CFDEntities.Create();
-        //}
+        /// <summary>
+        /// localization
+        /// </summary>
+        /// <param name="transKey"></param>
+        /// <returns></returns>
+        public string __(TransKey transKey)
+        {
+            return Translator.Translate(transKey);
+        }
+
+        public User GetUser()
+        {
+            return db.Users.FirstOrDefault(o => o.Id == UserId);
+        }
     }
 }

@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace CFD_COMMON.Localization
 {
     public class Translations
     {
-        public static Dictionary<TransKeys, string> Values = new Dictionary<TransKeys, string>
+        public static Dictionary<TransKey, string> Values = new Dictionary<TransKey, string>
         {
-            { TransKeys.INVALID_PHONE_NUMBER, "无效的手机号码，请输入正确的11位手机号码" }
+            {TransKey.INVALID_PHONE_NUMBER, "无效的手机号码，请输入正确的11位手机号码"},
+            {TransKey.INVALID_VERIFY_CODE, "验证码错误"}
         };
     }
 }

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Web.Http;
-using System.Web.Mvc;
 using Autofac;
 using Autofac.Integration.WebApi;
+using AutoMapper;
 using CFD_COMMON.Models.Context;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -37,9 +34,10 @@ namespace CFD_API
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{action}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );
+                defaults: new {id = RouteParameter.Optional}
+                );
         }
+
         public static void ConfigureJSONFormatter(HttpConfiguration config)
         {
             var json = config.Formatters.JsonFormatter;
@@ -47,7 +45,7 @@ namespace CFD_API
             json.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
             json.SerializerSettings.FloatParseHandling = FloatParseHandling.Decimal;
             var converters = json.SerializerSettings.Converters;
-            converters.Add(new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss" });
+            converters.Add(new IsoDateTimeConverter() {DateTimeFormat = "yyyy-MM-ddTHH:mm:ss"});
             config.Formatters.Remove(config.Formatters.XmlFormatter);
         }
 
@@ -72,6 +70,8 @@ namespace CFD_API
             //builder.RegisterType<DefaultCacheKeyGenerator>().As<ICacheKeyGenerator>().SingleInstance();
             //builder.RegisterType<RedisCacheProvider>().As<ICacheProvider>().InstancePerRequest();
             //builder.RegisterType<CacheInterceptor>().InstancePerRequest();
+
+            builder.Register<IMapper>(c => MapperConfig.GetAutoMapperConfiguration().CreateMapper()).SingleInstance();
 
             //var assemblies = assembly.GetReferencedAssemblies().Select(Assembly.Load).ToArray();
             //builder.RegisterAssemblyTypes(assemblies)

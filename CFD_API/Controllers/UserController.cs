@@ -3,8 +3,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using AutoMapper;
+using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
+using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
 
@@ -12,7 +15,8 @@ namespace CFD_API.Controllers
 {
     public class UserController : CFDController
     {
-        public UserController(CFDEntities db) : base(db)
+        public UserController(CFDEntities db, IMapper mapper)
+            : base(db, mapper)
         {
         }
 
@@ -57,6 +61,7 @@ namespace CFD_API.Controllers
             else
             {
                 result.success = false;
+                result.message = __(TransKey.INVALID_VERIFY_CODE);
             }
 
             return result;
@@ -109,23 +114,27 @@ namespace CFD_API.Controllers
         [HttpGet]
         //[RequireHttps]
         [ActionName("me")]
-        //[]
+        [BasicAuth]
         public UserDTO GetMe(LoginFormDTO form)
         {
-            //var user = db.Users.FirstOrDefault(o => o.Id == form.userId && o.Token == form.token);
+            var user = GetUser();
 
-            return new UserDTO {id = 1234, nickname = "test user"};
+            var userDto = Mapper.Map<UserDTO>(user);
+
+            return userDto;
         }
 
         [HttpPost]
         //[RequireHttps]
         [ActionName("nickname")]
-        //[]
-        public HttpResponseMessage SetNickname(string nickname)
+        [BasicAuth]
+        public ResultDTO SetNickname(string nickname)
         {
-            //var user = db.Users.FirstOrDefault(o => o.Id == form.userId && o.Token == form.token);
+            var user = GetUser();
+            user.Nickname = nickname;
+            db.SaveChanges();
 
-            return Request.CreateResponse(HttpStatusCode.OK);
+            return new ResultDTO {success = true};
         }
     }
 }

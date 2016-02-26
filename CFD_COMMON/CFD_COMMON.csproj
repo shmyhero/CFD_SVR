@@ -62,8 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CFDGlobal.cs" />
-    <Compile Include="Localization\TransKeys.cs" />
+    <Compile Include="Localization\TransKey.cs" />
     <Compile Include="Localization\Translations.cs" />
+    <Compile Include="Localization\Translator.cs" />
     <Compile Include="Models\Context\CFDEntities.cs" />
     <Compile Include="Models\Context\CFDEntitiesFactory.cs" />
     <Compile Include="Models\Entities\Device.cs" />

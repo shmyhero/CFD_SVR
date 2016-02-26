@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using CFD_API.Controllers.Attributes;
+using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
@@ -23,10 +24,16 @@ namespace CFD_API.Controllers
         [Route("sendCode")]
         [HttpPost]
         //[RequireHttps]
-        public HttpResponseMessage SendCode(string phone)
+        public ResultDTO SendCode(string phone)
         {
+            var result=new ResultDTO();
+
             if (!Phone.IsValidPhoneNumber(phone))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKeys.INVALID_PHONE_NUMBER)));
+            {
+                result.message = __(TransKey.INVALID_PHONE_NUMBER);
+                result.success = false;
+                return result;
+            }
 
             string code = string.Empty;
 
@@ -58,7 +65,8 @@ namespace CFD_API.Controllers
                 db.SaveChanges();
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK);
+            result.success = true;
+            return result;
         }
     }
 }

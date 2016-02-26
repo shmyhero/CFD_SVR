@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace CFD_COMMON.Localization
 {
-    public enum TransKeys
+    public enum TransKey
     {
-        INVALID_PHONE_NUMBER
+        INVALID_PHONE_NUMBER,
+        INVALID_VERIFY_CODE
     }
 }

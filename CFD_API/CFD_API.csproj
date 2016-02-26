@@ -153,6 +153,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Start\MapperConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />
@@ -162,8 +163,9 @@
     <Compile Include="Controllers\MiscController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
-    <Compile Include="DTO\Form\UserFormDTO.cs" />
+    <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
     <Compile Include="DTO\UserDTO.cs" />
+    <Compile Include="DTO\UtilDTO.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

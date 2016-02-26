@@ -1,8 +1,8 @@
 ﻿namespace CFD_API.DTO
 {
-    public class SignupResultDTO
+    public class SignupResultDTO:ResultDTO
     {
-        public bool success { get; set; }
+        //public bool success { get; set; }
         public bool? isNewUser { get; set; }
 
         public int? userId { get; set; }

@@ -7,7 +7,10 @@ using System.Web.Routing;
 using System.Web.Security;
 using System.Web.SessionState;
 using System.Web.Http;
+using AutoMapper;
 using CFD_API.Controllers.Attributes;
+using CFD_API.DTO;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_API
 {
@@ -24,6 +27,8 @@ namespace CFD_API
             WebApiConfig.ConfigureDependencyResolver(GlobalConfiguration.Configuration);
 
             GlobalConfiguration.Configuration.Filters.Add(new ElmahHandledErrorLoggerFilter());
+
+            //var config = new MapperConfiguration(cfg => cfg.CreateMap<User, UserDTO>());
         }
     }
 }
