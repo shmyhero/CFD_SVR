@@ -9,6 +9,7 @@ namespace CFD_COMMON.Localization
     public enum TransKey
     {
         INVALID_PHONE_NUMBER,
-        INVALID_VERIFY_CODE
+        INVALID_VERIFY_CODE,
+        NICKNAME_EXISTS
     }
 }

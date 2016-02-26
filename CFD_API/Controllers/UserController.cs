@@ -130,6 +130,13 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO SetNickname(string nickname)
         {
+            if (db.Users.Any(o => o.Id != UserId && o.Nickname == nickname))
+                return new ResultDTO
+                {
+                    success = false,
+                    message = __(TransKey.NICKNAME_EXISTS)
+                };
+
             var user = GetUser();
             user.Nickname = nickname;
             db.SaveChanges();
