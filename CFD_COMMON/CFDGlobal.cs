@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -7,11 +8,34 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace CFD_COMMON
 {
     public class CFDGlobal
     {
+        public static string USER_PIC_BLOB_CONTAINER="user-picture";
+        public static string USER_PIC_BLOB_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + USER_PIC_BLOB_CONTAINER+"/";
+
+        public static string GetConfigurationSetting(string key)
+        {
+            if (RoleEnvironment.IsAvailable)
+            {
+                ////throw exception if not exist
+                //return RoleEnvironment.GetConfigurationSettingValue(key);
+
+                var value = CloudConfigurationManager.GetSetting(key);
+
+                //if there's no cloud config, return local config
+                return value ?? ConfigurationManager.AppSettings[key];
+            }
+            else
+            {
+                return ConfigurationManager.AppSettings[key];
+            }
+        }
+
         public static T RetryMaxOrThrow<T>(Func<T> p, int sleepSeconds = 10, int retryMax = 3, bool verboseErrorLog = true)
         {
             int retryCount = 0;
@@ -56,6 +80,23 @@ namespace CFD_COMMON
                     Thread.Sleep(1000 * currentSleepSeconds);
                     //#endif
                 }
+            }
+        }
+
+        public static void LogError(string message)
+        {
+            Trace.TraceError(message);
+        }
+
+        public static void LogException(Exception exception)
+        {
+            var ex = exception;
+            while (ex!=null)
+            {
+                Trace.WriteLine(ex.Message);
+                Trace.WriteLine(ex.StackTrace);
+
+                ex = ex.InnerException;
             }
         }
     }

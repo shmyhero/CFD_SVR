@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using CFD_API.Controllers.Attributes;
+using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 
 namespace CFD_API.Controllers
@@ -53,6 +55,17 @@ namespace CFD_API.Controllers
         public HttpResponseMessage TestHttps()
         {
             return Request.CreateResponse(HttpStatusCode.OK, "url scheme: " + Request.RequestUri.Scheme);
+        }
+
+        [HttpGet]
+        [ActionName("log")]
+        public HttpResponseMessage TestLog()
+        {
+            Trace.TraceInformation("this is a info trace");
+            Trace.TraceWarning("this is a warning trace");
+            Trace.TraceError("this is a error trace");
+            CFDGlobal.LogError("error message");
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
     }
 }

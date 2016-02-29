@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
+using CFD_COMMON;
+using CFD_COMMON.Azure;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
@@ -84,14 +85,31 @@ namespace CFD_API.Controllers
                 //refetch
                 user = db.Users.FirstOrDefault(o => o.WeChatOpenId == form.openid);
 
-                user.Nickname = form.nickname;
-                //check duplicate nickname
+                user.Nickname = form.nickname.Trim();
+
+                //check duplicate nickname and generate random suffix
                 while (db.Users.Any(o => o.Id != user.Id && o.Nickname == user.Nickname))
                 {
                     user.Nickname = form.nickname + (new Random().Next(10000));
                 }
 
-                //user.PicUrl
+                //save wechat pic to azure storage blob
+                try
+                {
+                    var webClient = new WebClient();
+                    var bytes = webClient.DownloadData(form.headimgurl);
+
+                    var picName = Guid.NewGuid().ToString("N");
+
+                    Blob.UploadFromBytes(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName, bytes);
+
+                    user.PicUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + picName;
+                }
+                catch (Exception ex)
+                {
+                    CFDGlobal.LogError("Fail saving wechat picture to azure blob");
+                    CFDGlobal.LogException(ex);
+                }
 
                 db.SaveChanges();
 

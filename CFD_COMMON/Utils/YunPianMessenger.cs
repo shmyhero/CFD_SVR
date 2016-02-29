@@ -25,18 +25,20 @@ namespace CFD_COMMON.Utils
         {
             get
             {
-                if (RoleEnvironment.IsAvailable)
-                {
-                    return RoleEnvironment.GetConfigurationSettingValue(API_KEY);
-                }
+                //if (RoleEnvironment.IsAvailable)
+                //{
+                //    return RoleEnvironment.GetConfigurationSettingValue(API_KEY);
+                //}
 
-                var appsettings = ConfigurationManager.AppSettings;
-                if (appsettings[API_KEY] == null)
-                {
-                    throw new ApplicationException("Could not obtain AppSettings: " + API_KEY);
-                }
+                //var appsettings = ConfigurationManager.AppSettings;
+                //if (appsettings[API_KEY] == null)
+                //{
+                //    throw new ApplicationException("Could not obtain AppSettings: " + API_KEY);
+                //}
 
-                return appsettings[API_KEY];
+                //return appsettings[API_KEY];
+
+                return CFDGlobal.GetConfigurationSetting(API_KEY);
             }
         }
 
@@ -44,18 +46,20 @@ namespace CFD_COMMON.Utils
         {
             get
             {
-                if (RoleEnvironment.IsAvailable)
-                {
-                    return RoleEnvironment.GetConfigurationSettingValue(TEMPLATE_ID);
-                }
+                //if (RoleEnvironment.IsAvailable)
+                //{
+                //    return RoleEnvironment.GetConfigurationSettingValue(TEMPLATE_ID);
+                //}
 
-                var appsettings = ConfigurationManager.AppSettings;
-                if (appsettings[TEMPLATE_ID] == null)
-                {
-                    throw new ApplicationException("Could not obtain AppSettings: " + TEMPLATE_ID);
-                }
+                //var appsettings = ConfigurationManager.AppSettings;
+                //if (appsettings[TEMPLATE_ID] == null)
+                //{
+                //    throw new ApplicationException("Could not obtain AppSettings: " + TEMPLATE_ID);
+                //}
 
-                return appsettings[TEMPLATE_ID];
+                //return appsettings[TEMPLATE_ID];
+
+                return CFDGlobal.GetConfigurationSetting(TEMPLATE_ID);
             }
         }
 
