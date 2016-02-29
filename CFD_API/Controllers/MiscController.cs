@@ -64,7 +64,9 @@ namespace CFD_API.Controllers
             Trace.TraceInformation("this is a info trace");
             Trace.TraceWarning("this is a warning trace");
             Trace.TraceError("this is a error trace");
-            CFDGlobal.LogError("error message");
+
+            CFDGlobal.LogError("this is a error trace message");
+
             return Request.CreateResponse(HttpStatusCode.OK);
         }
     }
