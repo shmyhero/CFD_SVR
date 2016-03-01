@@ -13,5 +13,6 @@
     {
         public int id { get; set; }
         public string nickname { get; set; }
+        public string picUrl { get; set; }
     }
 }
