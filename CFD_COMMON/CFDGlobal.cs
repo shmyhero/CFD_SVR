@@ -88,6 +88,11 @@ namespace CFD_COMMON
             Trace.TraceError(message);
         }
 
+        public static void LogLine(string message)
+        {
+            Trace.WriteLine(message);
+        }
+
         public static void LogException(Exception exception)
         {
             var ex = exception;
