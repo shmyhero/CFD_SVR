@@ -183,6 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\MapperConfig.cs" />
+    <Compile Include="App_Start\OwinStartup.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />
@@ -190,9 +191,11 @@
     <Compile Include="Controllers\Attributes\RequireHttpsAttribute.cs" />
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
+    <Compile Include="Controllers\SecurityController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
+    <Compile Include="DTO\SecurityDTO.cs" />
     <Compile Include="DTO\UserDTO.cs" />
     <Compile Include="DTO\UtilDTO.cs" />
     <Compile Include="Global.asax.cs">
