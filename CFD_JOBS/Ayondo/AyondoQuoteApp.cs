@@ -1,19 +1,36 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using CFD_COMMON;
+using CFD_JOBS.Models;
 using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;
+using ServiceStack.Redis;
+using ServiceStack.Redis.Generic;
 
 namespace CFD_JOBS.Ayondo
 {
     public class AyondoQuoteApp : MessageCracker, IApplication
     {
-        public Session CurrentSession { get; set; }
-        public DataDictionary DD { get; set; }
+        private Session CurrentSession;
+        private DataDictionary DD;
 
         private DateTime BeginTimeForMsgCount = DateTime.MinValue;
         private int MsgCount = 0;
         private int MsgTotalCount = 0;
+        private IList<Quote> quotes = new List<Quote>();
+
+        private IRedisTypedClient<Quote> redisClient;
+
+//        public IRedisTypedClient<> 
+
+        public AyondoQuoteApp()
+        {
+            var basicRedisClientManager = new BasicRedisClientManager(CFDGlobal.GetConfigurationSetting("redisConnectionString"));
+
+            redisClient = basicRedisClientManager.GetClient().As<Quote>();
+        }
 
         public void ToAdmin(Message message, SessionID sessionID)
         {
@@ -42,6 +59,9 @@ namespace CFD_JOBS.Ayondo
 
         public void OnMessage(QuickFix.FIX44.Quote quote, SessionID sessionID)
         {
+            //basic log
+//            CFDGlobal.LogLine(quote.ToString());
+
 //            //detail log
 //            var sb=new StringBuilder();
 //            sb.AppendLine("--------------------new quote message-------------------");
@@ -70,21 +90,38 @@ namespace CFD_JOBS.Ayondo
 //
 //            CFDGlobal.LogLine(sb.ToString());
 
-            //aggregate log
+            //count and add to list for saving
             MsgCount++;
             MsgTotalCount++;
+            quotes.Add(new Quote()
+            {
+                Bid = quote.BidPx.getValue(),
+                Id = quote.SecurityID.getValue(),
+                Offer = quote.OfferPx.getValue(),
+                Time = quote.Header.GetDateTime(DD.FieldsByName["SendingTime"].Tag)
+            });
 
+            //do save Every Second
             var now = DateTime.Now;
             if (now - BeginTimeForMsgCount > TimeSpan.FromSeconds(1))
             {
-                CFDGlobal.LogLine(MsgCount + " last second. " + MsgTotalCount + " total.");
+                CFDGlobal.LogLine("Count: " + MsgCount + "/" + MsgTotalCount
+                                  + " Time: " + quotes.Min(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
+                                  + " ~ " + quotes.Max(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
+                                  + ". Saving to redis...");
 
+                redisClient.StoreAll(quotes);
+
+                //reset vars
                 BeginTimeForMsgCount = now;
                 MsgCount = 0;
+                quotes = new List<Quote>();
             }
 
+            //if (quote.QuoteType.getValue() != QuoteType.TRADEABLE)
+            //{
 
-//            CFDGlobal.LogLine(quote.ToString());
+            //}
         }
 
         public void OnCreate(SessionID sessionID)
