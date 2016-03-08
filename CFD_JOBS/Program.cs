@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CFD_COMMON;
 using CFD_COMMON.Utils.Extensions;
+using CFD_JOBS.Ayondo;
 
 namespace CFD_JOBS
 {
@@ -39,7 +40,8 @@ namespace CFD_JOBS
 
             try
             {
-                throw new Exception();
+                AyondoQuoteWorker.Run();
+
                 return 0;
             }
             catch (Exception ex)

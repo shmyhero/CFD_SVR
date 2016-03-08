@@ -18,6 +18,8 @@ namespace CFD_COMMON
         public static string USER_PIC_BLOB_CONTAINER="user-picture";
         public static string USER_PIC_BLOB_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + USER_PIC_BLOB_CONTAINER+"/";
 
+        public static string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
+
         public static string GetConfigurationSetting(string key)
         {
             if (RoleEnvironment.IsAvailable)
@@ -85,12 +87,12 @@ namespace CFD_COMMON
 
         public static void LogError(string message)
         {
-            Trace.TraceError(message);
+            Trace.TraceError(GetLogDatetimePrefix() + message);
         }
 
         public static void LogLine(string message)
         {
-            Trace.WriteLine(message);
+            Trace.WriteLine(GetLogDatetimePrefix() + message);
         }
 
         public static void LogException(Exception exception)
@@ -98,11 +100,16 @@ namespace CFD_COMMON
             var ex = exception;
             while (ex!=null)
             {
-                Trace.WriteLine(ex.Message);
-                Trace.WriteLine(ex.StackTrace);
+                Trace.WriteLine(GetLogDatetimePrefix() + ex.Message);
+                Trace.WriteLine(GetLogDatetimePrefix() + ex.StackTrace);
 
                 ex = ex.InnerException;
             }
+        }
+
+        private static string GetLogDatetimePrefix()
+        {
+            return DateTime.Now.ToString(DATETIME_MASK_MILLI_SECOND)+" ";
         }
     }
 }
