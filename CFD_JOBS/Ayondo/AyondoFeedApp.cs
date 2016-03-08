@@ -11,7 +11,7 @@ using ServiceStack.Redis.Generic;
 
 namespace CFD_JOBS.Ayondo
 {
-    public class AyondoQuoteApp : MessageCracker, IApplication
+    public class AyondoFeedApp : MessageCracker, IApplication
     {
         private Session CurrentSession;
         private DataDictionary DD;
@@ -25,7 +25,7 @@ namespace CFD_JOBS.Ayondo
 
 //        public IRedisTypedClient<> 
 
-        public AyondoQuoteApp()
+        public AyondoFeedApp()
         {
             var basicRedisClientManager = new BasicRedisClientManager(CFDGlobal.GetConfigurationSetting("redisConnectionString"));
 

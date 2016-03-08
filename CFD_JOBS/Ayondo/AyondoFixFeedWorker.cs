@@ -1,14 +1,15 @@
-﻿using QuickFix;
+﻿using CFD_COMMON;
+using QuickFix;
 using QuickFix.Transport;
 
 namespace CFD_JOBS.Ayondo
 {
-    internal class AyondoQuoteWorker
+    internal class AyondoFixFeedWorker
     {
         public static void Run()
         {
-            SessionSettings settings = new SessionSettings("Ayondo\\AyondoQuoteFeed.cfg");
-            AyondoQuoteApp myApp = new AyondoQuoteApp();
+            SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixFeedCfgFile"));
+            AyondoFeedApp myApp = new AyondoFeedApp();
             IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
             ILogFactory logFactory = new FileLogFactory(settings);
             SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings, logFactory);

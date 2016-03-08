@@ -40,7 +40,10 @@ namespace CFD_JOBS
 
             try
             {
-                AyondoQuoteWorker.Run();
+                if (args.Contains("-AyondoFixFeed"))
+                {
+                    AyondoFixFeedWorker.Run();
+                }
 
                 return 0;
             }
