@@ -100,6 +100,7 @@
     <Compile Include="Localization\Translator.cs" />
     <Compile Include="Models\Context\CFDEntities.cs" />
     <Compile Include="Models\Context\CFDEntitiesFactory.cs" />
+    <Compile Include="Models\Entities\AyondoSecurity.cs" />
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Model1.cs" />
     <Compile Include="Models\Entities\User.cs" />

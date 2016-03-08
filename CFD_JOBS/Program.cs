@@ -45,6 +45,11 @@ namespace CFD_JOBS
                     AyondoFixFeedWorker.Run();
                 }
 
+                if (args.Contains("-AyondoExcelImport"))
+                {
+                    AyondoExcelImportWorker.Run();
+                }
+
                 return 0;
             }
             catch (Exception ex)

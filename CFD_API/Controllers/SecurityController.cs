@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Web.Http;
 using AutoMapper;
 using CFD_API.Controllers.Attributes;
@@ -160,24 +161,8 @@ namespace CFD_API.Controllers
         [Route("fx")]
         public List<SecurityDTO> GetFxList()
         {
-            return new List<SecurityDTO>()
-            {
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m},
-                new SecurityDTO() {name = "美元/人民币", symbol = "USD/CNY", last = 6.45m, open = 6.54m}
-            };
+            var security = db.AyondoSecurities.Where(o=>o.AssetClass=="Currencies").ToList();
+            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
         [HttpGet]

@@ -23,8 +23,8 @@ namespace CFD_COMMON.Models.Context
 
             db.Configuration.UseDatabaseNullSemantics = UseDatabaseNullSemantics;
 
-            //if (thc.Global.IsRunningInDebugger)
-            //    db.Database.Log = s => Debug.WriteLine(s);
+            if (log || Debugger.IsAttached)
+                db.Database.Log = s => Trace.WriteLine(s);
 
             //if (log)
             //    Global.LogLine("created object-context for main DB [" + db.Database.Connection.Database + "]");

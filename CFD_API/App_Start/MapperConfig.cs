@@ -8,7 +8,11 @@ namespace CFD_API
     {
         public static MapperConfiguration GetAutoMapperConfiguration()
         {
-            return new MapperConfiguration(cfg => cfg.CreateMap<User, UserDTO>());
+            return new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<User, UserDTO>();
+                cfg.CreateMap<AyondoSecurity, SecurityDTO>();
+            });
         }
     }
 }
