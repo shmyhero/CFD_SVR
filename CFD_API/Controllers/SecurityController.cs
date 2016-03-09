@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using AutoMapper;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_API.Controllers
 {
@@ -19,176 +21,102 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("bookmark")]
-        public List<SecurityDTO> GetBookmarkList()
+        [BasicAuth]
+        public List<SecurityDTO> GetBookmarkList(int page, int perPage)
         {
-            return new List<SecurityDTO>()
+            var bookmarks = db.Bookmarks.Where(o => o.UserId == UserId).OrderBy(o => o.CreatedAt).Skip((page - 1)*perPage).Take(perPage).ToList();
+            return bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
+        }
+
+        [HttpPost]
+        [Route("bookmark")]
+        [BasicAuth]
+        public ResultDTO SetBookmark(int securityId)
+        {
+            if (!db.AyondoSecurities.Any(o => o.Id == securityId))
+                return new ResultDTO {success = false, message = "security not exist"};
+
+            if (!db.Bookmarks.Any(o => o.UserId == UserId && o.AyondoSecurityId == securityId))
             {
-                new SecurityDTO() {name = "上证指数", symbol = "000001", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "测试1", symbol = "111", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试2", symbol = "222", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试3", symbol = "333", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试4", symbol = "444", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试5", symbol = "555", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试6", symbol = "666", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试7", symbol = "777", last = 2823.45m, open = 2723.45m}
-            };
+                db.Bookmarks.Add(new Bookmark
+                {
+                    UserId = UserId,
+                    AyondoSecurityId = securityId,
+                    CreatedAt = DateTime.UtcNow
+                });
+                db.SaveChanges();
+            }
+
+            return new ResultDTO {success = true};
+        }
+
+        [HttpDelete]
+        [Route("bookmark")]
+        [BasicAuth]
+        public ResultDTO DeleteBookmark(int securityId)
+        {
+            if (!db.AyondoSecurities.Any(o => o.Id == securityId))
+                return new ResultDTO {success = false, message = "security not exist"};
+
+            var bookmark = db.Bookmarks.FirstOrDefault(o => o.UserId == UserId && o.AyondoSecurityId == securityId);
+            if (bookmark != null)
+            {
+                db.Bookmarks.Remove(bookmark);
+                db.SaveChanges();
+            }
+
+            return new ResultDTO {success = true};
         }
 
         [HttpGet]
         [Route("stock/topGainer")]
-        public List<SecurityDTO> GetTopGainerList()
+        public List<SecurityDTO> GetTopGainerList(int page, int perPage)
         {
-            return new List<SecurityDTO>()
-            {
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-            };
+            var security =
+                db.AyondoSecurities.Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
+            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
         [HttpGet]
         [Route("stock/topLoser")]
-        public List<SecurityDTO> GetTopLoserList()
+        public List<SecurityDTO> GetTopLoserList(int page, int perPage)
         {
-            return new List<SecurityDTO>()
-            {
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-            };
+            var security =
+                db.AyondoSecurities.Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
+            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
         [HttpGet]
         [Route("stock/trend")]
-        public List<SecurityDTO> GetTrendList()
+        public List<SecurityDTO> GetTrendList(int page, int perPage)
         {
-            return new List<SecurityDTO>()
-            {
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "惠普", symbol = "HPQ", last = 9.45m, open = 9.2m, tag = "US"},
-                new SecurityDTO() {name = "苹果", symbol = "AAPL", last = 98.12m, open = 101.1m, tag = "US"},
-                new SecurityDTO() {name = "Facebook", symbol = "FB", last = 105.18m, open = 115.11m, tag = "US"},
-                new SecurityDTO() {name = "微软", symbol = "MSFT", last = 53.01m, open = 49.98m, tag = "US"},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "百度", symbol = "BIDU", last = 2823.45m, open = 2723.45m, tag = "US"},
-                new SecurityDTO() {name = "阿里巴巴", symbol = "BABA", last = 2823.45m, open = 2723.45m, tag = "US"},
-            };
+            var security =
+                db.AyondoSecurities.Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
+            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
         [HttpGet]
         [Route("index")]
-        public List<SecurityDTO> GetIndexList()
+        public List<SecurityDTO> GetIndexList(int page, int perPage)
         {
-            return new List<SecurityDTO>()
-            {
-                new SecurityDTO() {name = "上证指数", symbol = "000001", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "测试1", symbol = "111", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试2", symbol = "222", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试3", symbol = "333", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试4", symbol = "444", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试5", symbol = "555", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试6", symbol = "666", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "测试7", symbol = "777", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "上证指数", symbol = "000001", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "上证指数", symbol = "000001", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "上证指数", symbol = "000001", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m},
-                new SecurityDTO() {name = "上证指数", symbol = "000001", last = 2823.45m, open = 2723.45m},
-                new SecurityDTO() {name = "盛大游戏", symbol = "HPQ", last = 111.11m, open = 111.01m}
-            };
+            var security = db.AyondoSecurities.Where(o => o.AssetClass == "Indices").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
+            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
         [HttpGet]
         [Route("fx")]
-        public List<SecurityDTO> GetFxList()
+        public List<SecurityDTO> GetFxList(int page, int perPage)
         {
-            var security = db.AyondoSecurities.Where(o=>o.AssetClass=="Currencies").ToList();
+            var security = db.AyondoSecurities.Where(o => o.AssetClass == "Currencies").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
         [HttpGet]
         [Route("futures")]
-        public List<SecurityDTO> GetFuturesList()
+        public List<SecurityDTO> GetFuturesList(int page, int perPage)
         {
-            return new List<SecurityDTO>()
-            {
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m},
-                new SecurityDTO() {name = "COMEX黄金", symbol = "GOLD", last = 1116.45m, open = 1106.54m}
-            };
+            var security = db.AyondoSecurities.Where(o => o.AssetClass == "Commodities").OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).ToList();
+            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
     }
 }

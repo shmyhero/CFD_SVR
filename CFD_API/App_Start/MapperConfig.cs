@@ -11,7 +11,7 @@ namespace CFD_API
             return new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<User, UserDTO>();
-                cfg.CreateMap<AyondoSecurity, SecurityDTO>();
+                cfg.CreateMap<AyondoSecurity, SecurityDTO>().ForMember(dest=>dest.last,opt=>opt.MapFrom(src=>src.Ask));
             });
         }
     }

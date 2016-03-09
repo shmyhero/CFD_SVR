@@ -34,5 +34,7 @@ namespace CFD_COMMON.Models.Entities
 
         [StringLength(50)]
         public string WeChatUnionId { get; set; }
+
+        public virtual ICollection<Bookmark> Bookmarks { get; set; } 
     }
 }
