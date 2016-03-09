@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Http;
 using AutoMapper;
@@ -24,7 +25,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<SecurityDTO> GetBookmarkList(int page, int perPage)
         {
-            var bookmarks = db.Bookmarks.Where(o => o.UserId == UserId).OrderBy(o => o.CreatedAt).Skip((page - 1)*perPage).Take(perPage).ToList();
+            var bookmarks = db.Bookmarks.Where(o => o.UserId == UserId).Include(o => o.AyondoSecurity).OrderBy(o => o.CreatedAt).Skip((page - 1)*perPage).Take(perPage).ToList();
             return bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
         }
 
@@ -115,7 +116,7 @@ namespace CFD_API.Controllers
         [Route("futures")]
         public List<SecurityDTO> GetFuturesList(int page, int perPage)
         {
-            var security = db.AyondoSecurities.Where(o => o.AssetClass == "Commodities").OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).ToList();
+            var security = db.AyondoSecurities.Where(o => o.AssetClass == "Commodities").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
     }
