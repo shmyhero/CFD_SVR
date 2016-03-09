@@ -8,7 +8,7 @@ namespace CFD_JOBS.Ayondo
     {
         public static void Run()
         {
-            SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixFeedCfgFile"));
+            SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixFeedCfgFilePath"));
             AyondoFeedApp myApp = new AyondoFeedApp();
             IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
             ILogFactory logFactory = new FileLogFactory(settings);
