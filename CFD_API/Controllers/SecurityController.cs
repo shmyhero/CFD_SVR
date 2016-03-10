@@ -23,7 +23,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("bookmark")]
         [BasicAuth]
-        public List<SecurityDTO> GetBookmarkList(int page, int perPage)
+        public List<SecurityDTO> GetBookmarkList(int page=1, int perPage=20)
         {
             var bookmarks = db.Bookmarks.Where(o => o.UserId == UserId).Include(o => o.AyondoSecurity).OrderBy(o => o.CreatedAt).Skip((page - 1)*perPage).Take(perPage).ToList();
             return bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
@@ -71,7 +71,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("stock/topGainer")]
-        public List<SecurityDTO> GetTopGainerList(int page, int perPage)
+        public List<SecurityDTO> GetTopGainerList(int page = 1, int perPage = 20)
         {
             var security =
                 db.AyondoSecurities.Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
@@ -80,7 +80,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("stock/topLoser")]
-        public List<SecurityDTO> GetTopLoserList(int page, int perPage)
+        public List<SecurityDTO> GetTopLoserList(int page = 1, int perPage = 20)
         {
             var security =
                 db.AyondoSecurities.Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
@@ -89,7 +89,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("stock/trend")]
-        public List<SecurityDTO> GetTrendList(int page, int perPage)
+        public List<SecurityDTO> GetTrendList(int page = 1, int perPage = 20)
         {
             var security =
                 db.AyondoSecurities.Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
@@ -98,7 +98,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("index")]
-        public List<SecurityDTO> GetIndexList(int page, int perPage)
+        public List<SecurityDTO> GetIndexList(int page = 1, int perPage = 20)
         {
             var security = db.AyondoSecurities.Where(o => o.AssetClass == "Indices").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
@@ -106,7 +106,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("fx")]
-        public List<SecurityDTO> GetFxList(int page, int perPage)
+        public List<SecurityDTO> GetFxList(int page = 1, int perPage = 20)
         {
             var security = db.AyondoSecurities.Where(o => o.AssetClass == "Currencies").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
@@ -114,7 +114,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("futures")]
-        public List<SecurityDTO> GetFuturesList(int page, int perPage)
+        public List<SecurityDTO> GetFuturesList(int page = 1, int perPage = 20)
         {
             var security = db.AyondoSecurities.Where(o => o.AssetClass == "Commodities").OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
