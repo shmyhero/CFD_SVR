@@ -38,6 +38,8 @@ namespace CFD_JOBS.Ayondo
 
             message.SetField(new Username("thcnprices"));
             message.SetField(new Password("sl6map3go"));
+            //message.SetField(new Username("tradeheroprices"));
+            //message.SetField(new Password("4gs9k2osw"));
         }
 
         public void FromAdmin(Message message, SessionID sessionID)
