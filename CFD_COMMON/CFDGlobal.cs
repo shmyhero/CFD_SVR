@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
+using ServiceStack.Redis;
 
 namespace CFD_COMMON
 {
@@ -19,6 +20,15 @@ namespace CFD_COMMON
         public static string USER_PIC_BLOB_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + USER_PIC_BLOB_CONTAINER+"/";
 
         public static string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
+
+        /// <summary>
+        /// get non-pooled redis client manager
+        /// </summary>
+        /// <returns></returns>
+        public static IRedisClientsManager GetBasicRedisClientManager()
+        {
+            return new BasicRedisClientManager(CFDGlobal.GetConfigurationSetting("redisConnectionString"));
+        }
 
         public static string GetConfigurationSetting(string key)
         {

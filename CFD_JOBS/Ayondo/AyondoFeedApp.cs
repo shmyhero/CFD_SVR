@@ -27,7 +27,7 @@ namespace CFD_JOBS.Ayondo
 
         public AyondoFeedApp()
         {
-            var basicRedisClientManager = new BasicRedisClientManager(CFDGlobal.GetConfigurationSetting("redisConnectionString"));
+            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
 
             redisClient = basicRedisClientManager.GetClient().As<Quote>();
         }
@@ -96,7 +96,7 @@ namespace CFD_JOBS.Ayondo
             quotes.Add(new Quote()
             {
                 Bid = quote.BidPx.getValue(),
-                Id = quote.SecurityID.getValue(),
+                Id = Convert.ToInt32(quote.SecurityID.getValue()),
                 Offer = quote.OfferPx.getValue(),
                 Time = quote.Header.GetDateTime(DD.FieldsByName["SendingTime"].Tag)
             });
