@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using CFD_API.DTO;
 using CFD_COMMON.Models.Entities;
 
@@ -10,8 +11,14 @@ namespace CFD_API
         {
             return new MapperConfiguration(cfg =>
             {
+                var r = new Random();
                 cfg.CreateMap<User, UserDTO>();
-                cfg.CreateMap<AyondoSecurity, SecurityDTO>().ForMember(dest=>dest.last,opt=>opt.MapFrom(src=>src.Ask));
+                cfg.CreateMap<AyondoSecurity, SecurityDTO>()
+                    .ForMember(dest => dest.last, opt => opt.MapFrom(src => src.Ask))
+                    .ForMember(dest => dest.tag, opt => opt.Condition(o => o.AssetClass == "Single Stocks"))
+                    .ForMember(dest => dest.tag, opt => opt.MapFrom(src => src.Financing == "US Stocks" ? "US" : ""))
+                    .ForMember(dest => dest.name, opt => opt.MapFrom(src => r.Next(0, 2) == 0 ? "阿里巴巴" : "苹果"))
+                    .ForMember(dest => dest.open, opt => opt.MapFrom(src => src.Ask*((decimal) r.Next(80, 121))/100));
             });
         }
     }
