@@ -7,6 +7,7 @@ using System.Web.Http;
 using AutoMapper;
 using CFD_COMMON;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_JOBS.Models;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Generic;
@@ -23,12 +24,45 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("latest")]
-        public List<Quote> GetLatestQuotes()
+        public List<QuoteTemp> GetLatestQuotes()
         {
             var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
             var redisTypedClient = basicRedisClientManager.GetClient().As<Quote>();
-            var orderByDescending = redisTypedClient.GetAll().OrderByDescending(o => o.Time).ToList();
-            return orderByDescending;
+            var quotes = redisTypedClient.GetAll().OrderByDescending(o => o.Time).ToList();
+
+            var securities = db.AyondoSecurities.ToList();
+
+            var results = quotes.Select(o=>
+            {
+                var security = securities.FirstOrDefault(s => s.Id == o.Id);
+
+                if (security == null)
+                    return new QuoteTemp
+                    {
+                        Id = o.Id,
+                        Bid = o.Bid,
+                        Offer = o.Offer,
+                        Time = o.Time
+                    };
+
+                return new QuoteTemp
+                {
+                    Id = o.Id,
+                    Bid = o.Bid,
+                    Offer = o.Offer,
+                    Time = o.Time,
+                    Name = security.Name,
+                    Symbol = security.Symbol
+                };
+            }).ToList();
+
+            return results;
+        }
+
+        public class QuoteTemp : Quote
+        {
+            public string Name { get; set; }
+            public string Symbol { get; set; }
         }
     }
 }

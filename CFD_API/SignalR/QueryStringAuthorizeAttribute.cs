@@ -1,109 +1,113 @@
-﻿using System;
-using System.Security.Claims;
-using System.Security.Principal;
-using System.Threading.Tasks;
-using System.Web;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hubs;
-//using Microsoft.Owin.Security.OAuth;
+﻿//using System;
+//using System.Security.Claims;
+//using System.Security.Principal;
+//using System.Threading;
+//using System.Threading.Tasks;
+//using System.Web;
+//using Microsoft.AspNet.SignalR;
+//using Microsoft.AspNet.SignalR.Hubs;
+////using Microsoft.Owin.Security.OAuth;
 
-namespace CFD_API.SignalR
-{
-    //public class QueryStringAuthorizeAttribute : OAuthBearerAuthenticationProvider
-    //{
-    //    //public override Task RequestToken(OAuthRequestTokenContext context)
-    //    //{
-    //    //    var value = context.Request.Query.Get("access_token");
+//namespace CFD_API.SignalR
+//{
+//    //public class QueryStringAuthorizeAttribute : OAuthBearerAuthenticationProvider
+//    //{
+//    //    //public override Task RequestToken(OAuthRequestTokenContext context)
+//    //    //{
+//    //    //    var value = context.Request.Query.Get("access_token");
 
-    //    //    if (!string.IsNullOrEmpty(value))
-    //    //    {
-    //    //        context.Token = value;
-    //    //    }
+//    //    //    if (!string.IsNullOrEmpty(value))
+//    //    //    {
+//    //    //        context.Token = value;
+//    //    //    }
 
-    //    //    return Task.FromResult<object>(null);
-    //    //}
+//    //    //    return Task.FromResult<object>(null);
+//    //    //}
 
-    //    public override Task RequestToken(OAuthRequestTokenContext context)
-    //    {
-    //        return base.RequestToken(context);
-    //    }
+//    //    public override Task RequestToken(OAuthRequestTokenContext context)
+//    //    {
+//    //        return base.RequestToken(context);
+//    //    }
 
-    //    public override Task ValidateIdentity(OAuthValidateIdentityContext context)
-    //    {
-    //        //var value = context.Request.Query.Get("access_token");
+//    //    public override Task ValidateIdentity(OAuthValidateIdentityContext context)
+//    //    {
+//    //        //var value = context.Request.Query.Get("access_token");
 
-    //        return base.ValidateIdentity(context);
-    //    }
-    //}
+//    //        return base.ValidateIdentity(context);
+//    //    }
+//    //}
 
-    public class QueryStringAuthorizeAttribute : AuthorizeAttribute
-    {
-        public override bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
-        {
-            var auth = request.QueryString["access_token"];
+//    public class QueryStringAuthorizeAttribute : AuthorizeAttribute
+//    {
+//        public override bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
+//        {
+//            var auth = request.QueryString["auth"];
 
-            int userId = 0;
-            string token = null;
+//            int userId = 0;
+//            string token = null;
 
-            try
-            {
-                var split = auth.Split('_');
-                userId = Convert.ToInt32(split[0]);
-                token = split[1];
-            }
-            catch (Exception ex)
-            {
-                //this.Context.User.Identity.IsAuthenticated = false;
-            }
+//            try
+//            {
+//                var split = auth.Split('_');
+//                userId = Convert.ToInt32(split[0]);
+//                token = split[1];
+//            }
+//            catch (Exception ex)
+//            {
+//                //this.Context.User.Identity.IsAuthenticated = false;
+//                return false;
+//            }
 
-            request.Environment["server.User"] = new GenericPrincipal(new GenericIdentity(userId.ToString()), null);
+//            //request.Environment["server.User"] = new GenericPrincipal(new GenericIdentity(userId.ToString()), null);
 
-            //request.
+//            //request.
+//            //Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity(userId.ToString()), null);
 
-            //return true;
+//            //if(db.Users.Any)
+//            return true;
 
-            return base.AuthorizeHubConnection(hubDescriptor, request);
-        }
+//            //return base.AuthorizeHubConnection(hubDescriptor, request);
+//        }
 
-        public override bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext, bool appliesToMethod)
-        {
-            //return true;
+//        public override bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext, bool appliesToMethod)
+//        {
+//            return true;
 
-            return base.AuthorizeHubMethodInvocation(hubIncomingInvokerContext, appliesToMethod);
-        }
+//            return base.AuthorizeHubMethodInvocation(hubIncomingInvokerContext, appliesToMethod);
+//        }
 
-        protected override bool UserAuthorized(IPrincipal user)
-        {
-            var s = HttpContext.Current.User.Identity.Name;
-            //var name = Context.User.Identity.Name;
+//        protected override bool UserAuthorized(IPrincipal user)
+//        {
+//            //var s = HttpContext.Current.User.Identity.Name;
+//            ////var name = Context.User.Identity.Name;
 
-            return true;
+//            //return true;
 
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
+//            //if (user == null)
+//            //{
+//            //    throw new ArgumentNullException("user");
+//            //}
 
-            var principal = user as ClaimsPrincipal;
+//            //var principal = user as ClaimsPrincipal;
 
-            if (principal != null)
-            {
-                Claim authenticated = principal.FindFirst(ClaimTypes.Authentication);
-                if (authenticated != null && authenticated.Value == "true")
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
+//            //if (principal != null)
+//            //{
+//            //    Claim authenticated = principal.FindFirst(ClaimTypes.Authentication);
+//            //    if (authenticated != null && authenticated.Value == "true")
+//            //    {
+//            //        return true;
+//            //    }
+//            //    else
+//            //    {
+//            //        return false;
+//            //    }
+//            //}
+//            //else
+//            //{
+//            //    return false;
+//            //}
 
-            return base.UserAuthorized(user);
-        }
-    }
-}
+//            return base.UserAuthorized(user);
+//        }
+//    }
+//}

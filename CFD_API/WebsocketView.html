@@ -86,7 +86,9 @@
                 //    });
                 //;
 
-                //ticker.server.S('1,2,3');
+                //window.setInterval(function() {
+                    ticker.server.S('20871,22577,20847,24964,20875');
+                //},100);
             }
 
             // Add a client-side hub method that the server will call
@@ -98,7 +100,7 @@
                     //$stockTableBody.find('tr[data-symbol=' + stock.Symbol + ']')
                     //    .replaceWith($row);
 
-                    $('#log').append(this.id + " " + this.last +',');
+                    $('#log').append(this.id + " " + this.last +', ');
                 });
                 $('#log').append('\r\n');
             }
@@ -106,7 +108,7 @@
             // Start the connection
             $(function () {
                 //alert();
-                //$.connection.hub.qs = { 'access_token': '1_93b639d05e494aa2a629721119ddb228' };
+                //$.connection.hub.qs = { 'auth': '1_93b639d05e494aa2a629721119ddb228' };
                 $.connection.hub.start().done(init);
             });
         });

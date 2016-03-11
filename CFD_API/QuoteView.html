@@ -32,7 +32,7 @@
     <div id="stockTable">
         <table border="1">
             <thead>
-                <tr><th>Id</th><th>Bid</th><th>Offer</th><th>Time</th><!--<th>%</th>--></tr>
+                <tr><th>Id</th><th>Name</th><th>Symbol</th><th>Bid</th><th>Offer</th><th>Time</th><!--<th>%</th>--></tr>
             </thead>
             <tbody>
                 <tr class="loading"><td colspan="5">loading...</td></tr>
@@ -67,7 +67,7 @@
             var ticker = 
                 $stockTable = $('#stockTable'),
                 $stockTableBody = $stockTable.find('tbody'),
-                rowTemplate = '<tr data-symbol="{Id}"><td>{Id}</td><td>{Bid}</td><td>{Offer}</td><td>{Time}</td></tr>';
+                rowTemplate = '<tr data-symbol="{Id}"><td>{Id}</td><td>{Name}</td><td>{Symbol}</td><td>{Bid}</td><td>{Offer}</td><td>{Time}</td></tr>';
 
             function formatStock(stock) {
                 //return $.extend(stock, {

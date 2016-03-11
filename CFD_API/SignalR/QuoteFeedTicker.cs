@@ -63,12 +63,20 @@ namespace CFD_API.SignalR
             while (true)
             {
                 var quotes = _redisClient.GetAll();
-                Clients.All.p(
-                    quotes.Where(o =>
-                        o.Id >= 20841 && o.Id <= 20961
-                        || o.Id >= 14012 && o.Id <= 14117
-                        || o.Id >= 21612 && o.Id < 21752)
-                        .Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
+
+                //quotes = quotes.Where(o =>
+                //    o.Id >= 20841 && o.Id <= 20961
+                //    || o.Id >= 14012 && o.Id <= 14117
+                //    || o.Id >= 21612 && o.Id < 21752).ToList();
+
+                //Clients.All.p(quotes.Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
+                foreach (var pair in _subscription)
+                {
+                    var userId = pair.Key;
+                    var subscribedQuotesIds = pair.Value;
+                    var subscribedQuotes = quotes.Where(o => subscribedQuotesIds.Contains(o.Id));
+                    Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed { id = o.Id, last = o.Offer }));
+                }
 
                 Thread.Sleep(_updateInterval);
             }
@@ -138,9 +146,15 @@ namespace CFD_API.SignalR
         //    Clients.All.updateStockPrice(stock);
         //}
 
-        public void SetSubscription(string identity, IEnumerable<int> ids)
+        public void AddSubscription(string identity, IEnumerable<int> ids)
         {
             _subscription.AddOrUpdate(identity, ids, (key, value) => ids);
+        }
+
+        public void RemoveSubscription(string identity)
+        {
+            IEnumerable<int> value;
+            _subscription.TryRemove(identity,out value);
         }
     }
 }

@@ -10,10 +10,7 @@ using ServiceStack.Common;
 namespace CFD_API.SignalR
 {
     [HubName("Q")]
-    //[BasicAuth]
-    //[QueryStringAuthorizeAttribute]
     //[QueryStringAuthorize]
-    //[Authorize()]
     public class QuoteFeedHub : Microsoft.AspNet.SignalR.Hub
     {
         private readonly QuoteFeedTicker _quoteFeedTicker;
@@ -27,15 +24,22 @@ namespace CFD_API.SignalR
             _quoteFeedTicker = quoteFeedTicker;
 
             //var id = Context.ConnectionId;
-        }
 
-        public override Task OnConnected()
-        {
-            return base.OnConnected();
+            //var s = HttpContext.Current.User.Identity.Name;
+            //var user = Context.User;
         }
 
         public override Task OnDisconnected(bool stopCalled)
         {
+            //var auth = Context.QueryString["auth"];
+            //var userId = auth.Substring(0, auth.IndexOf('_'));
+
+            //leave group
+            Groups.Remove(Context.ConnectionId, Context.ConnectionId);
+
+            //clear quote subscription
+            _quoteFeedTicker.RemoveSubscription(Context.ConnectionId);
+
             return base.OnDisconnected(stopCalled);
         }
 
@@ -44,20 +48,15 @@ namespace CFD_API.SignalR
         [HubMethodName("S")]
         public void Subscribe(string strSecurityIds)
         {
+            //var auth = Context.QueryString["auth"];
+            //var userId = auth.Substring(0, auth.IndexOf('_'));
+
+            //join group
+            Groups.Add(Context.ConnectionId, Context.ConnectionId);// single-user group
+
+            //add quote subscription
             var secIds = strSecurityIds.Split(',').Select(o => Convert.ToInt32(o));
-
-            //var identity = 1; // Convert.ToInt32(HttpContext.Current.User.Identity.Name);
-
-            var s = HttpContext.Current.User.Identity.Name;
-            var name = Context.User.Identity.Name;
-
-            ////Clients.user
-            //if (userId.HasValue)
-            //    _quoteFeedTicker.SetSubscription(userId.Value, secIds);
-
-            //_quoteFeedTicker.SetSubscription(s, secIds);
-
-            //Clients.All.p(new List<QuoteFeed>() {new QuoteFeed() {Id = 111, last = 2.222m}});
+            _quoteFeedTicker.AddSubscription(Context.ConnectionId, secIds);
         }
 
         //[HubMethodName("L")]
