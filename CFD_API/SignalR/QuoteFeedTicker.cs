@@ -54,7 +54,7 @@ namespace CFD_API.SignalR
             var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
             _redisClient = basicRedisClientManager.GetClient().As<Quote>();
 
-            _timer = new Timer(Start, null, _updateInterval,TimeSpan.FromMilliseconds(-1));
+            _timer = new Timer(Start, null, _updateInterval, TimeSpan.FromMilliseconds(-1));
             //Start();
         }
 
@@ -63,10 +63,12 @@ namespace CFD_API.SignalR
             while (true)
             {
                 var quotes = _redisClient.GetAll();
-                Clients.All.p(quotes.Where(o => o.Id <= 20961 && o.Id >= 20841
-                    || o.Id >= 14012 && o.Id <= 14117
-                    || o.Id >= 21612 && o.Id < 21752)
-                    .Select(o => new QuoteFeed { id = o.Id, last = o.Offer }));
+                Clients.All.p(
+                    quotes.Where(o =>
+                        o.Id >= 20841 && o.Id <= 20961
+                        || o.Id >= 14012 && o.Id <= 14117
+                        || o.Id >= 21612 && o.Id < 21752)
+                        .Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
 
                 Thread.Sleep(_updateInterval);
             }
@@ -108,7 +110,7 @@ namespace CFD_API.SignalR
             //}
 
             //p -> publish
-            Clients.All.p(quotes.Where(o => o.Id <= 20961 && o.Id >= 20841).Select(o => new QuoteFeed { id = o.Id, last = o.Offer }));
+            Clients.All.p(quotes.Where(o => o.Id <= 20961 && o.Id >= 20841).Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
         }
 
         //private bool TryUpdateStockPrice(Stock stock)
@@ -138,7 +140,7 @@ namespace CFD_API.SignalR
 
         public void SetSubscription(string identity, IEnumerable<int> ids)
         {
-            _subscription.AddOrUpdate(identity, ids, (key,value)=>ids );
+            _subscription.AddOrUpdate(identity, ids, (key, value) => ids);
         }
     }
 }
