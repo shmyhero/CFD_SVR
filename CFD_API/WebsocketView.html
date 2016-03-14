@@ -111,12 +111,16 @@
                 //$.connection.hub.qs = { 'auth': '1_93b639d05e494aa2a629721119ddb228' };
                 $.connection.hub.start().done(init);
 
-                //test CORS
+                ////websocket CORS test
+                //$.connection.hub.url = 'http://192.168.20.111:11033/signalr/';
+                //$.connection.hub.start().done(init);
+
+                ////test web api CORS
                 //$.ajax({
                 //    url: 'http://192.168.20.111:11033/api/user/me',
                 //    headers:
                 //    {
-                //        'Authorization':'Basic 1_93b639d05e494aa2a629721119ddb228'
+                //        'Authorization':'Basic 9_083f416be4a64a15968841cdb75b60d1'
                 //    }
                 //}).done(
                 //    function (data, textStatus, jqXHR) {
