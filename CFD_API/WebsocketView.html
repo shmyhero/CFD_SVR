@@ -110,6 +110,20 @@
                 //alert();
                 //$.connection.hub.qs = { 'auth': '1_93b639d05e494aa2a629721119ddb228' };
                 $.connection.hub.start().done(init);
+
+                //test CORS
+                //$.ajax({
+                //    url: 'http://192.168.20.111:11033/api/user/me',
+                //    headers:
+                //    {
+                //        'Authorization':'Basic 1_93b639d05e494aa2a629721119ddb228'
+                //    }
+                //}).done(
+                //    function (data, textStatus, jqXHR) {
+                //        debugger;
+                //    }).fail(function (jqXHR, textStatus, errorThrown) {
+                //    debugger;
+                //});
             });
         });
     </script>

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using Autofac;
 using Autofac.Integration.WebApi;
 using AutoMapper;
@@ -13,6 +14,10 @@ namespace CFD_API
     {
         public static void Register(HttpConfiguration config)
         {
+            //enable CORS
+            var cors = new EnableCorsAttribute("*", "Authorization", "GET,POST,DELETE");
+            config.EnableCors(cors);
+
             // Web API configuration and services
 
             // Web API routes
