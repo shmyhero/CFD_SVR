@@ -19,7 +19,8 @@ namespace CFD_COMMON.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int AyondoSecurityId { get; set; }
 
-        public DateTime? CreatedAt { get; set; }
+        //public DateTime? CreatedAt { get; set; }
+        public int? DisplayOrder { get; set; }
 
         public virtual AyondoSecurity AyondoSecurity { get; set; }
         public virtual User User { get; set; }

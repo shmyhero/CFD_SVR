@@ -9,9 +9,9 @@ using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Service;
 using CFD_JOBS.Models;
-using ServiceStack.Redis;
-using ServiceStack.Redis.Generic;
+using EntityFramework.Extensions;
 
 namespace CFD_API.Controllers
 {
@@ -33,18 +33,18 @@ namespace CFD_API.Controllers
 
             quotes = quotes.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromHours(1)).ToList();
 
-            return quotes.Select(o=>Convert.ToInt32(o.Id)).ToList();
+            return quotes.Select(o => Convert.ToInt32(o.Id)).ToList();
         }
 
         [HttpGet]
         [Route("bookmark")]
         [BasicAuth]
-        public List<SecurityDTO> GetBookmarkList(int page=1, int perPage=20)
+        public List<SecurityDTO> GetBookmarkList(int page = 1, int perPage = 20)
         {
             var bookmarks = db.Bookmarks
                 .Where(o => o.UserId == UserId)
                 .Include(o => o.AyondoSecurity)
-                .OrderBy(o => o.CreatedAt)
+                .OrderBy(o => o.DisplayOrder)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             return bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
         }
@@ -52,39 +52,39 @@ namespace CFD_API.Controllers
         [HttpPost]
         [Route("bookmark")]
         [BasicAuth]
-        public ResultDTO SetBookmark(int securityId)
+        public ResultDTO AddBookmark(string securityIds)
         {
-            if (!db.AyondoSecurities.Any(o => o.Id == securityId))
-                return new ResultDTO {success = false, message = "security not exist"};
+            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
 
-            if (!db.Bookmarks.Any(o => o.UserId == UserId && o.AyondoSecurityId == securityId))
-            {
-                db.Bookmarks.Add(new Bookmark
-                {
-                    UserId = UserId,
-                    AyondoSecurityId = securityId,
-                    CreatedAt = DateTime.UtcNow
-                });
-                db.SaveChanges();
-            }
+            var securityService = new SecurityService(db);
+            securityService.AddBookmarks(UserId, ids);
 
             return new ResultDTO {success = true};
+        }
+
+        [HttpPut]
+        [Route("bookmark")]
+        [BasicAuth]
+        public ResultDTO ResetBookmark(string securityIds)
+        {
+            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
+
+            var securityService = new SecurityService(db);
+            securityService.DeleteBookmarks(UserId, ids);
+            securityService.AddBookmarks(UserId,ids);
+
+            return new ResultDTO { success = true };
         }
 
         [HttpDelete]
         [Route("bookmark")]
         [BasicAuth]
-        public ResultDTO DeleteBookmark(int securityId)
+        public ResultDTO DeleteBookmark(string securityIds)
         {
-            if (!db.AyondoSecurities.Any(o => o.Id == securityId))
-                return new ResultDTO {success = false, message = "security not exist"};
+            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
 
-            var bookmark = db.Bookmarks.FirstOrDefault(o => o.UserId == UserId && o.AyondoSecurityId == securityId);
-            if (bookmark != null)
-            {
-                db.Bookmarks.Remove(bookmark);
-                db.SaveChanges();
-            }
+            var securityService = new SecurityService(db);
+            securityService.DeleteBookmarks(UserId, ids);
 
             return new ResultDTO {success = true};
         }
@@ -97,10 +97,10 @@ namespace CFD_API.Controllers
 
             var security =
                 db.AyondoSecurities
-                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks")
-                .OrderBy(o => o.Symbol)
-                .Skip((page - 1) * perPage).Take(perPage).ToList();
+                    .Where(o => aliveIds.Contains(o.Id))
+                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks")
+                    .OrderBy(o => o.Symbol)
+                    .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
@@ -112,10 +112,10 @@ namespace CFD_API.Controllers
 
             var security =
                 db.AyondoSecurities
-                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks")
-                .OrderBy(o => o.Symbol)
-                .Skip((page - 1) * perPage).Take(perPage).ToList();
+                    .Where(o => aliveIds.Contains(o.Id))
+                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks")
+                    .OrderBy(o => o.Symbol)
+                    .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
@@ -127,10 +127,10 @@ namespace CFD_API.Controllers
 
             var security =
                 db.AyondoSecurities
-                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks")
-                .OrderBy(o => o.Symbol)
-                .Skip((page - 1)*perPage).Take(perPage).ToList();
+                    .Where(o => aliveIds.Contains(o.Id))
+                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks")
+                    .OrderBy(o => o.Symbol)
+                    .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
@@ -144,7 +144,7 @@ namespace CFD_API.Controllers
                 .Where(o => aliveIds.Contains(o.Id))
                 .Where(o => o.AssetClass == "Indices")
                 .OrderBy(o => o.Symbol)
-                .Skip((page - 1) * perPage).Take(perPage).ToList();
+                .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
