@@ -42,5 +42,8 @@ namespace CFD_COMMON.Models.Entities
         public DateTime? ExpiryDate { get; set; }
 
         public bool? Shortable { get; set; }
+
+        [StringLength(255)]
+        public string CName { get; set; }
     }
 }
