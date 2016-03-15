@@ -42,7 +42,7 @@
         <br/>
         <textarea id="subIds" style="width: 800px; height: 150px">20871,22577,20847,24964,20875</textarea>
         <br />
-        <input type="button" onclick="subscribe" value="Subscribe"/>
+        <input type="button" onclick="subscribe()" value="Subscribe"/>
         <br/>
         <br />
         <label>Receiving:</label>
@@ -71,6 +71,12 @@
             };
         }
 
+        var hub;
+
+        function subscribe() {
+            hub.server.S($('#subIds').text());
+        }
+
         $(function () {
 
             var ticker = $.connection.Q, // the generated client-side hub proxy
@@ -96,7 +102,10 @@
                 //;
 
                 //window.setInterval(function() {
-                    ticker.server.S('20871,22577,20847,24964,20875');
+                //ticker.server.S('20871,22577,20847,24964,20875');
+                hub = ticker;
+
+                subscribe();
                 //},100);
             }
 

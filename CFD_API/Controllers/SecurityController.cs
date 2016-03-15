@@ -31,7 +31,7 @@ namespace CFD_API.Controllers
 
             var quotes = redisTypedClient.GetAll();
 
-            quotes = quotes.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromHours(1)).ToList();
+            quotes = quotes.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromHours(24)).ToList();
 
             return quotes.Select(o => Convert.ToInt32(o.Id)).ToList();
         }
