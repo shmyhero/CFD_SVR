@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using CFD_COMMON;
+using CFD_COMMON.Models;
 using CFD_JOBS.Models;
 using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;
-using ServiceStack.Redis;
 using ServiceStack.Redis.Generic;
 
 namespace CFD_JOBS.Ayondo
 {
     public class AyondoFeedApp : MessageCracker, IApplication
     {
-        private Session CurrentSession;
+        public Session Session { get; set; }
         private DataDictionary DD;
 
         private DateTime BeginTimeForMsgCount = DateTime.MinValue;
@@ -21,7 +23,10 @@ namespace CFD_JOBS.Ayondo
         private int MsgTotalCount = 0;
         private IList<Quote> quotes = new List<Quote>();
 
-        private IRedisTypedClient<Quote> redisClient;
+        public ConcurrentQueue<ProdDef> ProdDefs = new ConcurrentQueue<ProdDef>();
+
+        private IRedisTypedClient<Quote> redisQuoteClient;
+        //private IRedisTypedClient<ProdDef> redisProdDefClient;
 
 //        public IRedisTypedClient<> 
 
@@ -29,7 +34,8 @@ namespace CFD_JOBS.Ayondo
         {
             var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
 
-            redisClient = basicRedisClientManager.GetClient().As<Quote>();
+            redisQuoteClient = basicRedisClientManager.GetClient().As<Quote>();
+            //redisProdDefClient = basicRedisClientManager.GetClient().As<ProdDef>();
         }
 
         public void ToAdmin(Message message, SessionID sessionID)
@@ -38,6 +44,10 @@ namespace CFD_JOBS.Ayondo
 
             message.SetField(new Username("thcnprices"));
             message.SetField(new Password("sl6map3go"));
+
+            //message.SetField(new Username("thcntrade"));
+            //message.SetField(new Password("d093gos3j"));
+
             //message.SetField(new Username("tradeheroprices"));
             //message.SetField(new Password("4gs9k2osw"));
         }
@@ -50,13 +60,72 @@ namespace CFD_JOBS.Ayondo
         public void ToApp(Message message, SessionID sessionId)
         {
             CFDGlobal.LogLine("ToApp: ");
+
+            CFDGlobal.LogLine(message.ToString());
+            //message.SetField(new MsgType("MDS1"));
+            //message.SetField(new UserRequestID("test1111"));
         }
 
         public void FromApp(Message message, SessionID sessionID)
         {
             //CFDGlobal.LogLine("FromApp: cracking message...");
 
-            Crack(message, sessionID);
+            string msgType = message.Header.GetString(Tags.MsgType);
+
+            if (msgType == MsgType.QUOTE)
+            {
+                Crack(message, sessionID);
+            }
+            else if (msgType == "MDS2")
+            {
+                //CFDGlobal.LogLine(message.ToString());
+                //CFDGlobal.LogLine(GetMessageString(message));
+
+                //var name=
+                var prodDef = new ProdDef()
+                {
+                    Id = Convert.ToInt32(message.GetString(Tags.SecurityID)),
+                    Time = message.Header.GetDateTime(Tags.SendingTime),
+                    QuoteType = message.GetInt(Tags.QuoteType)
+                };
+
+                //CFDGlobal.LogLine("MDS2 Received: Id: " + prodDef.Id + " QuoteType: " + prodDef.QuoteType);
+                ProdDefs.Enqueue(prodDef);
+                //redisProdDefClient.Store(prodDef);
+            }
+            else
+            {
+                CFDGlobal.LogLine("Unknown MsgType: " + message.ToString());
+            }
+        }
+
+        private string GetMessageString(Message message)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("--------------------fix message-------------------");
+            foreach (KeyValuePair<int, IField> pair in message.Header)
+            {
+                var field = DD.FieldsByTag[pair.Key];
+                var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
+                sb.AppendLine(field.Name + "=" + value);
+            }
+            sb.AppendLine("");
+
+            foreach (KeyValuePair<int, IField> pair in message)
+            {
+                var field = DD.FieldsByTag[pair.Key];
+                var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
+                sb.AppendLine(field.Name + "=" + value);
+            }
+            sb.AppendLine("");
+
+            foreach (KeyValuePair<int, IField> pair in message.Trailer)
+            {
+                var field = DD.FieldsByTag[pair.Key];
+                var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
+                sb.AppendLine(field.Name + "=" + value);
+            }
+            return sb.ToString();
         }
 
         public void OnMessage(QuickFix.FIX44.Quote quote, SessionID sessionID)
@@ -65,32 +134,7 @@ namespace CFD_JOBS.Ayondo
 //            CFDGlobal.LogLine(quote.ToString());
 
 //            //detail log
-//            var sb=new StringBuilder();
-//            sb.AppendLine("--------------------new quote message-------------------");
-//            foreach (KeyValuePair<int, IField> pair in quote.Header)
-//            {
-//                var field = DD.FieldsByTag[pair.Key];
-//                var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()]+"("+pair.Value+")" : pair.Value.ToString();
-//                sb.AppendLine(field.Name + "=" + value);
-//            }
-//            sb.AppendLine("");
-//
-//            foreach (KeyValuePair<int, IField> pair in quote)
-//            {
-//                var field = DD.FieldsByTag[pair.Key];
-//                var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
-//                sb.AppendLine(field.Name + "=" + value);
-//            }
-//            sb.AppendLine("");
-//
-//            foreach (KeyValuePair<int, IField> pair in quote.Trailer)
-//            {
-//                var field = DD.FieldsByTag[pair.Key];
-//                var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
-//                sb.AppendLine(field.Name + "=" + value);
-//            }
-//
-//            CFDGlobal.LogLine(sb.ToString());
+            //            CFDGlobal.LogLine(GetMessageString);
 
             //count and add to list for saving
             MsgCount++;
@@ -112,7 +156,7 @@ namespace CFD_JOBS.Ayondo
                                   + " ~ " + quotes.Max(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
                                   + ". Saving to redis...");
 
-                redisClient.StoreAll(quotes);
+                redisQuoteClient.StoreAll(quotes);
 
                 //reset vars
                 BeginTimeForMsgCount = now;
@@ -140,8 +184,15 @@ namespace CFD_JOBS.Ayondo
         {
             CFDGlobal.LogLine("OnLogon: ");
 
-            CurrentSession = Session.LookupSession(sessionID);
-            DD = CurrentSession.ApplicationDataDictionary;
+            Session = Session.LookupSession(sessionID);
+            DD = Session.ApplicationDataDictionary;
+
+            //Product Definition Request
+            var order = new Message();
+            order.Header.SetField(new MsgType("MDS1"));
+            order.SetField(new UserRequestID("ProdDef"));
+            Session.Send(order);
+            //}
         }
     }
 }

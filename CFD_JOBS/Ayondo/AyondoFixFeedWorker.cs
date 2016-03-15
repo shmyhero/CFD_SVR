@@ -1,4 +1,6 @@
-﻿using CFD_COMMON;
+﻿using System.Collections.Generic;
+using CFD_COMMON;
+using CFD_COMMON.Models;
 using QuickFix;
 using QuickFix.Transport;
 
@@ -14,13 +16,33 @@ namespace CFD_JOBS.Ayondo
             ILogFactory logFactory = new FileLogFactory(settings);
             SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings, logFactory);
 
+            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
+            var redisProdDefClient = basicRedisClientManager.GetClient().As<ProdDef>();
+
             initiator.Start();
             while (true)
             {
                 //System.Console.WriteLine("o hai");
                 System.Threading.Thread.Sleep(1000);
+
+                if (!myApp.ProdDefs.IsEmpty)
+                {
+                    //CFDGlobal.LogLine("Pending ProdDefs detected. Loading from queue...");
+
+                    IList<ProdDef> list = new List<ProdDef>();
+
+                    while (!myApp.ProdDefs.IsEmpty)
+                    {
+                        ProdDef obj;
+                        var tryDequeue = myApp.ProdDefs.TryDequeue(out obj);
+                        list.Add(obj);
+                    }
+
+                    CFDGlobal.LogLine("Saving " + list.Count + " ProdDefs to Redis...");
+                    redisProdDefClient.StoreAll(list);
+                }
             }
-            initiator.Stop();
+            //initiator.Stop();
         }
     }
 }

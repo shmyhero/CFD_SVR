@@ -114,6 +114,7 @@
     <Compile Include="Models\Entities\Model1.cs" />
     <Compile Include="Models\Entities\User.cs" />
     <Compile Include="Models\Entities\VerifyCode.cs" />
+    <Compile Include="Models\ProdDef.cs" />
     <Compile Include="Models\Quote.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service\SecurityService.cs" />

@@ -2346,6 +2346,38 @@
    <field name='EncodedTextLen' required='N' />
    <field name='EncodedText' required='N' />
   </message>
+   
+   <!--ayondo-->
+   <message name="MDSProductDefinitionRequest" msgtype="MDS1" msgcat="app">
+     <field name="UserRequestID" required="N"/>
+   </message>
+   <message name="MDSProductDefinition" msgtype="MDS2" msgcat="app">
+     <field name="UserRequestID" required="N"/>
+     <field name="SecurityID" required="N"/>
+     <field name="Symbol" required="N"/>
+     <field name="QuoteType" required="N"/>
+     <field name="BidPx" required="N"/>
+     <field name="OfferPx" required="N"/>
+     <field name="ExpireDate" required="N"/>
+     <field name="ExpireTime" required="N"/>
+     <field name="Text" required="N"/>
+     <field name="EncodedTextLen" required="N"/>
+     <field name="EncodedText" required="N"/>
+     <field name="MDS_SetSize" required="N"/>
+     <field name="MDS_SetIndex" required="N"/>
+     <field name="MDS_MinSizeShort" required="N" />
+     <field name="MDS_MaxSizeShort" required="N" />
+     <field name="MDS_MinSizeLong"  required="N" />
+     <field name="MDS_MaxSizeLong"  required="N" />
+     <field name="MDS_BBC" required="N"/>
+     <field name="MDS_ISIN" required="N"/>
+     <field name="MDS_MIC" required="N"/>
+     <field name="MDS_UNDEF2" required="N"/>
+     <field name="MDS_UNDEF3" required="N"/>
+     <field name="MDS_UNDEF4" required="N"/>
+     <field name="MDS_UNDEF5" required="N"/>
+     <field name="UnsolicitedIndicator" required="N"/>
+   </message>
  </messages>
  <trailer>
   <field name='SignatureLength' required='N' />
@@ -3951,6 +3983,10 @@
    <value enum='BF' description='USER_RESPONSE' />
    <value enum='BG' description='COLLATERAL_INQUIRY_ACK' />
    <value enum='BH' description='CONFIRMATION_REQUEST' />
+    
+    <!--ayondo-->
+    <value enum='MDS1' description='MDSProductDefinitionRequest' />
+    <value enum='MDS2' description='MDSProductDefinition' />
   </field>
   <field number='36' name='NewSeqNo' type='SEQNUM' />
   <field number='37' name='OrderID' type='STRING' />
@@ -6592,5 +6628,71 @@
   <field number='954' name='Nested3PartySubIDType' type='INT' />
   <field number='955' name='LegContractSettlMonth' type='MONTHYEAR' />
   <field number='956' name='LegInterestAccrualDate' type='LOCALMKTDATE' />
+
+   <!--ayondo-->
+   <field number="7890" name="TakePx" type="PRICE"/>
+   <field number="7891" name="StopOID" type="STRING"/>
+   <field number="7892" name="TakeOID" type="STRING"/>
+   <field number="7895" name="StopType" type="STRING"/>
+   <field number="7896" name="TakeType" type="STRING"/>
+   <field number="7898" name="StopValue" type="AMT"/>
+   <field number="7899" name="TakeValue" type="AMT"/>
+   <field number="7897" name="Leverage" type="AMT"/>
+   <field number="7893" name="MDS_PLAsset" type="STRING"/>
+   <field number="7894" name="MDS_PL" type="AMT"/>
+   <field number="7900" name="MDS_SendColRep" type="STRING"/>
+   <field number="7901" name="MDS_SendNoPos" type="STRING"/>
+   <field number="7902" name="MDS_MarketStatus" type="STRING"/>
+   <field number="7903" name="MDS_PhoneOnly" type="STRING"/>
+   <field number="7904" name="MDS_BidOrdID" type="STRING"/>
+   <field number="7905" name="MDS_OfferOrdID" type="STRING"/>
+   <field number="7906" name="MDS_SourceBalanceID" type="STRING"/>
+   <field number="7907" name="MDS_TargetBalanceID" type="STRING"/>
+   <field number="7908" name="MDS_TransferAmount" type="AMT"/>
+   <field number="7909" name="MDS_TransferCurrency" type="STRING"/>
+   <field number="7910" name="MDS_BalanceType" type="STRING"/>
+   <field number="7911" name="MDS_TransferType" type="INT">
+     <value enum="0" description="CASH_TRANSFER"/>
+     <value enum="1" description="CC_DEPOSIT"/>
+     <value enum="2" description="CC_WITHDRAWAL"/>
+     <value enum="3" description="COMMISION"/>
+     <value enum="4" description="IDEAL_DEPOSIT"/>
+     <value enum="5" description="IDEAL_WITHDRAWAL"/>
+     <value enum="6" description="ADYEN_CC_DEPOSIT"/>
+     <value enum="7" description="ADYEN_CC_WITHDRAWAL"/>
+     <value enum="8" description="ADYEN_PP_DEPOSIT"/>
+     <value enum="9" description="ADYEN_PP_WITHDRAWAL"/>
+   </field>
+   <field number="7912" name="MDS_SetSize" type="STRING"/>
+   <field number="7913" name="MDS_SetIndex" type="STRING"/>
+   <field number="7914" name="MDS_TransferID" type="STRING"/>
+   <field number="7915" name="MDS_RequestID" type="STRING"/>
+   <field number="7916" name="MDS_StatusCode" type="INT">
+     <value enum="0" description="ERROR"/>
+     <value enum="1" description="SENT"/>
+     <value enum="2" description="CREATED"/>
+     <value enum="3" description="WAITING_APPROVAL"/>
+     <value enum="4" description="COMPLETE"/>
+     <value enum="5" description="CANCELLED"/>
+   </field>
+   <field number="7917" name="MDS_BalanceID" type="STRING"/>
+   <field number="7918" name="MDS_Actor" type="STRING"/>
+   <field number="7919" name="MDS_SignalID" type="STRING"/>
+   <field number="7920" name="MDS_CardType" type="STRING"/>
+   <field number="7921" name="MDS_CardAlias" type="STRING"/>
+   <field number="7922" name="MDS_TransferLabel" type="STRING"/>
+   <field number="7923" name="MDS_PositionID" type="STRING"/>
+   <field number="7924" name="MDS_MinSizeShort" type="FLOAT"/>
+   <field number="7925" name="MDS_MaxSizeShort" type="FLOAT"/>
+   <field number="7926" name="MDS_MinSizeLong" type="FLOAT"/>
+   <field number="7927" name="MDS_MaxSizeLong" type="FLOAT"/>
+   <field number="7928" name="MDS_BBC" type="STRING"/>
+   <field number="7929" name="MDS_ISIN" type="STRING"/>
+   <field number="7930" name="MDS_MIC" type="STRING"/>
+   <field number="7931" name="MDS_UPL" type="AMT"/>
+   <field number="7932" name="MDS_UNDEF2" type="STRING"/>
+   <field number="7933" name="MDS_UNDEF3" type="FLOAT"/>
+   <field number="7934" name="MDS_UNDEF4" type="FLOAT"/>
+   <field number="7932" name="MDS_UNDEF5" type="STRING"/>
  </fields>
 </fix>
