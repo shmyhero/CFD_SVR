@@ -52,7 +52,9 @@ namespace CFD_API.Controllers
                     Offer = o.Offer,
                     Time = o.Time,
                     Name = security.Name,
-                    Symbol = security.Symbol
+                    Symbol = security.Symbol,
+                    AssetClass = security.AssetClass,
+                    Financing = security.Financing
                 };
             }).ToList();
 
@@ -63,6 +65,8 @@ namespace CFD_API.Controllers
         {
             public string Name { get; set; }
             public string Symbol { get; set; }
+            public string AssetClass { get; set; }
+            public string Financing { get; set; }
         }
     }
 }

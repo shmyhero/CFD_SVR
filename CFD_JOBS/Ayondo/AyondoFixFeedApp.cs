@@ -13,7 +13,7 @@ using ServiceStack.Redis.Generic;
 
 namespace CFD_JOBS.Ayondo
 {
-    public class AyondoFeedApp : MessageCracker, IApplication
+    public class AyondoFixFeedApp : MessageCracker, IApplication
     {
         public Session Session { get; set; }
         private DataDictionary DD;
@@ -30,7 +30,7 @@ namespace CFD_JOBS.Ayondo
 
 //        public IRedisTypedClient<> 
 
-        public AyondoFeedApp()
+        public AyondoFixFeedApp()
         {
             var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
 
@@ -135,6 +135,9 @@ namespace CFD_JOBS.Ayondo
 
 //            //detail log
             //            CFDGlobal.LogLine(GetMessageString);
+
+            //if (quote.SecurityID.getValue() == "20867")
+            //    CFDGlobal.LogLine("20867 " + quote.BidPx.getValue() + " " + quote.OfferPx.getValue());
 
             //count and add to list for saving
             MsgCount++;

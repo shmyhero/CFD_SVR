@@ -11,10 +11,12 @@ namespace CFD_JOBS.Ayondo
         public static void Run()
         {
             SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixFeedCfgFilePath"));
-            AyondoFeedApp myApp = new AyondoFeedApp();
+            AyondoFixFeedApp myApp = new AyondoFixFeedApp();
             IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
-            ILogFactory logFactory = new FileLogFactory(settings);
-            SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings, logFactory);
+            //ILogFactory logFactory = new FileLogFactory(settings);
+            SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings
+                //,logFactory
+                );
 
             var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
             var redisProdDefClient = basicRedisClientManager.GetClient().As<ProdDef>();
