@@ -26,18 +26,27 @@
     </style>
 </head>
 <body>
-    <h1>ASP.NET SignalR Stock Ticker Sample</h1>
+    <h1>WebSocket Test</h1>
 
-    <h2>Live Stock Table</h2>
+    <!--<h2>Live Stock Table</h2>-->
     <div id="stockTable">
-        <table border="1">
+        <!--<table border="1">
             <thead>
             <tr><th>Symbol</th><th>Price</th><th>Open</th><th>Change</th><th>%</th></tr>
             </thead>
             <tbody>
             <tr class="loading"><td colspan="5">loading...</td></tr>
             </tbody>
-        </table>
+        </table>-->
+        <label>input securityIds you want to subscribe:</label>
+        <br/>
+        <textarea id="subIds" style="width: 800px; height: 150px">20871,22577,20847,24964,20875</textarea>
+        <br />
+        <input type="button" onclick="subscribe" value="Subscribe"/>
+        <br/>
+        <br />
+        <label>Receiving:</label>
+        <br />
         <textarea id="log" style="width: 800px; height: 600px"></textarea>
     </div>
 
