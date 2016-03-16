@@ -12,6 +12,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
 
       <Setting name="CFDEntities" />
+      <Setting name="redisConnectionString" />
       <Setting name="YunPianApiKey" />
       <Setting name="YunPianTemplateId" />
     </ConfigurationSettings>
