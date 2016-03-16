@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using CFD_COMMON;
 using CFD_COMMON.Models;
-using CFD_JOBS.Models;
+using CFD_COMMON.Models.Cached;
 using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;

@@ -1,7 +1,7 @@
 ﻿using System;
 using ServiceStack.DesignPatterns.Model;
 
-namespace CFD_JOBS.Models
+namespace CFD_COMMON.Models.Cached
 {
     public class Quote : IHasIntId
     {

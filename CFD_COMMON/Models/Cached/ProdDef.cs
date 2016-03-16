@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ServiceStack.DesignPatterns.Model;
 
-namespace CFD_COMMON.Models
+namespace CFD_COMMON.Models.Cached
 {
     public class ProdDef:IHasIntId
     {

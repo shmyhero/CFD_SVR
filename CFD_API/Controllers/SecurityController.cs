@@ -7,10 +7,10 @@ using AutoMapper;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON;
+using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
-using CFD_JOBS.Models;
 using EntityFramework.Extensions;
 
 namespace CFD_API.Controllers

@@ -6,9 +6,9 @@ using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
 using CFD_COMMON;
+using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
-using CFD_JOBS.Models;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Generic;
 

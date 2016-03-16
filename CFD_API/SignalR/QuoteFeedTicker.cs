@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using CFD_API.DTO.SignalRDTO;
 using CFD_COMMON;
-using CFD_JOBS.Models;
+using CFD_COMMON.Models.Cached;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using ServiceStack.Redis.Generic;

@@ -50,6 +50,11 @@ namespace CFD_JOBS
                     AyondoExcelImportWorker.Run();
                 }
 
+                if (args.Contains("-TickChart"))
+                {
+                    TickChartWorker.Run();
+                }
+
                 return 0;
             }
             catch (Exception ex)
