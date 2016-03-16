@@ -86,7 +86,8 @@ namespace CFD_JOBS.Ayondo
                 {
                     Id = Convert.ToInt32(message.GetString(Tags.SecurityID)),
                     Time = message.Header.GetDateTime(Tags.SendingTime),
-                    QuoteType = message.GetInt(Tags.QuoteType)
+                    QuoteType = message.GetInt(Tags.QuoteType),
+                    Name = message.GetString(Tags.Symbol)
                 };
 
                 //CFDGlobal.LogLine("MDS2 Received: Id: " + prodDef.Id + " QuoteType: " + prodDef.QuoteType);

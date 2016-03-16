@@ -10,5 +10,7 @@ namespace CFD_COMMON.Models.Cached
         public DateTime Time { get; set; }
         //public string Symbol { get; set; }
         public int QuoteType { get; set; }
+
+        public string Name { get; set; }
     }
 }
