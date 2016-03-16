@@ -142,7 +142,7 @@ namespace CFD_API.Controllers
 
             var security = db.AyondoSecurities
                 .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Indices")
+                .Where(o => o.AssetClass == "Stock Indices")
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();

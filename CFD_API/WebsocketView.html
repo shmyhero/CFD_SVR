@@ -40,14 +40,15 @@
         </table>-->
         <label>input securityIds you want to subscribe:</label>
         <br/>
-        <textarea id="subIds" style="width: 800px; height: 150px">20871,22577,20847,24964,20875</textarea>
+        <textarea id="subIds" style="width: 1000px; height: 80px">20855,20891,20867,20849,20887</textarea>
         <br />
         <input type="button" onclick="subscribe()" value="Subscribe"/>
         <br/>
         <br />
         <label>Receiving:</label>
         <br />
-        <textarea id="log" style="width: 800px; height: 600px"></textarea>
+        <textarea id="log" style="width: 1000px; height: 500px"></textarea>
+        <br/>
     </div>
 
     <!--Script references. -->
@@ -121,6 +122,9 @@
                     $('#log').append(this.id + " " + this.last +', ');
                 });
                 $('#log').append('\r\n');
+
+                var textarea = document.getElementById('log');
+                textarea.scrollTop = textarea.scrollHeight;
             }
 
             // Start the connection
