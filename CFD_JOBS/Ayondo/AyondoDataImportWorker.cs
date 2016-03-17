@@ -15,8 +15,8 @@ namespace CFD_JOBS.Ayondo
         public static void Run()
         {
             //ProdDefImport();
-            PriceImport();
-            //ExcelImport();
+            //PriceImport();
+            ExcelImport();
         }
 
         private static void ProdDefImport()
@@ -79,10 +79,10 @@ namespace CFD_JOBS.Ayondo
         private static void ExcelImport()
         {
             var app = new Application();
-            var workbook = app.Workbooks.Open("D:\\Downloads\\products_TH_Demo_160316.csv");
+            var workbook = app.Workbooks.Open(@"C:\Users\peter\Desktop\Ayondo在线产品列表.xlsx");
             //var workbook = app.Workbooks.Open("D:\\Downloads\\ayondo_products_CFD.xlsx");
 
-            var sheet = (Worksheet)workbook.Worksheets["products_TH_Demo_160316"];
+            var sheet = (Worksheet)workbook.Worksheets["Sheet1"];
             //var sheet = (Worksheet)workbook.Worksheets["ayondo_products_CFD"];
             var range = sheet.UsedRange;
 
@@ -97,33 +97,34 @@ namespace CFD_JOBS.Ayondo
                 //    CFDGlobal.LogLine(value.ToString());
                 //}
 
-                var id = Convert.ToInt32(range.Cells[row, 4].Value);
+                var id = Convert.ToInt32(range.Cells[row,3].Value);
 
                 if(id==0) continue;
 
-                //var cName = (string) range.Cells[row, 1].Value;
-                var name = (string)range.Cells[row, 1].Value;
-                var assetClass = (string)range.Cells[row, 11].Value;
-                var financing = (string)range.Cells[row, 27].Value;
+                var cName = (string)range.Cells[row, 14].Value;
+                //var name = (string)range.Cells[row, 1].Value;
+                //var assetClass = (string)range.Cells[row, 11].Value;
+                //var financing = (string)range.Cells[row, 27].Value;
+
+                if(cName=="NULL")
+                    continue;
 
                 //var query=new Queryable(
                 var ayondoSecurity = securities.FirstOrDefault(o => o.Id == id);
 
                 if (ayondoSecurity == null)
                 {
-                    CFDGlobal.LogLine("not exist: " + id + " " + name);
+                    CFDGlobal.LogLine("not exist: " + id );
                     continue;
                 }
 
-                //ayondoSecurity.CName = cName;
-                ayondoSecurity.AssetClass = assetClass;
-                ayondoSecurity.Financing = financing;
-
+                ayondoSecurity.CName = cName;
+                //ayondoSecurity.AssetClass = assetClass;
+                //ayondoSecurity.Financing = financing;
 
                 //db.AyondoSecurities.Where(o => o.Id == id).Update(o => o.CName == cName);
                 //sec.ExpiryDate=
             }
-
 
             db.SaveChanges();
         }
