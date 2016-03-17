@@ -23,6 +23,16 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("{securityId}/tick")]
+        public List<Tick> GetTicks(int securityId)
+        {
+            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
+            var redisTypedClient = basicRedisClientManager.GetClient().As<Tick>();
+            var ticks = redisTypedClient.Lists["tick:" + securityId].GetAll();
+            return ticks;
+        }
+
+        [HttpGet]
         [Route("latest")]
         public List<QuoteTemp> GetLatestQuotes()
         {
