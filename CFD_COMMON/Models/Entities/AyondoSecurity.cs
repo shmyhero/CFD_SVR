@@ -45,5 +45,9 @@ namespace CFD_COMMON.Models.Entities
 
         [StringLength(255)]
         public string CName { get; set; }
+
+        public DateTime? DefUpdatedAt { get; set; }
+
+        public DateTime? QuoteUpdatedAt { get; set; }
     }
 }

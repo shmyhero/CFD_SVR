@@ -45,9 +45,9 @@ namespace CFD_JOBS
                     AyondoFixFeedWorker.Run();
                 }
 
-                if (args.Contains("-AyondoExcelImport"))
+                if (args.Contains("-AyondoDataImport"))
                 {
-                    AyondoExcelImportWorker.Run();
+                    AyondoDataImportWorker.Run();
                 }
 
                 if (args.Contains("-TickChart"))
