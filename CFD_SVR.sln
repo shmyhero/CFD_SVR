@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_COMMON", "CFD_COMMON\CF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_JOBS", "CFD_JOBS\CFD_JOBS.csproj", "{BC097504-DDB8-4FAD-8774-72388FEE0B0C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_TEST", "CFD_TEST\CFD_TEST.csproj", "{CE8979E6-619B-4F01-82F8-E62187D66F23}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{BC097504-DDB8-4FAD-8774-72388FEE0B0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC097504-DDB8-4FAD-8774-72388FEE0B0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC097504-DDB8-4FAD-8774-72388FEE0B0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE8979E6-619B-4F01-82F8-E62187D66F23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE8979E6-619B-4F01-82F8-E62187D66F23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE8979E6-619B-4F01-82F8-E62187D66F23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE8979E6-619B-4F01-82F8-E62187D66F23}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
