@@ -5,6 +5,7 @@ using System.Threading;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using Newtonsoft.Json;
+using ServiceStack.Redis.Generic;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -15,7 +16,7 @@ namespace CFD_JOBS.Ayondo
             var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
             var redisClient = basicRedisClientManager.GetClient();
             var redisQuoteClient = redisClient.As<Quote>();
-            //var redisTickClient = redisClient.As<Tick>();
+            var redisTickClient = redisClient.As<Tick>();
 
             IList<Quote> lastQuotes = null;
 
@@ -54,9 +55,9 @@ namespace CFD_JOBS.Ayondo
                 {
                     var listName = "tick:" + quote.Id;
 
-                    //IRedisList<Tick> list = redisTickClient.Lists[listName];
-                    //var listCount = list.Count;
-                    var listCount = redisClient.GetListCount(listName);
+                    IRedisList<Tick> list = redisTickClient.Lists[listName];
+                    var listCount = list.Count;
+                    //var listCount = redisClient.GetListCount(listName);
 
                     var newTick = new Tick()
                     {
@@ -68,28 +69,28 @@ namespace CFD_JOBS.Ayondo
                     {
                         //CFDGlobal.LogLine(quote.Id+" new");
                         newCount++;
-                        //list.Add(newTick);
-                        redisClient.AddItemToList(listName, JsonConvert.SerializeObject(newTick));
+                        list.Add(newTick);
+                        //redisClient.AddItemToList(listName, JsonConvert.SerializeObject(newTick));
                         continue;
                     }
 
-                    //var lastTick = list[(int) listCount - 1]; //last tick in cache
-                    var lastTick = JsonConvert.DeserializeObject<Tick>(redisClient.GetItemFromList(listName, (int) listCount - 1)); //last tick in cache
+                    var lastTick = list[(int)listCount - 1]; //last tick in cache
+                    //var lastTick = JsonConvert.DeserializeObject<Tick>(redisClient.GetItemFromList(listName, (int) listCount - 1)); //last tick in cache
                     if (newTick.Time > lastTick.Time)
                     {
                         if (IsEqualDownToMinute(newTick.Time, lastTick.Time))
                         {
                             //CFDGlobal.LogLine(quote.Id + " update");
                             updateCount++;
-                            //list[(int) listCount - 1] = newTick; //update last tick to new tick
-                            redisClient.SetItemInList(listName, (int) listCount - 1, JsonConvert.SerializeObject(newTick)); //update last tick to new tick
+                            list[(int)listCount - 1] = newTick; //update last tick to new tick
+                            //redisClient.SetItemInList(listName, (int) listCount - 1, JsonConvert.SerializeObject(newTick)); //update last tick to new tick
                         }
                         else
                         {
                             //CFDGlobal.LogLine(quote.Id + " append");
                             appendCount++;
-                            //list.Add(newTick); //append new tick
-                            redisClient.AddItemToList(listName, JsonConvert.SerializeObject(newTick)); //append new tick
+                            list.Add(newTick); //append new tick
+//                            redisClient.AddItemToList(listName, JsonConvert.SerializeObject(newTick)); //append new tick
                         }
                     }
                     else
