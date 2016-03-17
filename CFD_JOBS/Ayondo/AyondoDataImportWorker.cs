@@ -43,6 +43,8 @@ namespace CFD_JOBS.Ayondo
                     });
                 else
                 {
+                    sec.Name = prodDef.Name;
+                    sec.Symbol = prodDef.Symbol;
                     sec.DefUpdatedAt = prodDef.Time;
                 }
             }
@@ -79,7 +81,7 @@ namespace CFD_JOBS.Ayondo
         private static void ExcelImport()
         {
             var app = new Application();
-            var workbook = app.Workbooks.Open(@"C:\Users\peter\Desktop\Ayondo在线产品列表.xlsx");
+            var workbook = app.Workbooks.Open(@"C:\Users\peter\Desktop\Ayondo产品列表.xlsx");
             //var workbook = app.Workbooks.Open("D:\\Downloads\\ayondo_products_CFD.xlsx");
 
             var sheet = (Worksheet)workbook.Worksheets["Sheet1"];
@@ -103,8 +105,8 @@ namespace CFD_JOBS.Ayondo
 
                 var cName = (string)range.Cells[row, 14].Value;
                 //var name = (string)range.Cells[row, 1].Value;
-                //var assetClass = (string)range.Cells[row, 11].Value;
-                //var financing = (string)range.Cells[row, 27].Value;
+                //var assetClass = (string)range.Cells[row, 11].Value.trim;
+                //var financing = (string)range.Cells[row, 27].Value.trim;
 
                 if(cName=="NULL")
                     continue;
