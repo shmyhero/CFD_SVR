@@ -233,6 +233,7 @@
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
     <Compile Include="DTO\SecurityDTO.cs" />
     <Compile Include="DTO\SignalRDTO\QuoteFeed.cs" />
+    <Compile Include="DTO\TickDTO.cs" />
     <Compile Include="DTO\UserDTO.cs" />
     <Compile Include="DTO\UtilDTO.cs" />
     <Compile Include="Global.asax.cs">

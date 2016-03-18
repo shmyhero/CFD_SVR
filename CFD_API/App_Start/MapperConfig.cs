@@ -1,6 +1,7 @@
 ﻿using System;
 using AutoMapper;
 using CFD_API.DTO;
+using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils.Extensions;
 
@@ -26,6 +27,8 @@ namespace CFD_API
                     .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.CName ?? src.Name.TruncateMax(10)))
                     //open
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => src.Ask*((decimal) r.Next(80, 121))/100));
+
+                cfg.CreateMap<Tick, TickDTO>();
             });
         }
     }

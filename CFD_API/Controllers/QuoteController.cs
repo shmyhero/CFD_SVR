@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
+using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
@@ -24,12 +25,20 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/tick")]
-        public List<Tick> GetTicks(int securityId)
+        public List<TickDTO> GetTicks(int securityId)
         {
             var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
             var redisTypedClient = basicRedisClientManager.GetClient().As<Tick>();
             var ticks = redisTypedClient.Lists["tick:" + securityId].GetAll();
-            return ticks;
+
+            ticks = ticks.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromDays(1)).ToList();
+            foreach (var tick in ticks)
+            {
+                //remove seconds and millionseconds
+                tick.Time = new DateTime(tick.Time.Year, tick.Time.Month, tick.Time.Day, tick.Time.Hour, tick.Time.Minute, 0, DateTimeKind.Utc);
+            }
+            
+            return ticks.Select(o=>Mapper.Map<TickDTO>(o)).ToList();
         }
 
         [HttpGet]

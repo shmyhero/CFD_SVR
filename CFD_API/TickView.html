@@ -22,12 +22,12 @@
                     .attr("value", sec.id)
                     .text(sec.id + ' ' + sec.name));
             });
-        });
+        }).done(function () { draw($('#select1')[0].value); });
 
         //select[0].selectedIndex = 0;
 
         //alert($('#select1').value);
-        window.setTimeout(function() { draw($('#select1')[0].value); }, 500);
+        //window.setTimeout(function() { draw($('#select1')[0].value); }, 1000);
     });
 
     function draw(secId) {
@@ -35,7 +35,10 @@
 
             data = new Array();
             $.each(result, function (i, tick) {
-                data.push([new Date(tick.Time).getTime(), tick.P]);
+                var t = new Date(tick.time);
+                //t.setSeconds(0);
+                //t.setMilliseconds(0);
+                data.push([t.getTime(), tick.p]);
             });
 
             //$.getJSON('https://www.highcharts.com/samples/data/jsonp.php?filename=new-intraday.json&callback=?', function (data) {
@@ -52,9 +55,17 @@
                     text: 'security id: '+secId
                 },
 
-                xAxis: {
-                    gapGridLineWidth: 0
-                },
+                //xAxis: {
+                //    breaks: [{ // Nights
+                //        from: Date.UTC(2011, 9, 6, 16),
+                //        to: Date.UTC(2011, 9, 7, 8),
+                //        repeat: 24 * 36e5
+                //    }, { // Weekends
+                //        from: Date.UTC(2011, 9, 7, 16),
+                //        to: Date.UTC(2011, 9, 10, 8),
+                //        repeat: 7 * 24 * 36e5
+                //    }]
+                //},
 
                 rangeSelector: {
                     buttons: [
@@ -81,7 +92,7 @@
                         name: 'price',
                         type: 'area',
                         data: data,
-                        gapSize: 5,
+                        gapSize: 1,
                         tooltip: {
                             valueDecimals: 4
                         },
