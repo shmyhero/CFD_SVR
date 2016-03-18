@@ -11,6 +11,9 @@ namespace CFD_JOBS.Ayondo
 {
     public class TickChartWorker
     {
+        private static int CLEAR_HISTORY_WHEN_COUNT_REACH = 60 * 24 * 20;//20 days' most possible count
+        private static int CLEAR_HISTORY_TO_COUNT = 60 * 24 * 10;//10 days' most possible count
+
         public static void Run()
         {
             var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
@@ -74,7 +77,17 @@ namespace CFD_JOBS.Ayondo
                         continue;
                     }
 
-                    var lastTick = list[(int)listCount - 1]; //last tick in cache
+                    //clear history/prevent data increasing for good
+                    if (list.Count > CLEAR_HISTORY_WHEN_COUNT_REACH) //data count at most possible size (in x days )
+                    {
+                        CFDGlobal.LogLine(quote.Id + " Clearing data from " + list.Count + " to " + CLEAR_HISTORY_TO_COUNT);
+                        var ticks = list.GetAll();
+                        var newTicks = ticks.Skip(ticks.Count - CLEAR_HISTORY_TO_COUNT);
+                        list.RemoveAll();
+                        list.AddRange(newTicks);
+                    }
+
+                    var lastTick = list[listCount - 1]; //last tick in cache
                     //var lastTick = JsonConvert.DeserializeObject<Tick>(redisClient.GetItemFromList(listName, (int) listCount - 1)); //last tick in cache
                     if (newTick.Time > lastTick.Time)
                     {
@@ -82,7 +95,7 @@ namespace CFD_JOBS.Ayondo
                         {
                             //CFDGlobal.LogLine(quote.Id + " update");
                             updateCount++;
-                            list[(int)listCount - 1] = newTick; //update last tick to new tick
+                            list[listCount - 1] = newTick; //update last tick to new tick
                             //redisClient.SetItemInList(listName, (int) listCount - 1, JsonConvert.SerializeObject(newTick)); //update last tick to new tick
                         }
                         else
