@@ -50,7 +50,7 @@ namespace CFD_API
             json.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
             json.SerializerSettings.FloatParseHandling = FloatParseHandling.Decimal;
             var converters = json.SerializerSettings.Converters;
-            converters.Add(new IsoDateTimeConverter() {DateTimeFormat = "yyyy-MM-ddTHH:mm:ss"});
+            //converters.Add(new IsoDateTimeConverter() {DateTimeFormat = "yyyy-MM-ddTHH:mm:ss"});
             config.Formatters.Remove(config.Formatters.XmlFormatter);
         }
 
