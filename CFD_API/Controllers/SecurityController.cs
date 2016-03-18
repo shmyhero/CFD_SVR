@@ -172,6 +172,17 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("all")]
+        public List<SecurityDTO> GetAllList(int page = 1, int perPage = 20)
+        {
+            var security = db.AyondoSecurities
+                .Where(o => o.CName != null)
+                .OrderBy(o => o.Symbol)
+                .Skip((page - 1) * perPage).Take(perPage).ToList();
+            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+        }
+
+        [HttpGet]
         [Route("search")]
         public List<SecurityDTO> SearchSecurity(string keyword, int page = 1, int perPage = 20)
         {
@@ -179,7 +190,9 @@ namespace CFD_API.Controllers
 
             var security = db.AyondoSecurities
 //                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass != "Interest Rates" && (o.Name.Contains(keyword) || o.Symbol.Contains(keyword)) && o.CName != null)
+                .Where(o => //o.AssetClass != "Interest Rates" &&
+                    (o.CName.Contains(keyword) || o.Symbol.Contains(keyword)) &&
+                    o.CName != null)
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();

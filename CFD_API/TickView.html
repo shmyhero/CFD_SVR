@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+    <select id="select1" style="font-size: x-large" onchange="draw(this.value)"></select>
+
+<div id="container" style="height: 400px; min-width: 310px"></div>
+
+<script src="Scripts/jquery-1.6.4.min.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var select = $('#select1');
+
+        $.getJSON('api/security/all?perPage=99999', function (result) {
+            $.each(result, function(i, sec) {
+                select.append($("<option></option>")
+                    .attr("value", sec.id)
+                    .text(sec.id + ' ' + sec.name));
+            });
+        });
+
+        //select[0].selectedIndex = 0;
+
+        //alert($('#select1').value);
+        window.setTimeout(function() { draw($('#select1')[0].value); }, 500);
+    });
+
+    function draw(secId) {
+        $.getJSON('api/quote/' + secId + '/tick', function (result) {
+
+            data = new Array();
+            $.each(result, function (i, tick) {
+                data.push([new Date(tick.Time).getTime(), tick.P]);
+            });
+
+            //$.getJSON('https://www.highcharts.com/samples/data/jsonp.php?filename=new-intraday.json&callback=?', function (data) {
+
+            //debugger;
+
+            // create the chart
+            $('#container').highcharts('StockChart', {
+                title: {
+                    text: 'Stock price by minute'
+                },
+
+                subtitle: {
+                    text: 'security id: '+secId
+                },
+
+                xAxis: {
+                    gapGridLineWidth: 0
+                },
+
+                rangeSelector: {
+                    buttons: [
+                        {
+                            type: 'hour',
+                            count: 1,
+                            text: '1h'
+                        }, {
+                            type: 'day',
+                            count: 1,
+                            text: '1D'
+                        }, {
+                            type: 'all',
+                            count: 1,
+                            text: 'All'
+                        }
+                    ],
+                    selected: 1,
+                    inputEnabled: false
+                },
+
+                series: [
+                    {
+                        name: 'price',
+                        type: 'area',
+                        data: data,
+                        gapSize: 5,
+                        tooltip: {
+                            valueDecimals: 4
+                        },
+                        fillColor: {
+                            linearGradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 0,
+                                y2: 1
+                            },
+                            stops: [
+                                [0, Highcharts.getOptions().colors[0]],
+                                [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                            ]
+                        },
+                        threshold: null
+                    }
+                ]
+            });
+        });
+    }
+
+</script>
+</body>
+</html>
