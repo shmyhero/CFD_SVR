@@ -45,6 +45,13 @@
 
             //debugger;
 
+            Highcharts.setOptions({
+                global: {
+                    //timezoneOffset: +8,
+                    useUTC:false
+                }
+            });
+
             // create the chart
             $('#container').highcharts('StockChart', {
                 title: {
