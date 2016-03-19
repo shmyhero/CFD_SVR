@@ -31,7 +31,7 @@ namespace CFD_API.Controllers
             var redisTypedClient = basicRedisClientManager.GetClient().As<Tick>();
             var ticks = redisTypedClient.Lists["tick:" + securityId].GetAll();
 
-            ticks = ticks.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromDays(1)).ToList();
+            //ticks = ticks.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromDays(1)).ToList();
             foreach (var tick in ticks)
             {
                 //remove seconds and millionseconds
