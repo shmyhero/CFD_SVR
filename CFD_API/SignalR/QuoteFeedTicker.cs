@@ -23,7 +23,7 @@ namespace CFD_API.SignalR
             get { return _instance.Value; }
         }
 
-        private readonly ConcurrentDictionary<string, IEnumerable<int>> _subscription = new ConcurrentDictionary<string, IEnumerable<int>>();
+        private readonly ConcurrentDictionary<string, IList<int>> _subscription = new ConcurrentDictionary<string, IList<int>>();
 
         //private readonly object _updateStockPricesLock = new object();
 
@@ -146,14 +146,14 @@ namespace CFD_API.SignalR
         //    Clients.All.updateStockPrice(stock);
         //}
 
-        public void AddSubscription(string identity, IEnumerable<int> ids)
+        public void AddSubscription(string identity, IList<int> ids)
         {
             _subscription.AddOrUpdate(identity, ids, (key, value) => ids);
         }
 
         public void RemoveSubscription(string identity)
         {
-            IEnumerable<int> value;
+            IList<int> value;
             _subscription.TryRemove(identity,out value);
         }
     }
