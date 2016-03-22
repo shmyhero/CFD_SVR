@@ -55,6 +55,11 @@ namespace CFD_JOBS
                     TickChartWorker.Run();
                 }
 
+                if (args.Contains("-RedisToDb"))
+                {
+                    RedisToDbWorker.Run();
+                }
+
                 return 0;
             }
             catch (Exception ex)

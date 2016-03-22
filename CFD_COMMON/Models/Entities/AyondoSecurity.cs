@@ -49,5 +49,11 @@ namespace CFD_COMMON.Models.Entities
         public DateTime? DefUpdatedAt { get; set; }
 
         public DateTime? QuoteUpdatedAt { get; set; }
+
+        public decimal? MaxSizeLong { get; set; }
+        public decimal? MinSizeLong { get; set; }
+        public decimal? MaxSizeShort { get; set; }
+        public decimal? MinSizeShort { get; set; }
+        public decimal? MaxLeverage { get; set; }
     }
 }

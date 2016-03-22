@@ -14,68 +14,7 @@ namespace CFD_JOBS.Ayondo
 
         public static void Run()
         {
-            //ProdDefImport();
-            //PriceImport();
             ExcelImport();
-        }
-
-        private static void ProdDefImport()
-        {
-            var db = CFDEntities.Create();
-
-            var basicClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisTypedClient = basicClientManager.GetClient().As<ProdDef>();
-
-            var prodDefs = redisTypedClient.GetAll();
-
-            var securities = db.AyondoSecurities.ToList();
-            foreach (var prodDef in prodDefs)
-            {
-                var sec = securities.FirstOrDefault(o => o.Id == prodDef.Id);
-
-                if (sec == null)
-                    db.AyondoSecurities.Add(new AyondoSecurity
-                    {
-                        Id = prodDef.Id,
-                        Name = prodDef.Name,
-                        Symbol = prodDef.Symbol,
-                        DefUpdatedAt = prodDef.Time
-                    });
-                else
-                {
-                    sec.Name = prodDef.Name;
-                    sec.Symbol = prodDef.Symbol;
-                    sec.DefUpdatedAt = prodDef.Time;
-                }
-            }
-            db.SaveChanges();
-        }
-
-        private static void PriceImport()
-        {
-            var db = CFDEntities.Create();
-
-            var basicClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisTypedClient = basicClientManager.GetClient().As<Quote>();
-
-            var quotes = redisTypedClient.GetAll();
-
-            var securities = db.AyondoSecurities.ToList();
-            foreach (var quote in quotes)
-            {
-                var sec = securities.FirstOrDefault(o => o.Id == quote.Id);
-
-                if (sec == null)
-                {
-                    CFDGlobal.LogLine("not exist: " + quote.Id + " " + quote.Time);
-                    continue;
-                }
-
-                sec.Ask = quote.Offer;
-                sec.Bid = quote.Bid;
-                sec.QuoteUpdatedAt = quote.Time;
-            }
-            db.SaveChanges();
         }
 
         private static void ExcelImport()

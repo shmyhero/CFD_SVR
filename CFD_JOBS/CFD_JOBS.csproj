@@ -86,6 +86,7 @@
     <Compile Include="Ayondo\AyondoDataImportWorker.cs" />
     <Compile Include="Ayondo\AyondoFixFeedWorker.cs" />
     <Compile Include="Ayondo\AyondoFixFeedApp.cs" />
+    <Compile Include="Ayondo\RedisToDbWorker.cs" />
     <Compile Include="Ayondo\TickChartWorker.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
