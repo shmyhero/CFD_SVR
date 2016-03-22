@@ -17,6 +17,15 @@ namespace CFD_COMMON.Models.Cached
         public string Name { get; set; }
 
         public string Symbol { get; set; }
+
+        public string AssetClass { get; set; }
+
+        public decimal MaxLeverage { get; set; }
+        public bool Shortable { get; set; }
+        public decimal MinSizeShort { get; set; }
+        public decimal MaxSizeShort { get; set; }
+        public decimal MinSizeLong { get; set; }
+        public decimal MaxSizeLong { get; set; }
     }
 
     public enum enmQuoteType

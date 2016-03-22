@@ -88,7 +88,14 @@ namespace CFD_JOBS.Ayondo
                     Time = message.Header.GetDateTime(Tags.SendingTime),
                     QuoteType = (enmQuoteType)message.GetInt(Tags.QuoteType),
                     Name = message.GetString(Tags.Symbol),
-                    Symbol = message.GetString(DD.FieldsByName["MDS_BBC"].Tag)
+                    Symbol = message.GetString(DD.FieldsByName["MDS_BBC"].Tag),
+                    AssetClass = message.GetString(DD.FieldsByName["MDS_ASSETCLASS"].Tag),
+                    Shortable = Convert.ToBoolean(message.GetString(DD.FieldsByName["MDS_SHORTABLE"].Tag)),
+                    MinSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MinSizeShort"].Tag),
+                    MaxSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeShort"].Tag),
+                    MinSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MinSizeLong"].Tag),
+                    MaxSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeLong"].Tag),
+                    MaxLeverage = message.GetDecimal(DD.FieldsByName["MDS_EFFLEVERAGE"].Tag)
                 };
 
                 //CFDGlobal.LogLine("MDS2 Received: Id: " + prodDef.Id + " QuoteType: " + prodDef.QuoteType);

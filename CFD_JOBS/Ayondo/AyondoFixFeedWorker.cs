@@ -28,6 +28,7 @@ namespace CFD_JOBS.Ayondo
                 //System.Console.WriteLine("o hai");
                 System.Threading.Thread.Sleep(1000);
 
+                //save ProdDefs
                 if (!myApp.ProdDefs.IsEmpty)
                 {
                     //CFDGlobal.LogLine("Pending ProdDefs detected. Loading from queue...");
