@@ -86,6 +86,8 @@
     <Compile Include="Ayondo\AyondoDataImportWorker.cs" />
     <Compile Include="Ayondo\AyondoFixFeedWorker.cs" />
     <Compile Include="Ayondo\AyondoFixFeedApp.cs" />
+    <Compile Include="Ayondo\AyondoFixTradeApp.cs" />
+    <Compile Include="Ayondo\AyondoFixTradeWorker.cs" />
     <Compile Include="Ayondo\RedisToDbWorker.cs" />
     <Compile Include="Ayondo\TickChartWorker.cs" />
     <Compile Include="Program.cs" />
@@ -93,6 +95,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="AyondoTrade.cfg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="AyondoFeed.cfg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

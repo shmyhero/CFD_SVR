@@ -40,10 +40,14 @@ namespace CFD_JOBS.Ayondo
 
         public void ToAdmin(Message message, SessionID sessionID)
         {
-            CFDGlobal.LogLine("ToAdmin: sending username and password...");
+            CFDGlobal.LogLine("ToAdmin: ");
 
-            message.SetField(new Username("thcnprices"));
-            message.SetField(new Password("sl6map3go"));
+            if (message.Header.GetString(Tags.MsgType) == MsgType.LOGON)
+            {
+                CFDGlobal.LogLine(" sending username and password...");
+                message.SetField(new Username("thcnprices"));
+                message.SetField(new Password("sl6map3go"));
+            }
 
             //message.SetField(new Username("thcntrade"));
             //message.SetField(new Password("d093gos3j"));

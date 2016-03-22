@@ -44,6 +44,10 @@ namespace CFD_JOBS
                 {
                     AyondoFixFeedWorker.Run();
                 }
+                if (args.Contains("-AyondoFixTrade"))
+                {
+                    AyondoFixTradeWorker.Run();
+                }
 
                 if (args.Contains("-AyondoDataImport"))
                 {
