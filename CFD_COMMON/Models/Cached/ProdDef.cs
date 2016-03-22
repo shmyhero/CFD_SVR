@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Diagnostics.SymbolStore;
 using ServiceStack.DesignPatterns.Model;
 
 namespace CFD_COMMON.Models.Cached
 {
-    public class ProdDef:IHasIntId
+    public class ProdDef : IHasIntId
     {
         /// <summary>
         /// security id
@@ -13,10 +12,17 @@ namespace CFD_COMMON.Models.Cached
 
         public DateTime Time { get; set; }
         //public string Symbol { get; set; }
-        public int QuoteType { get; set; }
+        public enmQuoteType QuoteType { get; set; }
 
         public string Name { get; set; }
 
         public string Symbol { get; set; }
+    }
+
+    public enum enmQuoteType
+    {
+        Closed = 0,
+        Open = 1,
+        PhoneOnly = 2
     }
 }
