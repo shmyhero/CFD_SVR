@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using ServiceStack.Text;
 
 namespace CFD_TEST
@@ -18,8 +20,6 @@ namespace CFD_TEST
 
             var nowUTC = DateTime.UtcNow;
             var nowLocal = DateTime.Now;
-
-            JsConfig.AlwaysUseUtc = true;
 
             redisTypedClient.Store(new ProdDef()
             {
@@ -48,6 +48,15 @@ namespace CFD_TEST
             Assert.AreEqual(nowLocal, prodDef.Time.ToLocalTime());
 
             redisTypedClient.DeleteById(1);
+        }
+        [TestMethod]
+        public void JsonDateTimeConvert()
+        {
+            //JsonConvert.DefaultSettings.
+            var utc = JsonConvert.SerializeObject(DateTime.UtcNow);
+            var local = JsonConvert.SerializeObject(DateTime.Now);
+            var unspecify = JsonConvert.SerializeObject(new DateTime(2008, 12, 28));
+            
         }
     }
 }

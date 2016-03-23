@@ -42,6 +42,32 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("{securityId}/tick/today")]
+        public List<TickDTO> GetTodayTicks(int securityId)
+        {
+            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
+            var redisClient = basicRedisClientManager.GetClient();
+            var redisTickClient = redisClient.As<Tick>();
+            //var redisProdDefClient = redisClient.As<ProdDef>();
+
+            var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
+
+            //var prodDef = redisProdDefClient.GetById(securityId);
+
+            var lastTickTime = ticks.Last().Time;
+
+            var result = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12));
+
+            foreach (var tick in result)
+            {
+                //remove seconds and millionseconds
+                tick.Time = new DateTime(tick.Time.Year, tick.Time.Month, tick.Time.Day, tick.Time.Hour, tick.Time.Minute, 0, DateTimeKind.Utc);
+            }
+
+            return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
+        }
+
+        [HttpGet]
         [Route("latest")]
         public List<QuoteTemp> GetLatestQuotes()
         {

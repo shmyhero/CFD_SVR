@@ -25,7 +25,7 @@ namespace CFD_COMMON
         static CFDGlobal()
         {
             JsConfig.TreatEnumAsInteger = true;
-            //JsConfig.DateHandler=JsonDateHandler.ISO8601;
+            //JsConfig.DateHandler = JsonDateHandler.ISO8601;
         }
 
         /// <summary>
