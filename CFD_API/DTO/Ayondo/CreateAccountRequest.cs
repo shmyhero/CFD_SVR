@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CFD_API.DTO
+﻿namespace CFD_API.DTO.Ayondo
 {
-    public class AyondoTradeAccountRq
+    public class CreateAccountRequest
     {
         public string AddressCity { get; set; }
         public string AddressCountry { get; set; }

@@ -231,7 +231,7 @@
     <Compile Include="Controllers\SecurityController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
-    <Compile Include="DTO\Ayondo\AyondoTradeAccountRq.cs" />
+    <Compile Include="DTO\Ayondo\CreateAccountRequest.cs" />
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
     <Compile Include="DTO\SecurityDTO.cs" />
     <Compile Include="DTO\SignalRDTO\QuoteFeed.cs" />
