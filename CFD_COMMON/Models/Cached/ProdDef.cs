@@ -11,6 +11,16 @@ namespace CFD_COMMON.Models.Cached
         public int Id { get; set; }
 
         public DateTime Time { get; set; }
+
+        public decimal? Bid { get; set; }
+        public decimal? Offer { get; set; }
+
+        public decimal? CloseBid { get; set; }
+        public decimal? CloseAsk { get; set; }
+
+        public DateTime? LastOpen { get; set; }
+        public DateTime? LastClose { get; set; }
+
         //public string Symbol { get; set; }
         public enmQuoteType QuoteType { get; set; }
 

@@ -11,8 +11,8 @@ namespace CFD_JOBS.Ayondo
 {
     public class TickChartWorker
     {
-        private static int CLEAR_HISTORY_WHEN_COUNT_REACH = 60 * 24 * 20;//20 days' most possible count
-        private static int CLEAR_HISTORY_TO_COUNT = 60 * 24 * 10;//10 days' most possible count
+        private static int CLEAR_HISTORY_WHEN_SIZE = 60 * 24 * 10;//xx days' most possible count
+        private static int CLEAR_HISTORY_TO_SIZE = 60 * 24 * 7;//xx days' most possible count
 
         public static void Run()
         {
@@ -78,11 +78,11 @@ namespace CFD_JOBS.Ayondo
                     }
 
                     //clear history/prevent data increasing for good
-                    if (list.Count > CLEAR_HISTORY_WHEN_COUNT_REACH) //data count at most possible size (in x days )
+                    if (list.Count > CLEAR_HISTORY_WHEN_SIZE) //data count at most possible size (in x days )
                     {
-                        CFDGlobal.LogLine(quote.Id + " Clearing data from " + list.Count + " to " + CLEAR_HISTORY_TO_COUNT);
+                        CFDGlobal.LogLine(quote.Id + " Clearing data from " + list.Count + " to " + CLEAR_HISTORY_TO_SIZE);
                         var ticks = list.GetAll();
-                        var newTicks = ticks.Skip(ticks.Count - CLEAR_HISTORY_TO_COUNT);
+                        var newTicks = ticks.Skip(ticks.Count - CLEAR_HISTORY_TO_SIZE);
                         list.RemoveAll();
                         list.AddRange(newTicks);
                     }

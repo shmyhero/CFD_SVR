@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CFD_COMMON;
-using CFD_COMMON.Models;
 using CFD_COMMON.Models.Cached;
 using QuickFix;
 using QuickFix.DataDictionary;
@@ -90,10 +89,19 @@ namespace CFD_JOBS.Ayondo
                 {
                     Id = Convert.ToInt32(message.GetString(Tags.SecurityID)),
                     Time = message.Header.GetDateTime(Tags.SendingTime),
-                    QuoteType = (enmQuoteType)message.GetInt(Tags.QuoteType),
+                    QuoteType = (enmQuoteType) message.GetInt(Tags.QuoteType),
                     Name = message.GetString(Tags.Symbol),
                     Symbol = message.GetString(DD.FieldsByName["MDS_BBC"].Tag),
                     AssetClass = message.GetString(DD.FieldsByName["MDS_ASSETCLASS"].Tag),
+
+                    //some security MDS2 dont have Bid/Offer...
+                    Bid = message.Any(o => o.Key == Tags.BidPx) ? message.GetDecimal(Tags.BidPx) : (decimal?) null,
+                    Offer = message.Any(o => o.Key == Tags.OfferPx) ? message.GetDecimal(Tags.OfferPx) : (decimal?) null,
+                    //
+                    CloseBid = message.Any(o => o.Key == DD.FieldsByName["MDS_CLOSEBID"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_CLOSEBID"].Tag) : (decimal?) null,
+                    CloseAsk = message.Any(o => o.Key == DD.FieldsByName["MDS_CLOSEASK"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_CLOSEASK"].Tag) : (decimal?) null,
+
+                    //
                     Shortable = Convert.ToBoolean(message.GetString(DD.FieldsByName["MDS_SHORTABLE"].Tag)),
                     MinSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MinSizeShort"].Tag),
                     MaxSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeShort"].Tag),
