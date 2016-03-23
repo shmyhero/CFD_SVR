@@ -28,6 +28,14 @@ namespace CFD_API
                     //open
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => src.Ask*((decimal) r.Next(80, 121))/100));
 
+                cfg.CreateMap<ProdDef, SecurityDetailDTO>()
+                    .ForMember(dest => dest.last, opt => opt.MapFrom(src => src.Offer))
+                    .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.Name.TruncateMax(10)))
+                    //open
+                    .ForMember(dest => dest.open, opt => opt.MapFrom(src => src.OpenAsk))
+                    .ForMember(dest => dest.preClose, opt => opt.MapFrom(src => src.CloseAsk))
+                    .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open));
+
                 cfg.CreateMap<Tick, TickDTO>();
             });
         }

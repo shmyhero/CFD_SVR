@@ -59,13 +59,17 @@ namespace CFD_JOBS.Ayondo
                             else if (old.QuoteType != enmQuoteType.Open && prodDef.QuoteType == enmQuoteType.Open)
                             {
                                 prodDef.LastOpen = prodDef.Time;
+
+                                //open prices
+                                prodDef.OpenAsk = prodDef.Offer;
+                                prodDef.OpenBid = prodDef.Bid;
                             }
                         }
-                        else //receiving new prod def
-                        {
-                            prodDef.LastOpen = prodDef.Time;
-                            prodDef.LastClose = prodDef.Time;
-                        }
+                        //else //receiving new prod def
+                        //{
+                        //    prodDef.LastOpen = prodDef.Time;
+                        //    prodDef.LastClose = prodDef.Time;
+                        //}
                     }
 
                     redisProdDefClient.StoreAll(list);

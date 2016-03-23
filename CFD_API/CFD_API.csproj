@@ -207,6 +207,7 @@
     <Content Include="App_Readme\Elmah.txt" />
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
+    <Content Include="ProdView.html" />
     <Content Include="QuoteView.html" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.6.4.min.js" />

@@ -6,8 +6,13 @@ using System.Web.Http;
 using AutoMapper;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
+using CFD_COMMON;
+using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
+using ServiceStack.Redis;
+using ServiceStack.Redis.Generic;
 
 namespace CFD_API.Controllers
 {
@@ -196,6 +201,39 @@ namespace CFD_API.Controllers
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+        }
+
+        [HttpGet]
+        [Route("{securityId}")]
+        public SecurityDetailDTO GetSecurity(int securityId)
+        {
+            var sec = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
+
+            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
+            var redisClient = basicRedisClientManager.GetClient();
+            var redisProdDefClient = redisClient.As<ProdDef>();
+            var redisQuoteClient = redisClient.As<Quote>();
+
+            var prodDef = redisProdDefClient.GetById(securityId);
+
+            if (prodDef == null)
+                return null;
+
+            var result = Mapper.Map<SecurityDetailDTO>(prodDef);
+
+            //get new price
+            var quote = redisQuoteClient.GetById(securityId);
+            result.last = quote.Offer;
+
+            //get cname
+            if (sec != null && sec.CName != null)
+                result.name = sec.CName;
+
+            //demo data
+            Random r=new Random();
+            result.longPct = (decimal)r.NextDouble();
+
+            return result;
         }
     }
 }

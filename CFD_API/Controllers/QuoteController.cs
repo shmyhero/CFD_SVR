@@ -80,6 +80,16 @@ namespace CFD_API.Controllers
             return results;
         }
 
+        [HttpGet]
+        [Route("prodDef")]
+        public List<ProdDef> GetProdDefs()
+        {
+            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
+            var redisTypedClient = basicRedisClientManager.GetClient().As<ProdDef>();
+
+            return redisTypedClient.GetAll().OrderByDescending(o=>o.Time).ToList();
+        }
+
         public class QuoteTemp : Quote
         {
             public string Name { get; set; }
