@@ -18,11 +18,6 @@ namespace CFD_COMMON.Models.Cached
         public decimal? CloseBid { get; set; }
         public decimal? CloseAsk { get; set; }
 
-        public DateTime? LastOpen { get; set; }
-        public DateTime? LastClose { get; set; }
-        public decimal? OpenBid { get; set; }
-        public decimal? OpenAsk { get; set; }
-
         //public string Symbol { get; set; }
         public enmQuoteType QuoteType { get; set; }
 
@@ -38,6 +33,12 @@ namespace CFD_COMMON.Models.Cached
         public decimal MaxSizeShort { get; set; }
         public decimal MinSizeLong { get; set; }
         public decimal MaxSizeLong { get; set; }
+
+        //fields that are not from Ayondo
+        public DateTime? LastOpen { get; set; }
+        public DateTime? LastClose { get; set; }
+        public decimal? OpenBid { get; set; }
+        public decimal? OpenAsk { get; set; }
     }
 
     public enum enmQuoteType

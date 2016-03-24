@@ -97,7 +97,7 @@ namespace CFD_JOBS.Ayondo
                     //some security MDS2 dont have Bid/Offer...
                     Bid = message.Any(o => o.Key == Tags.BidPx) ? message.GetDecimal(Tags.BidPx) : (decimal?) null,
                     Offer = message.Any(o => o.Key == Tags.OfferPx) ? message.GetDecimal(Tags.OfferPx) : (decimal?) null,
-                    //
+                    //some security MDS2 dont have MDS_CLOSEBID/MDS_CLOSEASK...
                     CloseBid = message.Any(o => o.Key == DD.FieldsByName["MDS_CLOSEBID"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_CLOSEBID"].Tag) : (decimal?) null,
                     CloseAsk = message.Any(o => o.Key == DD.FieldsByName["MDS_CLOSEASK"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_CLOSEASK"].Tag) : (decimal?) null,
 

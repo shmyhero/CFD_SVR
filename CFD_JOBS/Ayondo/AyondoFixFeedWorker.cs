@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CFD_COMMON;
-using CFD_COMMON.Models;
 using CFD_COMMON.Models.Cached;
 using QuickFix;
 using QuickFix.Transport;
@@ -34,45 +33,75 @@ namespace CFD_JOBS.Ayondo
                 {
                     //CFDGlobal.LogLine("Pending ProdDefs detected. Loading from queue...");
 
-                    IList<ProdDef> list = new List<ProdDef>();
+                    //new prod list from Ayondo MDS2
+                    IList<ProdDef> listNew = new List<ProdDef>();
 
                     while (!myApp.ProdDefs.IsEmpty)
                     {
                         ProdDef obj;
                         var tryDequeue = myApp.ProdDefs.TryDequeue(out obj);
-                        list.Add(obj);
+                        listNew.Add(obj);
                     }
 
-                    CFDGlobal.LogLine("Saving " + list.Count + " ProdDefs to Redis...");
+                    CFDGlobal.LogLine("Saving " + listNew.Count + " ProdDefs to Redis...");
 
-                    //set open->close or close->open time
-                    var oldProdDefs = redisProdDefClient.GetAll();
-                    foreach (var prodDef in list)
+                    //current redis list
+                    var listOld = redisProdDefClient.GetAll();
+
+                    IList<ProdDef> listToSave = new List<ProdDef>();
+
+                    foreach (var newProdDef in listNew)
                     {
-                        var old = oldProdDefs.FirstOrDefault(o => o.Id == prodDef.Id);
-                        if (old != null)
+                        var old = listOld.FirstOrDefault(o => o.Id == newProdDef.Id);
+
+                        if (old != null) //updating prod def in redis
                         {
-                            if (old.QuoteType==enmQuoteType.Open && prodDef.QuoteType!=enmQuoteType.Open)
+                            //update fields
+                            old.Time = newProdDef.Time;
+                            old.QuoteType = newProdDef.QuoteType;
+                            old.Name = newProdDef.Name;
+                            old.Symbol = newProdDef.Symbol;
+                            old.AssetClass = newProdDef.AssetClass;
+                            old.Bid = newProdDef.Bid;
+                            old.Offer = newProdDef.Offer;
+                            old.CloseBid = newProdDef.CloseBid;
+                            old.CloseAsk = newProdDef.CloseAsk;
+                            old.Shortable = newProdDef.Shortable;
+                            old.MinSizeShort = newProdDef.MinSizeShort;
+                            old.MaxSizeShort = newProdDef.MaxSizeShort;
+                            old.MinSizeLong = newProdDef.MinSizeLong;
+                            old.MaxSizeLong = newProdDef.MaxSizeLong;
+                            old.MaxLeverage = newProdDef.MaxLeverage;
+
+                            //update state
+                            if (old.QuoteType != enmQuoteType.Closed && newProdDef.QuoteType == enmQuoteType.Closed) //xxx -> close
                             {
-                                prodDef.LastClose = prodDef.Time;
+                                CFDGlobal.LogLine("PROD CLOSED " + newProdDef.Id + " time: " + newProdDef.Time);
+
+                                //close time
+                                old.LastClose = newProdDef.Time;
                             }
-                            else if (old.QuoteType != enmQuoteType.Open && prodDef.QuoteType == enmQuoteType.Open)
+                            else if (old.QuoteType != enmQuoteType.Open && newProdDef.QuoteType == enmQuoteType.Open) //xxx -> open
                             {
-                                prodDef.LastOpen = prodDef.Time;
+                                CFDGlobal.LogLine("PROD OPENED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " + newProdDef.Bid);
+
+                                //open time
+                                old.LastOpen = newProdDef.Time;
 
                                 //open prices
-                                prodDef.OpenAsk = prodDef.Offer;
-                                prodDef.OpenBid = prodDef.Bid;
+                                old.OpenAsk = newProdDef.Offer;
+                                old.OpenBid = newProdDef.Bid;
                             }
+
+                            listToSave.Add(old);
                         }
-                        //else //receiving new prod def
-                        //{
-                        //    prodDef.LastOpen = prodDef.Time;
-                        //    prodDef.LastClose = prodDef.Time;
-                        //}
+                        else //appending new prod def into redis
+                        {
+                            listToSave.Add(newProdDef);
+                        }
                     }
 
-                    redisProdDefClient.StoreAll(list);
+                    redisProdDefClient.StoreAll(listToSave);
                 }
             }
             //initiator.Stop();
