@@ -46,8 +46,8 @@ namespace CFD_JOBS.Ayondo
         public void FromApp(Message message, SessionID sessionID)
         {
             CFDGlobal.LogLine("FromApp: ");
-            //CFDGlobal.LogLine(message.ToString());
-            CFDGlobal.LogLine(GetMessageString(message));
+            CFDGlobal.LogLine(message.ToString());
+            //CFDGlobal.LogLine(GetMessageString(message));
             Crack(message, sessionID);
         }
 
@@ -62,6 +62,18 @@ namespace CFD_JOBS.Ayondo
             orderMassStatusRequest.Account = new Account(response.GetString(Tags.Account));
             Session.Send(orderMassStatusRequest);
 
+            var requestForPositions = new RequestForPositions();
+            requestForPositions.PosReqID = new PosReqID("posreq123");
+            requestForPositions.PosReqType = new PosReqType(PosReqType.POSITIONS);
+            requestForPositions.ClearingBusinessDate = new ClearingBusinessDate("0-0-0");
+            requestForPositions.TransactTime = new TransactTime(DateTime.Now);
+            requestForPositions.Account = new Account(response.GetString(Tags.Account));
+            requestForPositions.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
+            Session.Send(requestForPositions);
+
+            //var order = new NewOrderSingle();
+            //order.SetField(new UserRequestID("ProdDef"));
+            //Session.Send(order);
         }
 
         public void OnMessage(QuickFix.FIX44.CollateralReport report, SessionID session)
@@ -75,6 +87,18 @@ namespace CFD_JOBS.Ayondo
         {
 
             CFDGlobal.LogLine("OnMessage:ExecutionReport ");
+            CFDGlobal.LogLine(GetMessageString(report));
+        }
+
+        public void OnMessage(QuickFix.FIX44.RequestForPositionsAck requestAck, SessionID session)
+        {
+            CFDGlobal.LogLine("OnMessage:RequestForPositionsAck ");
+            CFDGlobal.LogLine(GetMessageString(requestAck));
+        }
+
+        public void OnMessage(QuickFix.FIX44.PositionReport report, SessionID session)
+        {
+            CFDGlobal.LogLine("OnMessage:PositionReport ");
             CFDGlobal.LogLine(GetMessageString(report));
         }
 
@@ -94,10 +118,6 @@ namespace CFD_JOBS.Ayondo
 
             Session = Session.LookupSession(sessionID);
             DD = Session.ApplicationDataDictionary;
-
-            //var order = new NewOrderSingle();
-            //order.SetField(new UserRequestID("ProdDef"));
-            //Session.Send(order);
 
             var userRequest = new UserRequest();
             userRequest.UserRequestID=new UserRequestID("login123");
