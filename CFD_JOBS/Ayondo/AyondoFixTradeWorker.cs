@@ -16,6 +16,8 @@ namespace CFD_JOBS.Ayondo
         {
             SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath"));
             AyondoFixTradeApp myApp = new AyondoFixTradeApp();
+            //-------------------AyondoFixPositionApp-------------------
+            //// AyondoFixPositionApp myApp = new AyondoFixPositionApp();
             IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
             //ILogFactory logFactory = new FileLogFactory(settings);
             SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings
