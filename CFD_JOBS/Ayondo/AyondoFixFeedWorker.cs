@@ -56,24 +56,7 @@ namespace CFD_JOBS.Ayondo
 
                         if (old != null) //updating prod def in redis
                         {
-                            //update fields
-                            old.Time = newProdDef.Time;
-                            old.QuoteType = newProdDef.QuoteType;
-                            old.Name = newProdDef.Name;
-                            old.Symbol = newProdDef.Symbol;
-                            old.AssetClass = newProdDef.AssetClass;
-                            old.Bid = newProdDef.Bid;
-                            old.Offer = newProdDef.Offer;
-                            old.CloseBid = newProdDef.CloseBid;
-                            old.CloseAsk = newProdDef.CloseAsk;
-                            old.Shortable = newProdDef.Shortable;
-                            old.MinSizeShort = newProdDef.MinSizeShort;
-                            old.MaxSizeShort = newProdDef.MaxSizeShort;
-                            old.MinSizeLong = newProdDef.MinSizeLong;
-                            old.MaxSizeLong = newProdDef.MaxSizeLong;
-                            old.MaxLeverage = newProdDef.MaxLeverage;
-
-                            //update state
+                            //update open/close time/price depending on state change
                             if (old.QuoteType != enmQuoteType.Closed && newProdDef.QuoteType == enmQuoteType.Closed) //xxx -> close
                             {
                                 CFDGlobal.LogLine("PROD CLOSED " + newProdDef.Id + " time: " + newProdDef.Time);
@@ -92,6 +75,23 @@ namespace CFD_JOBS.Ayondo
                                 old.OpenAsk = newProdDef.Offer;
                                 old.OpenBid = newProdDef.Bid;
                             }
+
+                            //update fields
+                            old.Time = newProdDef.Time;
+                            old.QuoteType = newProdDef.QuoteType;
+                            old.Name = newProdDef.Name;
+                            old.Symbol = newProdDef.Symbol;
+                            old.AssetClass = newProdDef.AssetClass;
+                            old.Bid = newProdDef.Bid;
+                            old.Offer = newProdDef.Offer;
+                            old.CloseBid = newProdDef.CloseBid;
+                            old.CloseAsk = newProdDef.CloseAsk;
+                            old.Shortable = newProdDef.Shortable;
+                            old.MinSizeShort = newProdDef.MinSizeShort;
+                            old.MaxSizeShort = newProdDef.MaxSizeShort;
+                            old.MinSizeLong = newProdDef.MinSizeLong;
+                            old.MaxSizeLong = newProdDef.MaxSizeLong;
+                            old.MaxLeverage = newProdDef.MaxLeverage;
 
                             listToSave.Add(old);
                         }
