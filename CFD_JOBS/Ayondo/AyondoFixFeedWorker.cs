@@ -74,6 +74,9 @@ namespace CFD_JOBS.Ayondo
                                 //open prices
                                 old.OpenAsk = newProdDef.Offer;
                                 old.OpenBid = newProdDef.Bid;
+
+                                //preclose
+                                old.PreClose = newProdDef.CloseAsk;
                             }
 
                             //update fields

@@ -39,6 +39,7 @@ namespace CFD_COMMON.Models.Cached
         public DateTime? LastClose { get; set; }
         public decimal? OpenBid { get; set; }
         public decimal? OpenAsk { get; set; }
+        public decimal? PreClose { get; set; }
     }
 
     public enum enmQuoteType
