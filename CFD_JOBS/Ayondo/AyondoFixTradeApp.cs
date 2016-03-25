@@ -56,24 +56,34 @@ namespace CFD_JOBS.Ayondo
             CFDGlobal.LogLine("OnMessage:UserResponse ");
             CFDGlobal.LogLine(GetMessageString(response));
 
-            var orderMassStatusRequest = new OrderMassStatusRequest();
-            orderMassStatusRequest.MassStatusReqID = new MassStatusReqID("ordermass123");
-            orderMassStatusRequest.MassStatusReqType = new MassStatusReqType(7);
-            orderMassStatusRequest.Account = new Account(response.GetString(Tags.Account));
-            Session.Send(orderMassStatusRequest);
+            //var orderMassStatusRequest = new OrderMassStatusRequest();
+            //orderMassStatusRequest.MassStatusReqID = new MassStatusReqID("ordermass123");
+            //orderMassStatusRequest.MassStatusReqType = new MassStatusReqType(7);
+            //orderMassStatusRequest.Account = new Account(response.GetString(Tags.Account));
+            //Session.Send(orderMassStatusRequest);
 
-            var requestForPositions = new RequestForPositions();
-            requestForPositions.PosReqID = new PosReqID("posreq123");
-            requestForPositions.PosReqType = new PosReqType(PosReqType.POSITIONS);
-            requestForPositions.ClearingBusinessDate = new ClearingBusinessDate("0-0-0");
-            requestForPositions.TransactTime = new TransactTime(DateTime.Now);
-            requestForPositions.Account = new Account(response.GetString(Tags.Account));
-            requestForPositions.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
-            Session.Send(requestForPositions);
+            //var requestForPositions = new RequestForPositions();
+            //requestForPositions.PosReqID = new PosReqID("posreq123");
+            //requestForPositions.PosReqType = new PosReqType(PosReqType.POSITIONS);
+            //requestForPositions.ClearingBusinessDate = new ClearingBusinessDate("0-0-0");
+            //requestForPositions.TransactTime = new TransactTime(DateTime.Now);
+            //requestForPositions.Account = new Account(response.GetString(Tags.Account));
+            //requestForPositions.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
+            //Session.Send(requestForPositions);
 
-            //var order = new NewOrderSingle();
-            //order.SetField(new UserRequestID("ProdDef"));
-            //Session.Send(order);
+            //var newOrderSingle = new QuickFix.FIX44.NewOrderSingle();
+            //newOrderSingle.ClOrdID = new ClOrdID("newOrderSingle123");
+            //newOrderSingle.TransactTime = new TransactTime(DateTime.UtcNow);
+            //newOrderSingle.Symbol = new Symbol("12956");
+            //newOrderSingle.SecurityID = new SecurityID("12956");
+            //newOrderSingle.SecurityIDSource = new SecurityIDSource("G");
+            //newOrderSingle.Side = new Side(Side.SELL);
+            //newOrderSingle.OrderQty = new OrderQty((decimal)0.8);
+            //newOrderSingle.OrdType = new OrdType('1');
+            //newOrderSingle.TargetStrategy = new TargetStrategy(5001);
+            //newOrderSingle.TargetStrategyParameters = new TargetStrategyParameters("138604815797");
+            //newOrderSingle.Account = new Account(response.GetString(Tags.Account));
+            //Session.Send(newOrderSingle);
         }
 
         public void OnMessage(QuickFix.FIX44.CollateralReport report, SessionID session)
