@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using CFD_COMMON;
 using QuickFix;
 using QuickFix.DataDictionary;
@@ -56,11 +54,13 @@ namespace CFD_JOBS.Ayondo
             CFDGlobal.LogLine("OnMessage:UserResponse ");
             CFDGlobal.LogLine(GetMessageString(response));
 
+
             //var orderMassStatusRequest = new OrderMassStatusRequest();
             //orderMassStatusRequest.MassStatusReqID = new MassStatusReqID("ordermass123");
             //orderMassStatusRequest.MassStatusReqType = new MassStatusReqType(7);
             //orderMassStatusRequest.Account = new Account(response.GetString(Tags.Account));
             //Session.Send(orderMassStatusRequest);
+
 
             //var requestForPositions = new RequestForPositions();
             //requestForPositions.PosReqID = new PosReqID("posreq123");
@@ -71,31 +71,34 @@ namespace CFD_JOBS.Ayondo
             //requestForPositions.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
             //Session.Send(requestForPositions);
 
-            //var newOrderSingle = new QuickFix.FIX44.NewOrderSingle();
-            //newOrderSingle.ClOrdID = new ClOrdID("newOrderSingle123");
-            //newOrderSingle.TransactTime = new TransactTime(DateTime.UtcNow);
-            //newOrderSingle.Symbol = new Symbol("12956");
-            //newOrderSingle.SecurityID = new SecurityID("12956");
-            //newOrderSingle.SecurityIDSource = new SecurityIDSource("G");
-            //newOrderSingle.Side = new Side(Side.SELL);
-            //newOrderSingle.OrderQty = new OrderQty((decimal)0.8);
-            //newOrderSingle.OrdType = new OrdType('1');
+
+            var newOrderSingle = new QuickFix.FIX44.NewOrderSingle();
+            newOrderSingle.ClOrdID = new ClOrdID("newOrderSingle123");
+            newOrderSingle.TransactTime = new TransactTime(DateTime.UtcNow);
+            newOrderSingle.Symbol = new Symbol("12956");
+            newOrderSingle.SecurityID = new SecurityID("12956");
+            newOrderSingle.SecurityIDSource = new SecurityIDSource("G");
+            newOrderSingle.Side = new Side(Side.BUY);
+            newOrderSingle.Price = new Price(123.123m);
+            newOrderSingle.OrderQty = new OrderQty((decimal) 1);
+            newOrderSingle.OrdType = new OrdType('1');
+
             //newOrderSingle.TargetStrategy = new TargetStrategy(5001);
             //newOrderSingle.TargetStrategyParameters = new TargetStrategyParameters("138604815797");
-            //newOrderSingle.Account = new Account(response.GetString(Tags.Account));
-            //Session.Send(newOrderSingle);
+            newOrderSingle.TargetStrategy = new TargetStrategy(5000);
+
+            newOrderSingle.Account = new Account(response.GetString(Tags.Account));
+            Session.Send(newOrderSingle);
         }
 
         public void OnMessage(QuickFix.FIX44.CollateralReport report, SessionID session)
         {
-
             CFDGlobal.LogLine("OnMessage:CollateralReport ");
             CFDGlobal.LogLine(GetMessageString(report));
         }
 
         public void OnMessage(QuickFix.FIX44.ExecutionReport report, SessionID session)
         {
-
             CFDGlobal.LogLine("OnMessage:ExecutionReport ");
             CFDGlobal.LogLine(GetMessageString(report));
         }
@@ -130,9 +133,9 @@ namespace CFD_JOBS.Ayondo
             DD = Session.ApplicationDataDictionary;
 
             var userRequest = new UserRequest();
-            userRequest.UserRequestID=new UserRequestID("login123");
+            userRequest.UserRequestID = new UserRequestID("login123");
             userRequest.UserRequestType = new UserRequestType(UserRequestType.LOGONUSER);
-            userRequest.Username=new Username("ayondodemo01");
+            userRequest.Username = new Username("ayondodemo01");
             userRequest.Password = new Password("demo2016!");
             Session.Send(userRequest);
         }
