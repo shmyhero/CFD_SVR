@@ -12,14 +12,16 @@ namespace CFD_API.DTO
         public string name { get; set; }
         //public string picUrl { get; set; }
         public string tag { get; set; }
-        public decimal open { get; set; }
+
+        public decimal? preClose { get; set; }
+        public decimal? open { get; set; }
         public decimal last { get; set; }
+
         public bool isOpen { get; set; }
     }
 
     public class SecurityDetailDTO : SecurityDTO
     {
-        public decimal preClose { get; set; }
         public decimal longPct { get; set; }
     }
 }

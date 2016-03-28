@@ -9,10 +9,8 @@ using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
-using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using ServiceStack.Redis;
-using ServiceStack.Redis.Generic;
 
 namespace CFD_API.Controllers
 {
@@ -25,17 +23,36 @@ namespace CFD_API.Controllers
         {
         }
 
-        //public List<int> GetAliveStocks()
-        //{
-        //    var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-        //    var redisTypedClient = basicRedisClientManager.GetClient().As<Quote>();
+        public void UpdateStockInfo(IList<SecurityDTO> list)
+        {
+            if (list.Count == 0) return;
 
-        //    var quotes = redisTypedClient.GetAll();
+            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
+            var redisClient = basicRedisClientManager.GetClient();
+            var redisProdDefClient = redisClient.As<ProdDef>();
+            var redisQuoteClient = redisClient.As<Quote>();
 
-        //    quotes = quotes.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromHours(24)).ToList();
+            var ids = list.Select(o => o.id);
+            var quotes = redisQuoteClient.GetByIds(ids);
+            var prodDefs = redisProdDefClient.GetByIds(ids);
 
-        //    return quotes.Select(o => Convert.ToInt32(o.Id)).ToList();
-        //}
+            foreach (var security in list)
+            {
+                var prodDef = prodDefs.FirstOrDefault(o => o.Id == security.id);
+                if (prodDef != null)
+                {
+                    security.preClose = prodDef.PreClose;
+                    security.open=prodDef.OpenAsk;
+                    security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
+                }
+
+                var quote = quotes.FirstOrDefault(o => o.Id == security.id);
+                if (quote != null)
+                {
+                    security.last = quote.Offer;
+                }
+            }
+        }
 
         [HttpGet]
         [Route("bookmark")]
@@ -47,47 +64,13 @@ namespace CFD_API.Controllers
                 .Include(o => o.AyondoSecurity)
                 .OrderBy(o => o.DisplayOrder)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
-        }
+            var securityDtos = bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
 
-        [HttpPost]
-        [Route("bookmark")]
-        [BasicAuth]
-        public ResultDTO AddBookmark(string securityIds)
-        {
-            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
+            UpdateStockInfo(securityDtos);
 
-            var securityService = new SecurityService(db);
-            securityService.AddBookmarks(UserId, ids);
+            securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
 
-            return new ResultDTO {success = true};
-        }
-
-        [HttpPut]
-        [Route("bookmark")]
-        [BasicAuth]
-        public ResultDTO ResetBookmark(string securityIds)
-        {
-            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
-
-            var securityService = new SecurityService(db);
-            securityService.DeleteBookmarks(UserId, ids);
-            securityService.AddBookmarks(UserId, ids);
-
-            return new ResultDTO {success = true};
-        }
-
-        [HttpDelete]
-        [Route("bookmark")]
-        [BasicAuth]
-        public ResultDTO DeleteBookmark(string securityIds)
-        {
-            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
-
-            var securityService = new SecurityService(db);
-            securityService.DeleteBookmarks(UserId, ids);
-
-            return new ResultDTO {success = true};
+            return securityDtos;
         }
 
         [HttpGet]
@@ -99,9 +82,16 @@ namespace CFD_API.Controllers
             var security =
                 db.AyondoSecurities
                     .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks" && o.CName != null)
-                    .OrderBy(o => o.Symbol)
-                    .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+                    //.OrderBy(o => o.Symbol)
+                    //.Skip((page - 1)*perPage).Take(perPage)
+                    .ToList();
+            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateStockInfo(securityDtos);
+
+            securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
+
+            return securityDtos;
         }
 
         [HttpGet]
@@ -114,24 +104,16 @@ namespace CFD_API.Controllers
                 db.AyondoSecurities
 //                    .Where(o => aliveIds.Contains(o.Id))
                     .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks" && o.CName != null)
-                    .OrderBy(o => o.Symbol)
-                    .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
-        }
+                    //.OrderBy(o => o.Symbol)
+                    //.Skip((page - 1)*perPage).Take(perPage)
+                    .ToList();
+            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-        [HttpGet]
-        [Route("stock/trend")]
-        public List<SecurityDTO> GetTrendList(int page = 1, int perPage = 20)
-        {
-//            var aliveIds = GetAliveStocks();
+            UpdateStockInfo(securityDtos);
 
-            var security =
-                db.AyondoSecurities
-//                    .Where(o => aliveIds.Contains(o.Id))
-                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks" && o.CName != null)
-                    .OrderBy(o => o.Symbol)
-                    .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
+
+            return securityDtos;
         }
 
         [HttpGet]
@@ -145,7 +127,11 @@ namespace CFD_API.Controllers
                 .Where(o => o.AssetClass == "Stock Indices" && o.CName != null)
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateStockInfo(securityDtos);
+
+            return securityDtos;
         }
 
         [HttpGet]
@@ -159,7 +145,11 @@ namespace CFD_API.Controllers
                 .Where(o => o.AssetClass == "Currencies" && o.CName != null)
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateStockInfo(securityDtos);
+
+            return securityDtos;
         }
 
         [HttpGet]
@@ -173,7 +163,11 @@ namespace CFD_API.Controllers
                 .Where(o => o.AssetClass == "Commodities" && o.CName != null)
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateStockInfo(securityDtos);
+
+            return securityDtos;
         }
 
         [HttpGet]
@@ -183,7 +177,7 @@ namespace CFD_API.Controllers
             var security = db.AyondoSecurities
                 .Where(o => o.CName != null)
                 .OrderBy(o => o.Symbol)
-                .Skip((page - 1) * perPage).Take(perPage).ToList();
+                .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
         }
 
@@ -200,7 +194,11 @@ namespace CFD_API.Controllers
                     o.CName != null)
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateStockInfo(securityDtos);
+
+            return securityDtos;
         }
 
         [HttpGet]
@@ -230,10 +228,50 @@ namespace CFD_API.Controllers
                 result.name = sec.CName;
 
             //demo data
-            Random r=new Random();
-            result.longPct = (decimal)r.NextDouble();
+            Random r = new Random();
+            result.longPct = (decimal) r.NextDouble();
 
             return result;
+        }
+
+        [HttpPost]
+        [Route("bookmark")]
+        [BasicAuth]
+        public ResultDTO AddBookmark(string securityIds)
+        {
+            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
+
+            var securityService = new SecurityService(db);
+            securityService.AddBookmarks(UserId, ids);
+
+            return new ResultDTO { success = true };
+        }
+
+        [HttpPut]
+        [Route("bookmark")]
+        [BasicAuth]
+        public ResultDTO ResetBookmark(string securityIds)
+        {
+            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
+
+            var securityService = new SecurityService(db);
+            securityService.DeleteBookmarks(UserId, ids);
+            securityService.AddBookmarks(UserId, ids);
+
+            return new ResultDTO { success = true };
+        }
+
+        [HttpDelete]
+        [Route("bookmark")]
+        [BasicAuth]
+        public ResultDTO DeleteBookmark(string securityIds)
+        {
+            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
+
+            var securityService = new SecurityService(db);
+            securityService.DeleteBookmarks(UserId, ids);
+
+            return new ResultDTO { success = true };
         }
     }
 }
