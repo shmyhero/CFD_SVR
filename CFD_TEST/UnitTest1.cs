@@ -18,6 +18,9 @@ namespace CFD_TEST
             var redisClient = basicRedisClientManager.GetClient();
             var redisTypedClient = redisClient.As<ProdDef>();
 
+            redisTypedClient.DeleteById(1);
+            redisTypedClient.DeleteById(2);
+
             var nowUTC = DateTime.UtcNow;
             var nowLocal = DateTime.Now;
 
@@ -48,6 +51,7 @@ namespace CFD_TEST
             Assert.AreEqual(nowLocal, prodDef.Time.ToLocalTime());
 
             redisTypedClient.DeleteById(1);
+            redisTypedClient.DeleteById(2);
         }
         [TestMethod]
         public void JsonDateTimeConvert()

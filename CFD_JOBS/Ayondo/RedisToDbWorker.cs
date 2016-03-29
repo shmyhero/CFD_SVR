@@ -25,21 +25,6 @@ namespace CFD_JOBS.Ayondo
                 var quotes = redisQuoteClient.GetAll();
                 List<AyondoSecurity> securities;
 
-                //save quotes
-                CFDGlobal.LogLine("Saving new quotes to db...");
-                securities = db.AyondoSecurities.ToList();
-                foreach (var quote in quotes)
-                {
-                    var sec = securities.FirstOrDefault(o => o.Id == quote.Id);
-                    if (sec != null)
-                    {
-                        sec.Bid = quote.Bid;
-                        sec.Ask = quote.Offer;
-                        sec.QuoteUpdatedAt = quote.Time;
-                    }
-                }
-                db.SaveChanges();
-
                 //save proddefs
                 CFDGlobal.LogLine("Saving new product definitions to db...");
                 securities = db.AyondoSecurities.ToList();
@@ -48,6 +33,8 @@ namespace CFD_JOBS.Ayondo
                     var sec = securities.FirstOrDefault(o => o.Id == prodDef.Id);
 
                     if (sec == null)
+                    {
+                        CFDGlobal.LogLine("Creating new: " + prodDef.Id + " " + prodDef.Symbol + " " + prodDef.Name);
                         db.AyondoSecurities.Add(new AyondoSecurity
                         {
                             //basic
@@ -65,6 +52,7 @@ namespace CFD_JOBS.Ayondo
                             //update time
                             DefUpdatedAt = prodDef.Time,
                         });
+                    }
                     else
                     {
                         //basic
@@ -84,7 +72,22 @@ namespace CFD_JOBS.Ayondo
                 }
                 db.SaveChanges();
 
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                //save quotes
+                CFDGlobal.LogLine("Saving new quotes to db...");
+                securities = db.AyondoSecurities.ToList();
+                foreach (var quote in quotes)
+                {
+                    var sec = securities.FirstOrDefault(o => o.Id == quote.Id);
+                    if (sec != null)
+                    {
+                        sec.Bid = quote.Bid;
+                        sec.Ask = quote.Offer;
+                        sec.QuoteUpdatedAt = quote.Time;
+                    }
+                }
+                db.SaveChanges();
+
+                Thread.Sleep(TimeSpan.FromMinutes(5));
             }
         }
     }
