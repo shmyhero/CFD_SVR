@@ -22,17 +22,25 @@ namespace CFD_COMMON
 
         public static string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
 
+        /// <summary>
+        /// the default application-wide BasicRedisClientManager, non-pooled, created for current application
+        /// </summary>
+        public static IRedisClientsManager BasicRedisClientManager;
+
         static CFDGlobal()
         {
             JsConfig.TreatEnumAsInteger = true;
             //JsConfig.DateHandler = JsonDateHandler.ISO8601;
+
+            //create default application-wide BasicRedisClientManager
+            BasicRedisClientManager = GetNewBasicRedisClientManager();
         }
 
         /// <summary>
-        /// get non-pooled redis client manager
+        /// get a new BasicRedisClientManager (non-pooled)
         /// </summary>
         /// <returns></returns>
-        public static IRedisClientsManager GetBasicRedisClientManager()
+        public static IRedisClientsManager GetNewBasicRedisClientManager()
         {
             return new BasicRedisClientManager(CFDGlobal.GetConfigurationSetting("redisConnectionString"));
         }
@@ -105,6 +113,10 @@ namespace CFD_COMMON
         public static void LogError(string message)
         {
             Trace.TraceError(GetLogDatetimePrefix() + message);
+        }
+        public static void LogWarning(string message)
+        {
+            Trace.TraceWarning(GetLogDatetimePrefix() + message);
         }
 
         public static void LogLine(string message)

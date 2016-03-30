@@ -19,8 +19,8 @@ namespace CFD_JOBS.Ayondo
                 //,logFactory
                 );
 
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisProdDefClient = basicRedisClientManager.GetClient().As<ProdDef>();
+            //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
+            var redisProdDefClient = CFDGlobal.BasicRedisClientManager.GetClient().As<ProdDef>();
 
             initiator.Start();
             while (true)

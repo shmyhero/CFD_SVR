@@ -16,8 +16,8 @@ namespace CFD_JOBS.Ayondo
 
         public static void Run()
         {
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisClient = basicRedisClientManager.GetClient();
+            //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
+            var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
             var redisQuoteClient = redisClient.As<Quote>();
             var redisTickClient = redisClient.As<Tick>();
 

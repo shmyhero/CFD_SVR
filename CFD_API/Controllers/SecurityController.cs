@@ -18,8 +18,8 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/security")]
     public class SecurityController : CFDController
     {
-        public SecurityController(CFDEntities db, IMapper mapper)
-            : base(db, mapper)
+        public SecurityController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
+            : base(db, mapper,redisClient)
         {
         }
 
@@ -27,10 +27,8 @@ namespace CFD_API.Controllers
         {
             if (list.Count == 0) return;
 
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisClient = basicRedisClientManager.GetClient();
-            var redisProdDefClient = redisClient.As<ProdDef>();
-            var redisQuoteClient = redisClient.As<Quote>();
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var redisQuoteClient = RedisClient.As<Quote>();
 
             var ids = list.Select(o => o.id);
             var quotes = redisQuoteClient.GetByIds(ids);
@@ -207,10 +205,8 @@ namespace CFD_API.Controllers
         {
             var sec = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
 
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisClient = basicRedisClientManager.GetClient();
-            var redisProdDefClient = redisClient.As<ProdDef>();
-            var redisQuoteClient = redisClient.As<Quote>();
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var redisQuoteClient = RedisClient.As<Quote>();
 
             var prodDef = redisProdDefClient.GetById(securityId);
 

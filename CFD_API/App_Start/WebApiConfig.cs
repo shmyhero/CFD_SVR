@@ -4,9 +4,11 @@ using System.Web.Http.Cors;
 using Autofac;
 using Autofac.Integration.WebApi;
 using AutoMapper;
+using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using ServiceStack.Redis;
 
 namespace CFD_API
 {
@@ -67,7 +69,7 @@ namespace CFD_API
             builder.Register<CFDEntities>(c => CFDEntities.Create()).InstancePerRequest();
             //builder.Register<tradeheroNewsEntities>(c => tradeheroNewsEntities.Create()).InstancePerRequest();
             //builder.Register<StatisticEntities>(c => StatisticEntities.Create()).InstancePerRequest();
-            //builder.Register<IRedisClient>(c => redisClientManager.GetClient()).InstancePerRequest();
+            builder.Register<IRedisClient>(c => CFDGlobal.BasicRedisClientManager.GetClient()).InstancePerRequest();
 
             //// JSON formatter settings for MVC controllers
             //builder.Register<JsonSerializerSettings>(c => config.Formatters.JsonFormatter.SerializerSettings).InstancePerRequest();

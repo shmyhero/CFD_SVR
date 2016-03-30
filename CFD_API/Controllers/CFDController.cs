@@ -6,6 +6,7 @@ using AutoMapper;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
+using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
 {
@@ -13,6 +14,14 @@ namespace CFD_API.Controllers
     {
         public CFDEntities db { get; protected set; }
         public IMapper Mapper { get; protected set; }
+        public IRedisClient RedisClient { get; protected set; }
+
+        public CFDController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
+        {
+            this.db = db;
+            this.Mapper = mapper;
+            this.RedisClient = redisClient;
+        }
 
         public CFDController(CFDEntities db, IMapper mapper)
         {

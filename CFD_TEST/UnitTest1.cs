@@ -14,8 +14,8 @@ namespace CFD_TEST
         [TestMethod]
         public void ServiceStackJsonConfig()
         {
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisClient = basicRedisClientManager.GetClient();
+            //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
+            var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
             var redisTypedClient = redisClient.As<ProdDef>();
 
             redisTypedClient.DeleteById(1);

@@ -42,109 +42,47 @@ namespace CFD_API.SignalR
         {
             Clients = clients;
 
-            //_stocks.Clear();
-            //var stocks = new List<Stock>
-            //{
-            //    new Stock { Symbol = "MSFT", Price = 30.31m },
-            //    new Stock { Symbol = "APPL", Price = 578.18m },
-            //    new Stock { Symbol = "GOOG", Price = 570.30m }
-            //};
-            //stocks.ForEach(stock => _stocks.TryAdd(stock.Symbol, stock));
+            //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
+            _redisClient = CFDGlobal.BasicRedisClientManager.GetClient().As<Quote>();
 
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            _redisClient = basicRedisClientManager.GetClient().As<Quote>();
-
-            _timer = new Timer(Start, null, _updateInterval, TimeSpan.FromMilliseconds(-1));
+            CFDGlobal.LogLine("Starting QuoteFeedTicker...");
             //Start();
+            _timer = new Timer(Start, null, _updateInterval, TimeSpan.FromMilliseconds(-1));
         }
 
         private void Start(object state)
         {
+            DateTime dtLastBegin;
             while (true)
             {
-                var quotes = _redisClient.GetAll();
+                dtLastBegin = DateTime.Now;
 
-                //quotes = quotes.Where(o =>
-                //    o.Id >= 20841 && o.Id <= 20961
-                //    || o.Id >= 14012 && o.Id <= 14117
-                //    || o.Id >= 21612 && o.Id < 21752).ToList();
-
-                //Clients.All.p(quotes.Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
-                foreach (var pair in _subscription)
+                if (_subscription.Count > 0)
                 {
-                    var userId = pair.Key;
-                    var subscribedQuotesIds = pair.Value;
-                    var subscribedQuotes = quotes.Where(o => subscribedQuotesIds.Contains(o.Id));
-                    Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed { id = o.Id, last = o.Offer }));
+                    var quotes = _redisClient.GetAll();
+
+                    //Clients.All.p(quotes.Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
+
+                    //CFDGlobal.LogLine("Broadcasting to " + _subscription.Count +" subscriber...");
+                    foreach (var pair in _subscription)
+                    {
+                        var userId = pair.Key;
+                        var subscribedQuotesIds = pair.Value;
+                        var subscribedQuotes = quotes.Where(o => subscribedQuotesIds.Contains(o.Id));
+                        Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
+                    }
                 }
 
-                Thread.Sleep(_updateInterval);
+                var workTime = DateTime.Now - dtLastBegin;
+
+                //broadcast prices every second
+                var sleepTime = _updateInterval > workTime ? _updateInterval - workTime : TimeSpan.Zero;
+
+                Thread.Sleep(sleepTime);
             }
         }
 
         private IHubConnectionContext<dynamic> Clients { get; set; }
-
-        //public IEnumerable<Stock> GetAllStocks()
-        //{
-        //    return _stocks.Values;
-        //}
-
-        private void Tick(object state)
-        {
-            //lock (_updateStockPricesLock)
-            //{
-            //    if (!_updatingStockPrices)
-            //    {
-            //        _updatingStockPrices = true;
-
-            //        foreach (var stock in _stocks.Values)
-            //        {
-            //            if (TryUpdateStockPrice(stock))
-            //            {
-            //                BroadcastStockPrice(stock);
-            //            }
-            //        }
-
-            //        _updatingStockPrices = false;
-            //    }
-            //}
-
-            //_subscription.SelectMany(o=>o.)
-            var quotes = _redisClient.GetAll();
-
-            //foreach (var pair in _subscription)
-            //{
-            //    dynamic user = Clients.User(1.ToString());
-            //}
-
-            //p -> publish
-            Clients.All.p(quotes.Where(o => o.Id <= 20961 && o.Id >= 20841).Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
-        }
-
-        //private bool TryUpdateStockPrice(Stock stock)
-        //{
-        //    // Randomly choose whether to update this stock or not
-        //    var r = _updateOrNotRandom.NextDouble();
-        //    if (r > .1)
-        //    {
-        //        return false;
-        //    }
-
-        //    // Update the stock price by a random factor of the range percent
-        //    var random = new Random((int)Math.Floor(stock.Price));
-        //    var percentChange = random.NextDouble() * _rangePercent;
-        //    var pos = random.NextDouble() > .51;
-        //    var change = Math.Round(stock.Price * (decimal)percentChange, 2);
-        //    change = pos ? change : -change;
-
-        //    stock.Price += change;
-        //    return true;
-        //}
-
-        //private void BroadcastStockPrice(Stock stock)
-        //{
-        //    Clients.All.updateStockPrice(stock);
-        //}
 
         public void AddSubscription(string identity, IList<int> ids)
         {
@@ -154,7 +92,7 @@ namespace CFD_API.SignalR
         public void RemoveSubscription(string identity)
         {
             IList<int> value;
-            _subscription.TryRemove(identity,out value);
+            _subscription.TryRemove(identity, out value);
         }
     }
 }

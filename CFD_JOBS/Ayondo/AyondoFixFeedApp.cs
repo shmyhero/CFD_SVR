@@ -31,9 +31,9 @@ namespace CFD_JOBS.Ayondo
 
         public AyondoFixFeedApp()
         {
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
+            //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
 
-            redisQuoteClient = basicRedisClientManager.GetClient().As<Quote>();
+            redisQuoteClient = CFDGlobal.BasicRedisClientManager.GetClient().As<Quote>();
             //redisProdDefClient = basicRedisClientManager.GetClient().As<ProdDef>();
         }
 

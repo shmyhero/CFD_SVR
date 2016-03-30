@@ -18,8 +18,8 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/quote")]
     public class QuoteController : CFDController
     {
-        public QuoteController(CFDEntities db, IMapper mapper)
-            : base(db, mapper)
+        public QuoteController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
+            : base(db, mapper,redisClient)
         {
         }
 
@@ -27,8 +27,7 @@ namespace CFD_API.Controllers
         [Route("{securityId}/tick")]
         public List<TickDTO> GetTicks(int securityId)
         {
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisTypedClient = basicRedisClientManager.GetClient().As<Tick>();
+            var redisTypedClient = RedisClient.As<Tick>();
             var ticks = redisTypedClient.Lists["tick:" + securityId].GetAll();
 
             //ticks = ticks.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromDays(1)).ToList();
@@ -45,9 +44,7 @@ namespace CFD_API.Controllers
         [Route("{securityId}/tick/today")]
         public List<TickDTO> GetTodayTicks(int securityId)
         {
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisClient = basicRedisClientManager.GetClient();
-            var redisTickClient = redisClient.As<Tick>();
+            var redisTickClient = RedisClient.As<Tick>();
             //var redisProdDefClient = redisClient.As<ProdDef>();
 
             var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
@@ -71,8 +68,7 @@ namespace CFD_API.Controllers
         [Route("latest")]
         public List<QuoteTemp> GetLatestQuotes()
         {
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisTypedClient = basicRedisClientManager.GetClient().As<Quote>();
+            var redisTypedClient = RedisClient.As<Quote>();
             var quotes = redisTypedClient.GetAll().OrderByDescending(o => o.Time).ToList();
 
             var securities = db.AyondoSecurities.ToList();
@@ -110,8 +106,7 @@ namespace CFD_API.Controllers
         [Route("prodDef")]
         public List<ProdDef> GetProdDefs()
         {
-            var basicRedisClientManager = CFDGlobal.GetBasicRedisClientManager();
-            var redisTypedClient = basicRedisClientManager.GetClient().As<ProdDef>();
+            var redisTypedClient = RedisClient.As<ProdDef>();
 
             return redisTypedClient.GetAll().OrderByDescending(o=>o.Time).ToList();
         }
