@@ -55,38 +55,36 @@ namespace CFD_JOBS.Ayondo
             CFDGlobal.LogLine(GetMessageString(response));
 
 
-            //var orderMassStatusRequest = new OrderMassStatusRequest();
-            //orderMassStatusRequest.MassStatusReqID = new MassStatusReqID("ordermass123");
-            //orderMassStatusRequest.MassStatusReqType = new MassStatusReqType(7);
+            //var orderMassStatusRequest = new OrderMassStatusRequest(
+            //    new MassStatusReqID("ordermass123"),
+            //    new MassStatusReqType(7));
             //orderMassStatusRequest.Account = new Account(response.GetString(Tags.Account));
             //Session.Send(orderMassStatusRequest);
 
 
-            //var requestForPositions = new RequestForPositions();
-            //requestForPositions.PosReqID = new PosReqID("posreq123");
-            //requestForPositions.PosReqType = new PosReqType(PosReqType.POSITIONS);
-            //requestForPositions.ClearingBusinessDate = new ClearingBusinessDate("0-0-0");
-            //requestForPositions.TransactTime = new TransactTime(DateTime.Now);
-            //requestForPositions.Account = new Account(response.GetString(Tags.Account));
-            //requestForPositions.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
+            //var requestForPositions = new RequestForPositions(
+            //    new PosReqID("posreq123"),
+            //    new PosReqType(PosReqType.POSITIONS),
+            //    new Account(response.GetString(Tags.Account)),
+            //    new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS),
+            //    new ClearingBusinessDate("0-0-0"),
+            //    new TransactTime(DateTime.Now));
             //Session.Send(requestForPositions);
 
 
-            var newOrderSingle = new QuickFix.FIX44.NewOrderSingle();
-            newOrderSingle.ClOrdID = new ClOrdID("newOrderSingle123");
-            newOrderSingle.TransactTime = new TransactTime(DateTime.UtcNow);
-            newOrderSingle.Symbol = new Symbol("12956");
+            var newOrderSingle = new QuickFix.FIX44.NewOrderSingle(
+                new ClOrdID("newOrderSingle123"),
+                new Symbol("12956"),
+                new Side(Side.BUY),
+                new TransactTime(DateTime.UtcNow),
+                new OrdType('1'));
             newOrderSingle.SecurityID = new SecurityID("12956");
             newOrderSingle.SecurityIDSource = new SecurityIDSource("G");
-            newOrderSingle.Side = new Side(Side.BUY);
             newOrderSingle.Price = new Price(123.123m);
-            newOrderSingle.OrderQty = new OrderQty((decimal) 1);
-            newOrderSingle.OrdType = new OrdType('1');
-
+            newOrderSingle.OrderQty = new OrderQty((decimal)1);
             //newOrderSingle.TargetStrategy = new TargetStrategy(5001);
             //newOrderSingle.TargetStrategyParameters = new TargetStrategyParameters("138604815797");
             newOrderSingle.TargetStrategy = new TargetStrategy(5000);
-
             newOrderSingle.Account = new Account(response.GetString(Tags.Account));
             Session.Send(newOrderSingle);
         }
