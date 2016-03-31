@@ -23,12 +23,15 @@ namespace CFD_JOBS.Ayondo
                 );
 
             initiator.Start();
-            while (true)
-            {
-                //System.Console.WriteLine("o hai");
-                System.Threading.Thread.Sleep(1000);
-            }
-            //initiator.Stop();
+
+            myApp.Run();
+            //while (true)
+            //{
+            //    //System.Console.WriteLine("o hai");
+            //    System.Threading.Thread.Sleep(1000);
+            //}
+
+            initiator.Stop();
         }
     }
 }
