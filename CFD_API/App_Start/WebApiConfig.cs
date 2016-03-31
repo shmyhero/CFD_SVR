@@ -17,7 +17,7 @@ namespace CFD_API
         public static void Register(HttpConfiguration config)
         {
             //enable CORS
-            var cors = new EnableCorsAttribute("*", "*", "GET,POST,DELETE");
+            var cors = new EnableCorsAttribute("*", "*", "GET,POST,DELETE,PUT");
             config.EnableCors(cors);
 
             // Web API configuration and services
