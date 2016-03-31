@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using CFD_COMMON;
+using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;
@@ -91,6 +94,14 @@ namespace CFD_JOBS.Ayondo
 
         public void OnMessage(QuickFix.FIX44.CollateralReport report, SessionID session)
         {
+            var db = CFDEntities.Create();
+            var userAyondoOrders = db.UserAyondoOrders.FirstOrDefault();
+            if (report.TotalNetValue.Obj != 0)
+            {
+                userAyondoOrders.BalanceCash = report.MarginExcess.Obj;
+            }
+            db.SaveChanges();
+
             CFDGlobal.LogLine("OnMessage:CollateralReport ");
             CFDGlobal.LogLine(GetMessageString(report));
         }

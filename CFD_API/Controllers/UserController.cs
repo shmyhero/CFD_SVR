@@ -161,5 +161,18 @@ namespace CFD_API.Controllers
 
             return new ResultDTO {success = true};
         }
+
+        [HttpGet]
+        [ActionName("balancecash")]
+        [BasicAuth]
+        public Result<String> GetBalanceCash(LoginFormDTO form)
+        {
+            //var user = GetUser();
+            //var balanceCash = user.BalanceCash;
+
+            var userAyondoOrders = db.UserAyondoOrders.FirstOrDefault();
+
+            return new Result<string>() { success = true, data = userAyondoOrders.BalanceCash.ToString() };
+        }
     }
 }
