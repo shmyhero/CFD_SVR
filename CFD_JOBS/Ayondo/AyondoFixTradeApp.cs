@@ -95,10 +95,10 @@ namespace CFD_JOBS.Ayondo
         public void OnMessage(QuickFix.FIX44.CollateralReport report, SessionID session)
         {
             var db = CFDEntities.Create();
-            var userAyondoOrders = db.UserAyondoOrders.FirstOrDefault();
+            var userAyondos = db.UserAyondos.FirstOrDefault();
             if (report.TotalNetValue.Obj != 0)
             {
-                userAyondoOrders.BalanceCash = report.MarginExcess.Obj;
+                userAyondos.BalanceCash = report.MarginExcess.Obj;
             }
             db.SaveChanges();
 

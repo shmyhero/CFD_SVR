@@ -19,7 +19,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
-        public virtual DbSet<UserAyondoOrder> UserAyondoOrders { get; set; }
+        public virtual DbSet<UserAyondo> UserAyondos { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

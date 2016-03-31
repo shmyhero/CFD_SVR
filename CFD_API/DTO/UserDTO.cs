@@ -1,6 +1,6 @@
 ﻿namespace CFD_API.DTO
 {
-    public class SignupResultDTO:ResultDTO
+    public class SignupResultDTO : ResultDTO
     {
         //public bool success { get; set; }
         public bool? isNewUser { get; set; }
@@ -14,5 +14,14 @@
         public int id { get; set; }
         public string nickname { get; set; }
         public string picUrl { get; set; }
+    }
+
+    public class UserAyondoDTO
+    {
+        public int id { get; set; }
+
+        public int userid { get; set; }
+
+        public decimal? balanceCash { get; set; }
     }
 }

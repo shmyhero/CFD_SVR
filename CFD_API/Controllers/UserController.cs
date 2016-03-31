@@ -165,14 +165,14 @@ namespace CFD_API.Controllers
         [HttpGet]
         [ActionName("balancecash")]
         [BasicAuth]
-        public Result<String> GetBalanceCash(LoginFormDTO form)
+        public Result GetBalanceCash(LoginFormDTO form)
         {
             //var user = GetUser();
             //var balanceCash = user.BalanceCash;
 
-            var userAyondoOrders = db.UserAyondoOrders.FirstOrDefault();
+            var userAyondos = db.UserAyondos.FirstOrDefault();
 
-            return new Result<string>() { success = true, data = userAyondoOrders.BalanceCash.ToString() };
+            return new Result() { success = true, data = userAyondos.BalanceCash };
         }
     }
 }

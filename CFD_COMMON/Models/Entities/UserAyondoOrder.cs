@@ -6,8 +6,8 @@ namespace CFD_COMMON.Models.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("UserAyondoOrder")]
-    public partial class UserAyondoOrder
+    [Table("UserAyondo")]
+    public partial class UserAyondo
     {
         public long Id { get; set; }
 
