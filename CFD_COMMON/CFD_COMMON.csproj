@@ -114,6 +114,7 @@
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Model1.cs" />
     <Compile Include="Models\Entities\User.cs" />
+    <Compile Include="Models\Entities\UserAyondo.cs" />
     <Compile Include="Models\Entities\VerifyCode.cs" />
     <Compile Include="Models\Cached\ProdDef.cs" />
     <Compile Include="Models\Cached\Quote.cs" />
