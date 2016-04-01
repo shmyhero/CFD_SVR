@@ -1,26 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CFD_COMMON;
-using CFD_COMMON.Models.Cached;
+﻿using CFD_COMMON;
 using QuickFix;
 using QuickFix.Transport;
 
 namespace CFD_JOBS.Ayondo
 {
-    class AyondoFixTradeWorker
+    internal class AyondoFixTradeWorker
     {
         public static void Run()
         {
             SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath"));
             AyondoFixTradeApp myApp = new AyondoFixTradeApp();
             IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
-            //ILogFactory logFactory = new FileLogFactory(settings);
-            SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings
-                //,logFactory
-                );
+            ILogFactory logFactory = new FileLogFactory(settings);
+            SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings, logFactory);
 
             initiator.Start();
 
