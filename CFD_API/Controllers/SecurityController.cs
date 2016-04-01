@@ -66,8 +66,6 @@ namespace CFD_API.Controllers
 
             UpdateStockInfo(securityDtos);
 
-            securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
-
             return securityDtos;
         }
 
