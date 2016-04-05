@@ -43,7 +43,15 @@ namespace CFD_API.Controllers
                     //refetch
                     user = db.Users.FirstOrDefault(o => o.Phone == form.phone);
 
-                    user.Nickname = "u" + user.Id.ToString("00000000");
+                    var nickname = "u" + user.Id.ToString("00000000");
+                    user.Nickname = nickname;
+
+                    //check duplicate nickname and generate random suffix
+                    while (db.Users.Any(o => o.Id != user.Id && o.Nickname == user.Nickname))
+                    {
+                        user.Nickname = nickname + (new Random().Next(10000));
+                    }
+
                     db.SaveChanges();
 
                     result.success = true;
