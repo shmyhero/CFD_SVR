@@ -6,7 +6,6 @@ using System.Web.Http;
 using AutoMapper;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
-using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
@@ -19,7 +18,7 @@ namespace CFD_API.Controllers
     public class SecurityController : CFDController
     {
         public SecurityController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-            : base(db, mapper,redisClient)
+            : base(db, mapper, redisClient)
         {
         }
 
@@ -40,7 +39,7 @@ namespace CFD_API.Controllers
                 if (prodDef != null)
                 {
                     security.preClose = prodDef.PreClose;
-                    security.open=prodDef.OpenAsk;
+                    security.open = prodDef.OpenAsk;
                     security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
                 }
 
@@ -85,7 +84,7 @@ namespace CFD_API.Controllers
 
             UpdateStockInfo(securityDtos);
 
-            securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
+            securityDtos = securityDtos.OrderByDescending(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
 
             return securityDtos;
         }
@@ -107,7 +106,7 @@ namespace CFD_API.Controllers
 
             UpdateStockInfo(securityDtos);
 
-            securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
+            securityDtos = securityDtos.OrderByDescending(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
 
             return securityDtos;
         }
@@ -186,8 +185,10 @@ namespace CFD_API.Controllers
             var security = db.AyondoSecurities
 //                .Where(o => aliveIds.Contains(o.Id))
                 .Where(o => //o.AssetClass != "Interest Rates" &&
-                    (o.CName.Contains(keyword) || o.Symbol.Contains(keyword)) &&
-                    o.CName != null)
+                    (o.CName.Contains(keyword) || o.Symbol.Contains(keyword))
+                    && o.CName != null
+                    && (o.AssetClass != "Single Stocks" || o.AssetClass == "US Stocks")
+                )
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
@@ -238,7 +239,7 @@ namespace CFD_API.Controllers
             var securityService = new SecurityService(db);
             securityService.AddBookmarks(UserId, ids);
 
-            return new ResultDTO { success = true };
+            return new ResultDTO {success = true};
         }
 
         [HttpPut]
@@ -252,7 +253,7 @@ namespace CFD_API.Controllers
             securityService.DeleteBookmarks(UserId, ids);
             securityService.AddBookmarks(UserId, ids);
 
-            return new ResultDTO { success = true };
+            return new ResultDTO {success = true};
         }
 
         [HttpDelete]
@@ -265,7 +266,7 @@ namespace CFD_API.Controllers
             var securityService = new SecurityService(db);
             securityService.DeleteBookmarks(UserId, ids);
 
-            return new ResultDTO { success = true };
+            return new ResultDTO {success = true};
         }
     }
 }
