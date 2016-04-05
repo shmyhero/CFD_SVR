@@ -15,6 +15,10 @@ namespace CFD_JOBS.Ayondo
         public Session Session { get; set; }
         private DataDictionary DD;
 
+        private string _account;
+        //ayondodemo01 136824778776
+        //ivantradehero 138673044476
+
         #region IApplication members
 
         public void ToAdmin(Message message, SessionID sessionID)
@@ -94,6 +98,10 @@ namespace CFD_JOBS.Ayondo
         {
             CFDGlobal.LogLine("OnMessage:UserResponse ");
             CFDGlobal.LogLine(GetMessageString(response));
+
+            var strAccount = response.GetString(Tags.Account);
+            if (!string.IsNullOrEmpty(response.GetString(Tags.Account)))
+                _account = strAccount;
         }
 
         public void OnMessage(CollateralReport report, SessionID session)
@@ -178,10 +186,10 @@ namespace CFD_JOBS.Ayondo
         private void QueryLogIn()
         {
             var m = new UserRequest();
-            m.UserRequestID = new UserRequestID("login:" + "ayondodemo01");
             m.UserRequestType = new UserRequestType(UserRequestType.LOGONUSER);
-            m.Username = new Username("ayondodemo01");
-            m.Password = new Password("demo2016!");
+            m.Username = QueryUsername();
+            m.Password = QueryPassword();
+            m.UserRequestID = new UserRequestID("login:" + m.Username);
             m.SetField(new StringField(DD.FieldsByName["MDS_SendColRep"].Tag) { Obj = "N" });
             m.SetField(new StringField(DD.FieldsByName["MDS_SendNoPos"].Tag) { Obj = "0" });
             SendMessage(m);
@@ -190,24 +198,28 @@ namespace CFD_JOBS.Ayondo
         private void QueryLogOut()
         {
             var m = new UserRequest();
-            m.UserRequestID = new UserRequestID("logout:" + "ayondodemo01");
+            //m.UserRequestID = new UserRequestID("logout:" + "ayondodemo01");
             m.UserRequestType = new UserRequestType(UserRequestType.LOGOFFUSER);
-            m.Username = new Username("ayondodemo01");
-            m.Password = new Password("demo2016!");
-            m.SetField(new StringField(DD.FieldsByName["MDS_SendColRep"].Tag) { Obj = "N" });
-            m.SetField(new StringField(DD.FieldsByName["MDS_SendNoPos"].Tag) { Obj = "0" });
-            m.SetField(new Account("136824778776"));
+            m.Username = QueryUsername();//any value will work
+            //m.Password = QueryPassword();
+            m.UserRequestID = new UserRequestID("logout:" + _account);
+            //m.Username = new Username("ayondodemo01");
+            //m.Password = new Password("demo2016!");
+            //m.SetField(new StringField(DD.FieldsByName["MDS_SendColRep"].Tag) { Obj = "N" });
+            //m.SetField(new StringField(DD.FieldsByName["MDS_SendNoPos"].Tag) { Obj = "0" });
+            m.SetField(new Account(_account));
+            //m.SetField(QueryAccount());
             SendMessage(m);
         }
 
         private void QueryPositionReport()
         {
             var m = new RequestForPositions();
-            m.PosReqID = new PosReqID("posreq123");
+            m.PosReqID = new PosReqID("pos_req:" + _account);
             m.PosReqType = new PosReqType(PosReqType.POSITIONS);
             m.ClearingBusinessDate = new ClearingBusinessDate("0-0-0");
             m.TransactTime = new TransactTime(DateTime.UtcNow);
-            m.Account = new Account("136824778776");
+            m.Account = new Account(_account);
             m.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
             SendMessage(m);
         }
@@ -215,9 +227,9 @@ namespace CFD_JOBS.Ayondo
         private void QueryOrderMassStatus()
         {
             var m = new OrderMassStatusRequest();
-            m.MassStatusReqID = new MassStatusReqID("orderMass:" + "136824778776");
+            m.MassStatusReqID = new MassStatusReqID("orderMass:" + _account);
             m.MassStatusReqType = new MassStatusReqType(MassStatusReqType.STATUS_FOR_ALL_ORDERS);
-            m.Account = new Account("136824778776");
+            m.Account = new Account(_account);
             SendMessage(m);
         }
 
@@ -225,8 +237,8 @@ namespace CFD_JOBS.Ayondo
         {
             var m = new Message();
             m.Header.SetField(new MsgType("MDS5"));
-            m.SetField(new StringField(DD.FieldsByName["MDS_RequestID"].Tag) {Obj = "balance:" + "136824778776"});
-            m.SetField(new Account("136824778776"));
+            m.SetField(new StringField(DD.FieldsByName["MDS_RequestID"].Tag) { Obj = "balance:" + _account });
+            m.SetField(new Account(_account));
             SendMessage(m);
         }
 
@@ -323,9 +335,8 @@ namespace CFD_JOBS.Ayondo
             //newOrderSingle.Account = new Account(response.GetString(Tags.Account));
             //Session.Send(newOrderSingle);
 
-
             QuickFix.FIX44.NewOrderSingle newOrderSingle = new QuickFix.FIX44.NewOrderSingle();
-            newOrderSingle.ClOrdID = new ClOrdID("newOrderSingle:" + "136824778776"); //QueryClOrdID();
+            newOrderSingle.ClOrdID = new ClOrdID("newOrderSingle:" + _account); //QueryClOrdID();
             newOrderSingle.TransactTime = new TransactTime(DateTime.UtcNow);
 
             var secId = QuerySymbol();
@@ -339,7 +350,7 @@ namespace CFD_JOBS.Ayondo
 
             newOrderSingle.Side = QuerySide();
             newOrderSingle.OrderQty = QueryOrderQty();
-            newOrderSingle.OrdType = new OrdType('1');
+            newOrderSingle.OrdType = QueryOrdType();// new OrdType('1');
 
             var queryStopPx = QueryStopPx();
             if (!string.IsNullOrEmpty(queryStopPx))
@@ -349,12 +360,12 @@ namespace CFD_JOBS.Ayondo
             if (!string.IsNullOrEmpty(queryTakePx))
                 newOrderSingle.SetField(new DecimalField(DD.FieldsByName["TakePx"].Tag) {Obj = Convert.ToDecimal(queryTakePx)});
 
-            //if (!string.IsNullOrEmpty(queryStopPx) || !string.IsNullOrEmpty(queryTakePx))
-            //{
-            //    var queryPrice = QueryPrice();
-            //    if(!string.IsNullOrEmpty(queryPrice))
-            //    newOrderSingle.Price =new Price(Convert.ToDecimal( queryPrice));
-            //}
+            if ((!string.IsNullOrEmpty(queryStopPx) || !string.IsNullOrEmpty(queryTakePx)) || newOrderSingle.OrdType.Obj!=1)
+            {
+                var queryPrice = QueryPrice();
+                if (!string.IsNullOrEmpty(queryPrice))
+                    newOrderSingle.Price = new Price(Convert.ToDecimal(queryPrice));
+            }
 
             newOrderSingle.TargetStrategy = QueryTargetStrategy();
             if (newOrderSingle.TargetStrategy.Obj == 5001)
@@ -362,7 +373,7 @@ namespace CFD_JOBS.Ayondo
                 newOrderSingle.TargetStrategyParameters = QueryTargetStrategyParameters();
             }
 
-            newOrderSingle.Account = new Account("136824778776");
+            newOrderSingle.Account = new Account(_account);
 
             //newOrderSingle.Set(new HandlInst('1'));
             //newOrderSingle.Set(QueryTimeInForce());
@@ -387,9 +398,9 @@ namespace CFD_JOBS.Ayondo
 
             m.Side = QuerySide();
 
-            //var price = QueryPrice();
-            //if(!string.IsNullOrEmpty(price))
-            //m.Price =new Price(Convert.ToDecimal(price));
+            var price = QueryPrice();
+            if (!string.IsNullOrEmpty(price))
+                m.Price = new Price(Convert.ToDecimal(price));
 
             var queryStopPx = QueryStopPx();
             if (!string.IsNullOrEmpty(queryStopPx))
@@ -399,11 +410,11 @@ namespace CFD_JOBS.Ayondo
             if (!string.IsNullOrEmpty(queryTakePx))
                 m.SetField(new DecimalField(DD.FieldsByName["TakePx"].Tag) { Obj = Convert.ToDecimal(queryTakePx) });
 
-            m.Account = new Account("136824778776");
+            m.Account = new Account(_account);
 
-
-            m.OrdType = new OrdType('1');
+            m.OrdType = QueryOrdType();// new OrdType('1');
             m.OrigClOrdID = QueryOrigClOrdID();
+            m.OrderID = QueryOrderID();
 
             return m;
         }
@@ -466,6 +477,12 @@ namespace CFD_JOBS.Ayondo
             Console.Write("ClOrdID? ");
             return new ClOrdID(Console.ReadLine().Trim());
         }
+        private OrderID QueryOrderID()
+        {
+            Console.WriteLine();
+            Console.Write("OrderID? ");
+            return new OrderID(Console.ReadLine().Trim());
+        }
         private OrigClOrdID QueryOrigClOrdID()
         {
             Console.WriteLine();
@@ -508,6 +525,8 @@ namespace CFD_JOBS.Ayondo
             Console.WriteLine();
             Console.WriteLine("1) Market");
             Console.WriteLine("2) Limit");
+            Console.WriteLine("3) Stop");
+            //Console.WriteLine("4) Take");
             Console.Write("OrdType? ");
             string s = Console.ReadLine().Trim();
 
@@ -520,6 +539,10 @@ namespace CFD_JOBS.Ayondo
                 case "2":
                     c = OrdType.LIMIT;
                     break;
+                case "3":
+                    c = OrdType.STOP;
+                    break;
+                //case "2":;
                 default:
                     throw new Exception("unsupported input");
             }
@@ -566,6 +589,27 @@ namespace CFD_JOBS.Ayondo
             Console.WriteLine();
             Console.Write("TargetStrategyParameters? ");
             return new TargetStrategyParameters(Console.ReadLine().Trim());
+        }
+
+        private Username QueryUsername()
+        {
+            Console.WriteLine();
+            Console.Write("Username? ");
+            return new Username(Console.ReadLine().Trim());
+        }
+
+        private Password QueryPassword()
+        {
+            Console.WriteLine();
+            Console.Write("Password? ");
+            return new Password(Console.ReadLine().Trim());
+        }
+
+        private Account QueryAccount()
+        {
+            Console.WriteLine();
+            Console.Write("Account? ");
+            return new Account(Console.ReadLine().Trim());
         }
 
         #endregion
