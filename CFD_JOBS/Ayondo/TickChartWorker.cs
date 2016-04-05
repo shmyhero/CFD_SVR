@@ -59,7 +59,7 @@ namespace CFD_JOBS.Ayondo
                     var listName = "tick:" + quote.Id;
 
                     IRedisList<Tick> list = redisTickClient.Lists[listName];
-                    var listCount = list.Count;
+                    //var listCount = list.Count;
                     //var listCount = redisClient.GetListCount(listName);
 
                     var newTick = new Tick()
@@ -68,7 +68,7 @@ namespace CFD_JOBS.Ayondo
                         Time = quote.Time
                     };
 
-                    if (listCount == 0) //new quote?
+                    if (list.Count == 0) //new quote?
                     {
                         //CFDGlobal.LogLine(quote.Id+" new");
                         newCount++;
@@ -87,7 +87,7 @@ namespace CFD_JOBS.Ayondo
                         list.AddRange(newTicks);
                     }
 
-                    var lastTick = list[listCount - 1]; //last tick in cache
+                    var lastTick = list[list.Count - 1]; //last tick in cache
                     //var lastTick = JsonConvert.DeserializeObject<Tick>(redisClient.GetItemFromList(listName, (int) listCount - 1)); //last tick in cache
                     if (newTick.Time > lastTick.Time)
                     {
@@ -95,7 +95,7 @@ namespace CFD_JOBS.Ayondo
                         {
                             //CFDGlobal.LogLine(quote.Id + " update");
                             updateCount++;
-                            list[listCount - 1] = newTick; //update last tick to new tick
+                            list[list.Count - 1] = newTick; //update last tick to new tick
                             //redisClient.SetItemInList(listName, (int) listCount - 1, JsonConvert.SerializeObject(newTick)); //update last tick to new tick
                         }
                         else
