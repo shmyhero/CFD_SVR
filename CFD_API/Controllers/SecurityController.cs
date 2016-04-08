@@ -234,7 +234,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO AddBookmark(string securityIds)
         {
-            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
+            var ids = securityIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
             var securityService = new SecurityService(db);
             securityService.AddBookmarks(UserId, ids);
@@ -247,10 +247,13 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO ResetBookmark(string securityIds)
         {
-            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
+            if (securityIds == null)
+                securityIds = string.Empty;
+
+            var ids = securityIds.Split(new char[]{','},StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
             var securityService = new SecurityService(db);
-            securityService.DeleteBookmarks(UserId, ids);
+            securityService.DeleteBookmarks(UserId);
             securityService.AddBookmarks(UserId, ids);
 
             return new ResultDTO {success = true};
@@ -261,7 +264,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO DeleteBookmark(string securityIds)
         {
-            var ids = securityIds.Split(',').Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct();
+            var ids = securityIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
             var securityService = new SecurityService(db);
             securityService.DeleteBookmarks(UserId, ids);
