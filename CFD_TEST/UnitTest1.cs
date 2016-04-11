@@ -53,6 +53,7 @@ namespace CFD_TEST
             redisTypedClient.DeleteById(1);
             redisTypedClient.DeleteById(2);
         }
+
         [TestMethod]
         public void JsonDateTimeConvert()
         {
@@ -61,6 +62,20 @@ namespace CFD_TEST
             var local = JsonConvert.SerializeObject(DateTime.Now);
             var unspecify = JsonConvert.SerializeObject(new DateTime(2008, 12, 28));
             
+        }
+
+        [TestMethod]
+        public void RedisTest()
+        {
+            var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
+
+            redisClient.SetEntry("key1","value1");
+
+            var value = redisClient.GetValue("key1");
+
+            Assert.AreEqual("value1",value);
+
+            redisClient.RemoveEntry(new[] {"key1"});
         }
     }
 }
