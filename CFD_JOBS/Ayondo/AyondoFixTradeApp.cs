@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using CFD_COMMON;
 using QuickFix;
 using QuickFix.DataDictionary;
@@ -149,6 +150,8 @@ namespace CFD_JOBS.Ayondo
 
         public void Run()
         {
+            //CFDGlobal.LogLine("initiator thread id "+Thread.CurrentThread.ManagedThreadId.ToString());
+
             while (true)
             {
                 try
