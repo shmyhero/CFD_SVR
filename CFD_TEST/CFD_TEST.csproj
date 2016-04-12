@@ -84,6 +84,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AyondoTrade\AyondoTrade.csproj">
+      <Project>{F1D574AD-2C9B-4519-BD1C-2A4CDD71F6D0}</Project>
+      <Name>AyondoTrade</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CFD_COMMON\CFD_COMMON.csproj">
       <Project>{c46068b7-6d4b-4f7d-aa63-e42cee169372}</Project>
       <Name>CFD_COMMON</Name>

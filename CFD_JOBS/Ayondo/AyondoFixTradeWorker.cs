@@ -24,24 +24,24 @@ namespace CFD_JOBS.Ayondo
 
             //CFDGlobal.LogLine("job main worker id " + Thread.CurrentThread.ManagedThreadId.ToString());
 
-            //Start WCF Service
-            var host = new ServiceHost(typeof(AyondoTradeService));
+            ////Start WCF Service
+            //var host = new ServiceHost(typeof(AyondoTradeService));
 
-            //var hostname = "localhost";
-            var hostname = "192.168.20.143";
-            //var hostname = "cfd-job.chinacloudapp.cn";
+            ////var hostname = "localhost";
+            //var hostname = "192.168.20.143";
+            ////var hostname = "cfd-job.chinacloudapp.cn";
 
-            //tcp at 14001
-            host.AddServiceEndpoint(typeof(IAyondoTradeService), new NetTcpBinding(SecurityMode.None), new Uri("net.tcp://"+hostname+":14001/ayondo"));
-            //http at 14002
-            host.AddServiceEndpoint(typeof(IAyondoTradeService), new BasicHttpBinding(BasicHttpSecurityMode.None), new Uri("http://" + hostname + ":14002/ayondo"));
+            ////tcp at 14001
+            //host.AddServiceEndpoint(typeof(IAyondoTradeService), new NetTcpBinding(SecurityMode.None), new Uri("net.tcp://"+hostname+":14001/ayondo"));
+            ////http at 14002
+            //host.AddServiceEndpoint(typeof(IAyondoTradeService), new BasicHttpBinding(BasicHttpSecurityMode.None), new Uri("http://" + hostname + ":14002/ayondo"));
 
-            // Enable metadata publishing.
-            ServiceMetadataBehavior smb = new ServiceMetadataBehavior();
-            smb.HttpGetEnabled = true;
-            smb.HttpGetUrl = new Uri("http://"+hostname+":14002/ayondo");
-            smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
-            host.Description.Behaviors.Add(smb);
+            //// Enable metadata publishing.
+            //ServiceMetadataBehavior smb = new ServiceMetadataBehavior();
+            //smb.HttpGetEnabled = true;
+            //smb.HttpGetUrl = new Uri("http://"+hostname+":14002/ayondo");
+            //smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
+            //host.Description.Behaviors.Add(smb);
             
             ////auth
             //var collection = new ReadOnlyCollection<IAuthorizationPolicy>(new IAuthorizationPolicy[] { new MyPolicy() });
@@ -53,7 +53,7 @@ namespace CFD_JOBS.Ayondo
             //}
             //sa.ExternalAuthorizationPolicies = collection;
 
-            host.Open();
+            //host.Open();
             //host.Close();
 
             myApp.Run();

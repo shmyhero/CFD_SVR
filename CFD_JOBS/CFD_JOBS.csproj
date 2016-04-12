@@ -89,8 +89,6 @@
     <Compile Include="Ayondo\AyondoFixFeedApp.cs" />
     <Compile Include="Ayondo\AyondoFixTradeApp.cs" />
     <Compile Include="Ayondo\AyondoFixTradeWorker.cs" />
-    <Compile Include="Ayondo\AyondoTradeService.cs" />
-    <Compile Include="Ayondo\IAyondoTradeService.cs" />
     <Compile Include="Ayondo\RedisToDbWorker.cs" />
     <Compile Include="Ayondo\TickChartWorker.cs" />
     <Compile Include="Program.cs" />

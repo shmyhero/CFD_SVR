@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.ServiceModel;
+using AyondoTrade;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_JOBS.Ayondo;
@@ -94,15 +95,13 @@ namespace CFD_TEST
         [TestMethod]
         public void WCFTest()
         {
-            EndpointAddress edpTcp = new EndpointAddress("net.tcp://localhost:14001/ayondo");
-            EndpointAddress edpHttp = new EndpointAddress("http://localhost:14002/ayondo");
+            //EndpointAddress edpTcp = new EndpointAddress("net.tcp://localhost:38113/ayondotradeservice.svc");
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
 
-            MyClient clientTcp = new MyClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            clientTcp.ClientCredentials.UseIdentityConfiguration = false; 
-
+            //MyClient clientTcp = new MyClient(new NetTcpBinding(SecurityMode.None), edpTcp);
             MyClient clientHttp = new MyClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
-            var r1 = clientTcp.Test("haha tcp");
+            //var r1 = clientTcp.Test("haha tcp");
             var r2 = clientHttp.Test("haha http");
 
             
