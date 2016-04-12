@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_JOBS", "CFD_JOBS\CFD_JO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_TEST", "CFD_TEST\CFD_TEST.csproj", "{CE8979E6-619B-4F01-82F8-E62187D66F23}"
 EndProject
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "AyondoTrade.AzureService", "AyondoTrade.AzureService\AyondoTrade.AzureService.ccproj", "{0D87AFC0-B56B-4D18-8C4C-5E6DFE4B1372}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AyondoTrade", "AyondoTrade\AyondoTrade.csproj", "{F1D574AD-2C9B-4519-BD1C-2A4CDD71F6D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{CE8979E6-619B-4F01-82F8-E62187D66F23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE8979E6-619B-4F01-82F8-E62187D66F23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE8979E6-619B-4F01-82F8-E62187D66F23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D87AFC0-B56B-4D18-8C4C-5E6DFE4B1372}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D87AFC0-B56B-4D18-8C4C-5E6DFE4B1372}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D87AFC0-B56B-4D18-8C4C-5E6DFE4B1372}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D87AFC0-B56B-4D18-8C4C-5E6DFE4B1372}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1D574AD-2C9B-4519-BD1C-2A4CDD71F6D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1D574AD-2C9B-4519-BD1C-2A4CDD71F6D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1D574AD-2C9B-4519-BD1C-2A4CDD71F6D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1D574AD-2C9B-4519-BD1C-2A4CDD71F6D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

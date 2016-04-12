@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ServiceConfiguration serviceName="AyondoTrade.AzureService" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2015-04.2.6">
+  <Role name="AyondoTrade">
+    <Instances count="1" />
+    <ConfigurationSettings>
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="BlobEndpoint=https://cfdstorage.blob.core.chinacloudapi.cn/;QueueEndpoint=https://cfdstorage.queue.core.chinacloudapi.cn/;TableEndpoint=https://cfdstorage.table.core.chinacloudapi.cn/;AccountName=cfdstorage;AccountKey=8RxDUBSev10Z2LjeAx/HQvLcl9zkQvhw5Lh/dGgMcYhPPiBizuWOT37JDh283i98Rf2TpnE9WuDL2LpMh1QJ4w==" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="true" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="tradehero" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEE41nj/9nwiZRiImiCb7G3swDQYJKoZIhvcNAQEBBQAEggEASvvDKUei3LrCCFLo9GheTDFc+25H5zufGuBFhuKmAyDyTsTukXjVjC2tPCwxygNAwN8qH2lbOZxRvT7QIx3HgodyTqs88TDmvqRkmweAG2z1ZVOaWXAVczCBmdrK4NqgkUbS7qKaWP0N2K+/DD/X08Aqk1r/br0kh/fqvh9K2lIlWgA/JgZD4+QsSYYtgWSvwe5bR/U13UmD9AEtKX8GZ6oYp7rNM933UrC8ddkV1XDvFq0k0AYRN6twBHS6XZZOUo+xY4JylDIEanJPt53J64EuByH1uwxg+Z1Ay/3HrGvkXBczL+OXr96cB9N5X5H8G/cKDNY1NRPOirTjH6OaXDAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECAM52J8nFRVsgBDK4/c6ntCMqJJIxhrHIjKO" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2017-04-12T23:59:59.0000000+08:00" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
+    </ConfigurationSettings>
+    <Certificates>
+      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="98403A3809AF8A0060358405777E9366C0B4DD04" thumbprintAlgorithm="sha1" />
+    </Certificates>
+  </Role>
+  <NetworkConfiguration>
+    <VirtualNetworkSite name="SH" />
+    <AddressAssignments>
+      <InstanceAddress roleName="AyondoTrade">
+        <Subnets>
+          <Subnet name="Subnet-1" />
+        </Subnets>
+      </InstanceAddress>
+    </AddressAssignments>
+  </NetworkConfiguration>
+</ServiceConfiguration>
