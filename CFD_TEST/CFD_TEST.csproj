@@ -61,6 +61,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -86,6 +87,10 @@
     <ProjectReference Include="..\CFD_COMMON\CFD_COMMON.csproj">
       <Project>{c46068b7-6d4b-4f7d-aa63-e42cee169372}</Project>
       <Name>CFD_COMMON</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CFD_JOBS\CFD_JOBS.csproj">
+      <Project>{BC097504-DDB8-4FAD-8774-72388FEE0B0C}</Project>
+      <Name>CFD_JOBS</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
