@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Threading;
 using CFD_COMMON;
 using QuickFix;
+using QuickFix.FIX44;
 using QuickFix.Transport;
 
 namespace CFD_JOBS.Ayondo

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using AyondoTrade;
@@ -81,30 +82,19 @@ namespace CFD_TEST
             redisClient.RemoveEntry(new[] {"key1"});
         }
 
-        public class MyClient : ClientBase<IAyondoTradeService>, IAyondoTradeService
-        {
-            public MyClient(System.ServiceModel.Channels.Binding binding, EndpointAddress edpAddr)
-                : base(binding, edpAddr) { }
-
-            public string Test(string text)
-            {
-                return base.Channel.Test(text);
-            }
-        }  
-
         [TestMethod]
         public void WCFTest()
         {
             //EndpointAddress edpTcp = new EndpointAddress("net.tcp://localhost:38113/ayondotradeservice.svc");
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+            EndpointAddress edpHttp = new EndpointAddress("http://localhost:38113/ayondotradeservice.svc");
 
             //MyClient clientTcp = new MyClient(new NetTcpBinding(SecurityMode.None), edpTcp);
             MyClient clientHttp = new MyClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
             //var r1 = clientTcp.Test("haha tcp");
-            var r2 = clientHttp.Test("haha http");
+            //var r2 = clientHttp.Test("haha http");
+            var positionReport = clientHttp.GetPositionReport("jiangyi1985", "ivan");
 
-            
             //// 创建Binding  
             //NetTcpBinding tcpBinding = new NetTcpBinding(SecurityMode.None);
             //BasicHttpBinding httpBinding = new BasicHttpBinding(BasicHttpSecurityMode.None);

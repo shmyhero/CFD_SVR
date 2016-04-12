@@ -13,6 +13,11 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoFixTradeApp : MessageCracker, IApplication
     {
+        public AyondoFixTradeApp()
+        {
+            
+        }
+
         public Session Session { get; set; }
         private DataDictionary DD;
 
@@ -362,14 +367,16 @@ namespace CFD_JOBS.Ayondo
 
         #endregion
 
-        public void SendMessage(Message m)
+        private void SendMessage(Message m)
         {
             if (Session != null)
                 Session.Send(m);
             else
             {
-                // This probably won't ever happen.
-                Console.WriteLine("Can't send message: session not created.");
+                //// This probably won't ever happen.
+                //Console.WriteLine("Can't send message: session not created.");
+
+                throw new Exception("fix session is null. fix not logged on yet.");
             }
         }
 

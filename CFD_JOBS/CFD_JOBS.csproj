@@ -87,7 +87,7 @@
     <Compile Include="Ayondo\AyondoDataImportWorker.cs" />
     <Compile Include="Ayondo\AyondoFixFeedWorker.cs" />
     <Compile Include="Ayondo\AyondoFixFeedApp.cs" />
-    <Compile Include="Ayondo\AyondoFixTradeApp.cs" />
+    <Compile Include="Ayondo\AyondoFixTradeClient.cs" />
     <Compile Include="Ayondo\AyondoFixTradeWorker.cs" />
     <Compile Include="Ayondo\RedisToDbWorker.cs" />
     <Compile Include="Ayondo\TickChartWorker.cs" />
@@ -105,6 +105,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AyondoTrade\AyondoTrade.csproj">
+      <Project>{f1d574ad-2c9b-4519-bd1c-2a4cdd71f6d0}</Project>
+      <Name>AyondoTrade</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CFD_COMMON\CFD_COMMON.csproj">
       <Project>{c46068b7-6d4b-4f7d-aa63-e42cee169372}</Project>
       <Name>CFD_COMMON</Name>

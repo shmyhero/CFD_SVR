@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Web;
+using System.Web.Hosting;
+using CFD_COMMON;
+using CFD_JOBS.Ayondo;
+using QuickFix;
 using QuickFix.FIX44;
+using QuickFix.Transport;
 
 namespace AyondoTrade
 {
@@ -9,10 +15,6 @@ namespace AyondoTrade
     // NOTE: In order to launch WCF Test Client for testing this service, please select AyondoTradeService.svc or AyondoTradeService.svc.cs at the Solution Explorer and start debugging.
     public class AyondoTradeService : IAyondoTradeService
     {
-        public AyondoTradeService()
-        {
-        }
-
         public string Test(string text)
         {
             //CFDGlobal.LogLine("host service thread id " + Thread.CurrentThread.ManagedThreadId.ToString());
@@ -21,23 +23,23 @@ namespace AyondoTrade
 
         public IList<PositionReport> GetPositionReport(string username, string password)
         {
-            string account = null;
+             string account = null;
 
-            if (WebRole.FIXApp.OnlineUsernameAccounts.ContainsKey(username))
+            if (FIXApp.Instance.OnlineUsernameAccounts.ContainsKey(username))
             {
-                account = WebRole.FIXApp.OnlineUsernameAccounts[username];
+                account = FIXApp.Instance.OnlineUsernameAccounts[username];
             }
             else
             {
-                var guid = WebRole.FIXApp.LogOn(username, password);
+                var guid = FIXApp.Instance.LogOn(username, password);
 
                 var dtLogon = DateTime.UtcNow;
                 do
                 {
                     Thread.Sleep(1000);
-                    if (WebRole.FIXApp.OnlineUsernameAccounts.ContainsKey(username))
+                    if (FIXApp.Instance.OnlineUsernameAccounts.ContainsKey(username))
                     {
-                        account = WebRole.FIXApp.OnlineUsernameAccounts[username];
+                        account = FIXApp.Instance.OnlineUsernameAccounts[username];
                         break;
                     }
                 } while (DateTime.UtcNow - dtLogon <= TimeSpan.FromSeconds(20)); //20 second timeout
@@ -45,28 +47,39 @@ namespace AyondoTrade
                     throw new Exception("fix log on time out");
             }
 
-            var reqId = WebRole.FIXApp.PositionReport(account);
+            var reqId = FIXApp.Instance.PositionReport(account);
 
+            RequestForPositionsAck ack = null;
             IList<PositionReport> result = null;
             var dtPositionReport = DateTime.UtcNow;
             do
             {
                 Thread.Sleep(1000);
-                if (WebRole.FIXApp.PositionReports.ContainsKey(reqId))
+                if (FIXApp.Instance.RequestForPositionsAcks.ContainsKey(reqId))
                 {
-                    var tryGetValue = WebRole.FIXApp.PositionReports.TryGetValue(reqId, out result);
+                    var tryGetValue = FIXApp.Instance.RequestForPositionsAcks.TryGetValue(reqId, out ack);
 
                     if (!tryGetValue) continue;
 
-                    if (result.Count == result[0].TotalNumPosReports.Obj) //all reports fetched
-                        break;
+                    if (ack.TotalNumPosReports.Obj == 0)//have no position. RETURN
+                       return new List<PositionReport>();
+
+                    if (FIXApp.Instance.PositionReports.ContainsKey(reqId))
+                    {
+                        tryGetValue = FIXApp.Instance.PositionReports.TryGetValue(reqId, out result);
+
+                        if (!tryGetValue) continue;
+
+                        if (result.Count == ack.TotalNumPosReports.Obj) //all reports fetched
+                            break;
+                    }
                 }
             } while (DateTime.UtcNow - dtPositionReport <= TimeSpan.FromSeconds(20)); //20 second timeout
 
-            if (result == null)
+            if (ack == null || ack.TotalNumPosReports.Obj != 0 && result == null)
                 throw new Exception("fail getting position report");
 
-            if(result.Count!=result[0].TotalNumPosReports.Obj)
+            if (result.Count != result[0].TotalNumPosReports.Obj)
                 throw new Exception("unfinished getting position report. " + result.Count + "/" + result[0].TotalNumPosReports.Obj);
 
             return result;
