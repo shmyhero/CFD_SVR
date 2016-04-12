@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
+using QuickFix.FIX44;
 
 namespace AyondoTrade
 {
@@ -13,5 +14,8 @@ namespace AyondoTrade
     {
         [OperationContract]
         string Test(string text);
+
+        [OperationContract]
+        IList<PositionReport> GetPositionReport(string username, string password);
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 using CFD_COMMON;
 using QuickFix;
 using QuickFix.DataDictionary;
@@ -15,6 +15,15 @@ namespace CFD_JOBS.Ayondo
     {
         public Session Session { get; set; }
         private DataDictionary DD;
+
+        //custom tags
+        public int MDS_SendColRep;
+        public int MDS_SendNoPos;
+
+        public IDictionary<string, string> OnlineUsernameAccounts = new Dictionary<string, string>();
+        //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
+        public ConcurrentDictionary<string, RequestForPositionsAck> RequestForPositionsAcks = new ConcurrentDictionary<string, RequestForPositionsAck>();
+        public ConcurrentDictionary<string, IList<PositionReport>> PositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
 
         private string _account;
         //ayondodemo01 136824778776
@@ -83,6 +92,9 @@ namespace CFD_JOBS.Ayondo
 
             Session = Session.LookupSession(sessionID);
             DD = Session.ApplicationDataDictionary;
+
+            MDS_SendColRep = DD.FieldsByName["MDS_SendColRep"].Tag;
+            MDS_SendNoPos = DD.FieldsByName["MDS_SendNoPos"].Tag;
         }
 
         #endregion
@@ -100,9 +112,23 @@ namespace CFD_JOBS.Ayondo
             CFDGlobal.LogLine("OnMessage:UserResponse ");
             CFDGlobal.LogLine(GetMessageString(response));
 
+            //for console test
             var strAccount = response.GetString(Tags.Account);
             if (!string.IsNullOrEmpty(response.GetString(Tags.Account)))
                 _account = strAccount;
+
+            var username = response.Username.Obj;
+
+            //add to onlinie user list
+            if (response.UserStatus.Obj == UserStatus.LOGGED_IN)
+            {
+                if (OnlineUsernameAccounts.ContainsKey(username))
+                    OnlineUsernameAccounts[username] = response.GetString(Tags.Account);
+                else
+                    OnlineUsernameAccounts.Add(username, response.GetString(Tags.Account));
+            }
+            else
+                CFDGlobal.LogLine("UserResponse:UserStatus:" + response.UserStatus.Obj);
         }
 
         public void OnMessage(CollateralReport report, SessionID session)
@@ -125,10 +151,19 @@ namespace CFD_JOBS.Ayondo
             CFDGlobal.LogLine(GetMessageString(report));
         }
 
-        public void OnMessage(RequestForPositionsAck requestAck, SessionID session)
+        public void OnMessage(RequestForPositionsAck response, SessionID session)
         {
             CFDGlobal.LogLine("OnMessage:RequestForPositionsAck ");
-            CFDGlobal.LogLine(GetMessageString(requestAck));
+            CFDGlobal.LogLine(GetMessageString(response));
+
+            var guid = response.PosReqID.Obj;
+
+            if (RequestForPositionsAcks.ContainsKey(guid))
+            {
+                throw new Exception("existed guid for RequestForPositionsAck");
+            }
+
+            RequestForPositionsAcks.TryAdd(guid, response);
         }
 
         public void OnMessage(PositionReport report, SessionID session)
@@ -138,6 +173,15 @@ namespace CFD_JOBS.Ayondo
             //var groupTags = report.GetGroupTags();
             //var noPositionsGroup = new PositionReport.NoPositionsGroup();
             //var @group2 = report.GetGroup(1, noPositionsGroup);
+
+            var guid = report.PosReqID.Obj;
+
+            if (PositionReports.ContainsKey(guid))
+            {
+                PositionReports[guid].Add(report);
+            }
+            else
+                PositionReports.TryAdd(guid, new List<PositionReport> { report });
         }
 
         public void OnMessage(BusinessMessageReject reject, SessionID session)
@@ -147,6 +191,40 @@ namespace CFD_JOBS.Ayondo
         }
 
         #endregion
+
+        public string LogOn(string username, string password)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new UserRequest();
+            m.UserRequestID = new UserRequestID(guid);
+
+            m.UserRequestType = new UserRequestType(UserRequestType.LOGONUSER);
+            m.Username = new Username(username);
+            m.Password = new Password(password);
+            m.SetField(new StringField(MDS_SendColRep) {Obj = "N"});
+            m.SetField(new StringField(MDS_SendNoPos) {Obj = "0"});
+            SendMessage(m);
+
+            return guid;
+        }
+
+        public string PositionReport(string account)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new RequestForPositions();
+            m.PosReqID = new PosReqID(guid);
+
+            m.PosReqType = new PosReqType(PosReqType.POSITIONS);
+            m.ClearingBusinessDate = new ClearingBusinessDate("0-0-0");
+            m.TransactTime = new TransactTime(DateTime.UtcNow);
+            m.Account = new Account(account);
+            m.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
+            SendMessage(m);
+
+            return guid;
+        }
 
         public void Run()
         {
@@ -186,6 +264,8 @@ namespace CFD_JOBS.Ayondo
             Console.WriteLine("Program shutdown.");
         }
 
+        #region console test method
+
         private void QueryLogIn()
         {
             var m = new UserRequest();
@@ -193,8 +273,8 @@ namespace CFD_JOBS.Ayondo
             m.Username = QueryUsername();
             m.Password = QueryPassword();
             m.UserRequestID = new UserRequestID("login:" + m.Username);
-            m.SetField(new StringField(DD.FieldsByName["MDS_SendColRep"].Tag) { Obj = "N" });
-            m.SetField(new StringField(DD.FieldsByName["MDS_SendNoPos"].Tag) { Obj = "0" });
+            m.SetField(new StringField(DD.FieldsByName["MDS_SendColRep"].Tag) {Obj = "N"});
+            m.SetField(new StringField(DD.FieldsByName["MDS_SendNoPos"].Tag) {Obj = "0"});
             SendMessage(m);
         }
 
@@ -203,7 +283,7 @@ namespace CFD_JOBS.Ayondo
             var m = new UserRequest();
             //m.UserRequestID = new UserRequestID("logout:" + "ayondodemo01");
             m.UserRequestType = new UserRequestType(UserRequestType.LOGOFFUSER);
-            m.Username = QueryUsername();//any value will work
+            m.Username = QueryUsername(); //any value will work
             //m.Password = QueryPassword();
             m.UserRequestID = new UserRequestID("logout:" + _account);
             //m.Username = new Username("ayondodemo01");
@@ -240,7 +320,7 @@ namespace CFD_JOBS.Ayondo
         {
             var m = new Message();
             m.Header.SetField(new MsgType("MDS5"));
-            m.SetField(new StringField(DD.FieldsByName["MDS_RequestID"].Tag) { Obj = "balance:" + _account });
+            m.SetField(new StringField(DD.FieldsByName["MDS_RequestID"].Tag) {Obj = "balance:" + _account});
             m.SetField(new Account(_account));
             SendMessage(m);
         }
@@ -249,7 +329,7 @@ namespace CFD_JOBS.Ayondo
         {
             Console.WriteLine("\nNewOrderSingle");
 
-            QuickFix.FIX44.NewOrderSingle m = QueryNewOrderSingle44();
+            NewOrderSingle m = QueryNewOrderSingle44();
 
             if (m != null && QueryConfirm("Send order"))
             {
@@ -263,7 +343,7 @@ namespace CFD_JOBS.Ayondo
         {
             Console.WriteLine("\nCancelReplaceRequest");
 
-            QuickFix.FIX44.OrderCancelReplaceRequest m = QueryCancelReplaceRequest44();
+            OrderCancelReplaceRequest m = QueryCancelReplaceRequest44();
 
             if (m != null && QueryConfirm("Send replace"))
                 SendMessage(m);
@@ -280,7 +360,9 @@ namespace CFD_JOBS.Ayondo
             return (line[0].Equals('y') || line[0].Equals('Y'));
         }
 
-        private void SendMessage(Message m)
+        #endregion
+
+        public void SendMessage(Message m)
         {
             if (Session != null)
                 Session.Send(m);
@@ -353,7 +435,7 @@ namespace CFD_JOBS.Ayondo
 
             newOrderSingle.Side = QuerySide();
             newOrderSingle.OrderQty = QueryOrderQty();
-            newOrderSingle.OrdType = QueryOrdType();// new OrdType('1');
+            newOrderSingle.OrdType = QueryOrdType(); // new OrdType('1');
 
             var queryStopPx = QueryStopPx();
             if (!string.IsNullOrEmpty(queryStopPx))
@@ -363,7 +445,7 @@ namespace CFD_JOBS.Ayondo
             if (!string.IsNullOrEmpty(queryTakePx))
                 newOrderSingle.SetField(new DecimalField(DD.FieldsByName["TakePx"].Tag) {Obj = Convert.ToDecimal(queryTakePx)});
 
-            if ((!string.IsNullOrEmpty(queryStopPx) || !string.IsNullOrEmpty(queryTakePx)) || newOrderSingle.OrdType.Obj!=1)
+            if ((!string.IsNullOrEmpty(queryStopPx) || !string.IsNullOrEmpty(queryTakePx)) || newOrderSingle.OrdType.Obj != 1)
             {
                 var queryPrice = QueryPrice();
                 if (!string.IsNullOrEmpty(queryPrice))
@@ -393,11 +475,11 @@ namespace CFD_JOBS.Ayondo
             OrderCancelReplaceRequest m = new OrderCancelReplaceRequest();
 
             m.ClOrdID = QueryClOrdID();
-            m.TransactTime=new TransactTime(DateTime.UtcNow);
+            m.TransactTime = new TransactTime(DateTime.UtcNow);
             var symbol = QuerySymbol();
-            m.Symbol=new Symbol(symbol);
-            m.SecurityID=new SecurityID(symbol);
-            m.SecurityIDSource=new SecurityIDSource("G");
+            m.Symbol = new Symbol(symbol);
+            m.SecurityID = new SecurityID(symbol);
+            m.SecurityIDSource = new SecurityIDSource("G");
 
             m.Side = QuerySide();
 
@@ -411,11 +493,11 @@ namespace CFD_JOBS.Ayondo
 
             var queryTakePx = QueryTakePx();
             if (!string.IsNullOrEmpty(queryTakePx))
-                m.SetField(new DecimalField(DD.FieldsByName["TakePx"].Tag) { Obj = Convert.ToDecimal(queryTakePx) });
+                m.SetField(new DecimalField(DD.FieldsByName["TakePx"].Tag) {Obj = Convert.ToDecimal(queryTakePx)});
 
             m.Account = new Account(_account);
 
-            m.OrdType = QueryOrdType();// new OrdType('1');
+            m.OrdType = QueryOrdType(); // new OrdType('1');
             m.OrigClOrdID = QueryOrigClOrdID();
             m.OrderID = QueryOrderID();
 
@@ -480,12 +562,14 @@ namespace CFD_JOBS.Ayondo
             Console.Write("ClOrdID? ");
             return new ClOrdID(Console.ReadLine().Trim());
         }
+
         private OrderID QueryOrderID()
         {
             Console.WriteLine();
             Console.Write("OrderID? ");
             return new OrderID(Console.ReadLine().Trim());
         }
+
         private OrigClOrdID QueryOrigClOrdID()
         {
             Console.WriteLine();
@@ -616,5 +700,11 @@ namespace CFD_JOBS.Ayondo
         }
 
         #endregion
+    }
+
+    public class FIXUser
+    {
+        public RequestForPositionsAck RequestForPositionsAck { get; set; }
+        public IList<PositionReport> PositionReports { get; set; }
     }
 }

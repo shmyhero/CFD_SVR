@@ -54,7 +54,7 @@ namespace CFD_API.Controllers
 
             if (!string.IsNullOrWhiteSpace(code))
             {
-                CFDGlobal.RetryMaxOrThrow(() => YunPianMessenger.TplSendCodeSms(string.Format("#code#={0}", code), phone), sleepSeconds: 0);
+                CFDGlobal.RetryMaxOrThrow(() => YunPianMessenger.TplSendCodeSms(string.Format("#code#={0}", code), phone), sleepMilliSeconds: 0);
 
                 db.VerifyCodes.Add(new VerifyCode
                 {

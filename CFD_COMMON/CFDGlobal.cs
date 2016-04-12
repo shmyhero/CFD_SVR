@@ -42,7 +42,8 @@ namespace CFD_COMMON
         /// <returns></returns>
         public static IRedisClientsManager GetNewBasicRedisClientManager()
         {
-            return new BasicRedisClientManager(CFDGlobal.GetConfigurationSetting("redisConnectionString"));
+            var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString");
+            return new BasicRedisClientManager(redisConStr);
         }
 
         public static string GetConfigurationSetting(string key)
@@ -52,7 +53,14 @@ namespace CFD_COMMON
                 ////throw exception if not exist
                 //return RoleEnvironment.GetConfigurationSettingValue(key);
 
-                var value = CloudConfigurationManager.GetSetting(key);
+                string value=null;
+                try
+                {
+                    value = CloudConfigurationManager.GetSetting(key);
+                }
+                catch (Exception e)
+                {
+                }
 
                 //if there's no cloud config, return local config
                 return value ?? ConfigurationManager.AppSettings[key];
@@ -63,10 +71,10 @@ namespace CFD_COMMON
             }
         }
 
-        public static T RetryMaxOrThrow<T>(Func<T> p, int sleepSeconds = 10, int retryMax = 3, bool verboseErrorLog = true)
+        public static T RetryMaxOrThrow<T>(Func<T> p, int sleepMilliSeconds = 10000, int retryMax = 3, bool verboseErrorLog = true)
         {
             int retryCount = 0;
-            int currentSleepSeconds = sleepSeconds;
+            int currentSleepMilliSeconds = sleepMilliSeconds;
             for (; ; )
             {
                 try
@@ -104,7 +112,7 @@ namespace CFD_COMMON
                     //    Trace.WriteLine("sleep " + currentSleepSeconds + "s...");
 
                     //#if !DEBUG
-                    Thread.Sleep(1000 * currentSleepSeconds);
+                    Thread.Sleep(currentSleepMilliSeconds);
                     //#endif
                 }
             }
