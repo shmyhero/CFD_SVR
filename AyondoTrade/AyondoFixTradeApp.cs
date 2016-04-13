@@ -32,6 +32,7 @@ namespace CFD_JOBS.Ayondo
         //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
         public ConcurrentDictionary<string, RequestForPositionsAck> RequestForPositionsAcks = new ConcurrentDictionary<string, RequestForPositionsAck>();
         public ConcurrentDictionary<string, IList<PositionReport>> PositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
+        public ConcurrentDictionary<string, BusinessMessageReject> BusinessMessageRejects = new ConcurrentDictionary<string, BusinessMessageReject>();
 
         private string _account;
         //ayondodemo01 136824778776
@@ -207,6 +208,15 @@ namespace CFD_JOBS.Ayondo
         {
             CFDGlobal.LogLine(":OnMessage:BusinessMessageReject");
             CFDGlobal.LogLine(GetMessageString(reject));
+
+            var guid = reject.BusinessRejectRefID.Obj;
+
+            if (BusinessMessageRejects.ContainsKey(guid))
+            {
+                throw new Exception("existed guid for BusinessMessageRejects");
+            }
+
+            BusinessMessageRejects.TryAdd(guid, reject);
         }
 
         #endregion
