@@ -16,6 +16,6 @@ namespace AyondoTrade
         string Test(string text);
 
         [OperationContract]
-        IList<PositionReport> GetPositionReport(string username, string password);
+        IList<Model.PositionReport> GetPositionReport(string username, string password);
     }
 }

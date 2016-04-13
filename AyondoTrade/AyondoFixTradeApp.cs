@@ -24,6 +24,9 @@ namespace CFD_JOBS.Ayondo
         //custom tags
         public int MDS_SendColRep;
         public int MDS_SendNoPos;
+        public int StopOID;
+        public int TakeOID;
+        public int TakePx;
 
         public IDictionary<string, string> OnlineUsernameAccounts = new Dictionary<string, string>();
         //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
@@ -100,6 +103,9 @@ namespace CFD_JOBS.Ayondo
 
             MDS_SendColRep = DD.FieldsByName["MDS_SendColRep"].Tag;
             MDS_SendNoPos = DD.FieldsByName["MDS_SendNoPos"].Tag;
+            StopOID = DD.FieldsByName["StopOID"].Tag;
+            TakeOID = DD.FieldsByName["TakeOID"].Tag;
+            TakePx = DD.FieldsByName["TakePx"].Tag;
         }
 
         #endregion
@@ -179,6 +185,14 @@ namespace CFD_JOBS.Ayondo
             //var noPositionsGroup = new PositionReport.NoPositionsGroup();
             //var @group2 = report.GetGroup(1, noPositionsGroup);
 
+            //var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
+            //report.GetGroup(1, noPositionsGroup);
+
+            //var groupTags = report.GetGroupTags();
+            //var indexOf = groupTags.IndexOf(Tags.NoPositions);
+            //report.GetGroup(indexOf+1, noPositionsGroup);
+
+            //save result to dictionary
             var guid = report.PosReqID.Obj;
 
             if (PositionReports.ContainsKey(guid))
@@ -511,20 +525,23 @@ namespace CFD_JOBS.Ayondo
             return m;
         }
 
-        private string GetMessageString(Message message)
+        private string GetMessageString(Message message, bool showHeader=false,bool showTrailer=false)
         {
             if (DD == null)
                 return message.ToString();
 
             var sb = new StringBuilder();
-            //sb.AppendLine("--------------------fix message-------------------");
-            //foreach (KeyValuePair<int, IField> pair in message.Header)
-            //{
-            //    var field = DD.FieldsByTag[pair.Key];
-            //    var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
-            //    sb.AppendLine(field.Name + "=" + value);
-            //}
-            //sb.AppendLine("");
+            if (showHeader)
+            {
+                //sb.AppendLine("--------------------fix message-------------------");
+                foreach (KeyValuePair<int, IField> pair in message.Header)
+                {
+                    var field = DD.FieldsByTag[pair.Key];
+                    var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
+                    sb.AppendLine(field.Name + "=" + value);
+                }
+                sb.AppendLine("------");
+            }
 
             var groupTags = message.GetGroupTags();
 
@@ -549,14 +566,18 @@ namespace CFD_JOBS.Ayondo
                     //sb.AppendLine("END GROUP");
                 }
             }
-            //sb.AppendLine("");
 
-            //foreach (KeyValuePair<int, IField> pair in message.Trailer)
-            //{
-            //    var field = DD.FieldsByTag[pair.Key];
-            //    var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
-            //    sb.AppendLine(field.Name + "=" + value);
-            //}
+            if (showTrailer)
+            {
+                sb.AppendLine("------");
+
+                foreach (KeyValuePair<int, IField> pair in message.Trailer)
+                {
+                    var field = DD.FieldsByTag[pair.Key];
+                    var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
+                    sb.AppendLine(field.Name + "=" + value);
+                }
+            }
             sb.AppendLine("--------------------------------------------------");
             return sb.ToString();
         }

@@ -121,6 +121,10 @@
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="QuickFix, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QuickFix.Net.1.5.0\lib\QuickFix.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ServiceStack.Common, Version=3.9.71.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ServiceStack.Common.3.9.71\lib\net35\ServiceStack.Common.dll</HintPath>
       <Private>True</Private>
@@ -138,6 +142,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Spatial, Version=5.6.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Spatial.5.6.2\lib\net40\System.Spatial.dll</HintPath>
       <Private>True</Private>
@@ -227,12 +232,14 @@
     <Compile Include="Controllers\Attributes\RequireHttpsAttribute.cs" />
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
+    <Compile Include="Controllers\PositionController.cs" />
     <Compile Include="Controllers\QuoteController.cs" />
     <Compile Include="Controllers\SecurityController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
     <Compile Include="DTO\Ayondo\CreateAccountRequest.cs" />
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
+    <Compile Include="DTO\PositionDTO.cs" />
     <Compile Include="DTO\SecurityDTO.cs" />
     <Compile Include="DTO\SignalRDTO\QuoteFeed.cs" />
     <Compile Include="DTO\TickDTO.cs" />
@@ -260,6 +267,10 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AyondoTrade\AyondoTrade.csproj">
+      <Project>{f1d574ad-2c9b-4519-bd1c-2a4cdd71f6d0}</Project>
+      <Name>AyondoTrade</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CFD_COMMON\CFD_COMMON.csproj">
       <Project>{c46068b7-6d4b-4f7d-aa63-e42cee169372}</Project>
       <Name>CFD_COMMON</Name>

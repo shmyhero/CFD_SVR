@@ -14,7 +14,7 @@
     <AzureEnableIntelliTrace>False</AzureEnableIntelliTrace>
     <AzureEnableProfiling>False</AzureEnableProfiling>
     <AzureServiceConfiguration>Cloud</AzureServiceConfiguration>
-    <AzureSolutionConfiguration>Release</AzureSolutionConfiguration>
+    <AzureSolutionConfiguration>Debug</AzureSolutionConfiguration>
     <AzureStorageAccountLabel>cfdstorage</AzureStorageAccountLabel>
     <AzureStorageAccountName>cfdstorage</AzureStorageAccountName>
     <AzureAppendTimestampToDeploymentLabel>True</AzureAppendTimestampToDeploymentLabel>

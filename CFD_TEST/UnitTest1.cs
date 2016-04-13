@@ -86,10 +86,11 @@ namespace CFD_TEST
         public void WCFTest()
         {
             //EndpointAddress edpTcp = new EndpointAddress("net.tcp://localhost:38113/ayondotradeservice.svc");
-            EndpointAddress edpHttp = new EndpointAddress("http://localhost:38113/ayondotradeservice.svc");
+            //EndpointAddress edpHttp = new EndpointAddress("http://localhost:38113/ayondotradeservice.svc");
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
 
-            //MyClient clientTcp = new MyClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            MyClient clientHttp = new MyClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
             //var r1 = clientTcp.Test("haha tcp");
             //var r2 = clientHttp.Test("haha http");

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
 using CFD_COMMON;
 using CFD_JOBS.Ayondo;
 using QuickFix;
+using QuickFix.Fields;
 using QuickFix.FIX44;
 using QuickFix.Transport;
 
@@ -21,7 +23,7 @@ namespace AyondoTrade
             return "You entered: " + text;
         }
 
-        public IList<PositionReport> GetPositionReport(string username, string password)
+        public IList<Model.PositionReport> GetPositionReport(string username, string password)
         {
              string account = null;
 
@@ -62,7 +64,7 @@ namespace AyondoTrade
                     if (!tryGetValue) continue;
 
                     if (ack.TotalNumPosReports.Obj == 0)//have no position. RETURN
-                       return new List<PositionReport>();
+                        return new List<Model.PositionReport>();
 
                     if (FIXApp.Instance.PositionReports.ContainsKey(reqId))
                     {
@@ -82,7 +84,28 @@ namespace AyondoTrade
             if (result.Count != result[0].TotalNumPosReports.Obj)
                 throw new Exception("unfinished getting position report. " + result.Count + "/" + result[0].TotalNumPosReports.Obj);
 
-            return result;
+            var positionReports = result.Select(delegate(PositionReport report)
+            {
+                var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
+                report.GetGroup(1, noPositionsGroup);
+
+                return new Model.PositionReport
+                {
+                    PosMaintRptID = report.PosMaintRptID.Obj,
+                    SecurityID = report.SecurityID.Obj,
+                    SettlPrice = report.SettlPrice.Obj,
+
+                    ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null,
+                    LongQty = noPositionsGroup.Any(o=>o.Key==Tags.LongQty)?noPositionsGroup.LongQty.Obj:(decimal?) null,
+
+                    StopOID = report.Any(o => o.Key == FIXApp.Instance.StopOID) ? report.GetString(FIXApp.Instance.StopOID) : null,
+                    TakeOID = report.Any(o => o.Key == FIXApp.Instance.TakeOID) ? report.GetString(FIXApp.Instance.TakeOID) : null,
+                    StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?)null,
+                    TakePx = report.Any(o => o.Key == FIXApp.Instance.TakePx) ? report.GetDecimal(FIXApp.Instance.TakePx) : (decimal?)null
+                };
+            }).ToList();
+
+            return positionReports;
         }
     }
 }
