@@ -10,7 +10,7 @@ using ServiceStack.Common.Extensions;
 
 namespace AyondoTrade
 {
-    public class FIXApp
+    public class Global
     {
         // Singleton instance
         private static readonly Lazy<AyondoFixTradeApp> _instance = new Lazy<AyondoFixTradeApp>(delegate
@@ -41,7 +41,7 @@ namespace AyondoTrade
             return fixApp;
         });
 
-        public static AyondoFixTradeApp Instance
+        public static AyondoFixTradeApp FixApp
         {
             get { return _instance.Value; }
         }

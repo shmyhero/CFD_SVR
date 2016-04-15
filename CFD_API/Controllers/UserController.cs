@@ -132,6 +132,8 @@ namespace CFD_API.Controllers
                 result.isNewUser = false;
                 result.userId = user.Id;
                 result.token = user.Token;
+
+                //todo:if user is from wechat but user.picurl is null, reload img?
             }
 
             return result;

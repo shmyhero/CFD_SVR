@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using QuickFix.Fields;
@@ -11,32 +12,47 @@ namespace AyondoTrade
     // NOTE: In order to launch WCF Test Client for testing this service, please select AyondoTradeService.svc or AyondoTradeService.svc.cs at the Solution Explorer and start debugging.
     public class AyondoTradeService : IAyondoTradeService
     {
+        public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(20);
+        public static readonly int SCAN_WAIT_MILLI_SECOND = 500;
+
         public string Test(string text)
         {
             //CFDGlobal.LogLine("host service thread id " + Thread.CurrentThread.ManagedThreadId.ToString());
             return "You entered: " + text;
         }
 
+        public Model.PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, string nettingPositionId = null)
+        {
+            string account = GetAccount(username, password);
+
+            PositionReport report;
+            try
+            {
+                report = NewOrderSingle(account, securityId, isLong, orderQty, nettingPositionId);
+            }
+            catch (BusinettMessageRejectException) //get reject
+            {
+                //maybe user is not logged in, try to login ONCE
+                account = Login(username, password);
+
+                //get data again
+                report = NewOrderSingle(account, securityId, isLong, orderQty, nettingPositionId);
+            }
+
+            var result = PositionReportMapping(report);
+            return result;
+        }
+
         public IList<Model.PositionReport> GetPositionReport(string username, string password)
         {
-            string account = null;
-
-            //user in online list?
-            if (FIXApp.Instance.OnlineUsernameAccounts.ContainsKey(username))
-            {
-                account = FIXApp.Instance.OnlineUsernameAccounts[username];
-            }
-            else
-            {
-                account = Login(username, password);
-            }
+            string account = GetAccount(username, password);
 
             IList<PositionReport> result;
             try
             {
                 result = GetPositionReport(account);
             }
-            catch (BusinettMessageRejectException)//get reject
+            catch (BusinettMessageRejectException) //get reject
             {
                 //maybe user is not logged in, try to login ONCE
                 account = Login(username, password);
@@ -46,43 +62,65 @@ namespace AyondoTrade
             }
 
             //mapping FIX message model --> WCF model
-            var positionReports = result.Select(delegate(PositionReport report)
-            {
-                var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
-                report.GetGroup(1, noPositionsGroup);
-
-                return new Model.PositionReport
-                {
-                    PosMaintRptID = report.PosMaintRptID.Obj,
-                    SecurityID = report.SecurityID.Obj,
-                    SettlPrice = report.SettlPrice.Obj,
-                    ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?) null,
-                    LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?) null,
-                    StopOID = report.Any(o => o.Key == FIXApp.Instance.StopOID) ? report.GetString(FIXApp.Instance.StopOID) : null,
-                    TakeOID = report.Any(o => o.Key == FIXApp.Instance.TakeOID) ? report.GetString(FIXApp.Instance.TakeOID) : null,
-                    StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
-                    TakePx = report.Any(o => o.Key == FIXApp.Instance.TakePx) ? report.GetDecimal(FIXApp.Instance.TakePx) : (decimal?) null
-                };
-            }).ToList();
+            var positionReports = result.Select(PositionReportMapping).ToList();
 
             return positionReports;
         }
 
+        private Model.PositionReport PositionReportMapping(PositionReport report)
+        {
+            var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
+            report.GetGroup(1, noPositionsGroup);
+
+            return new Model.PositionReport
+            {
+                PosMaintRptID = report.PosMaintRptID.Obj,
+                SecurityID = report.SecurityID.Obj,
+                SettlPrice = report.SettlPrice.Obj,
+
+                //CreateTime = report.ClearingBusinessDate.Obj,
+                CreateTime =
+                    DateTime.ParseExact(report.ClearingBusinessDate.Obj, "yyyy-MM-dd HH:mm:ss.FFF", CultureInfo.CurrentCulture,
+                        DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?) null,
+                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?) null,
+                StopOID = report.Any(o => o.Key == Global.FixApp.TAG_StopOID) ? report.GetString(Global.FixApp.TAG_StopOID) : null,
+                TakeOID = report.Any(o => o.Key == Global.FixApp.TAG_TakeOID) ? report.GetString(Global.FixApp.TAG_TakeOID) : null,
+                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
+                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null
+            };
+        }
+
+        private static string GetAccount(string username, string password)
+        {
+            string account;
+//user in online list?
+            if (Global.FixApp.OnlineUsernameAccounts.ContainsKey(username))
+            {
+                account = Global.FixApp.OnlineUsernameAccounts[username];
+            }
+            else
+            {
+                account = Login(username, password);
+            }
+            return account;
+        }
+
         private static IList<PositionReport> GetPositionReport(string account)
         {
-            var reqId = FIXApp.Instance.PositionReport(account);
+            var reqId = Global.FixApp.RequestForPositions(account);
 
             RequestForPositionsAck ack = null;
             IList<PositionReport> result = null;
             var dtPositionReport = DateTime.UtcNow;
             do
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
 
                 //RequestForPositionsAck?
-                if (FIXApp.Instance.RequestForPositionsAcks.ContainsKey(reqId))
+                if (Global.FixApp.RequestForPositionsAcks.ContainsKey(reqId))
                 {
-                    var tryGetValue = FIXApp.Instance.RequestForPositionsAcks.TryGetValue(reqId, out ack);
+                    var tryGetValue = Global.FixApp.RequestForPositionsAcks.TryGetValue(reqId, out ack);
 
                     if (!tryGetValue) continue;
 
@@ -92,9 +130,9 @@ namespace AyondoTrade
                         break;
                     }
 
-                    if (FIXApp.Instance.PositionReports.ContainsKey(reqId))
+                    if (Global.FixApp.PositionReports.ContainsKey(reqId))
                     {
-                        tryGetValue = FIXApp.Instance.PositionReports.TryGetValue(reqId, out result);
+                        tryGetValue = Global.FixApp.PositionReports.TryGetValue(reqId, out result);
 
                         if (!tryGetValue) continue;
 
@@ -104,13 +142,13 @@ namespace AyondoTrade
                 }
 
                 //BusinessMessageReject? e.g. not logged in
-                if (FIXApp.Instance.BusinessMessageRejects.ContainsKey(reqId))
+                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
                 {
                     BusinessMessageReject msg;
-                    var tryGetValue = FIXApp.Instance.BusinessMessageRejects.TryGetValue(reqId, out msg);
+                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
                     throw new BusinettMessageRejectException(msg == null ? "" : msg.Text.Obj);
                 }
-            } while (DateTime.UtcNow - dtPositionReport <= TimeSpan.FromSeconds(20)); //20 second timeout
+            } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
             if (ack == null || ack.TotalNumPosReports.Obj != 0 && result == null)
                 throw new Exception("fail getting position report");
@@ -121,22 +159,54 @@ namespace AyondoTrade
             return result;
         }
 
+        private static PositionReport NewOrderSingle(string account, int securityId, bool isLong, decimal orderQty, string nettingPositionId = null)
+        {
+            var reqId = Global.FixApp.NewOrderSingle(account, securityId.ToString(), isLong ? Side.BUY : Side.SELL, orderQty, OrdType.MARKET, nettingPositionId: nettingPositionId);
+            PositionReport report = null;
+            var dt = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+                if (Global.FixApp.OrderPositionReports.ContainsKey(reqId))
+                {
+                    var tryGetValue = Global.FixApp.OrderPositionReports.TryGetValue(reqId, out report);
+
+                    if (!tryGetValue) continue;
+
+                    break;
+                }
+
+                //BusinessMessageReject? e.g. not logged in
+                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
+                {
+                    BusinessMessageReject msg;
+                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
+                    throw new BusinettMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                }
+            } while (DateTime.UtcNow - dt <= TIMEOUT);
+
+            if (report == null)
+                throw new Exception("fail getting order result");
+
+            return report;
+        }
+
         private static string Login(string username, string password)
         {
             string account = null;
 
-            var guid = FIXApp.Instance.LogOn(username, password);
+            var guid = Global.FixApp.LogOn(username, password);
 
             var dtLogon = DateTime.UtcNow;
             do
             {
-                Thread.Sleep(1000);
-                if (FIXApp.Instance.OnlineUsernameAccounts.ContainsKey(username))
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+                if (Global.FixApp.OnlineUsernameAccounts.ContainsKey(username))
                 {
-                    account = FIXApp.Instance.OnlineUsernameAccounts[username];
+                    account = Global.FixApp.OnlineUsernameAccounts[username];
                     break;
                 }
-            } while (DateTime.UtcNow - dtLogon <= TimeSpan.FromSeconds(20)); //20 second timeout
+            } while (DateTime.UtcNow - dtLogon <= TIMEOUT); // timeout
 
             if (string.IsNullOrEmpty(account))
                 throw new Exception("fix log on time out");

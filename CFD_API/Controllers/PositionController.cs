@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.ServiceModel;
 using System.Web.Http;
 using AutoMapper;
@@ -10,9 +8,9 @@ using AyondoTrade;
 using AyondoTrade.Model;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
+using CFD_API.DTO.FormDTO;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
-using CFD_COMMON.Models.Entities;
 using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
@@ -30,14 +28,16 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PositionDTO> GetOpenPositions()
         {
+            var user = GetUser();
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+                throw new Exception("user do not have an ayondo account");
+
             EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
 
             //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
             AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
-            //var r1 = clientTcp.Test("haha tcp");
-            //var r2 = clientHttp.Test("haha http");
-            var result = clientHttp.GetPositionReport("jiangyi1985", "ivan");
+            var result = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
 
             var secIds = result.Select(o => Convert.ToInt32(o.SecurityID)).ToList();
 
@@ -53,31 +53,126 @@ namespace CFD_API.Controllers
                 var dbSec = dbSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
-                
-                //
+
                 var security = Mapper.Map<SecurityDTO>(dbSec);
 
-                security.preClose = prodDef.PreClose;
-                security.open = prodDef.OpenAsk;
-                security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
+                if (prodDef != null)
+                {
+                    security.preClose = prodDef.PreClose;
+                    security.open = prodDef.OpenAsk;
+                    security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
+                }
 
-                security.last = quote.Offer;
+                if (quote != null)
+                {
+                    security.last = quote.Offer;
+                }
 
-                //
-                var posDTO= new PositionDTO()
+                var posDTO = new PositionDTO()
                 {
                     id = report.PosMaintRptID,
                     isLong = report.LongQty != null,
                     settlePrice = report.SettlPrice,
                     invest = 0,
-                    leverage = 1,
-                    security = security
+                    leverage = 1/dbSec.BaseMargin.Value,
+                    createAt = report.CreateTime,
+                    security = security,
+                    quantity = report.LongQty ?? report.ShortQty.Value,
                 };
 
                 return posDTO;
             }).ToList();
 
             return positionDtos;
+        }
+
+        [HttpPost]
+        [Route("")]
+        [BasicAuth]
+        public PositionDTO NewPosition(NewPositionFormDTO form)
+        {
+            var user = GetUser();
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+                throw new Exception("user do not have an ayondo account");
+
+            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+
+            if (security == null)
+                throw new Exception("security not found");
+
+            var redisQuoteClient = RedisClient.As<Quote>();
+            var quote = redisQuoteClient.GetById(form.securityId);
+
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+
+            //*******************************************************
+            //trade value = lot size * quantity * quote price
+            //invest = trade value * margin rate
+            //*******************************************************
+            //var tradeValue = form.invest/security.BaseMargin;
+            //var quantity = tradeValue/security.LotSize/(form.isLong ? quote.Offer : quote.Bid);
+            var result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.isLong,
+                form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value);
+
+            var posDTO = new PositionDTO()
+            {
+                id = result.PosMaintRptID,
+                isLong = result.LongQty != null,
+                settlePrice = result.SettlPrice,
+                invest = 0,
+                leverage = 1/security.BaseMargin.Value,
+                createAt = result.CreateTime,
+                quantity = result.LongQty ?? result.ShortQty.Value,
+            };
+
+            return posDTO;
+        }
+
+        [HttpPost]
+        [Route("net")]
+        [BasicAuth]
+        public PositionDTO NetPosition(NetPositionFormDTO form)
+        {
+            var user = GetUser();
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+                throw new Exception("user do not have an ayondo account");
+
+            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+
+            if (security == null)
+                throw new Exception("security not found");
+
+            //var redisQuoteClient = RedisClient.As<Quote>();
+            //var quote = redisQuoteClient.GetById(form.securityId);
+
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+
+            //*******************************************************
+            //trade value = lot size * quantity * quote price
+            //invest = trade value * margin rate
+            //*******************************************************
+            //var tradeValue = form.invest/security.BaseMargin;
+            //var quantity = tradeValue/security.LotSize/(form.isLong ? quote.Offer : quote.Bid);
+            var result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, !form.isPosLong, form.posQty, form.posId);
+
+            var posDTO = new PositionDTO()
+            {
+                id = result.PosMaintRptID,
+                isLong = result.LongQty != null,
+                settlePrice = result.SettlPrice,
+                invest = 0,
+                leverage = 1/security.BaseMargin.Value,
+                createAt = result.CreateTime,
+                quantity = result.LongQty ?? result.ShortQty.Value,
+            };
+
+            return posDTO;
         }
     }
 }

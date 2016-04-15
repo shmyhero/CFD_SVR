@@ -13,25 +13,21 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoFixTradeApp : MessageCracker, IApplication
     {
-        public AyondoFixTradeApp()
-        {
-            
-        }
-
         public Session Session { get; set; }
         private DataDictionary DD;
 
         //custom tags
-        public int MDS_SendColRep;
-        public int MDS_SendNoPos;
-        public int StopOID;
-        public int TakeOID;
-        public int TakePx;
+        public int TAG_MDS_SendColRep;
+        public int TAG_MDS_SendNoPos;
+        public int TAG_StopOID;
+        public int TAG_TakeOID;
+        public int TAG_TakePx;
 
         public IDictionary<string, string> OnlineUsernameAccounts = new Dictionary<string, string>();
         //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
         public ConcurrentDictionary<string, RequestForPositionsAck> RequestForPositionsAcks = new ConcurrentDictionary<string, RequestForPositionsAck>();
         public ConcurrentDictionary<string, IList<PositionReport>> PositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
+        public ConcurrentDictionary<string, PositionReport> OrderPositionReports = new ConcurrentDictionary<string, PositionReport>();
         public ConcurrentDictionary<string, BusinessMessageReject> BusinessMessageRejects = new ConcurrentDictionary<string, BusinessMessageReject>();
 
         private string _account;
@@ -102,11 +98,11 @@ namespace CFD_JOBS.Ayondo
             Session = Session.LookupSession(sessionID);
             DD = Session.ApplicationDataDictionary;
 
-            MDS_SendColRep = DD.FieldsByName["MDS_SendColRep"].Tag;
-            MDS_SendNoPos = DD.FieldsByName["MDS_SendNoPos"].Tag;
-            StopOID = DD.FieldsByName["StopOID"].Tag;
-            TakeOID = DD.FieldsByName["TakeOID"].Tag;
-            TakePx = DD.FieldsByName["TakePx"].Tag;
+            TAG_MDS_SendColRep = DD.FieldsByName["MDS_SendColRep"].Tag;
+            TAG_MDS_SendNoPos = DD.FieldsByName["MDS_SendNoPos"].Tag;
+            TAG_StopOID = DD.FieldsByName["StopOID"].Tag;
+            TAG_TakeOID = DD.FieldsByName["TakeOID"].Tag;
+            TAG_TakePx = DD.FieldsByName["TakePx"].Tag;
         }
 
         #endregion
@@ -194,14 +190,23 @@ namespace CFD_JOBS.Ayondo
             //report.GetGroup(indexOf+1, noPositionsGroup);
 
             //save result to dictionary
-            var guid = report.PosReqID.Obj;
+            var posReqId = report.PosReqID.Obj;
 
-            if (PositionReports.ContainsKey(guid))
+            if (posReqId == "Unsolicited") //after position changed
             {
-                PositionReports[guid].Add(report);
+                var clOrdID = report.GetField(new StringField(Tags.ClOrdID)).Obj;
+
+                OrderPositionReports.TryAdd(clOrdID, report);
             }
-            else
-                PositionReports.TryAdd(guid, new List<PositionReport> { report });
+            else//after position report request
+            {
+                if (PositionReports.ContainsKey(posReqId))
+                {
+                    PositionReports[posReqId].Add(report);
+                }
+                else
+                    PositionReports.TryAdd(posReqId, new List<PositionReport> { report });
+            }
         }
 
         public void OnMessage(BusinessMessageReject reject, SessionID session)
@@ -231,14 +236,14 @@ namespace CFD_JOBS.Ayondo
             m.UserRequestType = new UserRequestType(UserRequestType.LOGONUSER);
             m.Username = new Username(username);
             m.Password = new Password(password);
-            m.SetField(new StringField(MDS_SendColRep) {Obj = "N"});
-            m.SetField(new StringField(MDS_SendNoPos) {Obj = "0"});
+            m.SetField(new StringField(TAG_MDS_SendColRep) {Obj = "N"});
+            m.SetField(new StringField(TAG_MDS_SendNoPos) {Obj = "0"});
             SendMessage(m);
 
             return guid;
         }
 
-        public string PositionReport(string account)
+        public string RequestForPositions(string account)
         {
             var guid = Guid.NewGuid().ToString();
 
@@ -254,6 +259,94 @@ namespace CFD_JOBS.Ayondo
 
             return guid;
         }
+
+        public string NewOrderSingle(string account, string securityId, char side, decimal orderQty, char ordType, 
+            decimal? price = null, decimal? stopPx = null, decimal? takePx = null, string nettingPositionId = null)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            NewOrderSingle m = new NewOrderSingle();
+
+            m.ClOrdID = new ClOrdID(guid); //QueryClOrdID();
+            m.TransactTime = new TransactTime(DateTime.UtcNow);
+
+            m.Symbol = new Symbol(securityId);
+            m.SecurityID = new SecurityID(securityId);
+
+            //newOrderSingle.SecurityIDSource = new SecurityIDSource("G");
+
+            m.Side = new Side(side);
+            m.OrderQty = new OrderQty(orderQty);
+            m.OrdType = new OrdType(ordType);
+
+            if (stopPx.HasValue)
+                m.StopPx = new StopPx(stopPx.Value);
+
+            if (takePx.HasValue)
+                m.SetField(new DecimalField(TAG_TakePx) {Obj = takePx.Value});
+
+            if (ordType != OrdType.MARKET)
+            {
+                if (!price.HasValue)
+                    throw new ArgumentNullException("price", "price cannot be null when ordType is not 1 (MARKET)");
+
+                m.Price = new Price(price.Value);
+            }
+
+            if (string.IsNullOrEmpty(nettingPositionId))
+                m.TargetStrategy = new TargetStrategy(5000);
+            else
+            {
+                m.TargetStrategy = new TargetStrategy(5001);
+                m.TargetStrategyParameters = new TargetStrategyParameters(nettingPositionId);
+            }
+
+            m.Account = new Account(account);
+
+            SendMessage(m);
+
+            return guid;
+        }
+
+        public string OrderCancelReplaceRequest(string account, string securityId, char ordType, char? side = null, decimal? stopPx = null, decimal? takePx = null)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            OrderCancelReplaceRequest m = new OrderCancelReplaceRequest();
+
+            m.ClOrdID = new ClOrdID(guid);
+            m.TransactTime = new TransactTime(DateTime.UtcNow);
+            m.Symbol = new Symbol(securityId);
+            m.SecurityID = new SecurityID(securityId);
+            m.SecurityIDSource = new SecurityIDSource("G");
+
+            if (side.HasValue)
+                m.Side = new Side(side.Value);
+
+            //var price = QueryPrice();
+            //if (!string.IsNullOrEmpty(price))
+            //    m.Price = new Price(Convert.ToDecimal(price));
+
+            if (stopPx.HasValue)
+                m.StopPx = new StopPx(stopPx.Value);
+
+            if (takePx.HasValue)
+                m.SetField(new DecimalField(TAG_TakePx) {Obj = takePx.Value});
+
+            m.Account = new Account(account);
+
+            m.OrdType = new OrdType(ordType);
+
+            //m.OrigClOrdID = QueryOrigClOrdID();
+
+            //m.OrderID = QueryOrderID();
+
+            SendMessage(m);
+
+            return guid;
+        }
+
+        #region console test method
 
         public void Run()
         {
@@ -293,7 +386,32 @@ namespace CFD_JOBS.Ayondo
             Console.WriteLine("Program shutdown.");
         }
 
-        #region console test method
+        private char QueryAction()
+        {
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,q,Q,g,x".Split(','));
+
+            string cmd = Console.ReadLine().Trim();
+            if (cmd.Length != 1 || validActions.Contains(cmd) == false)
+                return (char) 0;
+
+            return cmd.ToCharArray()[0];
+        }
+
+        private void ShowInfo()
+        {
+            // Commands 'g' and 'x' are intentionally hidden.
+            Console.Write("\n"
+                          + "1) Enter Order\n"
+                          + "2) Replace Order\n"
+                          + "3) Position Report\n"
+                          + "4) Balance\n"
+                          + "5) Order Mass Status\n"
+                          + "6) Log In\n"
+                          + "7) Log Out\n"
+                          + "Q) Quit\n"
+                          + "Action: "
+                );
+        }
 
         private void QueryLogIn()
         {
@@ -387,48 +505,6 @@ namespace CFD_JOBS.Ayondo
             if (line == "") return false;
 
             return (line[0].Equals('y') || line[0].Equals('Y'));
-        }
-
-        #endregion
-
-        private void SendMessage(Message m)
-        {
-            if (Session != null)
-                Session.Send(m);
-            else
-            {
-                //// This probably won't ever happen.
-                //Console.WriteLine("Can't send message: session not created.");
-
-                throw new Exception("fix session is null. fix not logged on yet.");
-            }
-        }
-
-        private char QueryAction()
-        {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,q,Q,g,x".Split(','));
-
-            string cmd = Console.ReadLine().Trim();
-            if (cmd.Length != 1 || validActions.Contains(cmd) == false)
-                return (char) 0;
-
-            return cmd.ToCharArray()[0];
-        }
-
-        private void ShowInfo()
-        {
-            // Commands 'g' and 'x' are intentionally hidden.
-            Console.Write("\n"
-                          + "1) Enter Order\n"
-                          + "2) Replace Order\n"
-                          + "3) Position Report\n"
-                          + "4) Balance\n"
-                          + "5) Order Mass Status\n"
-                          + "6) Log In\n"
-                          + "7) Log Out\n"
-                          + "Q) Quit\n"
-                          + "Action: "
-                );
         }
 
         private QuickFix.FIX44.NewOrderSingle QueryNewOrderSingle44()
@@ -535,7 +611,22 @@ namespace CFD_JOBS.Ayondo
             return m;
         }
 
-        private string GetMessageString(Message message, bool showHeader=false,bool showTrailer=false)
+        #endregion
+
+        private void SendMessage(Message m)
+        {
+            if (Session != null)
+                Session.Send(m);
+            else
+            {
+                //// This probably won't ever happen.
+                //Console.WriteLine("Can't send message: session not created.");
+
+                throw new Exception("fix session is null. fix not logged on yet.");
+            }
+        }
+
+        private string GetMessageString(Message message, bool showHeader = false, bool showTrailer = false)
         {
             if (DD == null)
                 return message.ToString();

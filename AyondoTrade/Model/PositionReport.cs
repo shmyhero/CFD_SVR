@@ -17,6 +17,9 @@ namespace AyondoTrade.Model
         public decimal SettlPrice { get; set; }
 
         [DataMember]
+        public DateTime CreateTime { get; set; }
+
+        [DataMember]
         public decimal? LongQty { get; set; }
         [DataMember]
         public decimal? ShortQty { get; set; }

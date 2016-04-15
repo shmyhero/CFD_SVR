@@ -17,5 +17,8 @@ namespace AyondoTrade
 
         [OperationContract]
         IList<Model.PositionReport> GetPositionReport(string username, string password);
+
+        [OperationContract]
+        Model.PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, string nettingPositionId);
     }
 }

@@ -16,9 +16,11 @@ namespace CFD_API.DTO
 
         public decimal invest { get; set; }
         public bool isLong { get; set; }
-        public int leverage { get; set; }
+        public decimal leverage { get; set; }
         public decimal settlePrice { get; set; }
+        public decimal quantity { get; set; }
 
         public decimal profit { get; set; }
+        public DateTime createAt { get; set; }
     }
 }

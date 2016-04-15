@@ -55,5 +55,7 @@ namespace CFD_COMMON.Models.Entities
         public decimal? MaxSizeShort { get; set; }
         public decimal? MinSizeShort { get; set; }
         public decimal? MaxLeverage { get; set; }
+        public decimal? LotSize { get; set; }
+        public decimal? BaseMargin { get; set; }
     }
 }

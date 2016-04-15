@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ServiceModel;
 using QuickFix.FIX44;
+using PositionReport = AyondoTrade.Model.PositionReport;
 
 namespace AyondoTrade
 {
@@ -19,6 +20,11 @@ namespace AyondoTrade
         public IList<Model.PositionReport> GetPositionReport(string username, string password)
         {
             return base.Channel.GetPositionReport(username, password);
+        }
+
+        public PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, string nettingPositionId=null)
+        {
+            return base.Channel.NewOrder(username, password, securityId, isLong, orderQty, nettingPositionId);
         }
     }
 }

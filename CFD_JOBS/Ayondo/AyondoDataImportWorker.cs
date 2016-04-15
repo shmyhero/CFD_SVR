@@ -45,10 +45,9 @@ namespace CFD_JOBS.Ayondo
                 //var cName = (string)range.Cells[row, 14].Value;
                 //var name = (string)range.Cells[row, 1].Value;
                 //var assetClass = (string)range.Cells[row, 11].Value.trim;
-                var financing = (string)range.Cells[row, 27].Value.Trim();
-
-                //if(cName=="NULL")
-                //    continue;
+                //var financing = (string)range.Cells[row, 27].Value.Trim();
+                decimal lotSize = Convert.ToDecimal(range.Cells[row, 38].Value);
+                decimal baseMargin = Convert.ToDecimal(range.Cells[row, 31].Value);
 
                 //var query=new Queryable(
                 var ayondoSecurity = securities.FirstOrDefault(o => o.Id == id);
@@ -61,7 +60,9 @@ namespace CFD_JOBS.Ayondo
 
                 //ayondoSecurity.CName = cName;
                 //ayondoSecurity.AssetClass = assetClass;
-                ayondoSecurity.Financing = financing;
+                //ayondoSecurity.Financing = financing;
+                ayondoSecurity.LotSize = lotSize;
+                ayondoSecurity.BaseMargin = baseMargin;
 
                 //db.AyondoSecurities.Where(o => o.Id == id).Update(o => o.CName == cName);
                 //sec.ExpiryDate=

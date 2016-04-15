@@ -22,6 +22,8 @@ namespace CFD_JOBS.Ayondo
         private int MsgTotalCount = 0;
         private IList<Quote> quotes = new List<Quote>();
 
+        //private IList<int> _activeProdIds = new List<int>(); 
+
         public ConcurrentQueue<ProdDef> ProdDefs = new ConcurrentQueue<ProdDef>();
 
         private IRedisTypedClient<Quote> redisQuoteClient;
@@ -73,6 +75,28 @@ namespace CFD_JOBS.Ayondo
         {
             //CFDGlobal.LogLine("FromApp: cracking message...");
 
+            ////-------clear inactive products-------------
+            //if (_activeProdIds.Count==121)
+            //{
+            //    var redisProdDefClient = CFDGlobal.BasicRedisClientManager.GetClient().As<ProdDef>();
+            //    var allIds = redisProdDefClient.GetAll().Select(o => o.Id).ToList();
+            //    var removeIds = allIds.Where(o => !_activeProdIds.Contains(o)).ToList();
+            //    redisProdDefClient.DeleteByIds(removeIds);
+
+            //     allIds = redisQuoteClient.GetAll().Select(o => o.Id).ToList();
+            //     removeIds = allIds.Where(o => !_activeProdIds.Contains(o)).ToList();
+            //     redisQuoteClient.DeleteByIds(removeIds);
+
+            //    var redis = CFDGlobal.BasicRedisClientManager.GetClient();
+            //    var keys = redis.SearchKeys("tick:*");
+            //    foreach (var key in keys)
+            //    {
+            //        var secId = Convert.ToInt32(key.Replace("tick:", ""));
+            //        if (!_activeProdIds.Contains(secId))
+            //            redis.RemoveEntry(key);
+            //    }
+            //}//---------------------------------------------
+
             string msgType = message.Header.GetString(Tags.MsgType);
 
             if (msgType == MsgType.QUOTE)
@@ -113,6 +137,9 @@ namespace CFD_JOBS.Ayondo
                 //CFDGlobal.LogLine("MDS2 Received: Id: " + prodDef.Id + " QuoteType: " + prodDef.QuoteType);
                 ProdDefs.Enqueue(prodDef);
                 //redisProdDefClient.Store(prodDef);
+
+                //if(!_activeProdIds.Contains(prodDef.Id))
+                //    _activeProdIds.Add(prodDef.Id);
             }
             else
             {

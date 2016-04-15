@@ -11,23 +11,10 @@ namespace AyondoTrade
     {
        public override bool OnStart()
         {
-            //try
-            //{
-            //    CFDGlobal.LogLine("Starting FIX initiator...");
-
-            //    SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath"));
-
-            //    IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
-            //    //ILogFactory logFactory = new FileLogFactory(settings);
-            //    SocketInitiator initiator = new SocketInitiator(FIXApp, storeFactory, settings, null);
-
-            //    initiator.Start();
-
-            //    CFDGlobal.LogLine("FIX initiator started.");
-            //}
-            //catch (Exception e)
-            //{
-            //}
+           //!!!
+           //cannot do veriable initiating here
+           //this roleEntryPoint is called by WAIISHOST.exe whereas the WCF service is called by another process (w3wp.exe if hosted in IIS)
+           //any initiating here is in vain
 
             // For information on handling configuration changes
             // see the MSDN topic at http://go.microsoft.com/fwlink/?LinkId=166357.
