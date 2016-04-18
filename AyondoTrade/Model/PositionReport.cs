@@ -33,5 +33,8 @@ namespace AyondoTrade.Model
         public string StopOID { get; set; }
         [DataMember]
         public string TakeOID { get; set; }
+
+        [DataMember]
+        public decimal PL { get; set; }
     }
 }

@@ -9,6 +9,7 @@ using AyondoTrade.Model;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.FormDTO;
+using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using ServiceStack.Redis;
@@ -100,8 +101,8 @@ namespace CFD_API.Controllers
             if (security == null)
                 throw new Exception("security not found");
 
+            var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
-            var quote = redisQuoteClient.GetById(form.securityId);
 
             EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
 
@@ -109,13 +110,101 @@ namespace CFD_API.Controllers
             AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
             //*******************************************************
-            //trade value = lot size * quantity * quote price
+            //currency:
+            //trade value = quantity * quote price * lot size
+            //trade value USD = quantity * lot size USD
+
+            //commodity & index:
+            //trade value = quantity * quote price * (per unit equals / per unit)
+
+            //stock:
+            //trade value = quantity * quote price
+
+
             //invest = trade value * margin rate
             //*******************************************************
+
+            decimal quantity = 0;
+            var tradeValueInUSD = form.invest*form.leverage;
+
+            switch (security.AssetClass)
+            {
+                case "Currencies":
+                    decimal lotSizeInUSD;
+                    if (security.BaseCcy == "USD")
+                        lotSizeInUSD = security.LotSize.Value;
+                    else
+                    {
+                        var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
+
+                        if(fxProdDef==null)
+                            throw new Exception("Cannot find fx rate: " + security.BaseCcy+"/" + "USD");
+
+                        var fxRate = fxProdDef.Offer.Value;
+                        lotSizeInUSD = security.LotSize.Value*fxRate;
+                    }
+
+                    quantity = tradeValueInUSD/lotSizeInUSD;
+                    break;
+
+                case "Commodities":
+                case "Stock Indices":
+                    if (security.PerUnitEquals == null || security.PerUnit == null)
+                        throw new Exception("Cannot find PerUnit or PerUnitEquals for this security.");
+
+                    var unitPrice = security.PerUnitEquals/security.PerUnit;
+                    var quote = redisQuoteClient.GetById(form.securityId);
+                    var quotePrice = form.isLong ? quote.Offer : quote.Bid;
+                    var unitQuotePrice = unitPrice*quotePrice;
+
+                    if (security.BaseCcy == "USD")
+                    {
+                        quantity = tradeValueInUSD/unitQuotePrice.Value;
+                    }
+                    else
+                    {
+                        var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
+
+                        if (fxProdDef == null)
+                            throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
+
+                        var fxRate = (fxProdDef.Offer + fxProdDef.Bid)/2;
+                        var unitQuotePriceInUSD = unitQuotePrice*fxRate;
+                        quantity = tradeValueInUSD/unitQuotePriceInUSD.Value;
+                    }
+                    break;
+
+                case "Single Stocks":
+                    var stockQuote = redisQuoteClient.GetById(form.securityId);
+                    var stockQuotePrice = form.isLong ? stockQuote.Offer : stockQuote.Bid;
+
+                    if (security.BaseCcy == "USD")
+                    {
+                        quantity = tradeValueInUSD/stockQuotePrice;
+                    }
+                    else
+                    {
+                        var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
+
+                        if (fxProdDef == null)
+                            throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
+
+                        var fxRate = (fxProdDef.Offer + fxProdDef.Bid)/2;
+                        var stockQuotePriceInUSD = stockQuotePrice*fxRate;
+                        quantity = tradeValueInUSD/stockQuotePriceInUSD.Value;
+                    }
+                    break;
+            }
+
             //var tradeValue = form.invest/security.BaseMargin;
             //var quantity = tradeValue/security.LotSize/(form.isLong ? quote.Offer : quote.Bid);
+
+            CFDGlobal.LogLine("NewOrder:secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage + "|quantity:" + quantity);
+
             var result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.isLong,
-                form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value);
+                //form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value
+                quantity
+                );
 
             var posDTO = new PositionDTO()
             {
@@ -123,7 +212,7 @@ namespace CFD_API.Controllers
                 isLong = result.LongQty != null,
                 settlePrice = result.SettlPrice,
                 invest = 0,
-                leverage = 1/security.BaseMargin.Value,
+                leverage = 0,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
             };
@@ -167,9 +256,10 @@ namespace CFD_API.Controllers
                 isLong = result.LongQty != null,
                 settlePrice = result.SettlPrice,
                 invest = 0,
-                leverage = 1/security.BaseMargin.Value,
+                leverage = 0,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
+                pl = result.PL,
             };
 
             return posDTO;

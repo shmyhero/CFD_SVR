@@ -62,6 +62,14 @@ namespace CFD_COMMON.Models.Context
             modelBuilder.Entity<AyondoSecurity>()
                 .Property(e => e.BaseMargin)
                 .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoSecurity>()
+                .Property(e => e.PerUnit)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoSecurity>()
+                .Property(e => e.PerUnitEquals)
+                .HasPrecision(18, 5);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace CFD_API.DTO
         public decimal settlePrice { get; set; }
         public decimal quantity { get; set; }
 
-        public decimal profit { get; set; }
+        public decimal pl { get; set; }
         public DateTime createAt { get; set; }
     }
 }

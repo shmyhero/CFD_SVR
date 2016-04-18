@@ -22,13 +22,15 @@ namespace CFD_JOBS.Ayondo
         public int TAG_StopOID;
         public int TAG_TakeOID;
         public int TAG_TakePx;
+        public int TAG_MDS_PL;
 
         public IDictionary<string, string> OnlineUsernameAccounts = new Dictionary<string, string>();
         //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
         public ConcurrentDictionary<string, RequestForPositionsAck> RequestForPositionsAcks = new ConcurrentDictionary<string, RequestForPositionsAck>();
         public ConcurrentDictionary<string, IList<PositionReport>> PositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
-        public ConcurrentDictionary<string, PositionReport> OrderPositionReports = new ConcurrentDictionary<string, PositionReport>();
+        public ConcurrentDictionary<string, IList<PositionReport>> OrderPositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
         public ConcurrentDictionary<string, BusinessMessageReject> BusinessMessageRejects = new ConcurrentDictionary<string, BusinessMessageReject>();
+        public ConcurrentDictionary<string, ExecutionReport> RejectedExecutionReports=new ConcurrentDictionary<string, ExecutionReport>();
 
         private string _account;
         //ayondodemo01 136824778776
@@ -103,6 +105,7 @@ namespace CFD_JOBS.Ayondo
             TAG_StopOID = DD.FieldsByName["StopOID"].Tag;
             TAG_TakeOID = DD.FieldsByName["TakeOID"].Tag;
             TAG_TakePx = DD.FieldsByName["TakePx"].Tag;
+            TAG_MDS_PL = DD.FieldsByName["MDS_PL"].Tag;
         }
 
         #endregion
@@ -157,6 +160,11 @@ namespace CFD_JOBS.Ayondo
         {
             CFDGlobal.LogLine("OnMessage:ExecutionReport ");
             CFDGlobal.LogLine(GetMessageString(report));
+
+            if (report.OrdStatus.Obj == OrdStatus.REJECTED)
+            {
+                RejectedExecutionReports.TryAdd(report.ClOrdID.Obj, report);
+            }
         }
 
         public void OnMessage(RequestForPositionsAck response, SessionID session)
@@ -196,16 +204,17 @@ namespace CFD_JOBS.Ayondo
             {
                 var clOrdID = report.GetField(new StringField(Tags.ClOrdID)).Obj;
 
-                OrderPositionReports.TryAdd(clOrdID, report);
+                if (OrderPositionReports.ContainsKey(clOrdID))
+                    OrderPositionReports[clOrdID].Add(report);
+                else
+                    OrderPositionReports.TryAdd(clOrdID, new List<PositionReport>() {report});
             }
             else//after position report request
             {
                 if (PositionReports.ContainsKey(posReqId))
-                {
                     PositionReports[posReqId].Add(report);
-                }
                 else
-                    PositionReports.TryAdd(posReqId, new List<PositionReport> { report });
+                    PositionReports.TryAdd(posReqId, new List<PositionReport> {report});
             }
         }
 

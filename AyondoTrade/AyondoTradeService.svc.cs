@@ -87,7 +87,8 @@ namespace AyondoTrade
                 StopOID = report.Any(o => o.Key == Global.FixApp.TAG_StopOID) ? report.GetString(Global.FixApp.TAG_StopOID) : null,
                 TakeOID = report.Any(o => o.Key == Global.FixApp.TAG_TakeOID) ? report.GetString(Global.FixApp.TAG_TakeOID) : null,
                 StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
-                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null
+                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null,
+                PL=report.GetDecimal(Global.FixApp.TAG_MDS_PL)
             };
         }
 
@@ -153,7 +154,7 @@ namespace AyondoTrade
             if (ack == null || ack.TotalNumPosReports.Obj != 0 && result == null)
                 throw new Exception("fail getting position report");
 
-            if (result.Count != result[0].TotalNumPosReports.Obj)
+            if (result.Count!=0 && result.Count!= result[0].TotalNumPosReports.Obj)
                 throw new Exception("timeout getting position report. " + result.Count + "/" + result[0].TotalNumPosReports.Obj);
 
             return result;
@@ -162,18 +163,43 @@ namespace AyondoTrade
         private static PositionReport NewOrderSingle(string account, int securityId, bool isLong, decimal orderQty, string nettingPositionId = null)
         {
             var reqId = Global.FixApp.NewOrderSingle(account, securityId.ToString(), isLong ? Side.BUY : Side.SELL, orderQty, OrdType.MARKET, nettingPositionId: nettingPositionId);
+            IList<PositionReport> reports = null;
             PositionReport report = null;
+            ExecutionReport executionReport = null;
             var dt = DateTime.UtcNow;
             do
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
-                if (Global.FixApp.OrderPositionReports.ContainsKey(reqId))
+
+                //check execution report
+                if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
                 {
-                    var tryGetValue = Global.FixApp.OrderPositionReports.TryGetValue(reqId, out report);
+                    var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
 
                     if (!tryGetValue) continue;
 
-                    break;
+                    if (executionReport != null)
+                        throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
+                }
+
+                //check position report
+                if (Global.FixApp.OrderPositionReports.ContainsKey(reqId))
+                {
+                    var tryGetValue = Global.FixApp.OrderPositionReports.TryGetValue(reqId, out reports);
+
+                    if (!tryGetValue) continue;
+
+                    if (nettingPositionId != null)//closing position: a 'Text=Position DELETE by MarketOrder' should be received
+                    {
+                        report = reports.FirstOrDefault(o => o.Text.Obj == "Position DELETE by MarketOrder");
+                        if (report != null)
+                            break;
+                    }
+                    else //open new position: ONLY ONE position report will be received
+                    {
+                        report = reports.FirstOrDefault();
+                        break;
+                    }
                 }
 
                 //BusinessMessageReject? e.g. not logged in
