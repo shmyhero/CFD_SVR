@@ -122,6 +122,7 @@
     <Compile Include="Service\UserService.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\Phone.cs" />
+    <Compile Include="Utils\Randoms.cs" />
     <Compile Include="Utils\YunPianMessenger.cs" />
   </ItemGroup>
   <ItemGroup>

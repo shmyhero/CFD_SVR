@@ -126,6 +126,10 @@ namespace CFD_COMMON
         {
             Trace.TraceWarning(GetLogDatetimePrefix() + message);
         }
+        public static void LogInformation(string message)
+        {
+            Trace.TraceInformation(GetLogDatetimePrefix() + message);
+        }
 
         public static void LogLine(string message)
         {

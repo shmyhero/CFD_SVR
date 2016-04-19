@@ -52,6 +52,8 @@ namespace CFD_API.Controllers
             var r = new Random();
             code = r.Next(10000).ToString("0000");
 
+            //TODO: prevent from brute-force attack
+
             if (!string.IsNullOrWhiteSpace(code))
             {
                 CFDGlobal.RetryMaxOrThrow(() => YunPianMessenger.TplSendCodeSms(string.Format("#code#={0}", code), phone), sleepMilliSeconds: 0);
