@@ -4,7 +4,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
-using QuickFix.FIX44;
+using AyondoTrade.FaultModel;
+using AyondoTrade.Model;
 
 namespace AyondoTrade
 {
@@ -16,9 +17,10 @@ namespace AyondoTrade
         string Test(string text);
 
         [OperationContract]
-        IList<Model.PositionReport> GetPositionReport(string username, string password);
+        IList<PositionReport> GetPositionReport(string username, string password);
 
         [OperationContract]
-        Model.PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, string nettingPositionId);
+        [FaultContract(typeof(OrderRejectedFault))]
+        PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, string nettingPositionId);
     }
 }

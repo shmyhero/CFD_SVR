@@ -118,8 +118,9 @@
     <Compile Include="AyondoTradeService.svc.cs">
       <DependentUpon>AyondoTradeService.svc</DependentUpon>
     </Compile>
-    <Compile Include="FIXInstance.cs" />
+    <Compile Include="Global.cs" />
     <Compile Include="IAyondoTradeService.cs" />
+    <Compile Include="FaultModel\OrderRejectedFault.cs" />
     <Compile Include="Model\PositionReport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebRole.cs" />

@@ -74,7 +74,14 @@ namespace CFD_API.Controllers
                 }
 
                 if (user.AyondoUsername == null)
-                    CreateAyondoAccount(user);
+                    try
+                    {
+                        CreateAyondoAccount(user);
+                    }
+                    catch (Exception e)
+                    {
+                        CFDGlobal.LogException(e);
+                    }
             }
             else
             {
@@ -113,21 +120,24 @@ namespace CFD_API.Controllers
                 }
 
                 //save wechat pic to azure storage blob
-                try
+                if (form.headimgurl != null)
                 {
-                    var webClient = new WebClient();
-                    var bytes = webClient.DownloadData(form.headimgurl);
+                    try
+                    {
+                        var webClient = new WebClient();
+                        var bytes = webClient.DownloadData(form.headimgurl);
 
-                    var picName = Guid.NewGuid().ToString("N");
+                        var picName = Guid.NewGuid().ToString("N");
 
-                    Blob.UploadFromBytes(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName, bytes);
+                        Blob.UploadFromBytes(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName, bytes);
 
-                    user.PicUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + picName;
-                }
-                catch (Exception ex)
-                {
-                    CFDGlobal.LogError("Fail saving wechat picture to azure blob");
-                    CFDGlobal.LogException(ex);
+                        user.PicUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + picName;
+                    }
+                    catch (Exception ex)
+                    {
+                        CFDGlobal.LogError("Fail saving wechat picture to azure blob");
+                        CFDGlobal.LogException(ex);
+                    }
                 }
 
                 db.SaveChanges();
@@ -148,7 +158,14 @@ namespace CFD_API.Controllers
             }
 
             if (user.AyondoUsername == null)
-                CreateAyondoAccount(user);
+                try
+                {
+                    CreateAyondoAccount(user);
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogException(e);
+                }
 
             return result;
         }
@@ -180,20 +197,18 @@ namespace CFD_API.Controllers
                 if (jObject["Error"] != null)
                 {
                     CFDGlobal.LogInformation("AMS check-username error: " + jObject["Error"].Value<string>());
-
-                    isAvailable = false;
-
-                    //generate new username for next attempt
-                    username = username_base + Randoms.GetRandomAlphabeticString(4);
                 }
                 else
                 {
                     isAvailable = jObject["IsAvailable"].Value<bool>();
                     bool isValid = jObject["IsValid"].Value<bool>();
 
-                    if (!isAvailable)
+                    if (!isAvailable || !isValid)
                     {
-                        CFDGlobal.LogInformation("Ayondo check-user: unavailable: "+username);
+                        CFDGlobal.LogInformation("Ayondo check-user: "+username+" isAvailable:"+isAvailable+" isValid:"+isValid);
+
+                        //generate new username for next attempt
+                        username = username_base + Randoms.GetRandomAlphabeticString(4);
                     }
                 }
             } while (!isAvailable && tryCount < 3); // retry if unavailable and tryCount < 3

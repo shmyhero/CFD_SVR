@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.ServiceModel;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
+using AyondoTrade.FaultModel;
 using AyondoTrade.Model;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
@@ -137,8 +140,8 @@ namespace CFD_API.Controllers
                     {
                         var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
 
-                        if(fxProdDef==null)
-                            throw new Exception("Cannot find fx rate: " + security.BaseCcy+"/" + "USD");
+                        if (fxProdDef == null)
+                            throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
 
                         var fxRate = fxProdDef.Offer.Value;
                         lotSizeInUSD = security.LotSize.Value*fxRate;
@@ -201,10 +204,18 @@ namespace CFD_API.Controllers
 
             CFDGlobal.LogLine("NewOrder:secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage + "|quantity:" + quantity);
 
-            var result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.isLong,
-                //form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value
-                quantity
-                );
+            PositionReport result;
+            try
+            {
+                result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.isLong,
+                    //form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value
+                    quantity
+                    );
+            }
+            catch (FaultException<OrderRejectedFault> e)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,e.Detail.Text));
+            }
 
             var posDTO = new PositionDTO()
             {
@@ -248,7 +259,15 @@ namespace CFD_API.Controllers
             //*******************************************************
             //var tradeValue = form.invest/security.BaseMargin;
             //var quantity = tradeValue/security.LotSize/(form.isLong ? quote.Offer : quote.Bid);
-            var result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, !form.isPosLong, form.posQty, form.posId);
+            PositionReport result;
+            try
+            {
+                result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, !form.isPosLong, form.posQty, form.posId);
+            }
+            catch (FaultException<OrderRejectedFault> e)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, e.Detail.Text));
+            }
 
             var posDTO = new PositionDTO()
             {

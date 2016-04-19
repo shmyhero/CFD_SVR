@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.ServiceModel;
 using System.Threading;
+using AyondoTrade.FaultModel;
 using QuickFix.Fields;
 using QuickFix.FIX44;
 
@@ -88,7 +90,7 @@ namespace AyondoTrade
                 TakeOID = report.Any(o => o.Key == Global.FixApp.TAG_TakeOID) ? report.GetString(Global.FixApp.TAG_TakeOID) : null,
                 StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
                 TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null,
-                PL=report.GetDecimal(Global.FixApp.TAG_MDS_PL)
+                PL = report.GetDecimal(Global.FixApp.TAG_MDS_PL)
             };
         }
 
@@ -154,7 +156,7 @@ namespace AyondoTrade
             if (ack == null || ack.TotalNumPosReports.Obj != 0 && result == null)
                 throw new Exception("fail getting position report");
 
-            if (result.Count!=0 && result.Count!= result[0].TotalNumPosReports.Obj)
+            if (result.Count != 0 && result.Count != result[0].TotalNumPosReports.Obj)
                 throw new Exception("timeout getting position report. " + result.Count + "/" + result[0].TotalNumPosReports.Obj);
 
             return result;
@@ -179,7 +181,12 @@ namespace AyondoTrade
                     if (!tryGetValue) continue;
 
                     if (executionReport != null)
-                        throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
+                    {
+                        //throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
+                        var fault = new OrderRejectedFault();
+                        fault.Text = executionReport.Text.Obj;
+                        throw new FaultException<OrderRejectedFault>(fault);
+                    }
                 }
 
                 //check position report
@@ -189,7 +196,7 @@ namespace AyondoTrade
 
                     if (!tryGetValue) continue;
 
-                    if (nettingPositionId != null)//closing position: a 'Text=Position DELETE by MarketOrder' should be received
+                    if (nettingPositionId != null) //closing position: a 'Text=Position DELETE by MarketOrder' should be received
                     {
                         report = reports.FirstOrDefault(o => o.Text.Obj == "Position DELETE by MarketOrder");
                         if (report != null)

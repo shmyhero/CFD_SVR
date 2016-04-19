@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Web;
+using System.Threading;
 using System.Web.Hosting;
 using CFD_COMMON;
 using CFD_JOBS.Ayondo;
 using QuickFix;
 using QuickFix.Transport;
-using ServiceStack.Common.Extensions;
 
 namespace AyondoTrade
 {
@@ -15,12 +13,12 @@ namespace AyondoTrade
         // Singleton instance
         private static readonly Lazy<AyondoFixTradeApp> _instance = new Lazy<AyondoFixTradeApp>(delegate
         {
-            var fixApp = new AyondoFixTradeApp();
+            var application = new AyondoFixTradeApp();
 
             CFDGlobal.LogLine("Starting FIX initiator...");
 
             var path = CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath");
-            var serverPath = HostingEnvironment.MapPath("~/"+path);
+            var serverPath = HostingEnvironment.MapPath("~/" + path);
 
             SessionSettings settings = new SessionSettings(serverPath);
 
@@ -32,13 +30,29 @@ namespace AyondoTrade
 
             IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
             //ILogFactory logFactory = new FileLogFactory(settings);
-            SocketInitiator initiator = new SocketInitiator(fixApp, storeFactory, settings, null);
+            SocketInitiator initiator = new SocketInitiator(application, storeFactory, settings, null);
 
             initiator.Start();
 
-            CFDGlobal.LogLine("FIX initiator started.");
+            CFDGlobal.LogLine("FIX initiator started. Waiting for FIX session...");
 
-            return fixApp;
+            var dt = DateTime.UtcNow;
+
+            while (application.Session == null)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+
+                if (DateTime.UtcNow - dt >= TimeSpan.FromMinutes(1))
+                {
+                    CFDGlobal.LogWarning("FIX session establish timeout.");
+                    break;
+                }
+            }
+
+            if (application.Session != null)
+                CFDGlobal.LogLine("FIX session established.");
+
+            return application;
         });
 
         public static AyondoFixTradeApp FixApp
