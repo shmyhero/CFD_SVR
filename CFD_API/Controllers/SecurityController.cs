@@ -76,7 +76,9 @@ namespace CFD_API.Controllers
 
             var security =
                 db.AyondoSecurities
-                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks" && o.CName != null)
+                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks"
+                        && o.CName != null && o.DefUpdatedAt != null
+                        )
                     //.OrderBy(o => o.Symbol)
                     //.Skip((page - 1)*perPage).Take(perPage)
                     .ToList();
@@ -98,15 +100,18 @@ namespace CFD_API.Controllers
             var security =
                 db.AyondoSecurities
 //                    .Where(o => aliveIds.Contains(o.Id))
-                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks" && o.CName != null)
+                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks"
+                                && o.CName != null && o.DefUpdatedAt != null
+                    )
                     //.OrderBy(o => o.Symbol)
                     //.Skip((page - 1)*perPage).Take(perPage)
                     .ToList();
+
             var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
             UpdateStockInfo(securityDtos);
 
-            securityDtos = securityDtos.OrderByDescending(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
+            securityDtos = securityDtos.OrderBy(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
 
             return securityDtos;
         }
@@ -119,7 +124,9 @@ namespace CFD_API.Controllers
 
             var security = db.AyondoSecurities
 //                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Stock Indices" && o.CName != null)
+                .Where(o => o.AssetClass == "Stock Indices"
+                            && o.CName != null && o.DefUpdatedAt != null
+                )
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
@@ -137,7 +144,9 @@ namespace CFD_API.Controllers
 
             var security = db.AyondoSecurities
 //                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Currencies" && o.CName != null)
+                .Where(o => o.AssetClass == "Currencies"
+                            && o.CName != null && o.DefUpdatedAt != null
+                )
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
@@ -155,7 +164,8 @@ namespace CFD_API.Controllers
 
             var security = db.AyondoSecurities
 //                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Commodities" && o.CName != null)
+                .Where(o => o.AssetClass == "Commodities"
+                            && o.CName != null && o.DefUpdatedAt != null)
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
@@ -170,7 +180,7 @@ namespace CFD_API.Controllers
         public List<SecurityDTO> GetAllList(int page = 1, int perPage = 20)
         {
             var security = db.AyondoSecurities
-                .Where(o => o.CName != null)
+                .Where(o => o.CName != null && o.DefUpdatedAt != null)
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
@@ -186,7 +196,7 @@ namespace CFD_API.Controllers
 //                .Where(o => aliveIds.Contains(o.Id))
                 .Where(o => //o.AssetClass != "Interest Rates" &&
                     (o.CName.Contains(keyword) || o.Symbol.Contains(keyword))
-                    && o.CName != null
+                    && o.CName != null && o.DefUpdatedAt != null
                     && (o.AssetClass != "Single Stocks" || o.AssetClass == "US Stocks")
                 )
                 .OrderBy(o => o.Symbol)
@@ -234,7 +244,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO AddBookmark(string securityIds)
         {
-            var ids = securityIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
+            var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
             var securityService = new SecurityService(db);
             securityService.AddBookmarks(UserId, ids);
@@ -250,7 +260,7 @@ namespace CFD_API.Controllers
             if (securityIds == null)
                 securityIds = string.Empty;
 
-            var ids = securityIds.Split(new char[]{','},StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
+            var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
             var securityService = new SecurityService(db);
             securityService.DeleteBookmarks(UserId);
@@ -264,7 +274,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO DeleteBookmark(string securityIds)
         {
-            var ids = securityIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
+            var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
             var securityService = new SecurityService(db);
             securityService.DeleteBookmarks(UserId, ids);
