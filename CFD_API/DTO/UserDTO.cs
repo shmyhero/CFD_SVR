@@ -16,12 +16,12 @@
         public string picUrl { get; set; }
     }
 
-    public class UserAyondoDTO
+    public class BalanceDTO
     {
         public int id { get; set; }
 
-        public int userid { get; set; }
+        public decimal? total { get; set; }
 
-        public decimal? balanceCash { get; set; }
+        public decimal? available { get; set; }
     }
 }

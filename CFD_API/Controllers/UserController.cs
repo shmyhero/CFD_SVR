@@ -2,8 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.ServiceModel;
 using System.Web.Http;
 using AutoMapper;
+using AyondoTrade;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
@@ -73,15 +75,15 @@ namespace CFD_API.Controllers
                     result.token = user.Token;
                 }
 
-                if (user.AyondoUsername == null)
-                    try
-                    {
-                        CreateAyondoAccount(user);
-                    }
-                    catch (Exception e)
-                    {
-                        CFDGlobal.LogException(e);
-                    }
+                //if (user.AyondoUsername == null)
+                //    try
+                //    {
+                //        CreateAyondoAccount(user);
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        CFDGlobal.LogException(e);
+                //    }
             }
             else
             {
@@ -157,15 +159,15 @@ namespace CFD_API.Controllers
                 //todo:if user is from wechat but user.picurl is null, reload img?
             }
 
-            if (user.AyondoUsername == null)
-                try
-                {
-                    CreateAyondoAccount(user);
-                }
-                catch (Exception e)
-                {
-                    CFDGlobal.LogException(e);
-                }
+            //if (user.AyondoUsername == null)
+            //    try
+            //    {
+            //        CreateAyondoAccount(user);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        CFDGlobal.LogException(e);
+            //    }
 
             return result;
         }
@@ -241,7 +243,8 @@ namespace CFD_API.Controllers
 'Password': '{1}',
 'PhonePrimary': '0044 123445',
 'SalesRepGuid':null,
-'UserName': '{0}'
+'UserName': '{0}',
+'ProductType': 'CFD'
 }}";
 
                 var s = string.Format(json, username, password);
@@ -303,17 +306,29 @@ namespace CFD_API.Controllers
             return new ResultDTO {success = true};
         }
 
-        //[HttpGet]
-        //[ActionName("balancecash")]
-        //[BasicAuth]
-        //public UserAyondoDTO GetBalanceCash(LoginFormDTO form)
-        //{
-        //    //var user = GetUser();
-        //    //var balanceCash = user.BalanceCash;
+        [HttpGet]
+        [ActionName("balance")]
+        [BasicAuth]
+        public BalanceDTO GetBalance()
+        {
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
 
-        //    var userAyondos = db.UserAyondos.FirstOrDefault();
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
-        //    return new UserAyondoDTO();// { balanceCash = userAyondos.BalanceCash };
-        //}
+            var user = GetUser();
+
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+                throw new Exception("user do not have an ayondo account");
+
+            var balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
+
+            return new BalanceDTO()
+            {
+                id=user.Id,
+                total=balance,
+                available = 11111
+            };
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace CFD_COMMON.Localization
     {
         INVALID_PHONE_NUMBER,
         INVALID_VERIFY_CODE,
-        NICKNAME_EXISTS
+        NICKNAME_EXISTS,
+        ORDER_REJECTED
     }
 }

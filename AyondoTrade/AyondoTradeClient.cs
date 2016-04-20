@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ServiceModel;
-using QuickFix.FIX44;
-using PositionReport = AyondoTrade.Model.PositionReport;
+using AyondoTrade.Model;
 
 namespace AyondoTrade
 {
@@ -22,9 +21,16 @@ namespace AyondoTrade
             return base.Channel.GetPositionReport(username, password);
         }
 
-        public PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, string nettingPositionId=null)
+        public PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty,
+            decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null)
         {
-            return base.Channel.NewOrder(username, password, securityId, isLong, orderQty, nettingPositionId);
+            return base.Channel.NewOrder(username, password, securityId, isLong, orderQty,
+                leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
+        }
+
+        public decimal GetBalance(string username, string password)
+        {
+            return base.Channel.GetBalance(username, password);
         }
     }
 }

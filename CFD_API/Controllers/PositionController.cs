@@ -13,6 +13,7 @@ using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.FormDTO;
 using CFD_COMMON;
+using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using ServiceStack.Redis;
@@ -127,27 +128,39 @@ namespace CFD_API.Controllers
             //invest = trade value * margin rate
             //*******************************************************
 
-            decimal quantity = 0;
             var tradeValueInUSD = form.invest*form.leverage;
+
+            decimal quantity = 0;
+            decimal stopPx = 0;
 
             switch (security.AssetClass)
             {
                 case "Currencies":
                     decimal lotSizeInUSD;
+
                     if (security.BaseCcy == "USD")
                         lotSizeInUSD = security.LotSize.Value;
                     else
                     {
-                        var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
+                        //get fxRate and convert product's lotSize from its BaseCcy to USD
+                        //the fx for convertion! not the fx that is being bought!
+                        var fxConverterProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
 
-                        if (fxProdDef == null)
+                        if (fxConverterProdDef == null)
                             throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
 
-                        var fxRate = fxProdDef.Offer.Value;
-                        lotSizeInUSD = security.LotSize.Value*fxRate;
+                        var fxConverterQuote = redisQuoteClient.GetById(fxConverterProdDef.Id);
+                        var fxConverterRate = (fxConverterQuote.Bid + fxConverterQuote.Offer)/2;
+
+                        lotSizeInUSD = security.LotSize.Value*fxConverterRate;
                     }
 
                     quantity = tradeValueInUSD/lotSizeInUSD;
+
+                    var fxProductQuote = redisQuoteClient.GetById(form.securityId);
+                    var fxProductPrice = form.isLong ? fxProductQuote.Offer : fxProductQuote.Bid;
+                    stopPx = form.isLong ? fxProductPrice*(1 - 1/form.leverage) : fxProductPrice*(1 + 1/form.leverage);
+
                     break;
 
                 case "Commodities":
@@ -175,6 +188,8 @@ namespace CFD_API.Controllers
                         var unitQuotePriceInUSD = unitQuotePrice*fxRate;
                         quantity = tradeValueInUSD/unitQuotePriceInUSD.Value;
                     }
+
+                    stopPx = form.isLong ? quotePrice*(1 - 1/form.leverage) : quotePrice*(1 + 1/form.leverage);
                     break;
 
                 case "Single Stocks":
@@ -196,25 +211,30 @@ namespace CFD_API.Controllers
                         var stockQuotePriceInUSD = stockQuotePrice*fxRate;
                         quantity = tradeValueInUSD/stockQuotePriceInUSD.Value;
                     }
+
+                    stopPx = form.isLong ? stockQuotePrice*(1 - 1/form.leverage) : stockQuotePrice*(1 + 1/form.leverage);
                     break;
             }
 
             //var tradeValue = form.invest/security.BaseMargin;
             //var quantity = tradeValue/security.LotSize/(form.isLong ? quote.Offer : quote.Bid);
 
-            CFDGlobal.LogLine("NewOrder:secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage + "|quantity:" + quantity);
+            CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
+                              "|quantity:" + quantity + " stopPx:" + stopPx);
 
             PositionReport result;
             try
             {
                 result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.isLong,
                     //form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value
-                    quantity
+                    quantity,
+                    leverage: form.leverage,
+                    stopPx: stopPx
                     );
             }
             catch (FaultException<OrderRejectedFault> e)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,e.Detail.Text));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.ORDER_REJECTED) + " " + e.Detail.Text));
             }
 
             var posDTO = new PositionDTO()
@@ -262,11 +282,11 @@ namespace CFD_API.Controllers
             PositionReport result;
             try
             {
-                result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, !form.isPosLong, form.posQty, form.posId);
+                result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, !form.isPosLong, form.posQty, nettingPositionId: form.posId);
             }
             catch (FaultException<OrderRejectedFault> e)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, e.Detail.Text));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.ORDER_REJECTED) + " " + e.Detail.Text));
             }
 
             var posDTO = new PositionDTO()

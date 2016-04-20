@@ -22,10 +22,23 @@ namespace AyondoTrade
 
             SessionSettings settings = new SessionSettings(serverPath);
 
-            //var sessionIds = settings.GetSessions();
+            //Resetting some config path because this code is run by IIS, different from RoleEntryPoint
+            //Therefore the current path is now in IIS folder, not application folder
+            //Converting all the path to the application folder:
             var dictionary = settings.Get(new SessionID("FIX.4.4", "THCN_Trade", "TXIOBridge"));
-            dictionary.SetString("DataDictionary", HostingEnvironment.MapPath("~/Fix44.xml"));
-            dictionary.SetString("FileStorePath", HostingEnvironment.MapPath("~/fixfiles"));
+
+            var cfgKey = "DataDictionary";
+            var oldValue = dictionary.GetString(cfgKey);
+            var newValue = HostingEnvironment.MapPath("~/Fix44.xml");
+            CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
+            dictionary.SetString(cfgKey, newValue);
+
+            cfgKey = "FileStorePath";
+            oldValue = dictionary.GetString(cfgKey);
+            newValue = HostingEnvironment.MapPath("~/fixfiles");
+            CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
+            dictionary.SetString(cfgKey, newValue);
+
             //settings.Set(new SessionID("FIX.4.4", "THCN_Trade", "TXIOBridge"), new Dictionary("DataDictionary",));
 
             IMessageStoreFactory storeFactory = new FileStoreFactory(settings);

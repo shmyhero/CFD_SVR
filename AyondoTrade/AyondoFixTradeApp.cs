@@ -23,6 +23,8 @@ namespace CFD_JOBS.Ayondo
         public int TAG_TakeOID;
         public int TAG_TakePx;
         public int TAG_MDS_PL;
+        private int TAG_Leverage;
+        private int TAG_MDS_RequestID;
 
         public IDictionary<string, string> OnlineUsernameAccounts = new Dictionary<string, string>();
         //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
@@ -30,7 +32,8 @@ namespace CFD_JOBS.Ayondo
         public ConcurrentDictionary<string, IList<PositionReport>> PositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
         public ConcurrentDictionary<string, IList<PositionReport>> OrderPositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
         public ConcurrentDictionary<string, BusinessMessageReject> BusinessMessageRejects = new ConcurrentDictionary<string, BusinessMessageReject>();
-        public ConcurrentDictionary<string, ExecutionReport> RejectedExecutionReports=new ConcurrentDictionary<string, ExecutionReport>();
+        public ConcurrentDictionary<string, ExecutionReport> RejectedExecutionReports = new ConcurrentDictionary<string, ExecutionReport>();
+        public ConcurrentDictionary<string, decimal> Balances = new ConcurrentDictionary<string, decimal>();
 
         private string _account;
         //ayondodemo01 136824778776
@@ -78,6 +81,10 @@ namespace CFD_JOBS.Ayondo
             {
                 CFDGlobal.LogLine("MDS6:BalanceResponse");
                 CFDGlobal.LogLine(GetMessageString(message));
+
+                var guid = message.GetString(TAG_MDS_RequestID);
+                var quantity = message.GetDecimal(Tags.Quantity);
+                Balances.TryAdd(guid, quantity);
             }
             else
                 Crack(message, sessionID);
@@ -106,6 +113,8 @@ namespace CFD_JOBS.Ayondo
             TAG_TakeOID = DD.FieldsByName["TakeOID"].Tag;
             TAG_TakePx = DD.FieldsByName["TakePx"].Tag;
             TAG_MDS_PL = DD.FieldsByName["MDS_PL"].Tag;
+            TAG_Leverage = DD.FieldsByName["Leverage"].Tag;
+            TAG_MDS_RequestID = DD.FieldsByName["MDS_RequestID"].Tag;
         }
 
         #endregion
@@ -202,7 +211,7 @@ namespace CFD_JOBS.Ayondo
 
             if (posReqId == "Unsolicited") //after position changed
             {
-                var clOrdID = report.GetField(new StringField(Tags.ClOrdID)).Obj;
+                var clOrdID = report.GetString(Tags.ClOrdID);
 
                 if (OrderPositionReports.ContainsKey(clOrdID))
                     OrderPositionReports[clOrdID].Add(report);
@@ -270,7 +279,7 @@ namespace CFD_JOBS.Ayondo
         }
 
         public string NewOrderSingle(string account, string securityId, char side, decimal orderQty, char ordType, 
-            decimal? price = null, decimal? stopPx = null, decimal? takePx = null, string nettingPositionId = null)
+            decimal? price = null, decimal? leverage=null, decimal? stopPx = null, decimal? takePx = null, string nettingPositionId = null)
         {
             var guid = Guid.NewGuid().ToString();
 
@@ -312,6 +321,9 @@ namespace CFD_JOBS.Ayondo
 
             m.Account = new Account(account);
 
+            if (leverage.HasValue)
+                m.SetField(new DecimalField(TAG_Leverage) {Obj = leverage.Value});
+
             SendMessage(m);
 
             return guid;
@@ -350,6 +362,19 @@ namespace CFD_JOBS.Ayondo
 
             //m.OrderID = QueryOrderID();
 
+            SendMessage(m);
+
+            return guid;
+        }
+
+        public string MDS5BalanceRequest(string account)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new Message();
+            m.Header.SetField(new MsgType("MDS5"));
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+            m.SetField(new Account(account));
             SendMessage(m);
 
             return guid;

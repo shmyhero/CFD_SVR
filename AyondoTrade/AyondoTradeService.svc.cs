@@ -23,14 +23,16 @@ namespace AyondoTrade
             return "You entered: " + text;
         }
 
-        public Model.PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, string nettingPositionId = null)
+        public Model.PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty,
+            decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null)
         {
             string account = GetAccount(username, password);
 
             PositionReport report;
             try
             {
-                report = NewOrderSingle(account, securityId, isLong, orderQty, nettingPositionId);
+                report = NewOrderSingle(account, securityId, isLong, orderQty,
+                    leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
             }
             catch (BusinettMessageRejectException) //get reject
             {
@@ -38,11 +40,33 @@ namespace AyondoTrade
                 account = Login(username, password);
 
                 //get data again
-                report = NewOrderSingle(account, securityId, isLong, orderQty, nettingPositionId);
+                report = NewOrderSingle(account, securityId, isLong, orderQty,
+                    leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
             }
 
             var result = PositionReportMapping(report);
             return result;
+        }
+
+        public decimal GetBalance(string username, string password)
+        {
+            string account = GetAccount(username, password);
+
+            decimal balance;
+            try
+            {
+                balance = GetMDS6Balance(account);
+            }
+            catch (BusinettMessageRejectException) //get reject
+            {
+                //maybe user is not logged in, try to login ONCE
+                account = Login(username, password);
+
+                //get data again
+                balance = GetMDS6Balance(account);
+            }
+
+            return balance;
         }
 
         public IList<Model.PositionReport> GetPositionReport(string username, string password)
@@ -162,9 +186,14 @@ namespace AyondoTrade
             return result;
         }
 
-        private static PositionReport NewOrderSingle(string account, int securityId, bool isLong, decimal orderQty, string nettingPositionId = null)
+        private static PositionReport NewOrderSingle(string account, int securityId, bool isLong, decimal orderQty,
+            decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null)
         {
-            var reqId = Global.FixApp.NewOrderSingle(account, securityId.ToString(), isLong ? Side.BUY : Side.SELL, orderQty, OrdType.MARKET, nettingPositionId: nettingPositionId);
+            //send NewOrderSingle message
+            var reqId = Global.FixApp.NewOrderSingle(account, securityId.ToString(), isLong ? Side.BUY : Side.SELL, orderQty, OrdType.MARKET,
+                leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
+
+            //wait/get response message(s)
             IList<PositionReport> reports = null;
             PositionReport report = null;
             ExecutionReport executionReport = null;
@@ -222,6 +251,39 @@ namespace AyondoTrade
                 throw new Exception("fail getting order result");
 
             return report;
+        }
+
+        public decimal GetMDS6Balance(string account)
+        {
+            var reqId = Global.FixApp.MDS5BalanceRequest(account);
+            decimal balance = -1;
+            var dt = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+
+                if (Global.FixApp.Balances.ContainsKey(reqId))
+                {
+                    var tryGetValue = Global.FixApp.Balances.TryGetValue(reqId, out balance);
+
+                    if (!tryGetValue) continue;
+
+                    break;
+                }
+
+                //BusinessMessageReject? e.g. not logged in
+                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
+                {
+                    BusinessMessageReject msg;
+                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
+                    throw new BusinettMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                }
+            } while (DateTime.UtcNow - dt <= TIMEOUT); // timeout
+
+            if (balance == -1)
+                throw new Exception("fail getting balance");
+
+            return balance;
         }
 
         private static string Login(string username, string password)

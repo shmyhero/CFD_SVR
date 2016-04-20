@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
 using System.ServiceModel;
-using System.Text;
 using AyondoTrade.FaultModel;
 using AyondoTrade.Model;
 
@@ -20,7 +16,10 @@ namespace AyondoTrade
         IList<PositionReport> GetPositionReport(string username, string password);
 
         [OperationContract]
-        [FaultContract(typeof(OrderRejectedFault))]
-        PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, string nettingPositionId);
+        [FaultContract(typeof (OrderRejectedFault))]
+        PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null);
+
+        [OperationContract]
+        decimal GetBalance(string username, string password);
     }
 }
