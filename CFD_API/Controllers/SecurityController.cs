@@ -197,7 +197,7 @@ namespace CFD_API.Controllers
                 .Where(o => //o.AssetClass != "Interest Rates" &&
                     (o.CName.Contains(keyword) || o.Symbol.Contains(keyword))
                     && o.CName != null && o.DefUpdatedAt != null
-                    && (o.AssetClass != "Single Stocks" || o.AssetClass == "US Stocks")
+                    && (o.AssetClass != "Single Stocks" || o.Financing == "US Stocks")
                 )
                 .OrderBy(o => o.Symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
