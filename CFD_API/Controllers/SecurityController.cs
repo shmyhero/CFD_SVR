@@ -77,8 +77,8 @@ namespace CFD_API.Controllers
             var security =
                 db.AyondoSecurities
                     .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks"
-                        && o.CName != null && o.DefUpdatedAt != null
-                        )
+                                && o.CName != null && o.DefUpdatedAt != null
+                    )
                     //.OrderBy(o => o.Symbol)
                     //.Skip((page - 1)*perPage).Take(perPage)
                     .ToList();
@@ -212,7 +212,7 @@ namespace CFD_API.Controllers
         [Route("{securityId}")]
         public SecurityDetailDTO GetSecurity(int securityId)
         {
-            var sec = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
+            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
 
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
@@ -228,9 +228,92 @@ namespace CFD_API.Controllers
             var quote = redisQuoteClient.GetById(securityId);
             result.last = quote.Offer;
 
-            //get cname
-            if (sec != null && sec.CName != null)
-                result.name = sec.CName;
+            if (security != null)
+            {
+                //get cname
+                if (security.CName != null)
+                    result.name = security.CName;
+
+                switch (security.AssetClass)
+                {
+                    case "Currencies":
+                        decimal lotSizeInUSD;
+
+                        if (security.BaseCcy == "USD")
+                            lotSizeInUSD = security.LotSize.Value;
+                        else
+                        {
+                            //get fxRate and convert product's lotSize from its BaseCcy to USD
+                            //the fx for convertion! not the fx that is being bought!
+                            var fxConverterProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
+
+                            if (fxConverterProdDef == null)
+                                throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
+
+                            var fxConverterQuote = redisQuoteClient.GetById(fxConverterProdDef.Id);
+                            var fxConverterRate = (fxConverterQuote.Bid + fxConverterQuote.Offer)/2;
+
+                            lotSizeInUSD = security.LotSize.Value*fxConverterRate;
+                        }
+
+                        result.minValueLong = lotSizeInUSD*prodDef.MinSizeLong;
+                        result.minValueShort = lotSizeInUSD*prodDef.MinSizeShort;
+                        result.maxValueLong = lotSizeInUSD*prodDef.MaxSizeLong;
+                        result.maxValueShort = lotSizeInUSD*prodDef.MaxSizeShort;
+                        break;
+
+                    case "Commodities":
+                    case "Stock Indices":
+                        if (security.PerUnitEquals == null || security.PerUnit == null)
+                            throw new Exception("Cannot find PerUnit or PerUnitEquals for this security.");
+
+                        var unitPrice = security.PerUnitEquals.Value/security.PerUnit.Value;
+                        decimal unitPriceInUSD;
+                        if (security.BaseCcy == "USD")
+                            unitPriceInUSD = unitPrice;
+                        else
+                        {
+                            var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
+
+                            if (fxProdDef == null)
+                                throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
+
+                            var fxRate = (fxProdDef.Offer + fxProdDef.Bid)/2;
+                            unitPriceInUSD = unitPrice*fxRate.Value;
+                        }
+
+                        result.minValueLong = unitPriceInUSD*quote.Offer*prodDef.MinSizeLong;
+                        result.minValueShort = unitPriceInUSD*quote.Bid*prodDef.MinSizeShort;
+                        result.maxValueLong = unitPriceInUSD*quote.Offer*prodDef.MaxSizeLong;
+                        result.maxValueShort = unitPriceInUSD*quote.Bid*prodDef.MaxSizeShort;
+                        break;
+
+                    case "Single Stocks":
+                        decimal quoteOfferInUsd;
+                        decimal quoteBidInUsd;
+                        if (security.BaseCcy == "USD")
+                        {
+                            quoteOfferInUsd = quote.Offer;
+                            quoteBidInUsd = quote.Bid;
+                        }
+                        else
+                        {
+                            var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
+
+                            if (fxProdDef == null)
+                                throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
+
+                            var fxRate = (fxProdDef.Offer + fxProdDef.Bid)/2;
+                            quoteOfferInUsd = quote.Offer*fxRate.Value;
+                            quoteBidInUsd = quote.Bid*fxRate.Value;
+                        }
+                        result.minValueLong = quoteOfferInUsd*prodDef.MinSizeLong;
+                        result.minValueShort = quoteBidInUsd*prodDef.MinSizeShort;
+                        result.maxValueLong = quoteOfferInUsd*prodDef.MaxSizeLong;
+                        result.maxValueShort = quoteBidInUsd*prodDef.MaxSizeShort;
+                        break;
+                }
+            }
 
             //demo data
             Random r = new Random();

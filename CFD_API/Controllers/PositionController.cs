@@ -113,21 +113,6 @@ namespace CFD_API.Controllers
             //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
             AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
-            //*******************************************************
-            //currency:
-            //trade value = quantity * quote price * lot size
-            //trade value USD = quantity * lot size USD
-
-            //commodity & index:
-            //trade value = quantity * quote price * (per unit equals / per unit)
-
-            //stock:
-            //trade value = quantity * quote price
-
-
-            //invest = trade value * margin rate
-            //*******************************************************
-
             var tradeValueInUSD = form.invest*form.leverage;
 
             decimal quantity = 0;
