@@ -35,6 +35,8 @@ namespace AyondoTrade.Model
         public string TakeOID { get; set; }
 
         [DataMember]
-        public decimal PL { get; set; }
+        public decimal? PL { get; set; }
+        [DataMember]
+        public decimal? UPL { get; set; }
     }
 }

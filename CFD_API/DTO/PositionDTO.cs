@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace CFD_API.DTO
 {
@@ -20,7 +17,8 @@ namespace CFD_API.DTO
         public decimal settlePrice { get; set; }
         public decimal quantity { get; set; }
 
-        public decimal pl { get; set; }
+        public decimal? pl { get; set; }
+        public decimal? upl { get; set; }
         public DateTime createAt { get; set; }
     }
 }

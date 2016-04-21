@@ -23,8 +23,9 @@ namespace CFD_JOBS.Ayondo
         public int TAG_TakeOID;
         public int TAG_TakePx;
         public int TAG_MDS_PL;
-        private int TAG_Leverage;
-        private int TAG_MDS_RequestID;
+        public int TAG_Leverage;
+        public int TAG_MDS_RequestID;
+        public int TAG_MDS_UPL;
 
         public IDictionary<string, string> OnlineUsernameAccounts = new Dictionary<string, string>();
         //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
@@ -115,6 +116,7 @@ namespace CFD_JOBS.Ayondo
             TAG_MDS_PL = DD.FieldsByName["MDS_PL"].Tag;
             TAG_Leverage = DD.FieldsByName["Leverage"].Tag;
             TAG_MDS_RequestID = DD.FieldsByName["MDS_RequestID"].Tag;
+            TAG_MDS_UPL = DD.FieldsByName["MDS_UPL"].Tag;
         }
 
         #endregion

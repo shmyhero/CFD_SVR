@@ -83,6 +83,7 @@ namespace CFD_API.Controllers
                     createAt = report.CreateTime,
                     security = security,
                     quantity = report.LongQty ?? report.ShortQty.Value,
+                    upl = report.UPL,
                 };
 
                 return posDTO;
