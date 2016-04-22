@@ -4,14 +4,21 @@ using System.Linq;
 using System.Threading;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
+using CFD_COMMON.Utils;
 using ServiceStack.Redis.Generic;
 
 namespace CFD_JOBS.Ayondo
 {
     public class TickChartWorker
     {
-        private static int CLEAR_HISTORY_WHEN_SIZE = 60*24*10; //xx days' most possible count
-        private static int CLEAR_HISTORY_TO_SIZE = 60*24*7; //xx days' most possible count
+        private static int CLEAR_HISTORY_WHEN_SIZE_1mTick = 60*24*10; //xx days' most possible count
+        private static int CLEAR_HISTORY_TO_SIZE_1mTick = 60*24*7; //xx days' most possible count
+
+        private static int CLEAR_HISTORY_WHEN_SIZE_10mTick = 6*24*15;
+        private static int CLEAR_HISTORY_TO_SIZE_10mTick = 6*24*10;
+
+        private static int CLEAR_HISTORY_WHEN_SIZE_1hTick = 24*60;
+        private static int CLEAR_HISTORY_TO_SIZE_1hTick = 24*40;
 
         public static void Run()
         {
@@ -28,12 +35,6 @@ namespace CFD_JOBS.Ayondo
             {
                 try
                 {
-                    int overdueCount = 0;
-                    int identicalCount = 0;
-                    int updateCount = 0;
-                    int appendCount = 0;
-                    int newCount = 0;
-
                     var quotes = redisQuoteClient.GetAll();
 
                     //skip non-updated quotes to improve speed
@@ -55,70 +56,11 @@ namespace CFD_JOBS.Ayondo
                     //remember quotes for next check
                     lastQuotes = quotes.Select(o => o).ToList();
 
-                    foreach (var quote in updatedQuotes)
-                    {
-                        var listName = "tick:" + quote.Id;
-
-                        IRedisList<Tick> list = redisTickClient.Lists[listName];
-                        //var listCount = list.Count;
-                        //var listCount = redisClient.GetListCount(listName);
-
-                        var newTick = new Tick()
-                        {
-                            P = quote.Offer,
-                            Time = quote.Time
-                        };
-
-                        if (list.Count == 0) //new quote?
-                        {
-                            //CFDGlobal.LogLine(quote.Id+" new");
-                            newCount++;
-                            list.Add(newTick);
-                            //redisClient.AddItemToList(listName, JsonConvert.SerializeObject(newTick));
-                            continue;
-                        }
-
-                        //clear history/prevent data increasing for good
-                        if (list.Count > CLEAR_HISTORY_WHEN_SIZE) //data count at most possible size (in x days )
-                        {
-                            CFDGlobal.LogLine(quote.Id + " Clearing data from " + list.Count + " to " + CLEAR_HISTORY_TO_SIZE);
-                            var ticks = list.GetAll();
-                            var newTicks = ticks.Skip(ticks.Count - CLEAR_HISTORY_TO_SIZE);
-                            list.RemoveAll();
-                            list.AddRange(newTicks);
-                        }
-
-                        var lastTick = list[list.Count - 1]; //last tick in cache
-                        //var lastTick = JsonConvert.DeserializeObject<Tick>(redisClient.GetItemFromList(listName, (int) listCount - 1)); //last tick in cache
-                        if (newTick.Time > lastTick.Time)
-                        {
-                            if (IsEqualDownToMinute(newTick.Time, lastTick.Time))
-                            {
-                                //CFDGlobal.LogLine(quote.Id + " update");
-                                updateCount++;
-                                list[list.Count - 1] = newTick; //update last tick to new tick
-                                //redisClient.SetItemInList(listName, (int) listCount - 1, JsonConvert.SerializeObject(newTick)); //update last tick to new tick
-                            }
-                            else
-                            {
-                                //CFDGlobal.LogLine(quote.Id + " append");
-                                appendCount++;
-                                list.Add(newTick); //append new tick
-//                            redisClient.AddItemToList(listName, JsonConvert.SerializeObject(newTick)); //append new tick
-                            }
-                        }
-                        else
-                        {
-                            if (newTick.Time == lastTick.Time)
-                                identicalCount++;
-                            else
-                            //CFDGlobal.LogLine(quote.Id + " skip");
-                                overdueCount++;
-                        }
-                    }
-
-                    CFDGlobal.LogLine("updatedQuotes: " + updatedQuotes.Count +
-                                      " update: " + updateCount + " append: " + appendCount + " identical: " + identicalCount + " new: " + newCount + " overdue: " + overdueCount);
+                    //save to redis
+                    SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.OneMinute);
+                    SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.TenMinute);
+                    SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.OneHour);
+                    CFDGlobal.LogLine("");
                 }
                 catch (Exception e)
                 {
@@ -129,13 +71,158 @@ namespace CFD_JOBS.Ayondo
             }
         }
 
-        private static bool IsEqualDownToMinute(DateTime t1, DateTime t2)
+        public static void SaveQuoteTicks(IList<Quote> quotes, IRedisTypedClient<Tick> redisTickClient, TickSize tickSize)
         {
-            return t1.Minute == t2.Minute
-                   && t1.Hour == t2.Hour
-                   && t1.Day == t2.Day
-                   && t1.Month == t2.Month
-                   && t1.Year == t2.Year;
+            int overdueCount = 0;
+            int identicalCount = 0;
+            int updateCount = 0;
+            int appendCount = 0;
+            int newCount = 0;
+
+            string redisListKeyPrefix;
+            switch (tickSize)
+            {
+                case TickSize.OneMinute:
+                    redisListKeyPrefix = "tick:";
+                    break;
+                case TickSize.TenMinute:
+                    redisListKeyPrefix = "tick10m:";
+                    break;
+                case TickSize.OneHour:
+                    redisListKeyPrefix = "tick1h:";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
+            }
+
+            var clearWhenSize = GetClearWhenSize(tickSize);
+            var clearToSize = GetClearToSize(tickSize);
+
+            foreach (var quote in quotes)
+            {
+                var listName = redisListKeyPrefix + quote.Id;
+
+                IRedisList<Tick> list = redisTickClient.Lists[listName];
+                //var listCount = list.Count;
+                //var listCount = redisClient.GetListCount(listName);
+
+                var newTick = new Tick()
+                {
+                    P = quote.Offer,
+                    Time = quote.Time
+                };
+
+                if (list.Count == 0) //new quote?
+                {
+                    //CFDGlobal.LogLine(quote.Id+" new");
+                    newCount++;
+                    list.Add(newTick);
+                    //redisClient.AddItemToList(listName, JsonConvert.SerializeObject(newTick));
+                    continue;
+                }
+
+                //clear history/prevent data increasing for good
+                if (list.Count > clearWhenSize) //data count at most possible size (in x days )
+                {
+                    CFDGlobal.LogLine(tickSize + " " + quote.Id + " Clearing data from " + list.Count + " to " + clearToSize);
+                    var ticks = list.GetAll();
+                    var newTicks = ticks.Skip(ticks.Count - clearToSize);
+                    list.RemoveAll();
+                    list.AddRange(newTicks);
+                }
+
+                var lastTick = list[list.Count - 1]; //last tick in cache
+                //var lastTick = JsonConvert.DeserializeObject<Tick>(redisClient.GetItemFromList(listName, (int) listCount - 1)); //last tick in cache
+                if (newTick.Time > lastTick.Time)
+                {
+                    if (IsTickEqual(newTick.Time, lastTick.Time, tickSize))
+                    {
+                        //CFDGlobal.LogLine(quote.Id + " update");
+                        updateCount++;
+                        list[list.Count - 1] = newTick; //update last tick to new tick
+                        //redisClient.SetItemInList(listName, (int) listCount - 1, JsonConvert.SerializeObject(newTick)); //update last tick to new tick
+                    }
+                    else
+                    {
+                        //CFDGlobal.LogLine(quote.Id + " append");
+                        appendCount++;
+                        list.Add(newTick); //append new tick
+//                            redisClient.AddItemToList(listName, JsonConvert.SerializeObject(newTick)); //append new tick
+                    }
+                }
+                else
+                {
+                    if (newTick.Time == lastTick.Time)
+                        identicalCount++;
+                    else
+                    //CFDGlobal.LogLine(quote.Id + " skip");
+                        overdueCount++;
+                }
+            }
+
+            CFDGlobal.LogLine(tickSize + " total: " + quotes.Count +
+                              " update: " + updateCount + " append: " + appendCount + " identical: " + identicalCount + " new: " + newCount + " overdue: " + overdueCount);
+        }
+
+        private static bool IsTickEqual(DateTime t1, DateTime t2, TickSize tickSize)
+        {
+            switch (tickSize)
+            {
+                case TickSize.OneMinute:
+                    return DateTimes.IsEqualDownToMinute(t1, t2);
+                    break;
+                case TickSize.TenMinute:
+                    return DateTimes.IsEqualDownTo10Minute(t1, t2);
+                    break;
+                case TickSize.OneHour:
+                    return DateTimes.IsEqualDownToHour(t1, t2);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
+            }
+        }
+
+        private static int GetClearWhenSize(TickSize tickSize)
+        {
+            switch (tickSize)
+            {
+                case TickSize.OneMinute:
+                    return CLEAR_HISTORY_WHEN_SIZE_1mTick;
+                    break;
+                case TickSize.TenMinute:
+                    return CLEAR_HISTORY_WHEN_SIZE_10mTick;
+                    break;
+                case TickSize.OneHour:
+                    return CLEAR_HISTORY_WHEN_SIZE_1hTick;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
+            }
+        }
+
+        private static int GetClearToSize(TickSize tickSize)
+        {
+            switch (tickSize)
+            {
+                case TickSize.OneMinute:
+                    return CLEAR_HISTORY_TO_SIZE_1mTick;
+                    break;
+                case TickSize.TenMinute:
+                    return CLEAR_HISTORY_TO_SIZE_10mTick;
+                    break;
+                case TickSize.OneHour:
+                    return CLEAR_HISTORY_TO_SIZE_1hTick;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
+            }
+        }
+
+        public enum TickSize
+        {
+            OneMinute,
+            TenMinute,
+            OneHour
         }
     }
 }
