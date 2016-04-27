@@ -101,112 +101,54 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new Exception("user do not have an ayondo account");
 
-            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-
-            if (security == null)
-                throw new Exception("security not found");
-
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+            //var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
 
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            //if (security == null)
+            //    throw new Exception("security not found");
 
-            var tradeValueInUSD = form.invest*form.leverage;
+            var prodDef = redisProdDefClient.GetById(form.securityId);
+            if (prodDef == null)
+                throw new Exception("security not found");
 
-            decimal quantity = 0;
-            decimal stopPx = 0;
+            var tradeValueUSD = form.invest*form.leverage;
 
-            switch (security.AssetClass)
+            //************************************************************************
+            //TradeValue (to ccy2) = QuotePrice * (1 / MDS_PLUNITS * MDS_LOTSIZE) * quantity
+            //************************************************************************
+
+            decimal tradeValueCcy2;
+            if (prodDef.Ccy2 == "USD")
             {
-                case "Currencies":
-                    decimal lotSizeInUSD;
-
-                    if (security.BaseCcy == "USD")
-                        lotSizeInUSD = security.LotSize.Value;
-                    else
-                    {
-                        //get fxRate and convert product's lotSize from its BaseCcy to USD
-                        //the fx for convertion! not the fx that is being bought!
-                        var fxConverterProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
-
-                        if (fxConverterProdDef == null)
-                            throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
-
-                        var fxConverterQuote = redisQuoteClient.GetById(fxConverterProdDef.Id);
-                        var fxConverterRate = (fxConverterQuote.Bid + fxConverterQuote.Offer)/2;
-
-                        lotSizeInUSD = security.LotSize.Value*fxConverterRate;
-                    }
-
-                    quantity = tradeValueInUSD/lotSizeInUSD;
-
-                    var fxProductQuote = redisQuoteClient.GetById(form.securityId);
-                    var fxProductPrice = form.isLong ? fxProductQuote.Offer : fxProductQuote.Bid;
-                    stopPx = form.isLong ? fxProductPrice*(1 - 1/form.leverage) : fxProductPrice*(1 + 1/form.leverage);
-
-                    break;
-
-                case "Commodities":
-                case "Stock Indices":
-                    if (security.PerUnitEquals == null || security.PerUnit == null)
-                        throw new Exception("Cannot find PerUnit or PerUnitEquals for this security.");
-
-                    var unitPrice = security.PerUnitEquals/security.PerUnit;
-                    var quote = redisQuoteClient.GetById(form.securityId);
-                    var quotePrice = form.isLong ? quote.Offer : quote.Bid;
-                    var unitQuotePrice = unitPrice*quotePrice;
-
-                    if (security.BaseCcy == "USD")
-                    {
-                        quantity = tradeValueInUSD/unitQuotePrice.Value;
-                    }
-                    else
-                    {
-                        var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
-
-                        if (fxProdDef == null)
-                            throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
-
-                        var fxRate = (fxProdDef.Offer + fxProdDef.Bid)/2;
-                        var unitQuotePriceInUSD = unitQuotePrice*fxRate;
-                        quantity = tradeValueInUSD/unitQuotePriceInUSD.Value;
-                    }
-
-                    stopPx = form.isLong ? quotePrice*(1 - 1/form.leverage) : quotePrice*(1 + 1/form.leverage);
-                    break;
-
-                case "Single Stocks":
-                    var stockQuote = redisQuoteClient.GetById(form.securityId);
-                    var stockQuotePrice = form.isLong ? stockQuote.Offer : stockQuote.Bid;
-
-                    if (security.BaseCcy == "USD")
-                    {
-                        quantity = tradeValueInUSD/stockQuotePrice;
-                    }
-                    else
-                    {
-                        var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
-
-                        if (fxProdDef == null)
-                            throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
-
-                        var fxRate = (fxProdDef.Offer + fxProdDef.Bid)/2;
-                        var stockQuotePriceInUSD = stockQuotePrice*fxRate;
-                        quantity = tradeValueInUSD/stockQuotePriceInUSD.Value;
-                    }
-
-                    stopPx = form.isLong ? stockQuotePrice*(1 - 1/form.leverage) : stockQuotePrice*(1 + 1/form.leverage);
-                    break;
+                tradeValueCcy2 = tradeValueUSD;
             }
+            else
+            {
+                //get fxRate and convert 
+                //the fx for convertion! not the fx that is being bought!
+                var fxConverterProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == "USD" + prodDef.Ccy2);
 
-            //var tradeValue = form.invest/security.BaseMargin;
-            //var quantity = tradeValue/security.LotSize/(form.isLong ? quote.Offer : quote.Bid);
+                if (fxConverterProdDef == null)
+                    throw new Exception("Cannot find fx rate: " + "USD" + "/" + prodDef.Ccy2);
+
+                var fxConverterQuote = redisQuoteClient.GetById(fxConverterProdDef.Id);
+                var fxConverterRate = (fxConverterQuote.Bid + fxConverterQuote.Offer)/2;
+
+                tradeValueCcy2 = tradeValueUSD*fxConverterRate;
+            }
+            var quote = redisQuoteClient.GetById(form.securityId);
+            var quotePrice = form.isLong ? quote.Offer : quote.Bid;
+            decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
+            decimal stopPx = form.isLong ? quotePrice * (1 - 1 / form.leverage) : quotePrice * (1 + 1 / form.leverage);
 
             CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
                               "|quantity:" + quantity + " stopPx:" + stopPx);
+
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
             PositionReport result;
             try
@@ -220,7 +162,8 @@ namespace CFD_API.Controllers
             }
             catch (FaultException<OrderRejectedFault> e)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.ORDER_REJECTED) + " " + e.Detail.Text));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                    __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
             var posDTO = new PositionDTO()
@@ -246,25 +189,18 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new Exception("user do not have an ayondo account");
 
-            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-
-            if (security == null)
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDef = redisProdDefClient.GetById(form.securityId);
+            if (prodDef == null)
                 throw new Exception("security not found");
 
             //var redisQuoteClient = RedisClient.As<Quote>();
             //var quote = redisQuoteClient.GetById(form.securityId);
 
             EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-
             //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
             AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
 
-            //*******************************************************
-            //trade value = lot size * quantity * quote price
-            //invest = trade value * margin rate
-            //*******************************************************
-            //var tradeValue = form.invest/security.BaseMargin;
-            //var quantity = tradeValue/security.LotSize/(form.isLong ? quote.Offer : quote.Bid);
             PositionReport result;
             try
             {
@@ -272,7 +208,8 @@ namespace CFD_API.Controllers
             }
             catch (FaultException<OrderRejectedFault> e)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.ORDER_REJECTED) + " " + e.Detail.Text));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                    __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
             var posDTO = new PositionDTO()

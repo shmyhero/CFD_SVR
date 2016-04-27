@@ -41,8 +41,8 @@ namespace CFD_COMMON.Models.Cached
         public decimal? OpenAsk { get; set; }
         public decimal? PreClose { get; set; }
 
-        public decimal? PLUnits { get; set; }
-        public decimal? LotSize { get; set; }
+        public decimal PLUnits { get; set; }
+        public decimal LotSize { get; set; }
         public string Ccy2 { get; set; }
     }
 

@@ -53,11 +53,18 @@ namespace CFD_API.Controllers
                     user.Nickname = nickname;
 
                     //check duplicate nickname and generate random suffix
+                    int tryCount = 0;
                     while (db.Users.Any(o => o.Id != user.Id && o.Nickname == user.Nickname))
                     {
                         user.Nickname = nickname + (new Random().Next(10000));
 
-                        //todo: prevent dead loop
+                        tryCount++;
+
+                        if (tryCount > 10)
+                        {
+                            CFDGlobal.LogWarning("Tryout exceeded: signupByPhone - check duplicate nickname and generate random suffix");
+                            break;
+                        }
                     }
 
                     db.SaveChanges();
@@ -75,15 +82,15 @@ namespace CFD_API.Controllers
                     result.token = user.Token;
                 }
 
-                //if (user.AyondoUsername == null)
-                //    try
-                //    {
-                //        CreateAyondoAccount(user);
-                //    }
-                //    catch (Exception e)
-                //    {
-                //        CFDGlobal.LogException(e);
-                //    }
+                if (user.AyondoUsername == null)
+                    try
+                    {
+                        CreateAyondoAccount(user);
+                    }
+                    catch (Exception e)
+                    {
+                        CFDGlobal.LogException(e);
+                    }
             }
             else
             {
@@ -114,11 +121,18 @@ namespace CFD_API.Controllers
                 user.Nickname = form.nickname.Trim();
 
                 //check duplicate nickname and generate random suffix
+                int tryCount = 0;
                 while (db.Users.Any(o => o.Id != user.Id && o.Nickname == user.Nickname))
                 {
                     user.Nickname = form.nickname + (new Random().Next(10000));
 
-                    //todo: prevent dead loop
+                    tryCount++;
+
+                    if (tryCount > 10)
+                    {
+                        CFDGlobal.LogWarning("Tryout exceeded: signupByWeChat - check duplicate nickname and generate random suffix");
+                        break;
+                    }
                 }
 
                 //save wechat pic to azure storage blob
@@ -137,7 +151,7 @@ namespace CFD_API.Controllers
                     }
                     catch (Exception ex)
                     {
-                        CFDGlobal.LogError("Fail saving wechat picture to azure blob");
+                        CFDGlobal.LogWarning("Fail saving wechat picture to azure blob");
                         CFDGlobal.LogException(ex);
                     }
                 }
@@ -156,21 +170,24 @@ namespace CFD_API.Controllers
                 result.userId = user.Id;
                 result.token = user.Token;
 
-                //todo:if user is from wechat but user.picurl is null, reload img?
+                //TODO:if user is from wechat but user.picurl is null, reload img?
             }
 
-            //if (user.AyondoUsername == null)
-            //    try
-            //    {
-            //        CreateAyondoAccount(user);
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        CFDGlobal.LogException(e);
-            //    }
+            if (user.AyondoUsername == null)
+                try
+                {
+                    CreateAyondoAccount(user);
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogException(e);
+                }
 
             return result;
         }
+
+        private static readonly string AMS_HEADER_AUTH = "Bearer RDFFMzY2NDktMDlDRC00OTg4LUEwNjAtRUM0NDIxMTNDMDBCMDQ5QUU3NjgtRTUyMy00RkE0LTk5MTQtNTMwQUM1RjY5MDY5";
+        private static readonly string AMS_HOST = "https://www.ayondo-ams.com/tradeherocn/";
 
         private void CreateAyondoAccount(User user)
         {
@@ -186,8 +203,8 @@ namespace CFD_API.Controllers
             string username = username_base;
             do
             {
-                var httpWebRequest = HttpWebRequest.CreateHttp("https://lab1-www.ayondo-ams.com/tradeherocn/check-username?AccountType=Demo&UserName=" + username);
-                httpWebRequest.Headers["Authorization"] = "Bearer NkJDMUQzNkQtMzg2OS00NEZELUIzOUMtODQ4MkUzMTAyMTk0MzRBNDYyMkQtODQ1MC00MDA4LTlFRUUtMEIwRkFENzQ3QUY4";
+                var httpWebRequest = HttpWebRequest.CreateHttp(AMS_HOST + "check-username?AccountType=Demo&UserName=" + username);
+                httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
                 var webResponse = httpWebRequest.GetResponse();
                 var responseStream = webResponse.GetResponseStream();
                 var sr = new StreamReader(responseStream);
@@ -207,7 +224,7 @@ namespace CFD_API.Controllers
 
                     if (!isAvailable || !isValid)
                     {
-                        CFDGlobal.LogInformation("Ayondo check-user: "+username+" isAvailable:"+isAvailable+" isValid:"+isValid);
+                        CFDGlobal.LogInformation("Ayondo check-user: " + username + " isAvailable:" + isAvailable + " isValid:" + isValid);
 
                         //generate new username for next attempt
                         username = username_base + Randoms.GetRandomAlphabeticString(4);
@@ -217,8 +234,8 @@ namespace CFD_API.Controllers
 
             if (isAvailable)
             {
-                var httpWebRequest = HttpWebRequest.CreateHttp("https://lab1-www.ayondo-ams.com/tradeherocn/DemoAccount");
-                httpWebRequest.Headers["Authorization"] = "Bearer NkJDMUQzNkQtMzg2OS00NEZELUIzOUMtODQ4MkUzMTAyMTk0MzRBNDYyMkQtODQ1MC00MDA4LTlFRUUtMEIwRkFENzQ3QUY4";
+                var httpWebRequest = HttpWebRequest.CreateHttp(AMS_HOST + "DemoAccount");
+                httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
                 httpWebRequest.Method = "POST";
                 httpWebRequest.ContentType = "application/json; charset=UTF-8";
                 var requestStream = httpWebRequest.GetRequestStream();
@@ -260,11 +277,12 @@ namespace CFD_API.Controllers
 
                 if (jObject["Error"] != null)
                 {
-                    CFDGlobal.LogWarning("AMS create account error: " + jObject["Error"].Value<string>()+" userId:"+user.Id+" ayondoUsername:"+username);
+                    CFDGlobal.LogWarning("AMS create account error: " + jObject["Error"].Value<string>() + " userId:" + user.Id + " ayondoUsername:" + username);
                 }
                 else
                 {
                     var guid = jObject["Guid"].Value<string>();
+                    CFDGlobal.LogInformation("Ayondo user created: userId:" + user.Id + " username:" + username + " password:" + password + " guid:" + guid);
 
                     user.AyondoUsername = username;
                     user.AyondoPassword = password;
@@ -325,8 +343,8 @@ namespace CFD_API.Controllers
 
             return new BalanceDTO()
             {
-                id=user.Id,
-                total=balance,
+                id = user.Id,
+                total = balance,
                 available = 11111
             };
         }
