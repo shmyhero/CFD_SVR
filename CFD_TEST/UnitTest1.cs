@@ -8,6 +8,7 @@ using CFD_COMMON.Models.Cached;
 using CFD_JOBS.Ayondo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using ServiceStack.Redis.Generic;
 using ServiceStack.Text;
 
 namespace CFD_TEST
@@ -113,6 +114,39 @@ namespace CFD_TEST
 
             //// 关闭通道  
             //((IClientChannel)channelHttp).Close();  
+        }
+
+        [TestMethod]
+        public void RemoveInvalidQuotes()
+        {
+            var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
+            var redisProdDefClient = redisClient.As<ProdDef>();
+            var redisTickClient = redisClient.As<Tick>();
+
+            var prodDefs = redisProdDefClient.GetAll();
+
+            foreach (var prodDef in prodDefs)
+            {
+                CFDGlobal.LogLine(prodDef.Id + "...");
+
+                IRedisList<Tick> redisList = redisTickClient.Lists["tick10m:" + prodDef.Id];
+
+                if(redisList.Count==0)
+                    continue;
+
+                var list =redisList.GetAll();
+                var last = list[list.Count - 1];
+                var last2 = list[list.Count - 2];
+
+                if (last.Time.Year == 2016 && last.Time.Month == 4 && last.Time.Day == 27 && last.Time.Hour == 2 && last.Time.Minute == 23
+                    && last.Time - last2.Time >= TimeSpan.FromHours(1))
+                {
+                    var totalHours = (last.Time - last2.Time).TotalHours;
+                    CFDGlobal.LogLine(prodDef.Id+":"+totalHours.ToString());
+
+                    var tick = redisTickClient.Lists["tick:" + prodDef.Id].Pop();
+                }
+            }
         }
     }
 }

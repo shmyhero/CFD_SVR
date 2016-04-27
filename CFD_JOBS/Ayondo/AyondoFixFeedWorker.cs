@@ -56,7 +56,7 @@ namespace CFD_JOBS.Ayondo
                         var listOld = redisProdDefClient.GetAll();
 
                         IList<ProdDef> listToSave = new List<ProdDef>();
-                        var listToSaveAsQuote = new List<ProdDef>();
+                        //var listToSaveAsQuote = new List<ProdDef>();
 
                         foreach (var newProdDef in listNew)
                         {
@@ -72,8 +72,8 @@ namespace CFD_JOBS.Ayondo
                                     //close time
                                     old.LastClose = newProdDef.Time;
 
-                                    //prod def will be treated as a new QUOTE when stock open/close
-                                    listToSaveAsQuote.Add(newProdDef);
+                                    ////prod def will be treated as a new QUOTE when stock open/close
+                                    //listToSaveAsQuote.Add(newProdDef);
                                 }
                                 else if (old.QuoteType != enmQuoteType.Open && newProdDef.QuoteType == enmQuoteType.Open) //xxx -> open
                                 {
@@ -89,8 +89,8 @@ namespace CFD_JOBS.Ayondo
                                     //preclose
                                     old.PreClose =Quotes.GetClosePrice(newProdDef);
 
-                                    //prod def will be treated as a new QUOTE when stock open/close
-                                    listToSaveAsQuote.Add(newProdDef);
+                                    ////prod def will be treated as a new QUOTE when stock open/close
+                                    //listToSaveAsQuote.Add(newProdDef);
                                 }
 
                                 //update fields
@@ -123,68 +123,18 @@ namespace CFD_JOBS.Ayondo
 
                         redisProdDefClient.StoreAll(listToSave);
 
-                        //-----------------SAVING QUOTE-------------------------------------------
-                        if (listToSaveAsQuote.Count > 0)
-                        {
-                            var quotes = listToSaveAsQuote.Select(o => new Quote()
-                            {
-                                Bid = o.Bid.Value,
-                                Id = o.Id,
-                                Offer = o.Offer.Value,
-                                Time = o.Time
-                            }).ToList();
-                            TickChartWorker.SaveQuoteTicks(quotes, redisTickClient, TickChartWorker.TickSize.OneMinute);
-                            //var newCount = 0;
-                            //var updateCount = 0;
-                            //var appendCount = 0;
-                            //var identicalCount = 0;
-                            //var overdueCount = 0;
-                            //foreach (var prodDef in listToSaveAsQuote)
-                            //{
-                            //    var listName = "tick:" + prodDef.Id;
-
-                            //    IRedisList<Tick> list = redisTickClient.Lists[listName];
-
-                            //    var newTick = new Tick()
-                            //    {
-                            //        P = prodDef.Offer.Value,
-                            //        Time = prodDef.Time
-                            //    };
-
-                            //    if (list.Count == 0) //new quote?
-                            //    {
-                            //        newCount++;
-                            //        list.Add(newTick);
-                            //        continue;
-                            //    }
-
-                            //    var lastTick = list[list.Count - 1]; //last tick in cache
-                            //    if (newTick.Time > lastTick.Time)
-                            //    {
-                            //        if (DateTimes.IsEqualDownToMinute(newTick.Time, lastTick.Time))
-                            //        {
-                            //            updateCount++;
-                            //            list[list.Count - 1] = newTick; //update last tick to new tick
-                            //        }
-                            //        else
-                            //        {
-                            //            appendCount++;
-                            //            list.Add(newTick); //append new tick
-                            //        }
-                            //    }
-                            //    else
-                            //    {
-                            //        if (newTick.Time == lastTick.Time)
-                            //            identicalCount++;
-                            //        else
-                            //            overdueCount++;
-                            //    }
-                            //}
-
-                            //CFDGlobal.LogLine("ProdDef as Quotes: " + listToSaveAsQuote.Count + " update: " + updateCount + " append: " + appendCount + " identical: " + identicalCount +
-                            //                  " new: " +
-                            //                  newCount + " overdue: " + overdueCount);
-                        }
+                        ////-----------------SAVING QUOTE-------------------------------------------
+                        //if (listToSaveAsQuote.Count > 0)
+                        //{
+                        //    var quotes = listToSaveAsQuote.Select(o => new Quote()
+                        //    {
+                        //        Bid = o.Bid.Value,
+                        //        Id = o.Id,
+                        //        Offer = o.Offer.Value,
+                        //        Time = o.Time
+                        //    }).ToList();
+                        //    TickChartWorker.SaveQuoteTicks(quotes, redisTickClient, TickChartWorker.TickSize.OneMinute);
+                        //}
                     }
                 }
                 catch (Exception e)

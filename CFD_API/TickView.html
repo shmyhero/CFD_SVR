@@ -5,7 +5,12 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-    <select id="select1" style="font-size: x-large" onchange="draw(this.value)"></select>
+    <select id="select1" style="font-size: x-large" onchange="draw(this.value, document.getElementById('select2').value)"></select>
+<select id="select2" style="font-size: x-large" onchange="draw(document.getElementById('select1').value, this.value)">
+    <option value="">1 minute</option>
+    <option value="week">10 munutes</option>
+    <option value="month">1 hour</option>
+</select>
 
 <div id="container" style="height: 400px; min-width: 310px"></div>
 
@@ -30,8 +35,10 @@
         //window.setTimeout(function() { draw($('#select1')[0].value); }, 1000);
     });
 
-    function draw(secId) {
-        $.getJSON('api/quote/' + secId + '/tick', function (result) {
+    function draw(secId, type) {
+        var typeUrl = type == '' ? '' : '/' + type;
+
+        $.getJSON('api/quote/' + secId + '/tick' + typeUrl, function (result) {
 
             data = new Array();
             $.each(result, function (i, tick) {
@@ -111,7 +118,7 @@
                         name: 'price',
                         type: 'area',
                         data: data,
-                        gapSize: 1,
+                        gapSize: type=='month'?30:1,
                         tooltip: {
                             valueDecimals: 4
                         },
