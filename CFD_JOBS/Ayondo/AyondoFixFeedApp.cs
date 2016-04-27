@@ -131,7 +131,11 @@ namespace CFD_JOBS.Ayondo
                     MaxSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeShort"].Tag),
                     MinSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MinSizeLong"].Tag),
                     MaxSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeLong"].Tag),
-                    MaxLeverage = message.GetDecimal(DD.FieldsByName["MDS_EFFLEVERAGE"].Tag)
+                    MaxLeverage = message.GetDecimal(DD.FieldsByName["MDS_EFFLEVERAGE"].Tag),
+
+                    PLUnits = message.GetDecimal(DD.FieldsByName["MDS_PLUNITS"].Tag),
+                    LotSize = message.GetDecimal(DD.FieldsByName["MDS_LOTSIZE"].Tag),
+                    Ccy2 = message.GetString(DD.FieldsByName["MDS_CCY2"].Tag),
                 };
 
                 //CFDGlobal.LogLine("MDS2 Received: Id: " + prodDef.Id + " QuoteType: " + prodDef.QuoteType);
@@ -182,7 +186,7 @@ namespace CFD_JOBS.Ayondo
 //            CFDGlobal.LogLine(quote.ToString());
 
 //            //detail log
-            //            CFDGlobal.LogLine(GetMessageString);
+            //CFDGlobal.LogLine(GetMessageString(quote));
 
             //if (quote.SecurityID.getValue() == "20867")
             //    CFDGlobal.LogLine("20867 " + quote.BidPx.getValue() + " " + quote.OfferPx.getValue());

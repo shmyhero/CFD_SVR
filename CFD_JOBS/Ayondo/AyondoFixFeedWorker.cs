@@ -66,7 +66,7 @@ namespace CFD_JOBS.Ayondo
                                 //update open/close time/price depending on state change
                                 if (old.QuoteType != enmQuoteType.Closed && newProdDef.QuoteType == enmQuoteType.Closed) //xxx -> close
                                 {
-                                    CFDGlobal.LogLine("PROD CLOSED " + newProdDef.Id + " time: " + newProdDef.Time);
+                                    CFDGlobal.LogLine("PROD CLOSED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " + newProdDef.Bid);
 
                                     //close time
                                     old.LastClose = newProdDef.Time;
@@ -108,6 +108,9 @@ namespace CFD_JOBS.Ayondo
                                 old.MinSizeLong = newProdDef.MinSizeLong;
                                 old.MaxSizeLong = newProdDef.MaxSizeLong;
                                 old.MaxLeverage = newProdDef.MaxLeverage;
+                                old.PLUnits = newProdDef.PLUnits;
+                                old.LotSize = newProdDef.LotSize;
+                                old.Ccy2 = newProdDef.Ccy2;
 
                                 listToSave.Add(old);
                             }
