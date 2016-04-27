@@ -238,34 +238,18 @@ namespace CFD_API.Controllers
             //************************************************************************
 
             var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
+
             decimal minLong = perPriceCcy2*quote.Offer*prodDef.MinSizeLong;
             decimal minShort = perPriceCcy2*quote.Bid*prodDef.MinSizeShort;
             decimal maxLong = perPriceCcy2*quote.Offer*prodDef.MaxSizeLong;
             decimal maxShort = perPriceCcy2*quote.Bid*prodDef.MaxSizeShort;
-            if (prodDef.Ccy2 == "USD")
-            {
-                result.minValueLong = minLong;
-                result.minValueShort = minShort;
-                result.maxValueLong = maxLong;
-                result.maxValueShort = maxShort;
-            }
-            else
-            {
-                //get fxRate and convert 
-                //the fx for convertion! not the fx that is being bought!
-                var fxConverterProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == "USD" + prodDef.Ccy2);
 
-                if (fxConverterProdDef == null)
-                    throw new Exception("Cannot find fx rate: " + "USD" + "/" + prodDef.Ccy2);
+            var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", RedisClient);
 
-                var fxConverterQuote = redisQuoteClient.GetById(fxConverterProdDef.Id);
-                var fxConverterRate = 1/((fxConverterQuote.Bid + fxConverterQuote.Offer)/2);
-
-                result.minValueLong = minLong*fxConverterRate;
-                result.minValueShort = minShort*fxConverterRate;
-                result.maxValueLong = maxLong*fxConverterRate;
-                result.maxValueShort = maxShort*fxConverterRate;
-            }
+            result.minValueLong = minLong * fxRate;
+            result.minValueShort = minShort * fxRate;
+            result.maxValueLong = maxLong * fxRate;
+            result.maxValueShort = maxShort * fxRate;
 
             //demo data
             Random r = new Random();

@@ -65,13 +65,13 @@ namespace CFD_API.Controllers
                 if (prodDef != null)
                 {
                     security.preClose = prodDef.PreClose;
-                    security.open =Quotes.GetOpenPrice(prodDef);
+                    security.open = Quotes.GetOpenPrice(prodDef);
                     security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
                 }
 
                 if (quote != null)
                 {
-                    security.last =Quotes.GetLastPrice( quote);
+                    security.last = Quotes.GetLastPrice(quote);
                 }
 
                 var posDTO = new PositionDTO()
@@ -120,29 +120,12 @@ namespace CFD_API.Controllers
             //TradeValue (to ccy2) = QuotePrice * (1 / MDS_PLUNITS * MDS_LOTSIZE) * quantity
             //************************************************************************
 
-            decimal tradeValueCcy2;
-            if (prodDef.Ccy2 == "USD")
-            {
-                tradeValueCcy2 = tradeValueUSD;
-            }
-            else
-            {
-                //get fxRate and convert 
-                //the fx for convertion! not the fx that is being bought!
-                var fxConverterProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == "USD" + prodDef.Ccy2);
-
-                if (fxConverterProdDef == null)
-                    throw new Exception("Cannot find fx rate: " + "USD" + "/" + prodDef.Ccy2);
-
-                var fxConverterQuote = redisQuoteClient.GetById(fxConverterProdDef.Id);
-                var fxConverterRate = (fxConverterQuote.Bid + fxConverterQuote.Offer)/2;
-
-                tradeValueCcy2 = tradeValueUSD*fxConverterRate;
-            }
+            decimal tradeValueCcy2 = FX.ConvertUSDtoCcy(tradeValueUSD, prodDef.Ccy2, RedisClient);
+            
             var quote = redisQuoteClient.GetById(form.securityId);
             var quotePrice = form.isLong ? quote.Offer : quote.Bid;
             decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
-            decimal stopPx = form.isLong ? quotePrice * (1 - 1 / form.leverage) : quotePrice * (1 + 1 / form.leverage);
+            decimal stopPx = form.isLong ? quotePrice*(1 - 1/form.leverage) : quotePrice*(1 + 1/form.leverage);
 
             CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
                               "|quantity:" + quantity + " stopPx:" + stopPx);
