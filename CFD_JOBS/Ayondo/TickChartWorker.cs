@@ -108,7 +108,7 @@ namespace CFD_JOBS.Ayondo
 
                 var newTick = new Tick()
                 {
-                    P = quote.Offer,
+                    P = Quotes.GetLastPrice(quote),
                     Time = quote.Time
                 };
 

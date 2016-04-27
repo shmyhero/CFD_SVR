@@ -16,6 +16,7 @@ using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
@@ -64,13 +65,13 @@ namespace CFD_API.Controllers
                 if (prodDef != null)
                 {
                     security.preClose = prodDef.PreClose;
-                    security.open = prodDef.OpenAsk;
+                    security.open =Quotes.GetOpenPrice(prodDef);
                     security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
                 }
 
                 if (quote != null)
                 {
-                    security.last = quote.Offer;
+                    security.last =Quotes.GetLastPrice( quote);
                 }
 
                 var posDTO = new PositionDTO()

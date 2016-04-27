@@ -232,7 +232,7 @@ namespace CFD_JOBS.Ayondo
         public void OnMessage(BusinessMessageReject reject, SessionID session)
         {
             CFDGlobal.LogLine(":OnMessage:BusinessMessageReject");
-            CFDGlobal.LogLine(GetMessageString(reject));
+            CFDGlobal.LogLine(GetMessageString(reject,true,true));
 
             var guid = reject.BusinessRejectRefID.Obj;
 

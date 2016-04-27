@@ -3,6 +3,7 @@ using AutoMapper;
 using CFD_API.DTO;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Utils;
 using CFD_COMMON.Utils.Extensions;
 
 namespace CFD_API
@@ -18,7 +19,7 @@ namespace CFD_API
                 cfg.CreateMap<User, UserDTO>();
 
                 cfg.CreateMap<AyondoSecurity, SecurityDTO>()
-                    .ForMember(dest => dest.last, opt => opt.MapFrom(src => src.Ask))
+                    .ForMember(dest => dest.last, opt => opt.MapFrom(src =>Quotes.GetLastPrice(src)))
                     //tag
                     .ForMember(dest => dest.tag, opt => opt.Condition(o => o.AssetClass == "Single Stocks"))
                     .ForMember(dest => dest.tag, opt => opt.MapFrom(src => src.Financing == "US Stocks" ? "US" : ""))
@@ -30,10 +31,10 @@ namespace CFD_API
                     ;
 
                 cfg.CreateMap<ProdDef, SecurityDetailDTO>()
-                    .ForMember(dest => dest.last, opt => opt.MapFrom(src => src.Offer))
+                    .ForMember(dest => dest.last, opt => opt.MapFrom(src => Quotes.GetLastPrice(src)))
                     .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.Name.TruncateMax(10)))
                     //open
-                    .ForMember(dest => dest.open, opt => opt.MapFrom(src => src.OpenAsk))
+                    .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))
                     //.ForMember(dest => dest.preClose, opt => opt.MapFrom(src => src.CloseAsk))
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open));
 

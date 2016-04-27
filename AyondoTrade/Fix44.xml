@@ -4565,7 +4565,7 @@
     <field number="7913" name="MDS_SetIndex" type="STRING"/>
     <field number="7914" name="MDS_TransferID" type="STRING"/>
     <field number="7915" name="MDS_RequestID" type="STRING"/>
-    <field number="7916" name="MDS_StatusCode" type="Int">
+    <field number="7916" name="MDS_StatusCode" type="INT">
       <value enum="0" description="ERROR"/>
       <value enum="1" description="SENT"/>
       <value enum="2" description="CREATED"/>
@@ -4578,8 +4578,8 @@
     <field number="7919" name="MDS_SignalID" type="STRING"/>
     <field number="7920" name="MDS_CardType" type="STRING"/>
     <field number="7921" name="MDS_CardAlias" type="STRING"/>
-    <field number="7922" name="MDS_TransferLabel" type="String"/>
-    <field number="7923" name="MDS_PositionID" type="String"/>
+    <field number="7922" name="MDS_TransferLabel" type="STRING"/>
+    <field number="7923" name="MDS_PositionID" type="STRING"/>
     <field number="7924" name="MDS_MinSizeShort" type="FLOAT"/>
     <field number="7925" name="MDS_MaxSizeShort" type="FLOAT"/>
     <field number="7926" name="MDS_MinSizeLong" type="FLOAT"/>

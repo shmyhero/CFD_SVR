@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
+using CFD_COMMON.Utils;
 using QuickFix;
 using QuickFix.Transport;
 
@@ -86,7 +87,7 @@ namespace CFD_JOBS.Ayondo
                                     old.OpenBid = newProdDef.Bid;
 
                                     //preclose
-                                    old.PreClose = newProdDef.CloseAsk;
+                                    old.PreClose =Quotes.GetClosePrice(newProdDef);
 
                                     //prod def will be treated as a new QUOTE when stock open/close
                                     listToSaveAsQuote.Add(newProdDef);

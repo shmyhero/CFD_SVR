@@ -9,6 +9,7 @@ using CFD_API.DTO;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
+using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
@@ -39,14 +40,14 @@ namespace CFD_API.Controllers
                 if (prodDef != null)
                 {
                     security.preClose = prodDef.PreClose;
-                    security.open = prodDef.OpenAsk;
+                    security.open =Quotes.GetOpenPrice(prodDef);
                     security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
                 }
 
                 var quote = quotes.FirstOrDefault(o => o.Id == security.id);
                 if (quote != null)
                 {
-                    security.last = quote.Offer;
+                    security.last = Quotes.GetLastPrice(quote);
                 }
             }
         }
@@ -212,8 +213,6 @@ namespace CFD_API.Controllers
         [Route("{securityId}")]
         public SecurityDetailDTO GetSecurity(int securityId)
         {
-            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
-
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
 
@@ -222,97 +221,50 @@ namespace CFD_API.Controllers
             if (prodDef == null)
                 return null;
 
+            //mapping
             var result = Mapper.Map<SecurityDetailDTO>(prodDef);
+
+            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
+            //get cname
+            if (security != null && security.CName != null)
+                result.name = security.CName;
 
             //get new price
             var quote = redisQuoteClient.GetById(securityId);
-            result.last = quote.Offer;
+            result.last = Quotes.GetLastPrice(quote);
 
-            if (security != null)
+            //************************************************************************
+            //TradeValue (to ccy2) = QuotePrice * (1 / MDS_PLUNITS * MDS_LOTSIZE) * quantity
+            //************************************************************************
+
+            var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
+            decimal minLong = perPriceCcy2*quote.Offer*prodDef.MinSizeLong;
+            decimal minShort = perPriceCcy2*quote.Bid*prodDef.MinSizeShort;
+            decimal maxLong = perPriceCcy2*quote.Offer*prodDef.MaxSizeLong;
+            decimal maxShort = perPriceCcy2*quote.Bid*prodDef.MaxSizeShort;
+            if (prodDef.Ccy2 == "USD")
             {
-                //get cname
-                if (security.CName != null)
-                    result.name = security.CName;
+                result.minValueLong = minLong;
+                result.minValueShort = minShort;
+                result.maxValueLong = maxLong;
+                result.maxValueShort = maxShort;
+            }
+            else
+            {
+                //get fxRate and convert 
+                //the fx for convertion! not the fx that is being bought!
+                var fxConverterProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == "USD" + prodDef.Ccy2);
 
-                switch (security.AssetClass)
-                {
-                    case "Currencies":
-                        decimal lotSizeInUSD;
+                if (fxConverterProdDef == null)
+                    throw new Exception("Cannot find fx rate: " + "USD" + "/" + prodDef.Ccy2);
 
-                        if (security.BaseCcy == "USD")
-                            lotSizeInUSD = security.LotSize.Value;
-                        else
-                        {
-                            //get fxRate and convert product's lotSize from its BaseCcy to USD
-                            //the fx for convertion! not the fx that is being bought!
-                            var fxConverterProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
+                var fxConverterQuote = redisQuoteClient.GetById(fxConverterProdDef.Id);
+                var fxConverterRate = 1/((fxConverterQuote.Bid + fxConverterQuote.Offer)/2);
 
-                            if (fxConverterProdDef == null)
-                                throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
-
-                            var fxConverterQuote = redisQuoteClient.GetById(fxConverterProdDef.Id);
-                            var fxConverterRate = (fxConverterQuote.Bid + fxConverterQuote.Offer)/2;
-
-                            lotSizeInUSD = security.LotSize.Value*fxConverterRate;
-                        }
-
-                        result.minValueLong = lotSizeInUSD*prodDef.MinSizeLong;
-                        result.minValueShort = lotSizeInUSD*prodDef.MinSizeShort;
-                        result.maxValueLong = lotSizeInUSD*prodDef.MaxSizeLong;
-                        result.maxValueShort = lotSizeInUSD*prodDef.MaxSizeShort;
-                        break;
-
-                    case "Commodities":
-                    case "Stock Indices":
-                        if (security.PerUnitEquals == null || security.PerUnit == null)
-                            throw new Exception("Cannot find PerUnit or PerUnitEquals for this security.");
-
-                        var unitPrice = security.PerUnitEquals.Value/security.PerUnit.Value;
-                        decimal unitPriceInUSD;
-                        if (security.BaseCcy == "USD")
-                            unitPriceInUSD = unitPrice;
-                        else
-                        {
-                            var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
-
-                            if (fxProdDef == null)
-                                throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
-
-                            var fxRate = (fxProdDef.Offer + fxProdDef.Bid)/2;
-                            unitPriceInUSD = unitPrice*fxRate.Value;
-                        }
-
-                        result.minValueLong = unitPriceInUSD*quote.Offer*prodDef.MinSizeLong;
-                        result.minValueShort = unitPriceInUSD*quote.Bid*prodDef.MinSizeShort;
-                        result.maxValueLong = unitPriceInUSD*quote.Offer*prodDef.MaxSizeLong;
-                        result.maxValueShort = unitPriceInUSD*quote.Bid*prodDef.MaxSizeShort;
-                        break;
-
-                    case "Single Stocks":
-                        decimal quoteOfferInUsd;
-                        decimal quoteBidInUsd;
-                        if (security.BaseCcy == "USD")
-                        {
-                            quoteOfferInUsd = quote.Offer;
-                            quoteBidInUsd = quote.Bid;
-                        }
-                        else
-                        {
-                            var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == security.BaseCcy + "USD");
-
-                            if (fxProdDef == null)
-                                throw new Exception("Cannot find fx rate: " + security.BaseCcy + "/" + "USD");
-
-                            var fxRate = (fxProdDef.Offer + fxProdDef.Bid)/2;
-                            quoteOfferInUsd = quote.Offer*fxRate.Value;
-                            quoteBidInUsd = quote.Bid*fxRate.Value;
-                        }
-                        result.minValueLong = quoteOfferInUsd*prodDef.MinSizeLong;
-                        result.minValueShort = quoteBidInUsd*prodDef.MinSizeShort;
-                        result.maxValueLong = quoteOfferInUsd*prodDef.MaxSizeLong;
-                        result.maxValueShort = quoteBidInUsd*prodDef.MaxSizeShort;
-                        break;
-                }
+                result.minValueLong = minLong*fxConverterRate;
+                result.minValueShort = minShort*fxConverterRate;
+                result.maxValueLong = maxLong*fxConverterRate;
+                result.maxValueShort = maxShort*fxConverterRate;
             }
 
             //demo data

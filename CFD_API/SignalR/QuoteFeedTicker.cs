@@ -6,6 +6,7 @@ using System.Threading;
 using CFD_API.DTO.SignalRDTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
+using CFD_COMMON.Utils;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using ServiceStack.Redis.Generic;
@@ -69,7 +70,7 @@ namespace CFD_API.SignalR
                         var userId = pair.Key;
                         var subscribedQuotesIds = pair.Value;
                         var subscribedQuotes = quotes.Where(o => subscribedQuotesIds.Contains(o.Id));
-                        Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
+                        Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed {id = o.Id, last = Quotes.GetLastPrice(o)}));
                     }
                 }
 
