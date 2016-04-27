@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -6,6 +7,7 @@ using System.ServiceModel;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
+using AyondoTrade.Model;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
@@ -340,12 +342,22 @@ namespace CFD_API.Controllers
                 throw new Exception("user do not have an ayondo account");
 
             var balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
+            var positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+
+            decimal marginUsed = 0;
+            decimal totalUPL = 0;
+            foreach (var positionReport in positionReports)
+            {
+                totalUPL += positionReport.UPL.Value;
+
+                var quantity= positionReport.LongQty ?? positionReport.ShortQty;
+            }
 
             return new BalanceDTO()
             {
                 id = user.Id,
-                total = balance,
-                available = 11111
+                total = balance + totalUPL,
+                available = balance-marginUsed
             };
         }
     }

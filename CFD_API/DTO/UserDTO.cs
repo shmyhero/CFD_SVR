@@ -20,8 +20,10 @@
     {
         public int id { get; set; }
 
-        public decimal? total { get; set; }
+        public decimal balance { get; set; }
 
-        public decimal? available { get; set; }
+        public decimal total { get; set; }
+
+        public decimal available { get; set; }
     }
 }

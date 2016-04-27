@@ -109,9 +109,11 @@
     <Compile Include="Models\Cached\Tick.cs" />
     <Compile Include="Models\Context\CFDEntities.cs" />
     <Compile Include="Models\Context\CFDEntitiesFactory.cs" />
+    <Compile Include="Models\Entities\Banner.cs" />
     <Compile Include="Models\Entities\AyondoSecurity.cs" />
     <Compile Include="Models\Entities\Bookmark.cs" />
     <Compile Include="Models\Entities\Device.cs" />
+    <Compile Include="Models\Entities\Model1.cs" />
     <Compile Include="Models\Entities\User.cs" />
     <Compile Include="Models\Entities\UserAyondo.cs" />
     <Compile Include="Models\Entities\VerifyCode.cs" />

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using AutoMapper;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON;
@@ -17,7 +18,7 @@ namespace CFD_API.Controllers
     [RoutePrefix("api")]
     public class UtilController : CFDController
     {
-        public UtilController(CFDEntities db) : base(db)
+        public UtilController(CFDEntities db, IMapper mapper) : base(db, mapper)
         {
         }
 
@@ -69,6 +70,14 @@ namespace CFD_API.Controllers
 
             result.success = true;
             return result;
+        }
+
+        [Route("banner")]
+        [HttpGet]
+        public IList<BannerDTO> GetBanners()
+        {
+            var banners = db.Banners.OrderBy(o => o.Id).ToList();
+            return banners.Select(o=> Mapper.Map<BannerDTO>(o)).ToList();
         }
     }
 }

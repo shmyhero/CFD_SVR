@@ -39,6 +39,9 @@ namespace CFD_API
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open));
 
                 cfg.CreateMap<Tick, TickDTO>();
+
+
+                cfg.CreateMap<Banner, BannerDTO>();
             });
         }
     }

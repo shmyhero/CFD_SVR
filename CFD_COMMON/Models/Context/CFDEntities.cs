@@ -14,6 +14,7 @@ namespace CFD_COMMON.Models.Context
         {
         }
 
+        public virtual DbSet<Banner> Banners { get; set; }
         public virtual DbSet<AyondoSecurity> AyondoSecurities { get; set; }
         public virtual DbSet<Bookmark> Bookmarks { get; set; }
         public virtual DbSet<Device> Devices { get; set; }
