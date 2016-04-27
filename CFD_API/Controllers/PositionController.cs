@@ -80,7 +80,7 @@ namespace CFD_API.Controllers
                     isLong = report.LongQty != null,
                     settlePrice = report.SettlPrice,
                     invest = 0,
-                    leverage = 1/dbSec.BaseMargin.Value,
+                    leverage = 0,
                     createAt = report.CreateTime,
                     security = security,
                     quantity = report.LongQty ?? report.ShortQty.Value,
