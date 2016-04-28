@@ -45,6 +45,12 @@ namespace CFD_API.Controllers
 
             var result = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
 
+            if (result.Count == 0)
+                return new List<PositionDTO>();
+
+            //order by recent created
+            result = result.OrderByDescending(o => o.CreateTime).ToList();
+
             var secIds = result.Select(o => Convert.ToInt32(o.SecurityID)).ToList();
 
             var redisProdDefClient = RedisClient.As<ProdDef>();
