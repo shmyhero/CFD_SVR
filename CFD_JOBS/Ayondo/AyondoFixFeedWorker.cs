@@ -24,7 +24,7 @@ namespace CFD_JOBS.Ayondo
             //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
             var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
             var redisProdDefClient = redisClient.As<ProdDef>();
-            var redisTickClient = redisClient.As<Tick>();
+            //var redisTickClient = redisClient.As<Tick>();
 
             initiator.Start();
             while (true)
@@ -65,7 +65,7 @@ namespace CFD_JOBS.Ayondo
                             if (old != null) //updating prod def in redis
                             {
                                 //update open/close time/price depending on state change
-                                if (old.QuoteType != enmQuoteType.Closed && newProdDef.QuoteType == enmQuoteType.Closed) //xxx -> close
+                                if (old.QuoteType != enmQuoteType.Closed && newProdDef.QuoteType == enmQuoteType.Closed) //open/phone -> close
                                 {
                                     CFDGlobal.LogLine("PROD CLOSED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " + newProdDef.Bid);
 
@@ -75,7 +75,7 @@ namespace CFD_JOBS.Ayondo
                                     ////prod def will be treated as a new QUOTE when stock open/close
                                     //listToSaveAsQuote.Add(newProdDef);
                                 }
-                                else if (old.QuoteType != enmQuoteType.Open && newProdDef.QuoteType == enmQuoteType.Open) //xxx -> open
+                                else if (old.QuoteType == enmQuoteType.Closed && newProdDef.QuoteType != enmQuoteType.Closed) //close -> open/phone
                                 {
                                     CFDGlobal.LogLine("PROD OPENED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " + newProdDef.Bid);
 
@@ -87,7 +87,7 @@ namespace CFD_JOBS.Ayondo
                                     old.OpenBid = newProdDef.Bid;
 
                                     //preclose
-                                    old.PreClose =Quotes.GetClosePrice(newProdDef);
+                                    old.PreClose = Quotes.GetClosePrice(newProdDef);
 
                                     ////prod def will be treated as a new QUOTE when stock open/close
                                     //listToSaveAsQuote.Add(newProdDef);

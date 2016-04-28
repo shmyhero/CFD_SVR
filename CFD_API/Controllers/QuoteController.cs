@@ -26,11 +26,11 @@ namespace CFD_API.Controllers
             var ticks = redisTypedClient.Lists["tick:" + securityId].GetAll();
 
             //ticks = ticks.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromDays(1)).ToList();
-            foreach (var tick in ticks)
-            {
-                //remove seconds and millionseconds
-                tick.Time = new DateTime(tick.Time.Year, tick.Time.Month, tick.Time.Day, tick.Time.Hour, tick.Time.Minute, 0, DateTimeKind.Utc);
-            }
+            //foreach (var tick in ticks)
+            //{
+            //    //remove seconds and millionseconds
+            //    tick.Time = new DateTime(tick.Time.Year, tick.Time.Month, tick.Time.Day, tick.Time.Hour, tick.Time.Minute, 0, DateTimeKind.Utc);
+            //}
 
             return ticks.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
@@ -40,21 +40,12 @@ namespace CFD_API.Controllers
         public List<TickDTO> GetTodayTicks(int securityId)
         {
             var redisTickClient = RedisClient.As<Tick>();
-            //var redisProdDefClient = redisClient.As<ProdDef>();
 
             var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
-
-            //var prodDef = redisProdDefClient.GetById(securityId);
 
             var lastTickTime = ticks.Last().Time;
 
             var result = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12));
-
-            foreach (var tick in result)
-            {
-                //remove seconds and millionseconds
-                tick.Time = new DateTime(tick.Time.Year, tick.Time.Month, tick.Time.Day, tick.Time.Hour, tick.Time.Minute, 0, DateTimeKind.Utc);
-            }
 
             return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
@@ -64,34 +55,25 @@ namespace CFD_API.Controllers
         public List<TickDTO> GetWeekTicks(int securityId)
         {
             var redisTickClient = RedisClient.As<Tick>();
-            //var redisProdDefClient = redisClient.As<ProdDef>();
 
-            var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
-
-            //var prodDef = redisProdDefClient.GetById(securityId);
+            var ticks = redisTickClient.Lists["tick10m:" + securityId].GetAll();
 
             var lastTickTime = ticks.Last().Time;
 
-            var allTicks = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromDays(7));
+            var result = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromDays(7));
 
-            var result = new List<Tick>();
-            Tick lastAdded = null;
-            foreach (var tick in allTicks)
-            {
-                if (lastAdded != null &&
-                    (lastAdded.Time.Year == tick.Time.Year && lastAdded.Time.Month == tick.Time.Month && lastAdded.Time.Day == tick.Time.Day &&
-                     lastAdded.Time.Hour == tick.Time.Hour && lastAdded.Time.Minute/10 == tick.Time.Minute/10))
-                    continue;
+            //var result = new List<Tick>();
+            //Tick lastAdded = null;
+            //foreach (var tick in allTicks)
+            //{
+            //    if (lastAdded != null &&
+            //        (lastAdded.Time.Year == tick.Time.Year && lastAdded.Time.Month == tick.Time.Month && lastAdded.Time.Day == tick.Time.Day &&
+            //         lastAdded.Time.Hour == tick.Time.Hour && lastAdded.Time.Minute/10 == tick.Time.Minute/10))
+            //        continue;
 
-                result.Add(tick);
-                lastAdded = tick;
-            }
-
-            foreach (var tick in result)
-            {
-                //remove seconds and millionseconds
-                tick.Time = new DateTime(tick.Time.Year, tick.Time.Month, tick.Time.Day, tick.Time.Hour, tick.Time.Minute, 0, DateTimeKind.Utc);
-            }
+            //    result.Add(tick);
+            //    lastAdded = tick;
+            //}
 
             return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
@@ -101,34 +83,12 @@ namespace CFD_API.Controllers
         public List<TickDTO> GetMonthTicks(int securityId)
         {
             var redisTickClient = RedisClient.As<Tick>();
-            //var redisProdDefClient = redisClient.As<ProdDef>();
 
-            var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
-
-            //var prodDef = redisProdDefClient.GetById(securityId);
+            var ticks = redisTickClient.Lists["tick1h:" + securityId].GetAll();
 
             var lastTickTime = ticks.Last().Time;
 
-            var allTicks = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromDays(30));
-
-            var result = new List<Tick>();
-            Tick lastAdded = null;
-            foreach (var tick in allTicks)
-            {
-                if (lastAdded != null &&
-                    (lastAdded.Time.Year == tick.Time.Year && lastAdded.Time.Month == tick.Time.Month && lastAdded.Time.Day == tick.Time.Day &&
-                     lastAdded.Time.Hour == tick.Time.Hour ))
-                    continue;
-
-                result.Add(tick);
-                lastAdded = tick;
-            }
-
-            foreach (var tick in result)
-            {
-                //remove seconds and millionseconds
-                tick.Time = new DateTime(tick.Time.Year, tick.Time.Month, tick.Time.Day, tick.Time.Hour, tick.Time.Minute, 0, DateTimeKind.Utc);
-            }
+            var result = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromDays(30));
 
             return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }

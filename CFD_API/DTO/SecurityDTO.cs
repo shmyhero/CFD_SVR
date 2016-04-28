@@ -23,6 +23,7 @@ namespace CFD_API.DTO
     public class SecurityDetailDTO : SecurityDTO
     {
         public DateTime lastOpen { get; set; }
+        public DateTime lastClose { get; set; }
 
         public decimal longPct { get; set; }
 

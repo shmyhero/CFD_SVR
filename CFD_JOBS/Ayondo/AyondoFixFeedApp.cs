@@ -199,7 +199,7 @@ namespace CFD_JOBS.Ayondo
                 Bid = quote.BidPx.getValue(),
                 Id = Convert.ToInt32(quote.SecurityID.getValue()),
                 Offer = quote.OfferPx.getValue(),
-                Time = quote.Header.GetDateTime(DD.FieldsByName["SendingTime"].Tag)
+                Time = quote.Header.GetDateTime(Tags.SendingTime)
             });
 
             //do save Every Second
