@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CFD_COMMON.Models.Cached;
 using ServiceStack.Redis;
@@ -37,6 +38,39 @@ namespace CFD_COMMON.Utils
             else
             {
                 var fxQuote = redisQuoteClient.GetById(fxProdDef.Id);
+                fxRate = Quotes.GetLastPrice(fxQuote);
+            }
+
+            return value*fxRate;
+        }
+
+        public static decimal Convert(decimal value, string fromCcy, string toCcy, IList<ProdDef> prodDefs, IList<Quote> quotes)
+        {
+            if (fromCcy == toCcy)
+                return value;
+
+            //get fxRate and convert 
+            //the fx for convertion! not the fx that is being bought!
+            decimal fxRate;
+
+            var fxProdDef = prodDefs.FirstOrDefault(o => o.Symbol == fromCcy + toCcy);
+
+            if (fxProdDef == null)
+            {
+                CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
+
+                fxProdDef = prodDefs.FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
+                if (fxProdDef == null)
+                {
+                    throw new Exception("Cannot find fx rate: " + fromCcy + "/" + toCcy + " or " + toCcy + "/" + fromCcy);
+                }
+
+                var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
+                fxRate = 1/Quotes.GetLastPrice(fxQuote);
+            }
+            else
+            {
+                var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
                 fxRate = Quotes.GetLastPrice(fxQuote);
             }
 

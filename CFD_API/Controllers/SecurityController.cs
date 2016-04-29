@@ -184,32 +184,32 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("all")]
-        public List<SecurityDetailDTO> GetAllList(int page = 1, int perPage = 20)
+        public List<SecurityDetail2DTO> GetAllList(int page = 1, int perPage = 20)
         {
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
             var prodDefs = redisProdDefClient.GetAll();
+            var quotes = redisQuoteClient.GetAll();
 
             var securities = db.AyondoSecurities.ToList();
 
-            var result =prodDefs.Select(o=> Mapper.Map<SecurityDetailDTO>(o)).ToList();
+            var result =prodDefs.Select(o=> Mapper.Map<SecurityDetail2DTO>(o)).ToList();
 
             foreach (var secDTO in result)
             {
                 //get cname
                 var @default = securities.FirstOrDefault(o => o.Id == secDTO.id);
                 if (@default != null && @default.CName != null)
-                    secDTO.name = @default.CName;
+                    secDTO.cname = @default.CName;
 
                 //get new price
-                var quote = redisQuoteClient.GetById(secDTO.id);
+                var quote = quotes.FirstOrDefault(o=>o.Id==secDTO.id);
                 if (quote != null)
                 {
-
                     secDTO.last = Quotes.GetLastPrice(quote);
 
                     //calculate min/max trade value
-                    var prodDef = redisProdDefClient.GetById(secDTO.id);
+                    var prodDef = prodDefs.FirstOrDefault(o=>o.Id==secDTO.id);
 
                     var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
 
@@ -220,7 +220,7 @@ namespace CFD_API.Controllers
 
                     try
                     {
-                        var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", RedisClient);
+                        var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", prodDefs, quotes);
 
                         secDTO.minValueLong = minLong*fxRate;
                         secDTO.minValueShort = minShort*fxRate;

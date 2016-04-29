@@ -32,10 +32,14 @@
     <div id="stockTable">
         <table border="1">
             <thead>
-                <tr><th>Id</th><th>Symbol</th><th>Name</th><th>Last</th><th>IsOpen</th><th>LastOpen</th><th>LastClose</th><th>PreClose</th><th>Open</th><th>MaxLev</th><th>MinLongVal</th><th>MinShortVal</th><th>MaxLongVal</th><th>MaxShortVal</th><!--<th>%</th>--></tr>
+            <tr>
+                <th>Id</th><th>Symbol</th><th>Name</th><th>CName</th><th>Last</th><th>Ccy2</th>
+                <th>QuoteType<br/>0:close<br />1:open<br />2:phone only</th>
+                <th>LastOpen</th><th>LastClose</th><th>PreClose</th><th>Open</th><th>MaxLev</th><th>MinLongVal</th><th>MinShortVal</th><th>MaxLongVal</th><th>MaxShortVal</th><!--<th>%</th>-->
+            </tr>
             </thead>
             <tbody>
-                <tr class="loading"><td colspan="14">loading...</td></tr>
+                <tr class="loading"><td colspan="16">loading...</td></tr>
             </tbody>
         </table>
         <!--<textarea id="log" style="width: 800px; height: 600px"></textarea>-->
@@ -67,7 +71,7 @@
             var ticker = 
                 $stockTable = $('#stockTable'),
                 $stockTableBody = $stockTable.find('tbody'),
-                rowTemplate = '<tr data-symbol="{id}"><td>{id}</td><td>{symbol}</td><td>{name}</td><td>{last}</td><td>{isOpen}</td><td>{lastOpen}</td><td>{lastClose}</td><td>{preClose}</td><td>{open}</td><td>{maxLeverage}</td><td>{minValueLong}</td><td>{minValueShort}</td><td>{maxValueLong}</td><td>{maxValueShort}</td></tr>';
+                rowTemplate = '<tr data-symbol="{id}"><td>{id}</td><td>{symbol}</td><td>{name}</td><td>{cname}</td><td>{last}</td><td>{ccy2}</td><td>{quoteType}</td><td>{lastOpen}</td><td>{lastClose}</td><td>{preClose}</td><td>{open}</td><td>{maxLeverage}</td><td>{minValueLong}</td><td>{minValueShort}</td><td>{maxValueLong}</td><td>{maxValueShort}</td></tr>';
 
             function formatStock(stock) {
                 //return $.extend(stock, {

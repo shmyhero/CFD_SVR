@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using CFD_COMMON.Models.Cached;
 
 namespace CFD_API.DTO
 {
@@ -32,5 +33,16 @@ namespace CFD_API.DTO
         public decimal? maxValueLong { get; set; }
         public decimal? maxValueShort { get; set; }
         public decimal maxLeverage { get; set; }
+    }
+
+    /// <summary>
+    /// for test api use only
+    /// </summary>
+    public class SecurityDetail2DTO : SecurityDetailDTO
+    {
+        public string assetClass { get; set; }
+        public string ccy2 { get; set; }
+        public enmQuoteType quoteType { get; set; }
+        public string cname { get; set; }
     }
 }
