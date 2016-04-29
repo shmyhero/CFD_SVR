@@ -93,6 +93,10 @@ namespace CFD_API.Controllers
             return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
 
+        /// <summary>
+        /// for test use only
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Route("latest")]
         public List<QuoteTemp> GetLatestQuotes()
@@ -129,15 +133,6 @@ namespace CFD_API.Controllers
             }).ToList();
 
             return results;
-        }
-
-        [HttpGet]
-        [Route("prodDef")]
-        public List<ProdDef> GetProdDefs()
-        {
-            var redisTypedClient = RedisClient.As<ProdDef>();
-
-            return redisTypedClient.GetAll().OrderByDescending(o => o.Time).ToList();
         }
 
         public class QuoteTemp : Quote

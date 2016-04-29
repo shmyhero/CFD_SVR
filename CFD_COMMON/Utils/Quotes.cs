@@ -14,23 +14,23 @@ namespace CFD_COMMON.Utils
         {
             return (quote.Offer + quote.Bid)/2;
         }
-        public static decimal GetLastPrice(AyondoSecurity security)
+        public static decimal? GetLastPrice(AyondoSecurity security)
         {
-            return (security.Ask.Value + security.Bid.Value) / 2;
+            return (security.Ask + security.Bid) / 2;
         }
-        public static decimal GetLastPrice(ProdDef prodDef)
+        public static decimal? GetLastPrice(ProdDef prodDef)
         {
-            return (prodDef.Offer.Value + prodDef.Bid.Value) / 2;
-        }
-
-        public static decimal GetClosePrice(ProdDef prodDef)
-        {
-            return (prodDef.CloseAsk.Value + prodDef.CloseBid.Value) / 2;
+            return (prodDef.Offer + prodDef.Bid) / 2;
         }
 
-        public static decimal GetOpenPrice(ProdDef prodDef)
+        public static decimal? GetClosePrice(ProdDef prodDef)
         {
-            return (prodDef.OpenAsk.Value + prodDef.OpenBid.Value) / 2;
+            return (prodDef.CloseAsk + prodDef.CloseBid) / 2;
+        }
+
+        public static decimal? GetOpenPrice(ProdDef prodDef)
+        {
+            return (prodDef.OpenAsk + prodDef.OpenBid) / 2;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace CFD_API.DTO
 
         public decimal? preClose { get; set; }
         public decimal? open { get; set; }
-        public decimal last { get; set; }
+        public decimal? last { get; set; }
 
         public bool isOpen { get; set; }
     }
@@ -25,12 +25,12 @@ namespace CFD_API.DTO
         public DateTime lastOpen { get; set; }
         public DateTime lastClose { get; set; }
 
-        public decimal longPct { get; set; }
+        public decimal? longPct { get; set; }
 
-        public decimal minValueLong { get; set; }
-        public decimal minValueShort { get; set; }
-        public decimal maxValueLong { get; set; }
-        public decimal maxValueShort { get; set; }
+        public decimal? minValueLong { get; set; }
+        public decimal? minValueShort { get; set; }
+        public decimal? maxValueLong { get; set; }
+        public decimal? maxValueShort { get; set; }
         public decimal maxLeverage { get; set; }
     }
 }

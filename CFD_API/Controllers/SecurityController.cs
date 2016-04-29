@@ -8,9 +8,11 @@ using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
+using ServiceStack.Redis.Generic;
 
 namespace CFD_API.Controllers
 {
@@ -176,15 +178,67 @@ namespace CFD_API.Controllers
             return securityDtos;
         }
 
+        /// <summary>
+        /// for test use only
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Route("all")]
-        public List<SecurityDTO> GetAllList(int page = 1, int perPage = 20)
+        public List<SecurityDetailDTO> GetAllList(int page = 1, int perPage = 20)
         {
-            var security = db.AyondoSecurities
-                .Where(o => o.CName != null && o.DefUpdatedAt != null)
-                .OrderBy(o => o.Symbol)
-                .Skip((page - 1)*perPage).Take(perPage).ToList();
-            return security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var redisQuoteClient = RedisClient.As<Quote>();
+            var prodDefs = redisProdDefClient.GetAll();
+
+            var securities = db.AyondoSecurities.ToList();
+
+            var result =prodDefs.Select(o=> Mapper.Map<SecurityDetailDTO>(o)).ToList();
+
+            foreach (var secDTO in result)
+            {
+                //get cname
+                var @default = securities.FirstOrDefault(o => o.Id == secDTO.id);
+                if (@default != null && @default.CName != null)
+                    secDTO.name = @default.CName;
+
+                //get new price
+                var quote = redisQuoteClient.GetById(secDTO.id);
+                if (quote != null)
+                {
+
+                    secDTO.last = Quotes.GetLastPrice(quote);
+
+                    //calculate min/max trade value
+                    var prodDef = redisProdDefClient.GetById(secDTO.id);
+
+                    var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
+
+                    decimal minLong = perPriceCcy2*quote.Offer*prodDef.MinSizeLong;
+                    decimal minShort = perPriceCcy2*quote.Bid*prodDef.MinSizeShort;
+                    decimal maxLong = perPriceCcy2*quote.Offer*prodDef.MaxSizeLong;
+                    decimal maxShort = perPriceCcy2*quote.Bid*prodDef.MaxSizeShort;
+
+                    try
+                    {
+                        var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", RedisClient);
+
+                        secDTO.minValueLong = minLong*fxRate;
+                        secDTO.minValueShort = minShort*fxRate;
+                        secDTO.maxValueLong = maxLong*fxRate;
+                        secDTO.maxValueShort = maxShort*fxRate;
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+                }
+                else
+                {
+                    secDTO.last = null;
+                }
+            }
+
+            return result;
         }
 
         [HttpGet]
