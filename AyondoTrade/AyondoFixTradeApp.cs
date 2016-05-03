@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using CFD_COMMON;
 using QuickFix;
@@ -98,6 +99,17 @@ namespace CFD_JOBS.Ayondo
 
         public void OnLogout(SessionID sessionID)
         {
+            CFDGlobal.LogInformation("FIX Session OnLogout stack trace:");
+            var st = new StackTrace();
+            var stackFrames = st.GetFrames();
+            if (stackFrames != null)
+                foreach (var frame in stackFrames)
+                {
+                    var declaringType = frame.GetMethod().DeclaringType;
+                    if (declaringType != null)
+                        CFDGlobal.LogLine(declaringType.FullName);
+                }
+
             CFDGlobal.LogLine("OnLogout: " + sessionID);
         }
 

@@ -253,7 +253,6 @@ namespace CFD_API.Controllers
 'AddressZip': '12345',
 'ClientIP': '127.0.0.1',
 'Currency': 'USD',
-'Email': 'email@gmail.com',
 'FirstName': 'User',
 'Gender': 'Male',
 'IsTestRecord': true,
