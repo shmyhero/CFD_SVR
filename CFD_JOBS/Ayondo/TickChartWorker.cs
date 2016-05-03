@@ -22,10 +22,9 @@ namespace CFD_JOBS.Ayondo
 
         public static void Run()
         {
-            //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
-            var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
-            var redisQuoteClient = redisClient.As<Quote>();
-            var redisTickClient = redisClient.As<Tick>();
+            //var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
+            //var redisQuoteClient = redisClient.As<Quote>();
+            //var redisTickClient = redisClient.As<Tick>();
 
             IList<Quote> lastQuotes = null;
 
@@ -35,32 +34,38 @@ namespace CFD_JOBS.Ayondo
             {
                 try
                 {
-                    var quotes = redisQuoteClient.GetAll();
-
-                    //skip non-updated quotes to improve speed
-                    IList<Quote> updatedQuotes;
-                    if (lastQuotes != null)
+                    using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
                     {
-                        var idsToRemove = new List<int>();
-                        foreach (var quote in quotes)
+                        var redisQuoteClient = redisClient.As<Quote>();
+                        var redisTickClient = redisClient.As<Tick>();
+
+                        var quotes = redisQuoteClient.GetAll();
+
+                        //skip non-updated quotes to improve speed
+                        IList<Quote> updatedQuotes;
+                        if (lastQuotes != null)
                         {
-                            var lastQuote = lastQuotes.FirstOrDefault(o => o.Id == quote.Id);
-                            if (lastQuote != null && lastQuote.Time == quote.Time)
-                                idsToRemove.Add(quote.Id);
+                            var idsToRemove = new List<int>();
+                            foreach (var quote in quotes)
+                            {
+                                var lastQuote = lastQuotes.FirstOrDefault(o => o.Id == quote.Id);
+                                if (lastQuote != null && lastQuote.Time == quote.Time)
+                                    idsToRemove.Add(quote.Id);
+                            }
+                            updatedQuotes = quotes.Where(o => !idsToRemove.Contains(o.Id)).ToList();
                         }
-                        updatedQuotes = quotes.Where(o => !idsToRemove.Contains(o.Id)).ToList();
+                        else
+                            updatedQuotes = quotes.Select(o => o).ToList();
+
+                        //remember quotes for next check
+                        lastQuotes = quotes.Select(o => o).ToList();
+
+                        //save to redis
+                        SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.OneMinute);
+                        SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.TenMinute);
+                        SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.OneHour);
+                        CFDGlobal.LogLine("");
                     }
-                    else
-                        updatedQuotes = quotes.Select(o => o).ToList();
-
-                    //remember quotes for next check
-                    lastQuotes = quotes.Select(o => o).ToList();
-
-                    //save to redis
-                    SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.OneMinute);
-                    SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.TenMinute);
-                    SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.OneHour);
-                    CFDGlobal.LogLine("");
                 }
                 catch (Exception e)
                 {
