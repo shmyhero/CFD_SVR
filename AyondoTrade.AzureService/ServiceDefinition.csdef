@@ -20,5 +20,7 @@
       <Import moduleName="RemoteAccess" />
       <Import moduleName="RemoteForwarder" />
     </Imports>
+
+    <Runtime executionContext="elevated" />
   </WebRole>
 </ServiceDefinition>
