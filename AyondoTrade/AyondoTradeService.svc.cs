@@ -16,6 +16,7 @@ namespace AyondoTrade
     {
         public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(20);
         public static readonly int SCAN_WAIT_MILLI_SECOND = 500;
+        public static readonly string FIX_DATETIME_MASK = "yyyy-MM-dd HH:mm:ss.FFF";
 
         public string Test(string text)
         {
@@ -23,7 +24,7 @@ namespace AyondoTrade
             return "You entered: " + text;
         }
 
-        public Model.PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty,
+        public Model.PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, //char? ordType = null, decimal? price = null,
             decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null)
         {
             string account = GetAccount(username, password);
@@ -31,17 +32,83 @@ namespace AyondoTrade
             PositionReport report;
             try
             {
-                report = NewOrderSingle(account, securityId, isLong, orderQty,
+                report = SendNewOrderSingleAndWait(account, securityId, isLong, orderQty,
                     leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
             }
-            catch (BusinettMessageRejectException) //get reject
+            catch (BusinessMessageRejectException) //get reject
             {
                 //maybe user is not logged in, try to login ONCE
-                account = Login(username, password);
+                account = SendLoginRequestAndWait(username, password);
 
                 //get data again
-                report = NewOrderSingle(account, securityId, isLong, orderQty,
+                report = SendNewOrderSingleAndWait(account, securityId, isLong, orderQty,
                     leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
+            }
+
+            var result = PositionReportMapping(report);
+            return result;
+        }
+
+        public Model.PositionReport NewTakeOrder(string username, string password, int securityId, decimal price, string nettingPositionId)
+        {
+            string account = GetAccount(username, password);
+
+            PositionReport report;
+            try
+            {
+                report = SendNewTakeOrderAndWait(account, securityId, price, nettingPositionId);
+            }
+            catch (BusinessMessageRejectException) //get reject
+            {
+                //maybe user is not logged in, try to login ONCE
+                account = SendLoginRequestAndWait(username, password);
+
+                //get data again
+                report = SendNewTakeOrderAndWait(account, securityId, price, nettingPositionId);
+            }
+
+            var result = PositionReportMapping(report);
+            return result;
+        }
+
+        public Model.PositionReport ReplaceOrder(string username, string password, int securityId, string orderId, decimal price,string nettingPositionId)
+        {
+            string account = GetAccount(username, password);
+
+            PositionReport report;
+            try
+            {
+                report = SendReplaceOrderAndWait(account, securityId, orderId, price,nettingPositionId);
+            }
+            catch (BusinessMessageRejectException) //get reject
+            {
+                //maybe user is not logged in, try to login ONCE
+                account = SendLoginRequestAndWait(username, password);
+
+                //get data again
+                report = SendReplaceOrderAndWait(account, securityId, orderId, price,nettingPositionId);
+            }
+
+            var result = PositionReportMapping(report);
+            return result;
+        }
+
+        public Model.PositionReport CancelOrder(string username, string password, int securityId, string orderId, string nettingPositionId)
+        {
+            string account = GetAccount(username, password);
+
+            PositionReport report;
+            try
+            {
+                report = SendCancelOrderAndWait(account, securityId, orderId,  nettingPositionId);
+            }
+            catch (BusinessMessageRejectException) //get reject
+            {
+                //maybe user is not logged in, try to login ONCE
+                account = SendLoginRequestAndWait(username, password);
+
+                //get data again
+                report = SendCancelOrderAndWait(account, securityId, orderId,  nettingPositionId);
             }
 
             var result = PositionReportMapping(report);
@@ -55,15 +122,15 @@ namespace AyondoTrade
             decimal balance;
             try
             {
-                balance = GetMDS6Balance(account);
+                balance = SendBalanceRequestAndWait(account);
             }
-            catch (BusinettMessageRejectException) //get reject
+            catch (BusinessMessageRejectException) //get reject
             {
                 //maybe user is not logged in, try to login ONCE
-                account = Login(username, password);
+                account = SendLoginRequestAndWait(username, password);
 
                 //get data again
-                balance = GetMDS6Balance(account);
+                balance = SendBalanceRequestAndWait(account);
             }
 
             return balance;
@@ -76,15 +143,15 @@ namespace AyondoTrade
             IList<PositionReport> result;
             try
             {
-                result = GetPositionReport(account);
+                result = SendPositionRequestAndWait(account);
             }
-            catch (BusinettMessageRejectException) //get reject
+            catch (BusinessMessageRejectException) //get reject
             {
                 //maybe user is not logged in, try to login ONCE
-                account = Login(username, password);
+                account = SendLoginRequestAndWait(username, password);
 
                 //get data again
-                result = GetPositionReport(account);
+                result = SendPositionRequestAndWait(account);
             }
 
             //mapping FIX message model --> WCF model
@@ -106,7 +173,7 @@ namespace AyondoTrade
 
                 //CreateTime = report.ClearingBusinessDate.Obj,
                 CreateTime =
-                    DateTime.ParseExact(report.ClearingBusinessDate.Obj, "yyyy-MM-dd HH:mm:ss.FFF", CultureInfo.CurrentCulture,
+                    DateTime.ParseExact(report.ClearingBusinessDate.Obj, FIX_DATETIME_MASK, CultureInfo.CurrentCulture,
                         DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
                 ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?) null,
                 LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?) null,
@@ -129,12 +196,12 @@ namespace AyondoTrade
             }
             else
             {
-                account = Login(username, password);
+                account = SendLoginRequestAndWait(username, password);
             }
             return account;
         }
 
-        private static IList<PositionReport> GetPositionReport(string account)
+        private static IList<PositionReport> SendPositionRequestAndWait(string account)
         {
             var reqId = Global.FixApp.RequestForPositions(account);
 
@@ -174,7 +241,7 @@ namespace AyondoTrade
                 {
                     BusinessMessageReject msg;
                     var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinettMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
                 }
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
@@ -187,11 +254,12 @@ namespace AyondoTrade
             return result;
         }
 
-        private static PositionReport NewOrderSingle(string account, int securityId, bool isLong, decimal orderQty,
+        private static PositionReport SendNewOrderSingleAndWait(string account, int securityId, bool isLong, decimal orderQty,
+            //char ordType = OrdType.MARKET, decimal? price = null,
             decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null)
         {
             //send NewOrderSingle message
-            var reqId = Global.FixApp.NewOrderSingle(account, securityId.ToString(), isLong ? Side.BUY : Side.SELL, orderQty, OrdType.MARKET,
+            var reqId = Global.FixApp.NewOrderSingle(account, securityId.ToString(), OrdType.MARKET, isLong ? Side.BUY : Side.SELL, orderQty,
                 leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
 
             //wait/get response message(s)
@@ -244,7 +312,7 @@ namespace AyondoTrade
                 {
                     BusinessMessageReject msg;
                     var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinettMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
                 }
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
@@ -254,7 +322,195 @@ namespace AyondoTrade
             return report;
         }
 
-        public decimal GetMDS6Balance(string account)
+        private PositionReport SendNewTakeOrderAndWait(string account, int securityId, decimal price, string nettingPositionId)
+        {
+            var dtSent = DateTime.UtcNow;
+            var reqId = Global.FixApp.NewOrderSingle(account, securityId.ToString(), '4', price: price, nettingPositionId: nettingPositionId);
+
+            //wait/get response message(s)
+            IList<KeyValuePair<DateTime, PositionReport>> reports = null;
+            PositionReport report = null;
+            ExecutionReport executionReport = null;
+            var dt = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+
+                //check execution report
+                if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
+                {
+                    var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
+
+                    if (!tryGetValue) continue;
+
+                    if (executionReport != null)
+                    {
+                        //throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
+                        var fault = new OrderRejectedFault();
+                        fault.Text = executionReport.Text.Obj;
+                        throw new FaultException<OrderRejectedFault>(fault);
+                    }
+                }
+
+                //check position report
+                if (Global.FixApp.StopTakePositionReports.ContainsKey(nettingPositionId))
+                {
+                    var tryGetValue = Global.FixApp.StopTakePositionReports.TryGetValue(nettingPositionId, out reports);
+
+                    if (!tryGetValue) continue;
+
+                    if (reports != null && reports.Count > 0)
+                    {
+                        var lastReport = reports[reports.Count - 1];
+                        if (lastReport.Key > dtSent)
+                        {
+                            report = lastReport.Value;
+                            break;
+                        }
+                    }
+                }
+
+                //BusinessMessageReject? e.g. not logged in
+                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
+                {
+                    BusinessMessageReject msg;
+                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
+                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                }
+            } while (DateTime.UtcNow - dt <= TIMEOUT);
+
+            if (report == null)
+                throw new Exception("fail getting new take order result (position report)");
+
+            return report;
+        }
+
+        private PositionReport SendReplaceOrderAndWait(string account, int securityId, string orderId, decimal price, string nettingPositionId)
+        {
+            //send NewOrderSingle message
+            var dtSent = DateTime.UtcNow;
+            var reqId = Global.FixApp.OrderCancelReplaceRequest(account, securityId.ToString(), orderId, price);
+
+            //wait/get response message(s)
+            IList<KeyValuePair<DateTime, PositionReport>> reports = null;
+            PositionReport report = null;
+            ExecutionReport executionReport = null;
+            var dt = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+
+                //check rejected execution report
+                if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
+                {
+                    var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
+
+                    if (!tryGetValue) continue;
+
+                    if (executionReport != null)
+                    {
+                        var fault = new OrderRejectedFault();
+                        fault.Text = executionReport.Text.Obj;
+                        throw new FaultException<OrderRejectedFault>(fault);
+                    }
+                }
+
+                //check position report
+                if (Global.FixApp.StopTakePositionReports.ContainsKey(nettingPositionId))
+                {
+                    var tryGetValue = Global.FixApp.StopTakePositionReports.TryGetValue(nettingPositionId, out reports);
+
+                    if (!tryGetValue) continue;
+
+                    if (reports != null && reports.Count > 0)
+                    {
+                        var lastReport = reports[reports.Count - 1];
+                        if (lastReport.Key > dtSent)
+                        {
+                            report = lastReport.Value;
+                            break;
+                        }
+                    }
+                }
+
+                //BusinessMessageReject? e.g. not logged in
+                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
+                {
+                    BusinessMessageReject msg;
+                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
+                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                }
+            } while (DateTime.UtcNow - dt <= TIMEOUT);
+
+            if (report == null)
+                throw new Exception("fail getting replace order result (position report)");
+
+            return report;
+        }
+
+        private PositionReport SendCancelOrderAndWait(string account, int securityId, string orderId, string nettingPositionId)
+        {
+            var dtSent = DateTime.UtcNow;
+            var reqId = Global.FixApp.OrderCancelRequest(account, securityId.ToString(), orderId);
+
+            //wait/get response message(s)
+            IList<KeyValuePair<DateTime, PositionReport>> reports = null;
+            PositionReport report = null;
+            ExecutionReport executionReport = null;
+            var dt = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+
+                //check rejected execution report
+                if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
+                {
+                    var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
+
+                    if (!tryGetValue) continue;
+
+                    if (executionReport != null)
+                    {
+                        var fault = new OrderRejectedFault();
+                        fault.Text = executionReport.Text.Obj;
+                        throw new FaultException<OrderRejectedFault>(fault);
+                    }
+                }
+
+                //check position report
+                if (Global.FixApp.StopTakePositionReports.ContainsKey(nettingPositionId))
+                {
+                    var tryGetValue = Global.FixApp.StopTakePositionReports.TryGetValue(nettingPositionId, out reports);
+
+                    if (!tryGetValue) continue;
+
+                    if (reports != null && reports.Count > 0)
+                    {
+                        var lastReport = reports[reports.Count - 1];
+                        if (lastReport.Key > dtSent)
+                        {
+                            report = lastReport.Value;
+                            break;
+                        }
+                    }
+                }
+
+                //BusinessMessageReject? e.g. not logged in
+                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
+                {
+                    BusinessMessageReject msg;
+                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
+                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                }
+            } while (DateTime.UtcNow - dt <= TIMEOUT);
+
+            if (report == null)
+                throw new Exception("fail getting cancel order result (position report)");
+
+            return report;
+        }
+
+        private decimal SendBalanceRequestAndWait(string account)
         {
             var reqId = Global.FixApp.MDS5BalanceRequest(account);
             decimal balance = -1;
@@ -277,7 +533,7 @@ namespace AyondoTrade
                 {
                     BusinessMessageReject msg;
                     var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinettMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
                 }
             } while (DateTime.UtcNow - dt <= TIMEOUT); // timeout
 
@@ -287,7 +543,7 @@ namespace AyondoTrade
             return balance;
         }
 
-        private static string Login(string username, string password)
+        private static string SendLoginRequestAndWait(string username, string password)
         {
             string account = null;
 
@@ -311,9 +567,9 @@ namespace AyondoTrade
         }
     }
 
-    internal class BusinettMessageRejectException : Exception
+    internal class BusinessMessageRejectException : Exception
     {
-        public BusinettMessageRejectException(string s) : base(s)
+        public BusinessMessageRejectException(string s) : base(s)
         {
         }
     }

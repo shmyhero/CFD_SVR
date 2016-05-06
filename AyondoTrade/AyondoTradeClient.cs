@@ -21,11 +21,26 @@ namespace AyondoTrade
             return base.Channel.GetPositionReport(username, password);
         }
 
-        public PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty,
+        public PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, //char? ordType = null, decimal? price = null, 
             decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null)
         {
-            return base.Channel.NewOrder(username, password, securityId, isLong, orderQty,
-                leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
+            return base.Channel.NewOrder(username, password, securityId, isLong, orderQty, //ordType: ordType, price: price,
+                 leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
+        }
+
+        public PositionReport NewTakeOrder(string username, string password, int securityId, decimal price, string nettingPositionId)
+        {
+            return base.Channel.NewTakeOrder(username, password, securityId, price, nettingPositionId);
+        }
+
+        public PositionReport ReplaceOrder(string username, string password, int securityId, string orderId, decimal price,string nettingPositionId)
+        {
+            return base.Channel.ReplaceOrder(username, password, securityId, orderId, price, nettingPositionId);
+        }
+
+        public PositionReport CancelOrder(string username, string password, int securityId, string orderId, string nettingPositionId)
+        {
+            return base.Channel.CancelOrder(username, password, securityId, orderId, nettingPositionId);
         }
 
         public decimal GetBalance(string username, string password)

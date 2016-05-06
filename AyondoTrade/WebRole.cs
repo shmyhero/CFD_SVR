@@ -15,14 +15,15 @@ namespace AyondoTrade
     {
        public override bool OnStart()
         {
-           //!!!
+           //!!!!!!!!!!!!!!!!
            //cannot do veriable initiating here
            //this roleEntryPoint is called by WAIISHOST.exe whereas the WCF service is called by another process (w3wp.exe if hosted in IIS)
            //any initiating here is in vain
+           //!!!!!!!!!!!!!!!!
 
            Trace.TraceInformation("Role OnStart");
 
-           //try to set IIS AutoStart
+           //---------------try to set IIS AutoStart-------------------------
            //ServicePointManager.DefaultConnectionLimit = 12;
            if (!RoleEnvironment.IsEmulated)
            {
@@ -42,6 +43,7 @@ namespace AyondoTrade
                    serverManager.CommitChanges();
                }
            }
+           //------------------------------------------------------------------
 
             // For information on handling configuration changes
             // see the MSDN topic at http://go.microsoft.com/fwlink/?LinkId=166357.

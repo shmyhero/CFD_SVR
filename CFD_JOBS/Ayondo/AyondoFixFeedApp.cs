@@ -8,7 +8,6 @@ using CFD_COMMON.Models.Cached;
 using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;
-using ServiceStack.Redis.Generic;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -26,18 +25,18 @@ namespace CFD_JOBS.Ayondo
 
         public ConcurrentQueue<ProdDef> ProdDefs = new ConcurrentQueue<ProdDef>();
 
-        private IRedisTypedClient<Quote> redisQuoteClient;
+        //private IRedisTypedClient<Quote> redisQuoteClient;
         //private IRedisTypedClient<ProdDef> redisProdDefClient;
 
 //        public IRedisTypedClient<> 
 
-        public AyondoFixFeedApp()
-        {
-            //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
+        //public AyondoFixFeedApp()
+        //{
+        //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
 
-            redisQuoteClient = CFDGlobal.BasicRedisClientManager.GetClient().As<Quote>();
-            //redisProdDefClient = basicRedisClientManager.GetClient().As<ProdDef>();
-        }
+        //redisQuoteClient = CFDGlobal.BasicRedisClientManager.GetClient().As<Quote>();
+        //redisProdDefClient = basicRedisClientManager.GetClient().As<ProdDef>();
+        //}
 
         public void ToAdmin(Message message, SessionID sessionID)
         {
@@ -132,7 +131,6 @@ namespace CFD_JOBS.Ayondo
                     MinSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MinSizeLong"].Tag),
                     MaxSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeLong"].Tag),
                     MaxLeverage = message.GetDecimal(DD.FieldsByName["MDS_EFFLEVERAGE"].Tag),
-
                     PLUnits = message.GetDecimal(DD.FieldsByName["MDS_PLUNITS"].Tag),
                     LotSize = message.GetDecimal(DD.FieldsByName["MDS_LOTSIZE"].Tag),
                     Ccy2 = message.GetString(DD.FieldsByName["MDS_CCY2"].Tag),
@@ -211,7 +209,18 @@ namespace CFD_JOBS.Ayondo
                                   + " ~ " + quotes.Max(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
                                   + ". Saving to redis...");
 
-                redisQuoteClient.StoreAll(quotes);
+                try
+                {
+                    using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+                    {
+                        var redisQuoteClient = redisClient.As<Quote>();
+                        redisQuoteClient.StoreAll(quotes);
+                    }
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogException(e);
+                }
 
                 //reset vars
                 BeginTimeForMsgCount = now;

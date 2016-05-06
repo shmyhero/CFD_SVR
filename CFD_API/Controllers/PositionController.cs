@@ -80,19 +80,8 @@ namespace CFD_API.Controllers
                     security.last = Quotes.GetLastPrice(quote);
                 }
 
-                var posDTO = new PositionDTO()
-                {
-                    id = report.PosMaintRptID,
-                    isLong = report.LongQty != null,
-                    settlePrice = report.SettlPrice,
-                    invest = 0,
-                    leverage = 0,
-                    createAt = report.CreateTime,
-                    security = security,
-                    quantity = report.LongQty ?? report.ShortQty.Value,
-                    upl = report.UPL,
-                };
-
+                var posDTO = OpenPositionReportToPositionDTO(report);
+                posDTO.security = security;
                 return posDTO;
             }).ToList();
 
@@ -127,7 +116,7 @@ namespace CFD_API.Controllers
             //************************************************************************
 
             decimal tradeValueCcy2 = FX.ConvertUSDtoCcy(tradeValueUSD, prodDef.Ccy2, RedisClient);
-            
+
             var quote = redisQuoteClient.GetById(form.securityId);
             var quotePrice = form.isLong ? quote.Offer : quote.Bid;
             decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
@@ -198,8 +187,7 @@ namespace CFD_API.Controllers
             }
             catch (FaultException<OrderRejectedFault> e)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
-                    __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
             var posDTO = new PositionDTO()
@@ -214,6 +202,107 @@ namespace CFD_API.Controllers
                 pl = result.PL,
             };
 
+            return posDTO;
+        }
+
+        [HttpPost]
+        [Route("order/take")]
+        [BasicAuth]
+        public PositionDTO NewTake(NewTakeFormDTO form)
+        {
+            var user = GetUser();
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+                throw new Exception("user do not have an ayondo account");
+
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+
+            PositionReport report;
+            try
+            {
+                report = clientHttp.NewTakeOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.price, form.posId);
+            }
+            catch (FaultException<OrderRejectedFault> e)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+            }
+
+            var posDTO = OpenPositionReportToPositionDTO(report);
+            return posDTO;
+        }
+
+        [HttpDelete]
+        [Route("order/take")]
+        [BasicAuth]
+        public PositionDTO CancelTakeOrder(CancelTakeFormDTO form)
+        {
+            var user = GetUser();
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+                throw new Exception("user do not have an ayondo account");
+
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+
+            PositionReport report;
+            try
+            {
+                report = clientHttp.CancelOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.orderId, form.posId);
+            }
+            catch (FaultException<OrderRejectedFault> e)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+            }
+
+            var posDTO = OpenPositionReportToPositionDTO(report);
+            return posDTO;
+        }
+
+        [HttpPut]
+        [Route("order")]
+        [BasicAuth]
+        public PositionDTO ReplaceOrder(ReplaceStopTakeFormDTO form)
+        {
+            var user = GetUser();
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+                throw new Exception("user do not have an ayondo account");
+
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+
+            PositionReport report;
+            try
+            {
+                report = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.orderId, form.price,form.posId);
+            }
+            catch (FaultException<OrderRejectedFault> e)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+            }
+
+            var posDTO = OpenPositionReportToPositionDTO(report);
+            return posDTO;
+        }
+
+        private static PositionDTO OpenPositionReportToPositionDTO(PositionReport report)
+        {
+            var posDTO = new PositionDTO()
+            {
+                id = report.PosMaintRptID,
+                isLong = report.LongQty != null,
+                settlePrice = report.SettlPrice,
+                invest = 0,
+                leverage = 0,
+                createAt = report.CreateTime,
+                quantity = report.LongQty ?? report.ShortQty.Value,
+                upl = report.UPL,
+                stopPx = report.StopPx,
+                stopOID = report.StopOID,
+                takePx = report.TakePx,
+                takeOID = report.TakeOID,
+            };
             return posDTO;
         }
     }

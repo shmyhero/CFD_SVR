@@ -15,7 +15,7 @@ namespace AyondoTrade
         {
             var application = new AyondoFixTradeApp();
 
-            CFDGlobal.LogLine("Starting FIX initiator...");
+            CFDGlobal.LogInformation("Starting FIX initiator...");
 
             var path = CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath");
             var serverPath = HostingEnvironment.MapPath("~/" + path);

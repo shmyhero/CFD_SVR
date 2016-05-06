@@ -17,7 +17,20 @@ namespace AyondoTrade
 
         [OperationContract]
         [FaultContract(typeof (OrderRejectedFault))]
-        PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null);
+        PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, //char? ordType = null, decimal? price = null,
+            decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null);
+
+        [OperationContract]
+        [FaultContract(typeof(OrderRejectedFault))]
+        PositionReport NewTakeOrder(string username, string password, int securityId, decimal price,string nettingPositionId);
+
+        [OperationContract]
+        [FaultContract(typeof (OrderRejectedFault))]
+        PositionReport ReplaceOrder(string username, string password, int securityId, string orderId, decimal price, string nettingPositionId);
+
+        [OperationContract]
+        [FaultContract(typeof(OrderRejectedFault))]
+        PositionReport CancelOrder(string username, string password, int securityId, string orderId, string nettingPositionId);
 
         [OperationContract]
         decimal GetBalance(string username, string password);
