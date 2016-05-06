@@ -12,7 +12,7 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<Banner> Banners { get; set; }
+        public virtual DbSet<Feedback> Feedbacks { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

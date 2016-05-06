@@ -14,10 +14,11 @@ namespace CFD_COMMON.Models.Context
         {
         }
 
-        public virtual DbSet<Banner> Banners { get; set; }
         public virtual DbSet<AyondoSecurity> AyondoSecurities { get; set; }
+        public virtual DbSet<Banner> Banners { get; set; }
         public virtual DbSet<Bookmark> Bookmarks { get; set; }
         public virtual DbSet<Device> Devices { get; set; }
+        public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
         //public virtual DbSet<UserAyondo> UserAyondos { get; set; }

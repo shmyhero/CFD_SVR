@@ -16,4 +16,9 @@ namespace CFD_API.DTO
         public string imgUrl { get; set; }
         public string url { get; set; }
     }
+    public class FeedbackFormDTO
+    {
+        public string phone { get; set; }
+        public string text { get; set; }
+    }
 }

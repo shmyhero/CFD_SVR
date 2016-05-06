@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
-using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
@@ -27,7 +26,7 @@ namespace CFD_API.Controllers
         //[RequireHttps]
         public ResultDTO SendCode(string phone)
         {
-            var result=new ResultDTO();
+            var result = new ResultDTO();
 
             if (!Phone.IsValidPhoneNumber(phone))
             {
@@ -77,7 +76,24 @@ namespace CFD_API.Controllers
         public IList<BannerDTO> GetBanners()
         {
             var banners = db.Banners.OrderBy(o => o.Id).ToList();
-            return banners.Select(o=> Mapper.Map<BannerDTO>(o)).ToList();
+            return banners.Select(o => Mapper.Map<BannerDTO>(o)).ToList();
+        }
+
+        [Route("feedback")]
+        [HttpPost]
+        public HttpResponseMessage NewFeedback(FeedbackFormDTO form)
+        {
+            if (form.text.Trim() == String.Empty)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "no text");
+
+            db.Feedbacks.Add(new Feedback()
+            {
+                Phone = form.phone,
+                Text = form.text,
+                Time = DateTime.UtcNow,
+            });
+            db.SaveChanges();
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
     }
 }
