@@ -38,5 +38,8 @@ namespace AyondoTrade.Model
         public decimal? PL { get; set; }
         [DataMember]
         public decimal? UPL { get; set; }
+
+        [DataMember]
+        public decimal Leverage { get; set; }
     }
 }

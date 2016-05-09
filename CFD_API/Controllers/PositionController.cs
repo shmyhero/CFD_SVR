@@ -51,14 +51,15 @@ namespace CFD_API.Controllers
             //order by recent created
             result = result.OrderByDescending(o => o.CreateTime).ToList();
 
-            var secIds = result.Select(o => Convert.ToInt32(o.SecurityID)).ToList();
-
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
 
+            var prodDefs = redisProdDefClient.GetAll();
+            var quotes = redisQuoteClient.GetAll();
+
+            var secIds = result.Select(o => Convert.ToInt32(o.SecurityID)).ToList();
+
             var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
-            var prodDefs = redisProdDefClient.GetByIds(secIds);
-            var quotes = redisQuoteClient.GetByIds(secIds);
 
             var positionDtos = result.Select(delegate(PositionReport report)
             {
@@ -82,6 +83,18 @@ namespace CFD_API.Controllers
 
                 var posDTO = OpenPositionReportToPositionDTO(report);
                 posDTO.security = security;
+                
+
+            //************************************************************************
+            //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+            //************************************************************************
+                var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
+                var tradeValueUSD = tradeValue;
+                if( prodDef.Ccy2 != "USD")
+                    tradeValueUSD =  FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+
+                posDTO.invest = tradeValueUSD.Value/report.Leverage;
+
                 return posDTO;
             }).ToList();
 
@@ -112,7 +125,7 @@ namespace CFD_API.Controllers
             var tradeValueUSD = form.invest*form.leverage;
 
             //************************************************************************
-            //TradeValue (to ccy2) = QuotePrice * (1 / MDS_PLUNITS * MDS_LOTSIZE) * quantity
+            //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
             //************************************************************************
 
             decimal tradeValueCcy2 = FX.ConvertUSDtoCcy(tradeValueUSD, prodDef.Ccy2, RedisClient);
@@ -151,7 +164,7 @@ namespace CFD_API.Controllers
                 isLong = result.LongQty != null,
                 settlePrice = result.SettlPrice,
                 invest = 0,
-                leverage = 0,
+                leverage = result.Leverage,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
             };
@@ -196,7 +209,7 @@ namespace CFD_API.Controllers
                 isLong = result.LongQty != null,
                 settlePrice = result.SettlPrice,
                 invest = 0,
-                leverage = 0,
+                leverage =result.Leverage,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
                 pl = result.PL,
@@ -293,8 +306,7 @@ namespace CFD_API.Controllers
                 id = report.PosMaintRptID,
                 isLong = report.LongQty != null,
                 settlePrice = report.SettlPrice,
-                invest = 0,
-                leverage = 0,
+                leverage = report.Leverage,
                 createAt = report.CreateTime,
                 quantity = report.LongQty ?? report.ShortQty.Value,
                 upl = report.UPL,

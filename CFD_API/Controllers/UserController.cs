@@ -14,18 +14,20 @@ using CFD_API.DTO.Form;
 using CFD_COMMON;
 using CFD_COMMON.Azure;
 using CFD_COMMON.Localization;
+using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using Newtonsoft.Json.Linq;
+using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
 {
     public class UserController : CFDController
     {
-        public UserController(CFDEntities db, IMapper mapper)
-            : base(db, mapper)
+        public UserController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
+            : base(db, mapper, redisClient)
         {
         }
 
@@ -343,18 +345,35 @@ namespace CFD_API.Controllers
             var balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
             var positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
 
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var redisQuoteClient = RedisClient.As<Quote>();
+
+            var prodDefs = redisProdDefClient.GetAll();
+            var quotes = redisQuoteClient.GetAll();
+
             decimal marginUsed = 0;
             decimal totalUPL = 0;
-            foreach (var positionReport in positionReports)
+            foreach (var report in positionReports)
             {
-                totalUPL += positionReport.UPL.Value;
+                totalUPL += report.UPL.Value;
 
-                var quantity= positionReport.LongQty ?? positionReport.ShortQty;
+                var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+
+                //************************************************************************
+                //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                //************************************************************************
+                var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
+                var tradeValueUSD = tradeValue;
+                if (prodDef.Ccy2 != "USD")
+                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+
+                marginUsed += tradeValueUSD.Value / report.Leverage;
             }
 
             return new BalanceDTO()
             {
                 id = user.Id,
+                balance = balance,
                 total = balance + totalUPL,
                 available = balance-marginUsed
             };
