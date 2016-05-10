@@ -5,6 +5,7 @@ using System.ServiceModel;
 using AyondoTrade;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
+using CFD_COMMON.Utils;
 using CFD_JOBS.Ayondo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -147,6 +148,13 @@ namespace CFD_TEST
                     var tick = redisTickClient.Lists["tick:" + prodDef.Id].Pop();
                 }
             }
+        }
+
+        [TestMethod]
+        public void YunPianSMS()
+        {
+            var sendSms = YunPianMessenger.SendSms("【MyHero运营】运营监控，本条为测试短信123！@#，回T退订", "13764349804");
+            CFDGlobal.LogLine(sendSms);
         }
     }
 }

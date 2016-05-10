@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using CFD_COMMON;
+using CFD_COMMON.Models.Context;
+using CFD_COMMON.Utils;
 using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;
@@ -29,7 +31,9 @@ namespace CFD_JOBS.Ayondo
         public int TAG_MDS_RequestID;
         public int TAG_MDS_UPL;
 
-        public IDictionary<string, string> OnlineUsernameAccounts = new Dictionary<string, string>();
+        public IDictionary<string, string> UsernameAccounts = new Dictionary<string, string>();
+        public IDictionary<string, string> AccountUsernames = new Dictionary<string, string>();
+
         //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
         public ConcurrentDictionary<string, RequestForPositionsAck> RequestForPositionsAcks = new ConcurrentDictionary<string, RequestForPositionsAck>();
         public ConcurrentDictionary<string, IList<PositionReport>> PositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
@@ -101,8 +105,7 @@ namespace CFD_JOBS.Ayondo
                 var msgType = message.Header.GetString(Tags.MsgType);
                 if (msgType == "MDS6")
                 {
-                    CFDGlobal.LogLine("MDS6:BalanceResponse");
-                    CFDGlobal.LogLine(GetMessageString(message));
+                    CFDGlobal.LogLine("MDS6:BalanceResponse: " + GetMessageString(message));
 
                     var guid = message.GetString(TAG_MDS_RequestID);
                     var quantity = message.GetDecimal(Tags.Quantity);
@@ -173,19 +176,24 @@ namespace CFD_JOBS.Ayondo
             CFDGlobal.LogLine("OnMessage:UserResponse: " + GetMessageString(response));
 
             //for console test
-            var strAccount = response.GetString(Tags.Account);
-            if (!string.IsNullOrEmpty(response.GetString(Tags.Account)))
-                _account = strAccount;
+            var account = response.GetString(Tags.Account);
+            if (!string.IsNullOrEmpty(account))
+                _account = account;
 
             var username = response.Username.Obj;
 
             //add to onlinie user list
             if (response.UserStatus.Obj == UserStatus.LOGGED_IN)
             {
-                if (OnlineUsernameAccounts.ContainsKey(username))
-                    OnlineUsernameAccounts[username] = response.GetString(Tags.Account);
+                if (UsernameAccounts.ContainsKey(username))
+                    UsernameAccounts[username] = account;
                 else
-                    OnlineUsernameAccounts.Add(username, response.GetString(Tags.Account));
+                    UsernameAccounts.Add(username, account);
+
+                if (AccountUsernames.ContainsKey(account))
+                    UsernameAccounts[account] = username;
+                else
+                    UsernameAccounts.Add(account, username);
             }
             else
                 CFDGlobal.LogLine("UserResponse:UserStatus:" + response.UserStatus.Obj);
@@ -257,18 +265,55 @@ namespace CFD_JOBS.Ayondo
             //throw new Exception("");
 
             //save result to dictionary
-            var posReqId = report.PosReqID.Obj;
 
-            if (posReqId == "Unsolicited") //after position changed
+            var posReqId = report.PosReqID.Obj;
+            if (posReqId == "Unsolicited")
             {
                 if (report.Any(o => o.Key == Tags.ClOrdID)) //after order filled
                 {
+                    //Text=Position DELETE by MarketOrder
+                    //Text=Position DELETE by TakeProfitOrder
+                    //Text=Position DELETE by StopLossOrder
+
                     var clOrdID = report.GetString(Tags.ClOrdID);
 
-                    if (OrderPositionReports.ContainsKey(clOrdID))
-                        OrderPositionReports[clOrdID].Add(report);
-                    else
-                        OrderPositionReports.TryAdd(clOrdID, new List<PositionReport>() {report});
+                    if (report.Text.Obj == "Position DELETE by StopLossOrder" || report.Text.Obj == "Position DELETE by TakeProfitOrder") //by stop/take
+                    {
+                        try
+                        {
+                            var account = report.Account.Obj;
+                            if (AccountUsernames.ContainsKey(account))
+                            {
+                                var username = AccountUsernames[account];
+                                using (var db = CFDEntities.Create())
+                                {
+                                    var user = db.Users.FirstOrDefault(o => o.AyondoUsername == username);
+                                    if (user != null && user.Phone != null)
+                                    {
+                                        var sec = db.AyondoSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID.Obj));
+                                        var name = sec != null && sec.CName != null ? sec.CName : report.Symbol.Obj;
+                                        var stopTake = report.Text.Obj == "Position DELETE by StopLossOrder" ? "止损" : "止盈";
+                                        var price = report.SettlPrice;
+                                        var pl = report.GetDecimal(TAG_MDS_PL);
+                                        var sendSms = YunPianMessenger.SendSms("【MyHero运营】您买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl.ToString("0.00") 
+                                            + "，回T退订", user.Phone);
+                                        CFDGlobal.LogInformation(sendSms);
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            CFDGlobal.LogException(e);
+                        }
+                    }
+                    else //by market order
+                    {
+                        if (OrderPositionReports.ContainsKey(clOrdID))
+                            OrderPositionReports[clOrdID].Add(report);
+                        else
+                            OrderPositionReports.TryAdd(clOrdID, new List<PositionReport>() {report});
+                    }
                 }
                 else //after replace Stop/Take or new Stop/Take
                 {
@@ -429,17 +474,17 @@ namespace CFD_JOBS.Ayondo
             OrderCancelRequest m = new OrderCancelRequest();
 
             m.ClOrdID = new ClOrdID(guid);
-            m.OrderID =new OrderID(orderId);
+            m.OrderID = new OrderID(orderId);
             m.TransactTime = new TransactTime(DateTime.UtcNow);
 
             m.Symbol = new Symbol(securityId);
             m.SecurityID = new SecurityID(securityId);
             m.SecurityIDSource = new SecurityIDSource("G");
 
-            m.Side =new Side(Side.BUY);//ignored
+            m.Side = new Side(Side.BUY); //ignored
 
-            m.OrderQty =new OrderQty(1);//ignored
-            m.OrigClOrdID = new OrigClOrdID(guid);//ignored
+            m.OrderQty = new OrderQty(1); //ignored
+            m.OrigClOrdID = new OrigClOrdID(guid); //ignored
 
             m.Account = new Account(account);
 

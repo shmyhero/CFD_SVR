@@ -71,21 +71,21 @@ namespace CFD_COMMON.Utils
         //    return sr.ReadToEnd().Trim();
         //}
 
-        //public static string SendSms(string text, string mobile)
-        //{
-        //    var parameter = "apikey=" + ApiKey + "&text=" + text + "&mobile=" + mobile;
-        //    var req = WebRequest.Create(URI_SEND_SMS);
-        //    req.ContentType = "application/x-www-form-urlencoded";
-        //    req.Method = "POST";
-        //    var bytes = Encoding.UTF8.GetBytes(parameter);
-        //    req.ContentLength = bytes.Length;
-        //    var os = req.GetRequestStream();
-        //    os.Write(bytes, 0, bytes.Length);
-        //    os.Close();
-        //    var resp = req.GetResponse();
-        //    var sr = new StreamReader(resp.GetResponseStream());
-        //    return sr.ReadToEnd().Trim();
-        //}
+        public static string SendSms(string text, string mobile)
+        {
+            var parameter = "apikey=" + ApiKey + "&text=" + text + "&mobile=" + mobile;
+            var req = WebRequest.Create(URI_SEND_SMS);
+            req.ContentType = "application/x-www-form-urlencoded";
+            req.Method = "POST";
+            var bytes = Encoding.UTF8.GetBytes(parameter);
+            req.ContentLength = bytes.Length;
+            var os = req.GetRequestStream();
+            os.Write(bytes, 0, bytes.Length);
+            os.Close();
+            var resp = req.GetResponse();
+            var sr = new StreamReader(resp.GetResponseStream());
+            return sr.ReadToEnd().Trim();
+        }
 
         public static string TplSendCodeSms(string tplValue, string mobile)
         {

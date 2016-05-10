@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using CFD_COMMON;
+using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_JOBS.Ayondo;
 using Microsoft.Web.Administration;
 using Microsoft.WindowsAzure.ServiceRuntime;
@@ -45,7 +47,10 @@ namespace AyondoTrade
            }
            //------------------------------------------------------------------
 
-            // For information on handling configuration changes
+           //var db = CFDEntities.Create();
+           //var firstOrDefault = db.Users.FirstOrDefault();
+
+           // For information on handling configuration changes
             // see the MSDN topic at http://go.microsoft.com/fwlink/?LinkId=166357.
             return base.OnStart();
         }

@@ -36,7 +36,17 @@ namespace CFD_COMMON.Models.Context
         {
             if (RoleEnvironment.IsAvailable)
             {
-                return RoleEnvironment.GetConfigurationSettingValue(connectStringName);
+                string value = null;
+                try
+                {
+                    value = RoleEnvironment.GetConfigurationSettingValue(connectStringName);
+                }
+                catch (Exception e)
+                {
+                }
+
+                //if there's no cloud config, return local config
+                return value ?? ConfigurationManager.ConnectionStrings[connectStringName].ConnectionString;
             }
             else
             {

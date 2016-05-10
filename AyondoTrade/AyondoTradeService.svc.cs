@@ -191,9 +191,9 @@ namespace AyondoTrade
         {
             string account;
 //user in online list?
-            if (Global.FixApp.OnlineUsernameAccounts.ContainsKey(username))
+            if (Global.FixApp.UsernameAccounts.ContainsKey(username))
             {
-                account = Global.FixApp.OnlineUsernameAccounts[username];
+                account = Global.FixApp.UsernameAccounts[username];
             }
             else
             {
@@ -554,9 +554,9 @@ namespace AyondoTrade
             do
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
-                if (Global.FixApp.OnlineUsernameAccounts.ContainsKey(username))
+                if (Global.FixApp.UsernameAccounts.ContainsKey(username))
                 {
-                    account = Global.FixApp.OnlineUsernameAccounts[username];
+                    account = Global.FixApp.UsernameAccounts[username];
                     break;
                 }
             } while (DateTime.UtcNow - dtLogon <= TIMEOUT); // timeout
