@@ -39,6 +39,8 @@ namespace CFD_API.SignalR
 
         private readonly IRedisTypedClient<Quote> _redisClient;
 
+        private IDictionary<int, Quote> dicLastQuotes;
+
         private QuoteFeedTicker(IHubConnectionContext<dynamic> clients)
         {
             Clients = clients;
@@ -62,16 +64,18 @@ namespace CFD_API.SignalR
                 {
                     var quotes = _redisClient.GetAll();
 
-                    //Clients.All.p(quotes.Select(o => new QuoteFeed {id = o.Id, last = o.Offer}));
+                    var updatedQuotes = dicLastQuotes == null ? quotes : quotes.Where(o => !dicLastQuotes.ContainsKey(o.Id) || o.Time != dicLastQuotes[o.Id].Time).ToList();
 
                     //CFDGlobal.LogLine("Broadcasting to " + _subscription.Count +" subscriber...");
                     foreach (var pair in _subscription)
                     {
                         var userId = pair.Key;
                         var subscribedQuotesIds = pair.Value;
-                        var subscribedQuotes = quotes.Where(o => subscribedQuotesIds.Contains(o.Id));
+                        var subscribedQuotes = updatedQuotes.Where(o => subscribedQuotesIds.Contains(o.Id));
                         Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed {id = o.Id, last = Quotes.GetLastPrice(o)}));
                     }
+
+                    dicLastQuotes = quotes.ToDictionary(o => o.Id);
                 }
 
                 var workTime = DateTime.Now - dtLastBegin;

@@ -121,10 +121,13 @@
 
                     $('#log').append(this.id + " " + this.last +', ');
                 });
-                $('#log').append('\r\n');
 
-                var textarea = document.getElementById('log');
-                textarea.scrollTop = textarea.scrollHeight;
+                if (stocks && stocks.length > 0) {
+                    $('#log').append('\r\n');
+
+                    var textarea = document.getElementById('log');
+                    textarea.scrollTop = textarea.scrollHeight;
+                }
             }
 
             // Start the connection

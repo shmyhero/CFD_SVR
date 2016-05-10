@@ -55,7 +55,7 @@ namespace CFD_API.SignalR
             Groups.Add(Context.ConnectionId, Context.ConnectionId);// single-user group
 
             //add quote subscription
-            var secIds = strSecurityIds.Split(',').Select(o => Convert.ToInt32(o)).Distinct().ToList();
+            var secIds = strSecurityIds.Split(new char[]{','},StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Distinct().ToList();
 
             _quoteFeedTicker.AddSubscription(Context.ConnectionId, secIds);
         }
