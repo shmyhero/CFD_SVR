@@ -191,9 +191,9 @@ namespace CFD_JOBS.Ayondo
                     UsernameAccounts.Add(username, account);
 
                 if (AccountUsernames.ContainsKey(account))
-                    UsernameAccounts[account] = username;
+                    AccountUsernames[account] = username;
                 else
-                    UsernameAccounts.Add(account, username);
+                    AccountUsernames.Add(account, username);
             }
             else
                 CFDGlobal.LogLine("UserResponse:UserStatus:" + response.UserStatus.Obj);
