@@ -24,7 +24,7 @@ namespace CFD_COMMON.Utils
 
             if (fxProdDef == null)
             {
-                CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
+                //CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
 
                 fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
                 if (fxProdDef == null)
@@ -57,7 +57,7 @@ namespace CFD_COMMON.Utils
 
             if (fxProdDef == null)
             {
-                CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
+                //CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
 
                 fxProdDef = prodDefs.FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
                 if (fxProdDef == null)

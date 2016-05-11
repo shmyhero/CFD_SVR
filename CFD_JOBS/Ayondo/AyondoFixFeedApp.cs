@@ -13,6 +13,8 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoFixFeedApp : MessageCracker, IApplication
     {
+        //public bool IsReceivingMessages { get; set; }
+
         public Session Session { get; set; }
         private DataDictionary DD;
 

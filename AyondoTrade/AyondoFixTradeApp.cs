@@ -127,21 +127,22 @@ namespace CFD_JOBS.Ayondo
 
         public void OnLogout(SessionID sessionID)
         {
+            var sb = new StringBuilder();
+
             var st = new StackTrace();
             var stackFrames = st.GetFrames();
             if (stackFrames != null && stackFrames.Any())
             {
-                var sb = new StringBuilder();
+                
                 foreach (var frame in stackFrames)
                 {
                     var declaringType = frame.GetMethod().DeclaringType;
                     if (declaringType != null)
                         sb.AppendLine(declaringType.FullName);
                 }
-                CFDGlobal.LogInformation("FIX Session OnLogout stack trace:" + sb.ToString());
             }
 
-            CFDGlobal.LogInformation("OnLogout: " + sessionID);
+            CFDGlobal.LogInformation("OnLogout: " + sessionID +" StackTrace: "+ sb.ToString());
         }
 
         public void OnLogon(SessionID sessionID)
@@ -290,12 +291,13 @@ namespace CFD_JOBS.Ayondo
                                     var user = db.Users.FirstOrDefault(o => o.AyondoUsername == username);
                                     if (user != null && user.Phone != null)
                                     {
-                                        var sec = db.AyondoSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID.Obj));
+                                        var secId = Convert.ToInt32(report.SecurityID.Obj);
+                                        var sec = db.AyondoSecurities.FirstOrDefault(o => o.Id == secId);
                                         var name = sec != null && sec.CName != null ? sec.CName : report.Symbol.Obj;
                                         var stopTake = report.Text.Obj == "Position DELETE by StopLossOrder" ? "止损" : "止盈";
                                         var price = report.SettlPrice;
                                         var pl = report.GetDecimal(TAG_MDS_PL);
-                                        var sendSms = YunPianMessenger.SendSms("【MyHero运营】您买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl.ToString("0.00") 
+                                        var sendSms = YunPianMessenger.SendSms("【MyHero运营】运营监控，您买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl.ToString("0.00") 
                                             + "，回T退订", user.Phone);
                                         CFDGlobal.LogInformation(sendSms);
                                     }

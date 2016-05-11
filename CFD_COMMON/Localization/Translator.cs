@@ -23,6 +23,9 @@
             if (ayondoText == "Server detected error: Trading not permitted outside of market hours")
                 return "闭市时间不能交易";
 
+            if (ayondoText == "No such order: StopLoss level within minimum stop distance")
+                return "止损价与当前价间距过小";
+
             CFDGlobal.LogWarning("Cannot find ayondo translate for: [" + ayondoText + "]");
             return ayondoText;
         }
