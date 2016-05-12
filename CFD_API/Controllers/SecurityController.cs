@@ -8,11 +8,9 @@ using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
-using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
-using ServiceStack.Redis.Generic;
 
 namespace CFD_API.Controllers
 {
@@ -25,14 +23,43 @@ namespace CFD_API.Controllers
         {
         }
 
-        public void UpdateStockInfo(IList<SecurityDTO> list)
+        public void UpdateQuote(IList<SecurityDTO> list)
+        {
+            if (list.Count == 0) return;
+
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            var redisQuoteClient = RedisClient.As<Quote>();
+
+            var ids = list.Select(o => o.id).ToList();
+            var quotes = redisQuoteClient.GetByIds(ids);
+            //var prodDefs = redisProdDefClient.GetByIds(ids);
+
+            foreach (var security in list)
+            {
+                //var prodDef = prodDefs.FirstOrDefault(o => o.Id == security.id);
+                //if (prodDef != null)
+                //{
+                //    security.preClose = prodDef.PreClose;
+                //    security.open = Quotes.GetOpenPrice(prodDef);
+                //    security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
+                //}
+
+                var quote = quotes.FirstOrDefault(o => o.Id == security.id);
+                if (quote != null)
+                {
+                    security.last = Quotes.GetLastPrice(quote);
+                }
+            }
+        }
+
+        public void UpdateProdDefQuote(IList<SecurityDTO> list)
         {
             if (list.Count == 0) return;
 
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
 
-            var ids = list.Select(o => o.id);
+            var ids = list.Select(o => o.id).ToList();
             var quotes = redisQuoteClient.GetByIds(ids);
             var prodDefs = redisProdDefClient.GetByIds(ids);
 
@@ -41,8 +68,11 @@ namespace CFD_API.Controllers
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == security.id);
                 if (prodDef != null)
                 {
+                    if(security.name==null) security.name = prodDef.Name;
+                    security.symbol = prodDef.Symbol;
+
                     security.preClose = prodDef.PreClose;
-                    security.open =Quotes.GetOpenPrice(prodDef);
+                    security.open = Quotes.GetOpenPrice(prodDef);
                     security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
                 }
 
@@ -66,7 +96,7 @@ namespace CFD_API.Controllers
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             var securityDtos = bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
 
-            UpdateStockInfo(securityDtos);
+            UpdateProdDefQuote(securityDtos);
 
             return securityDtos;
         }
@@ -75,19 +105,29 @@ namespace CFD_API.Controllers
         [Route("stock/topGainer")]
         public List<SecurityDTO> GetTopGainerList(int page = 1, int perPage = 20)
         {
-            //var aliveIds = GetAliveStocks();
+            var all = RedisClient.As<ProdDef>().GetAll();
 
-            var security =
-                db.AyondoSecurities
-                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks"
-                                && o.CName != null && o.DefUpdatedAt != null
-                    )
-                    //.OrderBy(o => o.Symbol)
-                    //.Skip((page - 1)*perPage).Take(perPage)
-                    .ToList();
-            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securities = db.AyondoSecurities.Where(o => o.Financing == "US Stocks" && o.CName != null).ToList();
 
-            UpdateStockInfo(securityDtos);
+            IList<ProdDef> prodDefs = new List<ProdDef>();
+            foreach (var p in all)
+            {
+                var sec = securities.FirstOrDefault(s => s.Id == p.Id);
+                if (sec != null)
+                {
+                    p.Name = sec.CName;
+                    prodDefs.Add(p);
+                }
+            }
+
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            foreach (var o in securityDtos)
+            {
+                o.tag = "US";
+            }
+
+            UpdateQuote(securityDtos);
 
             securityDtos = securityDtos.OrderByDescending(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
 
@@ -98,21 +138,29 @@ namespace CFD_API.Controllers
         [Route("stock/topLoser")]
         public List<SecurityDTO> GetTopLoserList(int page = 1, int perPage = 20)
         {
-//            var aliveIds = GetAliveStocks();
+            var all = RedisClient.As<ProdDef>().GetAll();
 
-            var security =
-                db.AyondoSecurities
-//                    .Where(o => aliveIds.Contains(o.Id))
-                    .Where(o => o.AssetClass == "Single Stocks" && o.Financing == "US Stocks"
-                                && o.CName != null && o.DefUpdatedAt != null
-                    )
-                    //.OrderBy(o => o.Symbol)
-                    //.Skip((page - 1)*perPage).Take(perPage)
-                    .ToList();
+            var securities = db.AyondoSecurities.Where(o => o.Financing == "US Stocks" && o.CName != null).ToList();
 
-            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            IList<ProdDef> prodDefs = new List<ProdDef>();
+            foreach (var p in all)
+            {
+                var sec = securities.FirstOrDefault(s => s.Id == p.Id);
+                if (sec != null)
+                {
+                    p.Name = sec.CName;
+                    prodDefs.Add(p);
+                }
+            }
 
-            UpdateStockInfo(securityDtos);
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            foreach (var o in securityDtos)
+            {
+                o.tag = "US";
+            }
+
+            UpdateQuote(securityDtos);
 
             securityDtos = securityDtos.OrderBy(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
 
@@ -123,18 +171,24 @@ namespace CFD_API.Controllers
         [Route("index")]
         public List<SecurityDTO> GetIndexList(int page = 1, int perPage = 20)
         {
-//            var aliveIds = GetAliveStocks();
+            var all = RedisClient.As<ProdDef>().GetAll().Where(o => o.AssetClass == "Stock Indices");
 
-            var security = db.AyondoSecurities
-//                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Stock Indices"
-                            && o.CName != null && o.DefUpdatedAt != null
-                )
-                .OrderBy(o => o.Symbol)
-                .Skip((page - 1)*perPage).Take(perPage).ToList();
-            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securities = db.AyondoSecurities.Where(o =>o.CName != null).ToList();
 
-            UpdateStockInfo(securityDtos);
+            IList<ProdDef> prodDefs = new List<ProdDef>();
+            foreach (var p in all)
+            {
+                var sec = securities.FirstOrDefault(s => s.Id == p.Id);
+                if (sec != null)
+                {
+                    p.Name = sec.CName;
+                    prodDefs.Add(p);
+                }
+            }
+
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateQuote(securityDtos);
 
             return securityDtos;
         }
@@ -143,18 +197,24 @@ namespace CFD_API.Controllers
         [Route("fx")]
         public List<SecurityDTO> GetFxList(int page = 1, int perPage = 20)
         {
-//            var aliveIds = GetAliveStocks();
+            var all = RedisClient.As<ProdDef>().GetAll().Where(o => o.AssetClass == "Currencies");
 
-            var security = db.AyondoSecurities
-//                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Currencies"
-                            && o.CName != null && o.DefUpdatedAt != null
-                )
-                .OrderBy(o => o.Symbol)
-                .Skip((page - 1)*perPage).Take(perPage).ToList();
-            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securities = db.AyondoSecurities.Where(o => o.CName != null).ToList();
 
-            UpdateStockInfo(securityDtos);
+            IList<ProdDef> prodDefs = new List<ProdDef>();
+            foreach (var p in all)
+            {
+                var sec = securities.FirstOrDefault(s => s.Id == p.Id);
+                if (sec != null)
+                {
+                    p.Name = sec.CName;
+                    prodDefs.Add(p);
+                }
+            }
+
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateQuote(securityDtos);
 
             return securityDtos;
         }
@@ -163,17 +223,24 @@ namespace CFD_API.Controllers
         [Route("futures")]
         public List<SecurityDTO> GetFuturesList(int page = 1, int perPage = 20)
         {
-//            var aliveIds = GetAliveStocks();
+            var all = RedisClient.As<ProdDef>().GetAll().Where(o => o.AssetClass == "Commodities");
 
-            var security = db.AyondoSecurities
-//                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => o.AssetClass == "Commodities"
-                            && o.CName != null && o.DefUpdatedAt != null)
-                .OrderBy(o => o.Symbol)
-                .Skip((page - 1)*perPage).Take(perPage).ToList();
-            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securities = db.AyondoSecurities.Where(o => o.CName != null).ToList();
 
-            UpdateStockInfo(securityDtos);
+            IList<ProdDef> prodDefs = new List<ProdDef>();
+            foreach (var p in all)
+            {
+                var sec = securities.FirstOrDefault(s => s.Id == p.Id);
+                if (sec != null)
+                {
+                    p.Name = sec.CName;
+                    prodDefs.Add(p);
+                }
+            }
+
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateQuote(securityDtos);
 
             return securityDtos;
         }
@@ -193,7 +260,7 @@ namespace CFD_API.Controllers
 
             var securities = db.AyondoSecurities.ToList();
 
-            var result =prodDefs.Select(o=> Mapper.Map<SecurityDetail2DTO>(o)).ToList();
+            var result = prodDefs.Select(o => Mapper.Map<SecurityDetail2DTO>(o)).ToList();
 
             foreach (var secDTO in result)
             {
@@ -203,13 +270,13 @@ namespace CFD_API.Controllers
                     secDTO.cname = @default.CName;
 
                 //get new price
-                var quote = quotes.FirstOrDefault(o=>o.Id==secDTO.id);
+                var quote = quotes.FirstOrDefault(o => o.Id == secDTO.id);
                 if (quote != null)
                 {
                     secDTO.last = Quotes.GetLastPrice(quote);
 
                     //calculate min/max trade value
-                    var prodDef = prodDefs.FirstOrDefault(o=>o.Id==secDTO.id);
+                    var prodDef = prodDefs.FirstOrDefault(o => o.Id == secDTO.id);
 
                     var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
 
@@ -229,7 +296,6 @@ namespace CFD_API.Controllers
                     }
                     catch (Exception e)
                     {
-
                     }
                 }
                 else
@@ -245,20 +311,30 @@ namespace CFD_API.Controllers
         [Route("search")]
         public List<SecurityDTO> SearchSecurity(string keyword, int page = 1, int perPage = 20)
         {
-//            var aliveIds = GetAliveStocks();
+            var all = RedisClient.As<ProdDef>().GetAll();
 
-            var security = db.AyondoSecurities
-//                .Where(o => aliveIds.Contains(o.Id))
-                .Where(o => //o.AssetClass != "Interest Rates" &&
-                    (o.CName.Contains(keyword) || o.Symbol.Contains(keyword))
-                    && o.CName != null && o.DefUpdatedAt != null
-                    && (o.AssetClass != "Single Stocks" || o.Financing == "US Stocks")
-                )
-                .OrderBy(o => o.Symbol)
-                .Skip((page - 1)*perPage).Take(perPage).ToList();
-            var securityDtos = security.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securities = db.AyondoSecurities.Where(o => o.CName != null).ToList();
 
-            UpdateStockInfo(securityDtos);
+            IList<ProdDef> prodDefs = new List<ProdDef>();
+            foreach (var p in all)
+            {
+                var sec = securities.FirstOrDefault(s => s.Id == p.Id);
+                if (sec != null)
+                {
+                    if(p.AssetClass=="Single Stocks" && sec.Financing!="US Stocks") //for stocks, only US stocks
+                        continue;
+
+                    if(!p.Symbol.ToLower().Contains(keyword.ToLower()) && !sec.CName.Contains(keyword)) //search keyword
+                        continue;
+
+                    p.Name = sec.CName;
+                    prodDefs.Add(p);
+                }
+            }
+
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateQuote(securityDtos);
 
             return securityDtos;
         }
@@ -300,10 +376,10 @@ namespace CFD_API.Controllers
 
             var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", RedisClient);
 
-            result.minValueLong = minLong * fxRate;
-            result.minValueShort = minShort * fxRate;
-            result.maxValueLong = maxLong * fxRate;
-            result.maxValueShort = maxShort * fxRate;
+            result.minValueLong = minLong*fxRate;
+            result.minValueShort = minShort*fxRate;
+            result.maxValueLong = maxLong*fxRate;
+            result.maxValueShort = maxShort*fxRate;
 
             //demo data
             Random r = new Random();

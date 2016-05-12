@@ -39,35 +39,35 @@ namespace CFD_JOBS.Ayondo
                         {
                             //basic
                             Id = prodDef.Id,
-                            Name = prodDef.Name,
-                            Symbol = prodDef.Symbol,
-                            AssetClass = prodDef.AssetClass,
-                            //trade
-                            Shortable = prodDef.Shortable,
-                            MaxLeverage = prodDef.MaxLeverage,
-                            MaxSizeShort = prodDef.MaxSizeShort,
-                            MinSizeShort = prodDef.MinSizeShort,
-                            MaxSizeLong = prodDef.MaxSizeLong,
-                            MinSizeLong = prodDef.MinSizeLong,
-                            //update time
-                            DefUpdatedAt = prodDef.Time,
+                            //Name = prodDef.Name,
+                            //Symbol = prodDef.Symbol,
+                            //AssetClass = prodDef.AssetClass,
+                            ////trade
+                            //Shortable = prodDef.Shortable,
+                            //MaxLeverage = prodDef.MaxLeverage,
+                            //MaxSizeShort = prodDef.MaxSizeShort,
+                            //MinSizeShort = prodDef.MinSizeShort,
+                            //MaxSizeLong = prodDef.MaxSizeLong,
+                            //MinSizeLong = prodDef.MinSizeLong,
+                            ////update time
+                            //DefUpdatedAt = prodDef.Time,
                         });
                     }
                     else
                     {
-                        //basic
-                        sec.Name = prodDef.Name;
-                        sec.Symbol = prodDef.Symbol;
-                        sec.AssetClass = prodDef.AssetClass;
-                        //trade
-                        sec.Shortable = prodDef.Shortable;
-                        sec.MaxLeverage = prodDef.MaxLeverage;
-                        sec.MaxSizeShort = prodDef.MaxSizeShort;
-                        sec.MinSizeShort = prodDef.MinSizeShort;
-                        sec.MaxSizeLong = prodDef.MaxSizeLong;
-                        sec.MinSizeLong = prodDef.MinSizeLong;
-                        //update time
-                        sec.DefUpdatedAt = prodDef.Time;
+                        ////basic
+                        //sec.Name = prodDef.Name;
+                        //sec.Symbol = prodDef.Symbol;
+                        //sec.AssetClass = prodDef.AssetClass;
+                        ////trade
+                        //sec.Shortable = prodDef.Shortable;
+                        //sec.MaxLeverage = prodDef.MaxLeverage;
+                        //sec.MaxSizeShort = prodDef.MaxSizeShort;
+                        //sec.MinSizeShort = prodDef.MinSizeShort;
+                        //sec.MaxSizeLong = prodDef.MaxSizeLong;
+                        //sec.MinSizeLong = prodDef.MinSizeLong;
+                        ////update time
+                        //sec.DefUpdatedAt = prodDef.Time;
                     }
                 }
                 db.SaveChanges();
@@ -80,9 +80,9 @@ namespace CFD_JOBS.Ayondo
                     var sec = securities.FirstOrDefault(o => o.Id == quote.Id);
                     if (sec != null)
                     {
-                        sec.Bid = quote.Bid;
-                        sec.Ask = quote.Offer;
-                        sec.QuoteUpdatedAt = quote.Time;
+                        //sec.Bid = quote.Bid;
+                        //sec.Ask = quote.Offer;
+                        //sec.QuoteUpdatedAt = quote.Time;
                     }
                 }
                 db.SaveChanges();

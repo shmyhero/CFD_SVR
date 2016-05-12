@@ -71,6 +71,9 @@ namespace CFD_API.Controllers
 
                 if (prodDef != null)
                 {
+                    if (security.name == null) security.name = prodDef.Name;
+                    security.symbol = prodDef.Symbol;
+
                     security.preClose = prodDef.PreClose;
                     security.open = Quotes.GetOpenPrice(prodDef);
                     security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
@@ -158,12 +161,17 @@ namespace CFD_API.Controllers
                     __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
+            var tradedValue = result.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (result.LongQty ?? result.ShortQty);
+            var tradedValueUSD = tradedValue.Value;
+            if (prodDef.Ccy2 != "USD")
+                tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", RedisClient);
+
             var posDTO = new PositionDTO()
             {
                 id = result.PosMaintRptID,
                 isLong = result.LongQty != null,
                 settlePrice = result.SettlPrice,
-                invest = 0,
+                invest = tradedValueUSD / result.Leverage,
                 leverage = result.Leverage,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
@@ -208,7 +216,7 @@ namespace CFD_API.Controllers
                 id = result.PosMaintRptID,
                 isLong = result.LongQty != null,
                 settlePrice = result.SettlPrice,
-                invest = 0,
+                //invest = 0,
                 leverage =result.Leverage,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,

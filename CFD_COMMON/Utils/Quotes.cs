@@ -14,10 +14,12 @@ namespace CFD_COMMON.Utils
         {
             return (quote.Offer + quote.Bid)/2;
         }
-        public static decimal? GetLastPrice(AyondoSecurity security)
-        {
-            return (security.Ask + security.Bid) / 2;
-        }
+
+        //public static decimal? GetLastPrice(AyondoSecurity security)
+        //{
+        //    return (security.Ask + security.Bid) / 2;
+        //}
+
         public static decimal? GetLastPrice(ProdDef prodDef)
         {
             return (prodDef.Offer + prodDef.Bid) / 2;

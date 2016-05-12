@@ -116,6 +116,7 @@ namespace CFD_JOBS.Ayondo
             }
             catch (Exception e)
             {
+                CFDGlobal.LogLine(message.ToString());
                 CFDGlobal.LogException(e);
             }
         }

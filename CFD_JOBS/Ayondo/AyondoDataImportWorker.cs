@@ -66,8 +66,8 @@ namespace CFD_JOBS.Ayondo
                 //ayondoSecurity.AssetClass = assetClass;
                 //ayondoSecurity.Financing = financing;
 
-                ayondoSecurity.BaseCcy = baseCcy;
-                ayondoSecurity.QuoteCcy = quoteCcy;
+                //ayondoSecurity.BaseCcy = baseCcy;
+                //ayondoSecurity.QuoteCcy = quoteCcy;
 
                 //ayondoSecurity.LotSize = lotSize;
                 //ayondoSecurity.BaseMargin = baseMargin;

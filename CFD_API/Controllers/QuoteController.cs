@@ -101,16 +101,20 @@ namespace CFD_API.Controllers
         [Route("latest")]
         public List<QuoteTemp> GetLatestQuotes()
         {
-            var redisTypedClient = RedisClient.As<Quote>();
-            var quotes = redisTypedClient.GetAll().OrderByDescending(o => o.Time).ToList();
+            var redisQuoteClient = RedisClient.As<Quote>();
+            var quotes = redisQuoteClient.GetAll().OrderByDescending(o => o.Time).ToList();
+
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDefs = redisProdDefClient.GetAll();
 
             var securities = db.AyondoSecurities.ToList();
 
             var results = quotes.Select(o =>
             {
                 var security = securities.FirstOrDefault(s => s.Id == o.Id);
+                var prodDef = prodDefs.FirstOrDefault(s => s.Id == o.Id);
 
-                if (security == null)
+                if (prodDef == null)
                     return new QuoteTemp
                     {
                         Id = o.Id,
@@ -125,10 +129,10 @@ namespace CFD_API.Controllers
                     Bid = o.Bid,
                     Offer = o.Offer,
                     Time = o.Time,
-                    Name = security.Name,
-                    Symbol = security.Symbol,
-                    AssetClass = security.AssetClass,
-                    Financing = security.Financing
+                    Name = prodDef.Name,
+                    Symbol = prodDef.Symbol,
+                    AssetClass = prodDef.AssetClass,
+                    Financing = security == null ? null : security.Financing
                 };
             }).ToList();
 
