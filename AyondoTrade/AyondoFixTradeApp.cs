@@ -116,7 +116,7 @@ namespace CFD_JOBS.Ayondo
             }
             catch (Exception e)
             {
-                CFDGlobal.LogLine(message.ToString());
+                CFDGlobal.LogLine("FromApp: " + message.ToString());
                 CFDGlobal.LogException(e);
             }
         }
@@ -134,7 +134,6 @@ namespace CFD_JOBS.Ayondo
             var stackFrames = st.GetFrames();
             if (stackFrames != null && stackFrames.Any())
             {
-                
                 foreach (var frame in stackFrames)
                 {
                     var declaringType = frame.GetMethod().DeclaringType;
@@ -143,7 +142,7 @@ namespace CFD_JOBS.Ayondo
                 }
             }
 
-            CFDGlobal.LogInformation("OnLogout: " + sessionID +" StackTrace: "+ sb.ToString());
+            CFDGlobal.LogInformation("OnLogout: " + sessionID + " StackTrace: " + sb.ToString());
         }
 
         public void OnLogon(SessionID sessionID)
@@ -298,8 +297,8 @@ namespace CFD_JOBS.Ayondo
                                         var stopTake = report.Text.Obj == "Position DELETE by StopLossOrder" ? "止损" : "止盈";
                                         var price = report.SettlPrice;
                                         var pl = report.GetDecimal(TAG_MDS_PL);
-                                        var sendSms = YunPianMessenger.SendSms("【MyHero运营】运营监控，您买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl.ToString("0.00") 
-                                            + "，回T退订", user.Phone);
+                                        var sendSms = YunPianMessenger.SendSms("【MyHero运营】运营监控，您买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl.ToString("0.00")
+                                                                               + "，回T退订", user.Phone);
                                         CFDGlobal.LogInformation(sendSms);
                                     }
                                 }

@@ -23,8 +23,8 @@ namespace CFD_API.DTO
 
     public class SecurityDetailDTO : SecurityDTO
     {
-        public DateTime lastOpen { get; set; }
-        public DateTime lastClose { get; set; }
+        public DateTime? lastOpen { get; set; }
+        public DateTime? lastClose { get; set; }
 
         public decimal? longPct { get; set; }
 
@@ -32,7 +32,7 @@ namespace CFD_API.DTO
         public decimal? minValueShort { get; set; }
         public decimal? maxValueLong { get; set; }
         public decimal? maxValueShort { get; set; }
-        public decimal maxLeverage { get; set; }
+        public decimal? maxLeverage { get; set; }
     }
 
     /// <summary>

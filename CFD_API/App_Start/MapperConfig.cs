@@ -30,6 +30,10 @@ namespace CFD_API
                     ////open
                     ////.ForMember(dest => dest.open, opt => opt.MapFrom(src => src.Ask*((decimal) r.Next(80, 121))/100))
                     ;
+                cfg.CreateMap<AyondoSecurity, SecurityDetailDTO>()
+                    .ForMember(dest => dest.tag, opt => opt.MapFrom(src => src.Financing == "US Stocks" ? "US" : null))
+                    .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.CName))
+                    ;
 
                 cfg.CreateMap<ProdDef, SecurityDTO>()
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))

@@ -67,7 +67,7 @@ namespace CFD_API.Controllers
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
-                var security = Mapper.Map<SecurityDTO>(dbSec);
+                var security = Mapper.Map<SecurityDetailDTO>(dbSec);
 
                 if (prodDef != null)
                 {
@@ -77,6 +77,9 @@ namespace CFD_API.Controllers
                     security.preClose = prodDef.PreClose;
                     security.open = Quotes.GetOpenPrice(prodDef);
                     security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
+
+                    security.lastOpen = prodDef.LastOpen;
+                    security.lastClose = prodDef.LastClose;
                 }
 
                 if (quote != null)
