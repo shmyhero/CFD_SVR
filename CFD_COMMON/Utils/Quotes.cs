@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CFD_COMMON.Models.Cached;
-using CFD_COMMON.Models.Entities;
 
 namespace CFD_COMMON.Utils
 {
@@ -12,7 +7,11 @@ namespace CFD_COMMON.Utils
     {
         public static decimal GetLastPrice(Quote quote)
         {
-            return (quote.Offer + quote.Bid)/2;
+            int c1 = BitConverter.GetBytes(decimal.GetBits(quote.Offer)[3])[2];
+            int c2 = BitConverter.GetBytes(decimal.GetBits(quote.Bid)[3])[2];
+            int decimalCount = Math.Max(c1, c2);
+
+            return Math.Round((quote.Offer + quote.Bid)/2, decimalCount);
         }
 
         //public static decimal? GetLastPrice(AyondoSecurity security)
@@ -22,17 +21,38 @@ namespace CFD_COMMON.Utils
 
         public static decimal? GetLastPrice(ProdDef prodDef)
         {
-            return (prodDef.Offer + prodDef.Bid) / 2;
+            if (prodDef.Bid == null || prodDef.Offer == null)
+                return null;
+
+            int c1 = BitConverter.GetBytes(decimal.GetBits(prodDef.Offer.Value)[3])[2];
+            int c2 = BitConverter.GetBytes(decimal.GetBits(prodDef.Bid.Value)[3])[2];
+            int decimalCount = Math.Max(c1, c2);
+
+            return Math.Round((prodDef.Offer.Value + prodDef.Bid.Value) / 2, decimalCount);
         }
 
         public static decimal? GetClosePrice(ProdDef prodDef)
         {
-            return (prodDef.CloseAsk + prodDef.CloseBid) / 2;
+            if (prodDef.CloseAsk == null || prodDef.CloseBid == null)
+                return null;
+
+            int c1 = BitConverter.GetBytes(decimal.GetBits(prodDef.CloseAsk.Value)[3])[2];
+            int c2 = BitConverter.GetBytes(decimal.GetBits(prodDef.CloseBid.Value)[3])[2];
+            int decimalCount = Math.Max(c1, c2);
+
+            return Math.Round((prodDef.CloseAsk.Value + prodDef.CloseBid.Value) / 2, decimalCount);
         }
 
         public static decimal? GetOpenPrice(ProdDef prodDef)
         {
-            return (prodDef.OpenAsk + prodDef.OpenBid) / 2;
+            if (prodDef.OpenAsk == null || prodDef.OpenBid == null)
+                return null;
+
+            int c1 = BitConverter.GetBytes(decimal.GetBits(prodDef.OpenAsk.Value)[3])[2];
+            int c2 = BitConverter.GetBytes(decimal.GetBits(prodDef.OpenBid.Value)[3])[2];
+            int decimalCount = Math.Max(c1, c2);
+
+            return Math.Round((prodDef.OpenAsk.Value + prodDef.OpenBid.Value) / 2, decimalCount);
         }
     }
 }

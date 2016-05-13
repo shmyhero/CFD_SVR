@@ -80,6 +80,9 @@ namespace CFD_API.Controllers
 
                     security.lastOpen = prodDef.LastOpen;
                     security.lastClose = prodDef.LastClose;
+
+                    if (dbSec.DisplayDecimals!=null)
+                    security.dcmCount = Convert.ToInt32(dbSec.DisplayDecimals);
                 }
 
                 if (quote != null)
@@ -89,7 +92,9 @@ namespace CFD_API.Controllers
 
                 var posDTO = OpenPositionReportToPositionDTO(report);
                 posDTO.security = security;
-                
+
+                if (dbSec.DisplayDecimals != null)
+                    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
 
             //************************************************************************
             //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
@@ -169,11 +174,23 @@ namespace CFD_API.Controllers
             if (prodDef.Ccy2 != "USD")
                 tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", RedisClient);
 
+            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            decimal settlP;
+            if (security != null && security.DisplayDecimals != null)
+            {
+                int decimalCount = Convert.ToInt32(security.DisplayDecimals);
+                settlP = Math.Round(result.SettlPrice, decimalCount);
+            }
+            else
+            {
+                settlP = result.SettlPrice;
+            }
+
             var posDTO = new PositionDTO()
             {
                 id = result.PosMaintRptID,
                 isLong = result.LongQty != null,
-                settlePrice = result.SettlPrice,
+                settlePrice = settlP,
                 invest = tradedValueUSD / result.Leverage,
                 leverage = result.Leverage,
                 createAt = result.CreateTime,
@@ -214,11 +231,23 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
+            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            decimal settlP;
+            if (security != null && security.DisplayDecimals != null)
+            {
+                int decimalCount = Convert.ToInt32(security.DisplayDecimals);
+                settlP = Math.Round(result.SettlPrice, decimalCount);
+            }
+            else
+            {
+                settlP = result.SettlPrice;
+            }
+
             var posDTO = new PositionDTO()
             {
                 id = result.PosMaintRptID,
                 isLong = result.LongQty != null,
-                settlePrice = result.SettlPrice,
+                settlePrice = settlP,
                 //invest = 0,
                 leverage =result.Leverage,
                 createAt = result.CreateTime,
@@ -253,6 +282,11 @@ namespace CFD_API.Controllers
             }
 
             var posDTO = OpenPositionReportToPositionDTO(report);
+
+            var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            if (dbSec.DisplayDecimals != null)
+                posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+
             return posDTO;
         }
 
@@ -280,6 +314,11 @@ namespace CFD_API.Controllers
             }
 
             var posDTO = OpenPositionReportToPositionDTO(report);
+
+            var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            if (dbSec.DisplayDecimals != null)
+                posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+
             return posDTO;
         }
 
@@ -307,6 +346,11 @@ namespace CFD_API.Controllers
             }
 
             var posDTO = OpenPositionReportToPositionDTO(report);
+
+            var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            if (dbSec.DisplayDecimals != null)
+                posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+
             return posDTO;
         }
 
