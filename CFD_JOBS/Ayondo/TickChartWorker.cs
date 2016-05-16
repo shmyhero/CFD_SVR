@@ -26,7 +26,7 @@ namespace CFD_JOBS.Ayondo
             //var redisQuoteClient = redisClient.As<Quote>();
             //var redisTickClient = redisClient.As<Tick>();
 
-            IList<Quote> lastQuotes = null;
+            //IList<Quote> lastQuotes = null;
 
             CFDGlobal.LogLine("Starting...");
 
@@ -38,33 +38,73 @@ namespace CFD_JOBS.Ayondo
                     {
                         var redisQuoteClient = redisClient.As<Quote>();
                         var redisTickClient = redisClient.As<Tick>();
+                        var redisProdDefClient = redisClient.As<ProdDef>();
 
                         var quotes = redisQuoteClient.GetAll();
+                        var prodDefs = redisProdDefClient.GetAll();
 
-                        //skip non-updated quotes to improve speed
-                        IList<Quote> updatedQuotes;
-                        if (lastQuotes != null)
+                        var openingProds = prodDefs.Where(o => o.QuoteType != enmQuoteType.Closed).ToList();
+
+                        //the time of the last message received from Ayondo
+                        var dtAyondoNow = quotes.Max(o => o.Time);
+
+                        CFDGlobal.LogLine("prod: " + prodDefs.Count + " opening: " + openingProds.Count +" AyondoLastQuoteTime:"+dtAyondoNow.ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND));
+
+                        //counters, for logging
+                        int append1m = 0;
+                        int update1m = 0;
+                        int ignore1m = 0;
+                        int append10m = 0;
+                        int update10m = 0;
+                        int ignore10m = 0;
+                        int append1h = 0;
+                        int update1h = 0;
+                        int ignore1h = 0;
+
+                        //for all OPEN products
+                        foreach (var p in openingProds)
                         {
-                            var idsToRemove = new List<int>();
-                            foreach (var quote in quotes)
+                            var quote = quotes.FirstOrDefault(o => o.Id == p.Id);
+
+                            if (quote == null)
                             {
-                                var lastQuote = lastQuotes.FirstOrDefault(o => o.Id == quote.Id);
-                                if (lastQuote != null && lastQuote.Time == quote.Time)
-                                    idsToRemove.Add(quote.Id);
+                                CFDGlobal.LogLine("cannot find quote for "+p.Id);
+                                continue;
                             }
-                            updatedQuotes = quotes.Where(o => !idsToRemove.Contains(o.Id)).ToList();
+
+                            UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.OneMinute, ref append1m, ref update1m, ref ignore1m);
+                            UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.TenMinute, ref append10m, ref update10m, ref ignore10m);
+                            UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.OneHour, ref append1h, ref update1h, ref ignore1h);
                         }
-                        else
-                            updatedQuotes = quotes.Select(o => o).ToList();
 
-                        //remember quotes for next check
-                        lastQuotes = quotes.Select(o => o).ToList();
-
-                        //save to redis
-                        SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.OneMinute);
-                        SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.TenMinute);
-                        SaveQuoteTicks(updatedQuotes, redisTickClient, TickSize.OneHour);
+                        CFDGlobal.LogLine("1m update: " + update1m + " append: " + append1m + " ignore: " + ignore1m);
+                        CFDGlobal.LogLine("10m update: " + update10m + " append: " + append10m + " ignore: " + ignore10m);
+                        CFDGlobal.LogLine("1h update: " + update1h + " append: " + append1h + " ignore: " + ignore1h);
                         CFDGlobal.LogLine("");
+
+                        ////skip non-updated quotes to improve speed
+                        //IList<Quote> updatedQuotes;
+                        //if (lastQuotes != null)
+                        //{
+                        //    var idsToRemove = new List<int>();
+                        //    foreach (var quote in quotes)
+                        //    {
+                        //        var lastQuote = lastQuotes.FirstOrDefault(o => o.Id == quote.Id);
+                        //        if (lastQuote != null && lastQuote.Time == quote.Time)
+                        //            idsToRemove.Add(quote.Id);
+                        //    }
+                        //    updatedQuotes = quotes.Where(o => !idsToRemove.Contains(o.Id)).ToList();
+                        //}
+                        //else
+                        //    updatedQuotes = quotes.Select(o => o).ToList();
+
+                        ////remember quotes for next check
+                        //lastQuotes = quotes.Select(o => o).ToList();
+
+                        ////save to redis
+                        //SaveQuoteTicks(quotes, redisTickClient, TickSize.OneMinute);
+                        //SaveQuoteTicks(quotes, redisTickClient, TickSize.TenMinute);
+                        //SaveQuoteTicks(quotes, redisTickClient, TickSize.OneHour);
                     }
                 }
                 catch (Exception e)
@@ -72,7 +112,45 @@ namespace CFD_JOBS.Ayondo
                     CFDGlobal.LogException(e);
                 }
 
-                Thread.Sleep(TimeSpan.FromSeconds(1));
+                Thread.Sleep(TimeSpan.FromSeconds(10));
+            }
+        }
+
+        private static void UpdateRedisTick(IRedisTypedClient<Tick> redisTickClient, int secId, DateTime dtAyondoNow, Quote quote, TickSize tickSize,
+            ref int appendCounter,ref int updateCounter, ref int ignoreCount)
+        {
+            var list = redisTickClient.Lists[GetTickListNamePrefix(tickSize) + secId];
+            var last = list[list.Count - 1];
+
+            if (last.Time >= dtAyondoNow)
+            {
+                ignoreCount++;
+                return;
+            }
+
+            var newTick = new Tick {P = Quotes.GetLastPrice(quote), Time = dtAyondoNow};
+
+            if (IsTickEqual(last.Time, dtAyondoNow, tickSize))
+            {
+                updateCounter++;
+                list[list.Count - 1] = newTick;
+            }
+            else
+            {
+                appendCounter++;
+                list.Add(newTick);
+            }
+
+            //clear history/prevent data increasing for good
+            var clearWhenSize = GetClearWhenSize(tickSize);
+            var clearToSize = GetClearToSize(tickSize);
+            if (list.Count > clearWhenSize) //data count at most possible size (in x days )
+            {
+                CFDGlobal.LogLine(tickSize + " " + quote.Id + " Clearing data from " + list.Count + " to " + clearToSize);
+                var ticks = list.GetAll();
+                var newTicks = ticks.Skip(ticks.Count - clearToSize);
+                list.RemoveAll();
+                list.AddRange(newTicks);
             }
         }
 
@@ -84,21 +162,7 @@ namespace CFD_JOBS.Ayondo
             int appendCount = 0;
             int newCount = 0;
 
-            string redisListKeyPrefix;
-            switch (tickSize)
-            {
-                case TickSize.OneMinute:
-                    redisListKeyPrefix = "tick:";
-                    break;
-                case TickSize.TenMinute:
-                    redisListKeyPrefix = "tick10m:";
-                    break;
-                case TickSize.OneHour:
-                    redisListKeyPrefix = "tick1h:";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
-            }
+            string redisListKeyPrefix = GetTickListNamePrefix(tickSize);
 
             var clearWhenSize = GetClearWhenSize(tickSize);
             var clearToSize = GetClearToSize(tickSize);
@@ -167,6 +231,24 @@ namespace CFD_JOBS.Ayondo
 
             CFDGlobal.LogLine(tickSize + " total: " + quotes.Count +
                               " update: " + updateCount + " append: " + appendCount + " identical: " + identicalCount + " new: " + newCount + " overdue: " + overdueCount);
+        }
+
+        private static string GetTickListNamePrefix(TickSize tickSize)
+        {
+            switch (tickSize)
+            {
+                case TickSize.OneMinute:
+                    return "tick:";
+                    break;
+                case TickSize.TenMinute:
+                    return "tick10m:";
+                    break;
+                case TickSize.OneHour:
+                    return "tick1h:";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
+            }
         }
 
         private static bool IsTickEqual(DateTime t1, DateTime t2, TickSize tickSize)
