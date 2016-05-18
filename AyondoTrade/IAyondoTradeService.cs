@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ServiceModel;
 using AyondoTrade.FaultModel;
 using AyondoTrade.Model;
@@ -14,6 +15,9 @@ namespace AyondoTrade
 
         [OperationContract]
         IList<PositionReport> GetPositionReport(string username, string password);
+
+        [OperationContract]
+        IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime);
 
         [OperationContract]
         [FaultContract(typeof (OrderRejectedFault))]

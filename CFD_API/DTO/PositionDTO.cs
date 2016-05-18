@@ -27,6 +27,24 @@ namespace CFD_API.DTO
         public string takeOID { get; set; }
     }
 
+    public class PositionHistoryDTO
+    {
+        public string id { get; set; }
+
+        public SecurityDetailDTO security { get; set; }
+
+        public decimal invest { get; set; }
+        public bool isLong { get; set; }
+        public decimal leverage { get; set; }
+        public decimal openPrice { get; set; }
+        public decimal closePrice { get; set; }
+
+        public decimal pl { get; set; }
+
+        public DateTime openAt { get; set; }
+        public DateTime closeAt { get; set; }
+    }
+
     public class ReplaceStopTakeFormDTO
     {
         public string posId { get; set; }
@@ -37,7 +55,7 @@ namespace CFD_API.DTO
 
     public class CancelTakeFormDTO
     {
-        public string posId { get;set; }
+        public string posId { get; set; }
         public string orderId { get; set; }
         public int securityId { get; set; }
     }

@@ -367,7 +367,7 @@ namespace CFD_API.Controllers
                 if (prodDef.Ccy2 != "USD")
                     tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
 
-                marginUsed += tradeValueUSD.Value / report.Leverage;
+                marginUsed += tradeValueUSD.Value / report.Leverage.Value;
             }
 
             return new BalanceDTO()

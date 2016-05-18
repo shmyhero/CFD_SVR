@@ -11,6 +11,7 @@ using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;
 using QuickFix.FIX44;
+using ServiceStack.Text;
 using Message = QuickFix.Message;
 
 namespace CFD_JOBS.Ayondo
@@ -30,6 +31,11 @@ namespace CFD_JOBS.Ayondo
         public int TAG_Leverage;
         public int TAG_MDS_RequestID;
         public int TAG_MDS_UPL;
+        public int TAG_MDS_HistoryType;
+        public int TAG_MDS_StartTime;
+        public int TAG_MDS_EndTime;
+        public int TAG_MDS_SetSize;
+        public int TAG_MDS_SetIndex;
 
         public IDictionary<string, string> UsernameAccounts = new Dictionary<string, string>();
         public IDictionary<string, string> AccountUsernames = new Dictionary<string, string>();
@@ -161,6 +167,11 @@ namespace CFD_JOBS.Ayondo
             TAG_Leverage = DD.FieldsByName["Leverage"].Tag;
             TAG_MDS_RequestID = DD.FieldsByName["MDS_RequestID"].Tag;
             TAG_MDS_UPL = DD.FieldsByName["MDS_UPL"].Tag;
+            TAG_MDS_HistoryType = DD.FieldsByName["MDS_HistoryType"].Tag;
+            TAG_MDS_StartTime = DD.FieldsByName["MDS_StartTime"].Tag;
+            TAG_MDS_EndTime = DD.FieldsByName["MDS_EndTime"].Tag;
+            TAG_MDS_SetSize = DD.FieldsByName["MDS_SetSize"].Tag;
+            TAG_MDS_SetIndex = DD.FieldsByName["MDS_SetIndex"].Tag;
         }
 
         #endregion
@@ -387,6 +398,26 @@ namespace CFD_JOBS.Ayondo
             return guid;
         }
 
+        public string RequestForPositionHistories(string account, DateTime startTime, DateTime endTime)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new Message();
+            m.Header.SetField(new MsgType("MDS7"));
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+            m.SetField(new Account(account));
+            m.SetField(new IntField(TAG_MDS_HistoryType) { Obj = 1 });// 1: position history
+            m.SetField(new IntField(TAG_MDS_StartTime) { Obj = (int)startTime.ToUnixTime() });
+            m.SetField(new IntField(TAG_MDS_EndTime) { Obj = (int)endTime.ToUnixTime() });
+
+            //m.SetField(new IntField(7945) {Obj = 99999});
+            //m.SetField(new IntField(7946) {Obj = 0});
+
+            SendMessage(m);
+
+            return guid;
+        }
+
         public string NewOrderSingle(string account, string securityId, char ordType, char side = Side.BUY, decimal orderQty = 0,
             decimal? price = null, decimal? leverage = null, decimal? stopPx = null, decimal? takePx = null, string nettingPositionId = null)
         {
@@ -537,6 +568,8 @@ namespace CFD_JOBS.Ayondo
                         QueryLogOut();
                     else if (action == '8')
                         QueryCancelOrder();
+                    else if (action == '9')
+                        QueryPositionHistory();
                     else if (action == 'q' || action == 'Q')
                         break;
                 }
@@ -551,7 +584,7 @@ namespace CFD_JOBS.Ayondo
 
         private char QueryAction()
         {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,q,Q,g,x".Split(','));
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,g,x".Split(','));
 
             string cmd = Console.ReadLine().Trim();
             if (cmd.Length != 1 || validActions.Contains(cmd) == false)
@@ -572,6 +605,7 @@ namespace CFD_JOBS.Ayondo
                           + "6) Log In\n"
                           + "7) Log Out\n"
                           + "8) Cancel Order\n"
+                          + "9) Position History\n"
                           + "Q) Quit\n"
                           + "Action: "
                 );
@@ -631,7 +665,7 @@ namespace CFD_JOBS.Ayondo
         {
             var m = new Message();
             m.Header.SetField(new MsgType("MDS5"));
-            m.SetField(new StringField(DD.FieldsByName["MDS_RequestID"].Tag) {Obj = "balance:" + _account});
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = "balance:" + _account });
             m.SetField(new Account(_account));
             SendMessage(m);
         }
@@ -667,6 +701,22 @@ namespace CFD_JOBS.Ayondo
             OrderCancelRequest m = QueryCancelRequest44();
 
             if (m != null && QueryConfirm("Send replace"))
+                SendMessage(m);
+        }
+
+        private void QueryPositionHistory()
+        {
+            Message m = new Message();
+            m.Header.SetField(new MsgType("MDS7"));
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = "PosHis:" + _account });
+            m.SetField(new Account(_account));
+            m.SetField(new IntField(TAG_MDS_HistoryType) { Obj = 1 });
+            m.SetField(new IntField(TAG_MDS_StartTime) { Obj = (int)(new DateTime(2015, 1, 1)).ToUnixTime() });
+            m.SetField(new IntField(TAG_MDS_EndTime) { Obj = (int)(DateTime.UtcNow).ToUnixTime() });
+
+            //m.SetField(new IntField(7945) {Obj = 99999});
+            //m.SetField(new IntField(7946) {Obj = 0});
+
                 SendMessage(m);
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ServiceModel;
 using AyondoTrade.Model;
 
@@ -19,6 +20,11 @@ namespace AyondoTrade
         public IList<Model.PositionReport> GetPositionReport(string username, string password)
         {
             return base.Channel.GetPositionReport(username, password);
+        }
+
+        public IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime)
+        {
+            return base.Channel.GetPositionHistoryReport(username, password, startTime, endTime);
         }
 
         public PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, //char? ordType = null, decimal? price = null, 

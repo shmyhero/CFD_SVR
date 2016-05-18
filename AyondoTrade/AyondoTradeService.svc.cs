@@ -71,14 +71,14 @@ namespace AyondoTrade
             return result;
         }
 
-        public Model.PositionReport ReplaceOrder(string username, string password, int securityId, string orderId, decimal price,string nettingPositionId)
+        public Model.PositionReport ReplaceOrder(string username, string password, int securityId, string orderId, decimal price, string nettingPositionId)
         {
             string account = GetAccount(username, password);
 
             PositionReport report;
             try
             {
-                report = SendReplaceOrderAndWait(account, securityId, orderId, price,nettingPositionId);
+                report = SendReplaceOrderAndWait(account, securityId, orderId, price, nettingPositionId);
             }
             catch (BusinessMessageRejectException) //get reject
             {
@@ -86,7 +86,7 @@ namespace AyondoTrade
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
-                report = SendReplaceOrderAndWait(account, securityId, orderId, price,nettingPositionId);
+                report = SendReplaceOrderAndWait(account, securityId, orderId, price, nettingPositionId);
             }
 
             var result = PositionReportMapping(report);
@@ -100,7 +100,7 @@ namespace AyondoTrade
             PositionReport report;
             try
             {
-                report = SendCancelOrderAndWait(account, securityId, orderId,  nettingPositionId);
+                report = SendCancelOrderAndWait(account, securityId, orderId, nettingPositionId);
             }
             catch (BusinessMessageRejectException) //get reject
             {
@@ -108,7 +108,7 @@ namespace AyondoTrade
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
-                report = SendCancelOrderAndWait(account, securityId, orderId,  nettingPositionId);
+                report = SendCancelOrderAndWait(account, securityId, orderId, nettingPositionId);
             }
 
             var result = PositionReportMapping(report);
@@ -160,6 +160,30 @@ namespace AyondoTrade
             return positionReports;
         }
 
+        public IList<Model.PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime)
+        {
+            string account = GetAccount(username, password);
+
+            IList<PositionReport> result;
+            try
+            {
+                result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
+            }
+            catch (BusinessMessageRejectException) //get reject
+            {
+                //maybe user is not logged in, try to login ONCE
+                account = SendLoginRequestAndWait(username, password);
+
+                //get data again
+                result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
+            }
+
+            //mapping FIX message model --> WCF model
+            var positionReports = result.Select(PositionReportMapping).ToList();
+
+            return positionReports;
+        }
+
         private Model.PositionReport PositionReportMapping(PositionReport report)
         {
             var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
@@ -182,8 +206,8 @@ namespace AyondoTrade
                 StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
                 TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null,
                 PL = report.GetDecimal(Global.FixApp.TAG_MDS_PL),
-                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?)null,
-                Leverage = report.GetDecimal(Global.FixApp.TAG_Leverage),
+                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?) null,
+                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?) null,
             };
         }
 
@@ -251,6 +275,52 @@ namespace AyondoTrade
 
             if (result.Count != 0 && result.Count != result[0].TotalNumPosReports.Obj)
                 throw new Exception("timeout getting position report. " + result.Count + "/" + result[0].TotalNumPosReports.Obj);
+
+            return result;
+        }
+
+        private static IList<PositionReport> SendPositionHistoryRequestAndWait(string account, DateTime startTime, DateTime endTime)
+        {
+            var reqId = Global.FixApp.RequestForPositionHistories(account, startTime, endTime);
+
+            IList<PositionReport> result = null;
+            var dtPositionReport = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+
+                if (Global.FixApp.PositionReports.ContainsKey(reqId))
+                {
+                    var tryGetValue = Global.FixApp.PositionReports.TryGetValue(reqId, out result);
+
+                    if (!tryGetValue) continue;
+
+                    var last = result.Last();
+                    var setSize = Convert.ToInt32(last.GetString(Global.FixApp.TAG_MDS_SetSize));
+                    var setIndex = Convert.ToInt32(last.GetString(Global.FixApp.TAG_MDS_SetIndex));
+
+                    if (setIndex==setSize-1) //all reports fetched
+                        break;
+                }
+
+                //BusinessMessageReject? e.g. not logged in
+                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
+                {
+                    BusinessMessageReject msg;
+                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
+                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
+                }
+            } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
+
+            if (result == null)
+                throw new Exception("fail getting position report");
+
+            var lastPositionReport = result.Last();
+            var reportCount = Convert.ToInt32(lastPositionReport.GetString(Global.FixApp.TAG_MDS_SetSize));
+            var lastReportIndex = Convert.ToInt32(lastPositionReport.GetString(Global.FixApp.TAG_MDS_SetIndex));
+
+            if (lastReportIndex < reportCount-1)
+                throw new Exception("timeout getting position report. count:"+reportCount+" lastReportIndex:"+lastReportIndex);
 
             return result;
         }

@@ -18,7 +18,7 @@ namespace CFD_API.DTO
         public decimal? open { get; set; }
         public decimal? last { get; set; }
 
-        public bool isOpen { get; set; }
+        public bool? isOpen { get; set; }
     }
 
     public class SecurityDetailDTO : SecurityDTO

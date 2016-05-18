@@ -3288,6 +3288,8 @@
       <field name="MDS_UPL" required="N"/>
       <field name="MDS_VBSR" required="N"/>
       <field name="Leverage" required="N"/>
+      <field name="MDS_SetSize" required="N"/>
+      <field name="MDS_SetIndex" required="N"/>
     </message>
     <message name="AssignmentReport" msgtype="AW" msgcat="app">
       <field name="AsgnRptID" required="Y"/>
@@ -3768,6 +3770,15 @@
       <field name="MDS_SetIndex" required="Y"/>
       <field name="UnsolicitedIndicator" required="N"/>
       <field name="EncodedTextLen" required="N"/>
+    </message>
+    <message name="MDSHistoryRequest" msgtype="MDS7" msgcat="app">
+      <field name="MDS_RequestID" required="Y"/>
+      <field name="Account" required="Y"/>
+      <field name="MDS_HistoryType" required="Y"/>
+      <field name="MDS_StartTime" required="Y"/>
+      <field name="MDS_EndTime" required="Y"/>
+      <field name="MDS_MAXRECORDS" required="N"/>
+      <field name="MDS_POSITIONID" required="N"/>
     </message>
   </messages>
   <components>
@@ -4330,6 +4341,7 @@
       <value enum="MDS4" description="MDSTransfer"/>
       <value enum="MDS5" description="MDSBalanceRequest"/>
       <value enum="MDS6" description="MDSBalanceRequest"/>
+      <value enum="MDS7" description="MDSHistoryRequest"/>
     </field>
     <field number="36" name="NewSeqNo" type="SEQNUM"/>
     <field number="37" name="OrderID" type="STRING"/>
@@ -4598,6 +4610,16 @@
     <field number="7938" name="MDS_LOTSIZE" type="FLOAT"/>
     <field number="7939" name="MDS_CCY2" type="STRING"/>
     <field number="7940" name="MDS_VBSR" type="AMT"/>
+    <field number="7941" name="MDS_HISTORY" type="STRING"/>
+    <field number="7942" name="MDS_HistoryType" type="INT">
+      <value enum="0" description="ORDER_HISTORY"/>
+      <value enum="1" description="POSITION_HISTORY"/>
+      <value enum="2" description="TRANSFER_HISTORY"/>
+    </field>
+    <field number="7943" name="MDS_StartTime" type="INT"/>
+    <field number="7944" name="MDS_EndTime" type="INT"/>
+    <field number="7945" name="MDS_MAXRECORDS" type="INT"/>
+    <field number="7946" name="MDS_POSITIONID" type="INT"/>
 
     <field number="8000" name="AuxTime" type="UTCTIMESTAMP" />
     <field number="100" name="ExDestination" type="EXCHANGE"/>
