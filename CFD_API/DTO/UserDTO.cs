@@ -26,4 +26,20 @@
 
         public decimal available { get; set; }
     }
+
+    public class PLReportDTO
+    {
+        //public decimal indexInvest { get; set; }
+        //public decimal indexPL { get; set; }
+        //public decimal fxInvest { get; set; }
+        //public decimal fxPL { get; set; }
+        //public decimal futureInvest { get; set; }
+        //public decimal futurePL { get; set; }
+        //public decimal stockUSInvest { get; set; }
+        //public decimal stockUSPL { get; set; }
+
+        public string name { get; set; }
+        public decimal invest { get; set; }
+        public decimal pl { get; set; }
+    }
 }

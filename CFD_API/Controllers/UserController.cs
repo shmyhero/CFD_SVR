@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.ServiceModel;
+using System.Text;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
@@ -377,6 +378,151 @@ namespace CFD_API.Controllers
                 total = balance + totalUPL,
                 available = balance-marginUsed
             };
+        }
+
+        [HttpGet]
+        [ActionName("plReport")]
+        [BasicAuth]
+        public List<PLReportDTO> GetPLReport()
+        {
+            var user = GetUser();
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+                throw new Exception("user do not have an ayondo account");
+
+            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+
+            var endTime = DateTime.UtcNow;
+            var startTime = endTime.AddMonths(-3);
+
+            var positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+            var positionHistoryReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
+            var groupByPositions = positionHistoryReports.GroupBy(o => o.PosMaintRptID);
+
+            var secIds = positionOpenReports.Select(o => o.SecurityID).Concat(positionHistoryReports.Select(o => o.SecurityID)).Distinct().Select(o => Convert.ToInt32(o)).ToList();
+            var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
+
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var redisQuoteClient = RedisClient.As<Quote>();
+
+            var prodDefs = redisProdDefClient.GetAll();
+            var quotes = redisQuoteClient.GetAll();
+            
+            var indexPL = new PLReportDTO() { name = "指数" };
+            var fxPL = new PLReportDTO() { name = "外汇" };
+            var commodityPL = new PLReportDTO() { name = "商品" };
+            var stockUSPL = new PLReportDTO() { name = "美股" };
+
+            //open positions
+            foreach (var report in positionOpenReports)
+            {
+                var secId = Convert.ToInt32(report.SecurityID);
+
+                var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
+
+                //************************************************************************
+                //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                //************************************************************************
+                var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
+                var tradeValueUSD = tradeValue;
+                if (prodDef.Ccy2 != "USD")
+                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+
+                var invest = tradeValueUSD.Value/report.Leverage.Value;
+                var pl = report.UPL.Value;
+
+                if (prodDef.AssetClass == "Stock Indices")
+                {
+                    indexPL.invest += invest;
+                    indexPL.pl += pl;
+                }
+                else if (prodDef.AssetClass == "Currencies")
+                {
+                    fxPL.invest += invest;
+                    fxPL.pl += pl;
+                }
+                else if (prodDef.AssetClass == "Commodities")
+                {
+                    commodityPL.invest += invest;
+                    commodityPL.pl += pl;
+                }
+                else if (prodDef.AssetClass == "Single Stocks" && dbSec.Financing=="US Stocks")
+                {
+                    stockUSPL.invest += invest;
+                    stockUSPL.pl += pl;
+                }
+            }
+
+            //closed positions
+            foreach (var positionGroup in groupByPositions)
+            {
+                var dto = new PositionHistoryDTO();
+                dto.id = positionGroup.Key;
+
+                var reports = positionGroup.ToList();
+
+                if (reports.Count == 2)
+                {
+                    var closeReport = positionGroup.FirstOrDefault(o => o.LongQty == 0 || o.ShortQty == 0);
+
+                    var openReport = positionGroup.OrderBy(o => o.CreateTime).First();
+
+                    var secId = Convert.ToInt32(openReport.SecurityID);
+
+                    var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                    var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
+
+                    //************************************************************************
+                    //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                    //************************************************************************
+                    var tradeValue = openReport.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (openReport.LongQty ?? openReport.ShortQty);
+                    var tradeValueUSD = tradeValue;
+                    if (prodDef.Ccy2 != "USD")
+                        tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+
+                    var invest = tradeValueUSD.Value / openReport.Leverage.Value;
+                    var pl = closeReport.PL.Value;
+
+                    if (prodDef.AssetClass == "Stock Indices")
+                    {
+                        indexPL.invest += invest;
+                        indexPL.pl += pl;
+                    }
+                    else if (prodDef.AssetClass == "Currencies")
+                    {
+                        fxPL.invest += invest;
+                        fxPL.pl += pl;
+                    }
+                    else if (prodDef.AssetClass == "Commodities")
+                    {
+                        commodityPL.invest += invest;
+                        commodityPL.pl += pl;
+                    }
+                    else if (prodDef.AssetClass == "Single Stocks" && dbSec.Financing == "US Stocks")
+                    {
+                        stockUSPL.invest += invest;
+                        stockUSPL.pl += pl;
+                    }
+                }
+                else
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine("PositionHistory: position " + positionGroup.Key + " has " + reports.Count + " reports");
+                    foreach (var report in reports)
+                    {
+                        sb.AppendLine(report.PosMaintRptID + " " + report.CreateTime + " " + report.LongQty + " " + report.ShortQty
+                            + " " + report.SettlPrice + " " + report.UPL + " " + report.PL);
+                    }
+                    CFDGlobal.LogInformation(sb.ToString());
+                }
+            }
+
+            var result = new List<PLReportDTO> { stockUSPL, indexPL, fxPL, commodityPL };
+
+            return result;
         }
     }
 }
