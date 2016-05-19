@@ -68,7 +68,7 @@ namespace CFD_API.Controllers
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == security.id);
                 if (prodDef != null)
                 {
-                    if(security.name==null) security.name = prodDef.Name;
+                    if (security.name == null) security.name = prodDef.Name;
                     security.symbol = prodDef.Symbol;
 
                     security.preClose = prodDef.PreClose;
@@ -95,6 +95,24 @@ namespace CFD_API.Controllers
                 .OrderBy(o => o.DisplayOrder)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
             var securityDtos = bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
+
+            UpdateProdDefQuote(securityDtos);
+
+            return securityDtos;
+        }
+
+        [HttpGet]
+        [Route("byIds/{securityIds}")]
+        public List<SecurityDTO> GetSecuritiesByIds(string securityIds)
+        {
+            if (securityIds == null)
+                securityIds = string.Empty;
+
+            var ids = securityIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
+
+            var securities = db.AyondoSecurities.Where(o => ids.Contains(o.Id)).ToList();
+
+            var securityDtos = securities.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
             UpdateProdDefQuote(securityDtos);
 
@@ -173,7 +191,7 @@ namespace CFD_API.Controllers
         {
             var all = RedisClient.As<ProdDef>().GetAll().Where(o => o.AssetClass == "Stock Indices");
 
-            var securities = db.AyondoSecurities.Where(o =>o.CName != null).ToList();
+            var securities = db.AyondoSecurities.Where(o => o.CName != null).ToList();
 
             IList<ProdDef> prodDefs = new List<ProdDef>();
             foreach (var p in all)
@@ -186,7 +204,7 @@ namespace CFD_API.Controllers
                 }
             }
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
             UpdateQuote(securityDtos);
 
@@ -212,7 +230,7 @@ namespace CFD_API.Controllers
                 }
             }
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
             UpdateQuote(securityDtos);
 
@@ -238,7 +256,7 @@ namespace CFD_API.Controllers
                 }
             }
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
             UpdateQuote(securityDtos);
 
@@ -321,10 +339,10 @@ namespace CFD_API.Controllers
                 var sec = securities.FirstOrDefault(s => s.Id == p.Id);
                 if (sec != null)
                 {
-                    if(p.AssetClass=="Single Stocks" && sec.Financing!="US Stocks") //for stocks, only US stocks
+                    if (p.AssetClass == "Single Stocks" && sec.Financing != "US Stocks") //for stocks, only US stocks
                         continue;
 
-                    if(!p.Symbol.ToLower().Contains(keyword.ToLower()) && !sec.CName.Contains(keyword)) //search keyword
+                    if (!p.Symbol.ToLower().Contains(keyword.ToLower()) && !sec.CName.Contains(keyword)) //search keyword
                         continue;
 
                     p.Name = sec.CName;
@@ -332,7 +350,7 @@ namespace CFD_API.Controllers
                 }
             }
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
             UpdateQuote(securityDtos);
 
@@ -384,6 +402,36 @@ namespace CFD_API.Controllers
             //demo data
             Random r = new Random();
             result.longPct = (decimal) r.NextDouble();
+
+
+            var lev = (int) prodDef.MaxLeverage;
+
+            //1,2,5,10,15,20,50,100
+
+            if (lev <= 10)
+            {
+                result.levList = Enumerable.Range(1, lev).ToList();
+            }
+            else if (lev <= 15)
+            {
+                result.levList = new List<int>() {1, 2, 5, 10, lev};
+            }
+            else if (lev <= 20)
+            {
+                result.levList = new List<int>() {1, 2, 5, 10, 15, lev};
+            }
+            else if (lev <= 50)
+            {
+                result.levList = new List<int>() {1, 2, 5, 10, 15, 20, lev};
+            }
+            else if (lev <= 100)
+            {
+                result.levList = new List<int>() {1, 2, 5, 10, 15, 20, 50, lev};
+            }
+            else
+            {
+                result.levList = new List<int>() {1, 2, 5, 10, 15, 20, 50, 100, lev};
+            }
 
             return result;
         }
