@@ -4,11 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.ServiceModel;
-using System.Text;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
-using AyondoTrade.Model;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
@@ -363,12 +361,12 @@ namespace CFD_API.Controllers
                 //************************************************************************
                 //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                 //************************************************************************
-                var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
+                var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
                 var tradeValueUSD = tradeValue;
                 if (prodDef.Ccy2 != "USD")
                     tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
 
-                marginUsed += tradeValueUSD.Value / report.Leverage.Value;
+                marginUsed += tradeValueUSD.Value/report.Leverage.Value;
             }
 
             return new BalanceDTO()
@@ -376,7 +374,7 @@ namespace CFD_API.Controllers
                 id = user.Id,
                 balance = balance,
                 total = balance + totalUPL,
-                available = balance-marginUsed
+                available = balance - marginUsed
             };
         }
 
@@ -409,11 +407,11 @@ namespace CFD_API.Controllers
 
             var prodDefs = redisProdDefClient.GetAll();
             var quotes = redisQuoteClient.GetAll();
-            
-            var indexPL = new PLReportDTO() { name = "指数" };
-            var fxPL = new PLReportDTO() { name = "外汇" };
-            var commodityPL = new PLReportDTO() { name = "商品" };
-            var stockUSPL = new PLReportDTO() { name = "美股" };
+
+            var indexPL = new PLReportDTO() {name = "指数"};
+            var fxPL = new PLReportDTO() {name = "外汇"};
+            var commodityPL = new PLReportDTO() {name = "商品"};
+            var stockUSPL = new PLReportDTO() {name = "美股"};
 
             //open positions
             foreach (var report in positionOpenReports)
@@ -426,7 +424,7 @@ namespace CFD_API.Controllers
                 //************************************************************************
                 //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                 //************************************************************************
-                var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
+                var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
                 var tradeValueUSD = tradeValue;
                 if (prodDef.Ccy2 != "USD")
                     tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
@@ -449,7 +447,7 @@ namespace CFD_API.Controllers
                     commodityPL.invest += invest;
                     commodityPL.pl += pl;
                 }
-                else if (prodDef.AssetClass == "Single Stocks" && dbSec.Financing=="US Stocks")
+                else if (prodDef.AssetClass == "Single Stocks" && dbSec.Financing == "US Stocks")
                 {
                     stockUSPL.invest += invest;
                     stockUSPL.pl += pl;
@@ -464,63 +462,54 @@ namespace CFD_API.Controllers
 
                 var reports = positionGroup.ToList();
 
-                if (reports.Count == 2)
+                if (reports.Count >= 2)
                 {
-                    var closeReport = positionGroup.FirstOrDefault(o => o.LongQty == 0 || o.ShortQty == 0);
+                    var openReport = reports.OrderBy(o => o.CreateTime).First();
+                    var closeReport = reports.OrderBy(o => o.CreateTime).Last();
 
-                    var openReport = positionGroup.OrderBy(o => o.CreateTime).First();
-
-                    var secId = Convert.ToInt32(openReport.SecurityID);
-
-                    var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
-                    var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
-
-                    //************************************************************************
-                    //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
-                    //************************************************************************
-                    var tradeValue = openReport.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (openReport.LongQty ?? openReport.ShortQty);
-                    var tradeValueUSD = tradeValue;
-                    if (prodDef.Ccy2 != "USD")
-                        tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
-
-                    var invest = tradeValueUSD.Value / openReport.Leverage.Value;
-                    var pl = closeReport.PL.Value;
-
-                    if (prodDef.AssetClass == "Stock Indices")
+                    if (Decimals.IsEqualToZero(closeReport.LongQty) || Decimals.IsEqualToZero(closeReport.ShortQty))
                     {
-                        indexPL.invest += invest;
-                        indexPL.pl += pl;
+                        var secId = Convert.ToInt32(openReport.SecurityID);
+
+                        var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                        var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
+
+                        //************************************************************************
+                        //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                        //************************************************************************
+                        var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
+                        var tradeValueUSD = tradeValue;
+                        if (prodDef.Ccy2 != "USD")
+                            tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+
+                        var invest = tradeValueUSD.Value/openReport.Leverage.Value;
+                        var pl = closeReport.PL.Value;
+
+                        if (prodDef.AssetClass == "Stock Indices")
+                        {
+                            indexPL.invest += invest;
+                            indexPL.pl += pl;
+                        }
+                        else if (prodDef.AssetClass == "Currencies")
+                        {
+                            fxPL.invest += invest;
+                            fxPL.pl += pl;
+                        }
+                        else if (prodDef.AssetClass == "Commodities")
+                        {
+                            commodityPL.invest += invest;
+                            commodityPL.pl += pl;
+                        }
+                        else if (prodDef.AssetClass == "Single Stocks" && dbSec.Financing == "US Stocks")
+                        {
+                            stockUSPL.invest += invest;
+                            stockUSPL.pl += pl;
+                        }
                     }
-                    else if (prodDef.AssetClass == "Currencies")
-                    {
-                        fxPL.invest += invest;
-                        fxPL.pl += pl;
-                    }
-                    else if (prodDef.AssetClass == "Commodities")
-                    {
-                        commodityPL.invest += invest;
-                        commodityPL.pl += pl;
-                    }
-                    else if (prodDef.AssetClass == "Single Stocks" && dbSec.Financing == "US Stocks")
-                    {
-                        stockUSPL.invest += invest;
-                        stockUSPL.pl += pl;
-                    }
-                }
-                else
-                {
-                    var sb = new StringBuilder();
-                    sb.AppendLine("PositionHistory: position " + positionGroup.Key + " has " + reports.Count + " reports");
-                    foreach (var report in reports)
-                    {
-                        sb.AppendLine(report.PosMaintRptID + " " + report.CreateTime + " " + report.LongQty + " " + report.ShortQty
-                            + " " + report.SettlPrice + " " + report.UPL + " " + report.PL);
-                    }
-                    CFDGlobal.LogInformation(sb.ToString());
                 }
             }
 
-            var result = new List<PLReportDTO> { stockUSPL, indexPL, fxPL, commodityPL };
+            var result = new List<PLReportDTO> {stockUSPL, indexPL, fxPL, commodityPL};
 
             return result;
         }

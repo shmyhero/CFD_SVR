@@ -141,8 +141,6 @@ namespace CFD_API.Controllers
 
             var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
 
-            //var groupByClosedPositions = groupByPositions.Where(o => o.Any(p => p.LongQty == 0 || p.ShortQty == 0));
-
             var secIds = groupByPositions.Select(o => Convert.ToInt32(o.First().SecurityID)).Distinct().ToList();
             var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
 
@@ -158,61 +156,66 @@ namespace CFD_API.Controllers
 
                 var positionReports = positionGroup.ToList();
 
-                if (positionReports.Count == 2)
+                if (positionReports.Count >= 2)
                 {
-                    var closeReport = positionGroup.FirstOrDefault(o => o.LongQty == 0 || o.ShortQty == 0);
+                    var openReport = positionReports.OrderBy(o => o.CreateTime).First();
+                    var closeReport = positionReports.OrderBy(o => o.CreateTime).Last();
 
-                    var openReport = positionGroup.OrderBy(o => o.CreateTime).First();
-
-                    dto.closeAt = closeReport.CreateTime;
-                    dto.openAt = openReport.CreateTime;
-                    dto.closePrice = closeReport.SettlPrice;
-                    dto.openPrice = openReport.SettlPrice;
-
-                    dto.leverage = closeReport.Leverage;
-                    dto.pl = closeReport.PL.Value;
-
-                    dto.isLong = openReport.LongQty != null;
-
-                    var secId = Convert.ToInt32(openReport.SecurityID);
-                    var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
-                    //************************************************************************
-                    //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
-                    //************************************************************************
-                    var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
-                    var tradeValueUSD = tradeValue;
-                    if (prodDef.Ccy2 != "USD")
-                        tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
-
-                    dto.invest = tradeValueUSD/dto.leverage;
-
-                    var security = new SecurityDetailDTO();
-                    security.symbol = prodDef.Symbol;
-                    security.id = secId;
-
-                    var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
-                    if (dbSec.CName != null)
-                        security.name = dbSec.CName;
-                    if (dbSec.Financing == "US Stocks")
-                        security.tag = "US";
-                    if (dbSec.DisplayDecimals != null)
-                        security.dcmCount = Convert.ToInt32(dbSec.DisplayDecimals);
-
-                    dto.security = security;
-
-                    result.Add(dto);
-                }
-                else
-                {
-                    var sb = new StringBuilder();
-                    sb.AppendLine("PositionHistory: position " + positionGroup.Key + " has " + positionReports.Count + " reports");
-                    foreach (var report in positionReports)
+                    if (Decimals.IsEqualToZero(closeReport.LongQty) || Decimals.IsEqualToZero(closeReport.ShortQty))
                     {
-                        sb.AppendLine(report.PosMaintRptID + " " + report.CreateTime + " " + report.LongQty + " " + report.ShortQty
-                            + " " + report.SettlPrice + " " + report.UPL + " " + report.PL);
+                        //var closeReport = positionReports.FirstOrDefault(o => Decimals.IsEqualToZero(o.LongQty) || Decimals.IsEqualToZero(o.ShortQty));
+
+                        dto.openPrice = openReport.SettlPrice;
+                        dto.openAt = openReport.CreateTime;
+
+                        dto.closePrice = closeReport.SettlPrice;
+                        dto.closeAt = closeReport.CreateTime;
+
+                        dto.leverage = closeReport.Leverage;
+                        dto.pl = closeReport.PL.Value;
+
+                        dto.isLong = openReport.LongQty != null;
+
+                        var secId = Convert.ToInt32(openReport.SecurityID);
+                        var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                        //************************************************************************
+                        //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                        //************************************************************************
+                        var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
+                        var tradeValueUSD = tradeValue;
+                        if (prodDef.Ccy2 != "USD")
+                            tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+
+                        dto.invest = tradeValueUSD/dto.leverage;
+
+                        var security = new SecurityDetailDTO();
+                        security.symbol = prodDef.Symbol;
+                        security.id = secId;
+
+                        var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
+                        if (dbSec.CName != null)
+                            security.name = dbSec.CName;
+                        if (dbSec.Financing == "US Stocks")
+                            security.tag = "US";
+                        if (dbSec.DisplayDecimals != null)
+                            security.dcmCount = Convert.ToInt32(dbSec.DisplayDecimals);
+
+                        dto.security = security;
+
+                        result.Add(dto);
                     }
-                    CFDGlobal.LogInformation(sb.ToString());
                 }
+                //else
+                //{
+                //    var sb = new StringBuilder();
+                //    sb.AppendLine("PositionHistory: position " + positionGroup.Key + " has " + positionReports.Count + " reports");
+                //    foreach (var report in positionReports)
+                //    {
+                //        sb.AppendLine(report.PosMaintRptID + " " + report.CreateTime + " " + report.LongQty + " " + report.ShortQty
+                //                      + " " + report.SettlPrice + " " + report.UPL + " " + report.PL);
+                //    }
+                //    CFDGlobal.LogInformation(sb.ToString());
+                //}
             }
 
             return result.OrderByDescending(o => o.closeAt).ToList();

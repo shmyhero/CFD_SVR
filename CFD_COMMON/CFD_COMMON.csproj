@@ -124,6 +124,7 @@
     <Compile Include="Service\SecurityService.cs" />
     <Compile Include="Service\UserService.cs" />
     <Compile Include="Utils\DateTimes.cs" />
+    <Compile Include="Utils\Decimals.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\FX.cs" />
     <Compile Include="Utils\Phone.cs" />
