@@ -41,6 +41,8 @@ namespace CFD_API.SignalR
 
         private IDictionary<int, Quote> dicLastQuotes;
 
+        private IHubConnectionContext<dynamic> Clients { get; set; }
+
         private QuoteFeedTicker(IHubConnectionContext<dynamic> clients)
         {
             Clients = clients;
@@ -77,7 +79,7 @@ namespace CFD_API.SignalR
                             id = o.Id,
                             last = Quotes.GetLastPrice(o),
                             bid = o.Bid,
-                            ask=o.Offer,
+                            ask = o.Offer,
                         }));
                     }
 
@@ -92,8 +94,6 @@ namespace CFD_API.SignalR
                 Thread.Sleep(sleepTime);
             }
         }
-
-        private IHubConnectionContext<dynamic> Clients { get; set; }
 
         public void AddSubscription(string identity, IList<int> ids)
         {

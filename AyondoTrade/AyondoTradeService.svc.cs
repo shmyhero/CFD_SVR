@@ -35,9 +35,9 @@ namespace AyondoTrade
                 report = SendNewOrderSingleAndWait(account, securityId, isLong, orderQty,
                     leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
             }
-            catch (BusinessMessageRejectException) //get reject
+            catch (UserNotLoggedInException)
             {
-                //maybe user is not logged in, try to login ONCE
+                //user is not logged in, try to login ONCE
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
@@ -58,9 +58,9 @@ namespace AyondoTrade
             {
                 report = SendNewTakeOrderAndWait(account, securityId, price, nettingPositionId);
             }
-            catch (BusinessMessageRejectException) //get reject
+            catch (UserNotLoggedInException)
             {
-                //maybe user is not logged in, try to login ONCE
+                //user is not logged in, try to login ONCE
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
@@ -80,9 +80,9 @@ namespace AyondoTrade
             {
                 report = SendReplaceOrderAndWait(account, securityId, orderId, price, nettingPositionId);
             }
-            catch (BusinessMessageRejectException) //get reject
+            catch (UserNotLoggedInException)
             {
-                //maybe user is not logged in, try to login ONCE
+                //user is not logged in, try to login ONCE
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
@@ -102,9 +102,9 @@ namespace AyondoTrade
             {
                 report = SendCancelOrderAndWait(account, securityId, orderId, nettingPositionId);
             }
-            catch (BusinessMessageRejectException) //get reject
+            catch (UserNotLoggedInException)
             {
-                //maybe user is not logged in, try to login ONCE
+                //user is not logged in, try to login ONCE
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
@@ -124,9 +124,9 @@ namespace AyondoTrade
             {
                 balance = SendBalanceRequestAndWait(account);
             }
-            catch (BusinessMessageRejectException) //get reject
+            catch (UserNotLoggedInException)
             {
-                //maybe user is not logged in, try to login ONCE
+                //user is not logged in, try to login ONCE
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
@@ -145,9 +145,9 @@ namespace AyondoTrade
             {
                 result = SendPositionRequestAndWait(account);
             }
-            catch (BusinessMessageRejectException) //get reject
+            catch (UserNotLoggedInException)
             {
-                //maybe user is not logged in, try to login ONCE
+                //user is not logged in, try to login ONCE
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
@@ -169,9 +169,9 @@ namespace AyondoTrade
             {
                 result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
             }
-            catch (BusinessMessageRejectException) //get reject
+            catch (UserNotLoggedInException)
             {
-                //maybe user is not logged in, try to login ONCE
+                //user is not logged in, try to login ONCE
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
@@ -230,8 +230,8 @@ namespace AyondoTrade
         {
             var reqId = Global.FixApp.RequestForPositions(account);
 
-            RequestForPositionsAck ack = null;
-            IList<PositionReport> result = null;
+            KeyValuePair<DateTime, RequestForPositionsAck> ack = new KeyValuePair<DateTime, RequestForPositionsAck>(DateTime.UtcNow,null);
+            IList<KeyValuePair<DateTime,PositionReport>> reports = null;
             var dtPositionReport = DateTime.UtcNow;
             do
             {
@@ -244,46 +244,40 @@ namespace AyondoTrade
 
                     if (!tryGetValue) continue;
 
-                    if (ack.TotalNumPosReports.Obj == 0) //have no position
+                    if (ack.Value.TotalNumPosReports.Obj == 0) //have no position
                     {
-                        result = new List<PositionReport>();
+                        reports =new List<KeyValuePair<DateTime, PositionReport>>();
                         break;
                     }
 
                     if (Global.FixApp.PositionReports.ContainsKey(reqId))
                     {
-                        tryGetValue = Global.FixApp.PositionReports.TryGetValue(reqId, out result);
+                        tryGetValue = Global.FixApp.PositionReports.TryGetValue(reqId, out reports);
 
                         if (!tryGetValue) continue;
 
-                        if (result.Count == ack.TotalNumPosReports.Obj) //all reports fetched
+                        if (reports.Count == ack.Value.TotalNumPosReports.Obj) //all reports fetched
                             break;
                     }
                 }
 
-                //BusinessMessageReject? e.g. not logged in
-                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
-                {
-                    BusinessMessageReject msg;
-                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
-                }
+                CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
-            if (ack == null || ack.TotalNumPosReports.Obj != 0 && result == null)
+            if (ack.Value == null || ack.Value.TotalNumPosReports.Obj != 0 && reports == null)
                 throw new Exception("fail getting position report");
 
-            if (result.Count != 0 && result.Count != result[0].TotalNumPosReports.Obj)
-                throw new Exception("timeout getting position report. " + result.Count + "/" + result[0].TotalNumPosReports.Obj);
+            if (reports.Count != 0 && reports.Count != reports[0].Value.TotalNumPosReports.Obj)
+                throw new Exception("timeout getting position report. " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
 
-            return result;
+            return reports.Select(o=>o.Value).ToList();
         }
 
         private static IList<PositionReport> SendPositionHistoryRequestAndWait(string account, DateTime startTime, DateTime endTime)
         {
             var reqId = Global.FixApp.RequestForPositionHistories(account, startTime, endTime);
 
-            IList<PositionReport> result = null;
+            IList<KeyValuePair<DateTime, PositionReport>> reports = null;
             var dtPositionReport = DateTime.UtcNow;
             do
             {
@@ -291,38 +285,32 @@ namespace AyondoTrade
 
                 if (Global.FixApp.PositionReports.ContainsKey(reqId))
                 {
-                    var tryGetValue = Global.FixApp.PositionReports.TryGetValue(reqId, out result);
+                    var tryGetValue = Global.FixApp.PositionReports.TryGetValue(reqId, out reports);
 
                     if (!tryGetValue) continue;
 
-                    var last = result.Last();
-                    var setSize = Convert.ToInt32(last.GetString(Global.FixApp.TAG_MDS_SetSize));
-                    var setIndex = Convert.ToInt32(last.GetString(Global.FixApp.TAG_MDS_SetIndex));
+                    var last = reports.Last();
+                    var setSize = Convert.ToInt32(last.Value.GetString(Global.FixApp.TAG_MDS_SetSize));
+                    var setIndex = Convert.ToInt32(last.Value.GetString(Global.FixApp.TAG_MDS_SetIndex));
 
-                    if (setIndex==setSize-1) //all reports fetched
+                    if (setIndex == setSize - 1) //all reports fetched
                         break;
                 }
 
-                //BusinessMessageReject? e.g. not logged in
-                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
-                {
-                    BusinessMessageReject msg;
-                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
-                }
+                CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
-            if (result == null)
+            if (reports == null)
                 throw new Exception("fail getting position report");
 
-            var lastPositionReport = result.Last();
-            var reportCount = Convert.ToInt32(lastPositionReport.GetString(Global.FixApp.TAG_MDS_SetSize));
-            var lastReportIndex = Convert.ToInt32(lastPositionReport.GetString(Global.FixApp.TAG_MDS_SetIndex));
+            var lastPositionReport = reports.Last();
+            var reportCount = Convert.ToInt32(lastPositionReport.Value.GetString(Global.FixApp.TAG_MDS_SetSize));
+            var lastReportIndex = Convert.ToInt32(lastPositionReport.Value.GetString(Global.FixApp.TAG_MDS_SetIndex));
 
-            if (lastReportIndex < reportCount-1)
-                throw new Exception("timeout getting position report. count:"+reportCount+" lastReportIndex:"+lastReportIndex);
+            if (lastReportIndex < reportCount - 1)
+                throw new Exception("timeout getting position report. count:" + reportCount + " lastReportIndex:" + lastReportIndex);
 
-            return result;
+            return reports.Select(o=>o.Value).ToList();
         }
 
         private static PositionReport SendNewOrderSingleAndWait(string account, int securityId, bool isLong, decimal orderQty,
@@ -334,29 +322,16 @@ namespace AyondoTrade
                 leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
 
             //wait/get response message(s)
-            IList<PositionReport> reports = null;
+            IList<KeyValuePair<DateTime,PositionReport>> reports = null;
             PositionReport report = null;
-            ExecutionReport executionReport = null;
+            KeyValuePair<DateTime,ExecutionReport> executionReport = new KeyValuePair<DateTime, ExecutionReport>(DateTime.UtcNow,null);
             var dt = DateTime.UtcNow;
             do
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
 
                 //check execution report
-                if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
-                {
-                    var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
-
-                    if (!tryGetValue) continue;
-
-                    if (executionReport != null)
-                    {
-                        //throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
-                        var fault = new OrderRejectedFault();
-                        fault.Text = executionReport.Text.Obj;
-                        throw new FaultException<OrderRejectedFault>(fault);
-                    }
-                }
+                CheckRejectedExecutionReport(reqId);
 
                 //check position report
                 if (Global.FixApp.OrderPositionReports.ContainsKey(reqId))
@@ -367,24 +342,18 @@ namespace AyondoTrade
 
                     if (nettingPositionId != null) //closing position: a 'Text=Position DELETE by MarketOrder' should be received
                     {
-                        report = reports.FirstOrDefault(o => o.Text.Obj == "Position DELETE by MarketOrder");
+                        report = reports.FirstOrDefault(o => o.Value.Text.Obj == "Position DELETE by MarketOrder").Value;
                         if (report != null)
                             break;
                     }
                     else //open new position: ONLY ONE position report will be received
                     {
-                        report = reports.FirstOrDefault();
+                        report = reports.FirstOrDefault().Value;
                         break;
                     }
                 }
 
-                //BusinessMessageReject? e.g. not logged in
-                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
-                {
-                    BusinessMessageReject msg;
-                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
-                }
+                CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
@@ -401,27 +370,13 @@ namespace AyondoTrade
             //wait/get response message(s)
             IList<KeyValuePair<DateTime, PositionReport>> reports = null;
             PositionReport report = null;
-            ExecutionReport executionReport = null;
             var dt = DateTime.UtcNow;
             do
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
 
                 //check execution report
-                if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
-                {
-                    var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
-
-                    if (!tryGetValue) continue;
-
-                    if (executionReport != null)
-                    {
-                        //throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
-                        var fault = new OrderRejectedFault();
-                        fault.Text = executionReport.Text.Obj;
-                        throw new FaultException<OrderRejectedFault>(fault);
-                    }
-                }
+                CheckRejectedExecutionReport(reqId);
 
                 //check position report
                 if (Global.FixApp.StopTakePositionReports.ContainsKey(nettingPositionId))
@@ -441,19 +396,30 @@ namespace AyondoTrade
                     }
                 }
 
-                //BusinessMessageReject? e.g. not logged in
-                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
-                {
-                    BusinessMessageReject msg;
-                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
-                }
+                CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
                 throw new Exception("fail getting new take order result (position report)");
 
             return report;
+        }
+
+        private static void CheckRejectedExecutionReport(string reqId)
+        {
+            if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
+            {
+                KeyValuePair<DateTime, ExecutionReport> executionReport;
+                var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
+
+                if (tryGetValue && executionReport.Value != null)
+                {
+                    //throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
+                    var fault = new OrderRejectedFault();
+                    fault.Text = executionReport.Value.Text.Obj;
+                    throw new FaultException<OrderRejectedFault>(fault);
+                }
+            }
         }
 
         private PositionReport SendReplaceOrderAndWait(string account, int securityId, string orderId, decimal price, string nettingPositionId)
@@ -465,26 +431,14 @@ namespace AyondoTrade
             //wait/get response message(s)
             IList<KeyValuePair<DateTime, PositionReport>> reports = null;
             PositionReport report = null;
-            ExecutionReport executionReport = null;
+            KeyValuePair<DateTime, ExecutionReport> executionReport = new KeyValuePair<DateTime, ExecutionReport>(DateTime.UtcNow, null);
             var dt = DateTime.UtcNow;
             do
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
 
                 //check rejected execution report
-                if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
-                {
-                    var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
-
-                    if (!tryGetValue) continue;
-
-                    if (executionReport != null)
-                    {
-                        var fault = new OrderRejectedFault();
-                        fault.Text = executionReport.Text.Obj;
-                        throw new FaultException<OrderRejectedFault>(fault);
-                    }
-                }
+                CheckRejectedExecutionReport(reqId);
 
                 //check position report
                 if (Global.FixApp.StopTakePositionReports.ContainsKey(nettingPositionId))
@@ -504,13 +458,7 @@ namespace AyondoTrade
                     }
                 }
 
-                //BusinessMessageReject? e.g. not logged in
-                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
-                {
-                    BusinessMessageReject msg;
-                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
-                }
+                CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
@@ -527,26 +475,14 @@ namespace AyondoTrade
             //wait/get response message(s)
             IList<KeyValuePair<DateTime, PositionReport>> reports = null;
             PositionReport report = null;
-            ExecutionReport executionReport = null;
+            KeyValuePair<DateTime, ExecutionReport> executionReport = new KeyValuePair<DateTime, ExecutionReport>(DateTime.UtcNow, null);
             var dt = DateTime.UtcNow;
             do
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
 
                 //check rejected execution report
-                if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
-                {
-                    var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
-
-                    if (!tryGetValue) continue;
-
-                    if (executionReport != null)
-                    {
-                        var fault = new OrderRejectedFault();
-                        fault.Text = executionReport.Text.Obj;
-                        throw new FaultException<OrderRejectedFault>(fault);
-                    }
-                }
+                CheckRejectedExecutionReport(reqId);
 
                 //check position report
                 if (Global.FixApp.StopTakePositionReports.ContainsKey(nettingPositionId))
@@ -566,13 +502,7 @@ namespace AyondoTrade
                     }
                 }
 
-                //BusinessMessageReject? e.g. not logged in
-                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
-                {
-                    BusinessMessageReject msg;
-                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
-                }
+                CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
@@ -584,7 +514,7 @@ namespace AyondoTrade
         private decimal SendBalanceRequestAndWait(string account)
         {
             var reqId = Global.FixApp.MDS5BalanceRequest(account);
-            decimal balance = -1;
+            KeyValuePair<DateTime, decimal> balanceWithTime = new KeyValuePair<DateTime, decimal>(DateTime.UtcNow, -1);
             var dt = DateTime.UtcNow;
             do
             {
@@ -592,26 +522,38 @@ namespace AyondoTrade
 
                 if (Global.FixApp.Balances.ContainsKey(reqId))
                 {
-                    var tryGetValue = Global.FixApp.Balances.TryGetValue(reqId, out balance);
+                    var tryGetValue = Global.FixApp.Balances.TryGetValue(reqId, out balanceWithTime);
 
                     if (!tryGetValue) continue;
 
                     break;
                 }
 
-                //BusinessMessageReject? e.g. not logged in
-                if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
-                {
-                    BusinessMessageReject msg;
-                    var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-                    throw new BusinessMessageRejectException(msg == null ? "" : msg.Text.Obj);
-                }
+                CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dt <= TIMEOUT); // timeout
 
-            if (balance == -1)
+            if (balanceWithTime.Value == -1)
                 throw new Exception("fail getting balance");
 
-            return balance;
+            return balanceWithTime.Value;
+        }
+
+        private static void CheckBusinessMessageReject(string reqId)
+        {
+//BusinessMessageReject? e.g. not logged in
+            if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
+            {
+                KeyValuePair<DateTime, BusinessMessageReject> msg = new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, null);
+                var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
+
+                if (tryGetValue)
+                {
+                    if (msg.Value.Text.Obj == "Specified User not logged in")
+                        throw new UserNotLoggedInException();
+                    else
+                        throw new Exception("BusinessMessageReject: "+msg.Value.Text.Obj);
+                }
+            }
         }
 
         private static string SendLoginRequestAndWait(string username, string password)
@@ -638,10 +580,14 @@ namespace AyondoTrade
         }
     }
 
-    internal class BusinessMessageRejectException : Exception
+    //internal class BusinessMessageRejectException : Exception
+    //{
+    //    public BusinessMessageRejectException(string s) : base(s)
+    //    {
+    //    }
+    //}
+
+    internal class UserNotLoggedInException : Exception
     {
-        public BusinessMessageRejectException(string s) : base(s)
-        {
-        }
     }
 }

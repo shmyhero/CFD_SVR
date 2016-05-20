@@ -41,20 +41,28 @@ namespace CFD_JOBS.Ayondo
         public IDictionary<string, string> AccountUsernames = new Dictionary<string, string>();
 
         //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
-        public ConcurrentDictionary<string, RequestForPositionsAck> RequestForPositionsAcks = new ConcurrentDictionary<string, RequestForPositionsAck>();
-        public ConcurrentDictionary<string, IList<PositionReport>> PositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
-        public ConcurrentDictionary<string, IList<PositionReport>> OrderPositionReports = new ConcurrentDictionary<string, IList<PositionReport>>();
+        public ConcurrentDictionary<string, KeyValuePair<DateTime, RequestForPositionsAck>> RequestForPositionsAcks =
+            new ConcurrentDictionary<string, KeyValuePair<DateTime, RequestForPositionsAck>>();
+
+        public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> PositionReports =
+            new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
+
+        public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> OrderPositionReports =
+            new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
 
         public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> StopTakePositionReports =
             new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
 
-        public ConcurrentDictionary<string, BusinessMessageReject> BusinessMessageRejects = new ConcurrentDictionary<string, BusinessMessageReject>();
-        public ConcurrentDictionary<string, ExecutionReport> RejectedExecutionReports = new ConcurrentDictionary<string, ExecutionReport>();
+        public ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>> BusinessMessageRejects =
+            new ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>>();
 
-        public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, ExecutionReport>>> StopTakeExecutionReports =
-            new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, ExecutionReport>>>();
+        public ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>> RejectedExecutionReports =
+            new ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>>();
 
-        public ConcurrentDictionary<string, decimal> Balances = new ConcurrentDictionary<string, decimal>();
+        //public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, ExecutionReport>>> StopTakeExecutionReports =
+        //    new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, ExecutionReport>>>();
+
+        public ConcurrentDictionary<string, KeyValuePair<DateTime, decimal>> Balances = new ConcurrentDictionary<string, KeyValuePair<DateTime, decimal>>();
 
         private string _account;
         //ayondodemo01 136824778776
@@ -115,7 +123,7 @@ namespace CFD_JOBS.Ayondo
 
                     var guid = message.GetString(TAG_MDS_RequestID);
                     var quantity = message.GetDecimal(Tags.Quantity);
-                    Balances.TryAdd(guid, quantity);
+                    Balances.TryAdd(guid, new KeyValuePair<DateTime, decimal>(DateTime.UtcNow, quantity));
                 }
                 else
                     Crack(message, sessionID);
@@ -242,7 +250,7 @@ namespace CFD_JOBS.Ayondo
                 //            new List<KeyValuePair<DateTime, ExecutionReport>> {new KeyValuePair<DateTime, ExecutionReport>(DateTime.UtcNow, report)});
                 //}
                 //else //when new order 
-                RejectedExecutionReports.TryAdd(clOrdID, report);
+                RejectedExecutionReports.TryAdd(clOrdID, new KeyValuePair<DateTime, ExecutionReport>(DateTime.UtcNow, report));
             }
         }
 
@@ -257,7 +265,7 @@ namespace CFD_JOBS.Ayondo
                 throw new Exception("existed guid for RequestForPositionsAck");
             }
 
-            RequestForPositionsAcks.TryAdd(guid, response);
+            RequestForPositionsAcks.TryAdd(guid, new KeyValuePair<DateTime, RequestForPositionsAck>(DateTime.UtcNow, response));
         }
 
         public void OnMessage(PositionReport report, SessionID session)
@@ -279,10 +287,13 @@ namespace CFD_JOBS.Ayondo
             //save result to dictionary
 
             var posReqId = report.PosReqID.Obj;
-            if (posReqId == "Unsolicited")
+            if (posReqId == "Unsolicited") //not from positionreport request
             {
                 if (report.Any(o => o.Key == Tags.ClOrdID)) //after order filled
                 {
+                    //Text=Position CREATE by MarketOrder
+                    //Text=Position UPDATE by MarketOrder
+
                     //Text=Position DELETE by MarketOrder
                     //Text=Position DELETE by TakeProfitOrder
                     //Text=Position DELETE by StopLossOrder
@@ -323,9 +334,10 @@ namespace CFD_JOBS.Ayondo
                     else //by market order
                     {
                         if (OrderPositionReports.ContainsKey(clOrdID))
-                            OrderPositionReports[clOrdID].Add(report);
+                            OrderPositionReports[clOrdID].Add(new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report));
                         else
-                            OrderPositionReports.TryAdd(clOrdID, new List<PositionReport>() {report});
+                            OrderPositionReports.TryAdd(clOrdID,
+                                new List<KeyValuePair<DateTime, PositionReport>>() {new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report)});
                     }
                 }
                 else //after replace Stop/Take or new Stop/Take
@@ -342,9 +354,9 @@ namespace CFD_JOBS.Ayondo
             else //after position report request
             {
                 if (PositionReports.ContainsKey(posReqId))
-                    PositionReports[posReqId].Add(report);
+                    PositionReports[posReqId].Add(new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report));
                 else
-                    PositionReports.TryAdd(posReqId, new List<PositionReport> {report});
+                    PositionReports.TryAdd(posReqId, new List<KeyValuePair<DateTime, PositionReport>>() {new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report)});
             }
         }
 
@@ -359,7 +371,7 @@ namespace CFD_JOBS.Ayondo
                 CFDGlobal.LogInformation("existed guid for BusinessMessageRejects");
             }
             else
-                BusinessMessageRejects.TryAdd(guid, reject);
+                BusinessMessageRejects.TryAdd(guid, new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, reject));
         }
 
         #endregion
@@ -404,11 +416,11 @@ namespace CFD_JOBS.Ayondo
 
             var m = new Message();
             m.Header.SetField(new MsgType("MDS7"));
-            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+            m.SetField(new StringField(TAG_MDS_RequestID) {Obj = guid});
             m.SetField(new Account(account));
-            m.SetField(new IntField(TAG_MDS_HistoryType) { Obj = 1 });// 1: position history
-            m.SetField(new IntField(TAG_MDS_StartTime) { Obj = (int)startTime.ToUnixTime() });
-            m.SetField(new IntField(TAG_MDS_EndTime) { Obj = (int)endTime.ToUnixTime() });
+            m.SetField(new IntField(TAG_MDS_HistoryType) {Obj = 1}); // 1: position history
+            m.SetField(new IntField(TAG_MDS_StartTime) {Obj = (int) startTime.ToUnixTime()});
+            m.SetField(new IntField(TAG_MDS_EndTime) {Obj = (int) endTime.ToUnixTime()});
 
             //m.SetField(new IntField(7945) {Obj = 99999});
             //m.SetField(new IntField(7946) {Obj = 0});
@@ -665,7 +677,7 @@ namespace CFD_JOBS.Ayondo
         {
             var m = new Message();
             m.Header.SetField(new MsgType("MDS5"));
-            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = "balance:" + _account });
+            m.SetField(new StringField(TAG_MDS_RequestID) {Obj = "balance:" + _account});
             m.SetField(new Account(_account));
             SendMessage(m);
         }
@@ -708,16 +720,16 @@ namespace CFD_JOBS.Ayondo
         {
             Message m = new Message();
             m.Header.SetField(new MsgType("MDS7"));
-            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = "PosHis:" + _account });
+            m.SetField(new StringField(TAG_MDS_RequestID) {Obj = "PosHis:" + _account});
             m.SetField(new Account(_account));
-            m.SetField(new IntField(TAG_MDS_HistoryType) { Obj = 1 });
-            m.SetField(new IntField(TAG_MDS_StartTime) { Obj = (int)(new DateTime(2015, 1, 1)).ToUnixTime() });
-            m.SetField(new IntField(TAG_MDS_EndTime) { Obj = (int)(DateTime.UtcNow).ToUnixTime() });
+            m.SetField(new IntField(TAG_MDS_HistoryType) {Obj = 1});
+            m.SetField(new IntField(TAG_MDS_StartTime) {Obj = (int) (new DateTime(2015, 1, 1)).ToUnixTime()});
+            m.SetField(new IntField(TAG_MDS_EndTime) {Obj = (int) (DateTime.UtcNow).ToUnixTime()});
 
             //m.SetField(new IntField(7945) {Obj = 99999});
             //m.SetField(new IntField(7946) {Obj = 0});
 
-                SendMessage(m);
+            SendMessage(m);
         }
 
         private bool QueryConfirm(string query)
