@@ -3714,6 +3714,9 @@
       <field name="MDS_PLUNITS" required="N"/>
       <field name="MDS_LOTSIZE"   required="N" />
       <field name="MDS_CCY2"   required="N" />
+      <field name="MDS_PREC" required="N"/>
+      <field name="MDS_SMD" required="N"/>
+      <field name="MDS_GSMD" required="N"/>
       <field name="Text" required="N"/>
       <field name="EncodedTextLen" required="N"/>
       <field name="EncodedText" required="N"/>
@@ -4620,6 +4623,9 @@
     <field number="7944" name="MDS_EndTime" type="INT"/>
     <field number="7945" name="MDS_MAXRECORDS" type="INT"/>
     <field number="7946" name="MDS_POSITIONID" type="INT"/>
+    <field number="7947" name="MDS_PREC" type="INT"/>
+    <field number="7948" name="MDS_SMD" type="FLOAT"/>
+    <field number="7949" name="MDS_GSMD" type="FLOAT"/>
 
     <field number="8000" name="AuxTime" type="UTCTIMESTAMP" />
     <field number="100" name="ExDestination" type="EXCHANGE"/>

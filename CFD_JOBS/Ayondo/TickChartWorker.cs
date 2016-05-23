@@ -119,23 +119,34 @@ namespace CFD_JOBS.Ayondo
         private static void UpdateRedisTick(IRedisTypedClient<Tick> redisTickClient, int secId, DateTime dtAyondoNow, Quote quote, TickSize tickSize,
             ref int appendCounter,ref int updateCounter, ref int ignoreCount)
         {
+            //redis tick list
             var list = redisTickClient.Lists[GetTickListNamePrefix(tickSize) + secId];
+
+            var newTick = new Tick {P = Quotes.GetLastPrice(quote), Time = dtAyondoNow};
+
+            if (list.Count == 0) //new products coming
+            {
+                appendCounter++;
+                list.Add(newTick);
+                return;
+            }
+
             var last = list[list.Count - 1];
 
+            //redis last tick is newer
             if (last.Time >= dtAyondoNow)
             {
                 ignoreCount++;
                 return;
             }
 
-            var newTick = new Tick {P = Quotes.GetLastPrice(quote), Time = dtAyondoNow};
-
+            //update last tick in redis
             if (IsTickEqual(last.Time, dtAyondoNow, tickSize))
             {
                 updateCounter++;
                 list[list.Count - 1] = newTick;
             }
-            else
+            else//append new last tick
             {
                 appendCounter++;
                 list.Add(newTick);
