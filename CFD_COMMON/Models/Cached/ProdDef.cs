@@ -50,6 +50,7 @@ namespace CFD_COMMON.Models.Cached
     {
         Closed = 0,
         Open = 1,
-        PhoneOnly = 2
+        PhoneOnly = 2,
+        Inactive = 3
     }
 }

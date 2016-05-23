@@ -10,6 +10,16 @@
                 return transKey.ToString();
         }
 
+        public static string GetCName(string name)
+        {
+            var str = name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty);
+
+            if (Translations.ProdCNames.ContainsKey(str))
+                return Translations.ProdCNames[str];
+            else
+                return name;
+        }
+
         public static string AyondoOrderRejectMessageTranslate(string ayondoText)
         {
             if (ayondoText == "Order Delete: Not Sufficient Funds")

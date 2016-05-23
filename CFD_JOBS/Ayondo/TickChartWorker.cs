@@ -43,12 +43,13 @@ namespace CFD_JOBS.Ayondo
                         var quotes = redisQuoteClient.GetAll();
                         var prodDefs = redisProdDefClient.GetAll();
 
-                        var openingProds = prodDefs.Where(o => o.QuoteType != enmQuoteType.Closed).ToList();
+                        var openingProds = prodDefs.Where(o => o.QuoteType == enmQuoteType.Open || o.QuoteType == enmQuoteType.PhoneOnly).ToList();
 
                         //the time of the last message received from Ayondo
                         var dtAyondoNow = quotes.Max(o => o.Time);
 
-                        CFDGlobal.LogLine("prod: " + prodDefs.Count + " opening: " + openingProds.Count +" AyondoLastQuoteTime:"+dtAyondoNow.ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND));
+                        CFDGlobal.LogLine("prod: " + prodDefs.Count + " opening: " + openingProds.Count + " AyondoLastQuoteTime:" +
+                                          dtAyondoNow.ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND));
 
                         //counters, for logging
                         int append1m = 0;
@@ -68,7 +69,7 @@ namespace CFD_JOBS.Ayondo
 
                             if (quote == null)
                             {
-                                CFDGlobal.LogLine("cannot find quote for "+p.Id);
+                                CFDGlobal.LogLine("cannot find quote for " + p.Id);
                                 continue;
                             }
 
@@ -117,7 +118,7 @@ namespace CFD_JOBS.Ayondo
         }
 
         private static void UpdateRedisTick(IRedisTypedClient<Tick> redisTickClient, int secId, DateTime dtAyondoNow, Quote quote, TickSize tickSize,
-            ref int appendCounter,ref int updateCounter, ref int ignoreCount)
+            ref int appendCounter, ref int updateCounter, ref int ignoreCount)
         {
             //redis tick list
             var list = redisTickClient.Lists[GetTickListNamePrefix(tickSize) + secId];
@@ -146,7 +147,7 @@ namespace CFD_JOBS.Ayondo
                 updateCounter++;
                 list[list.Count - 1] = newTick;
             }
-            else//append new last tick
+            else //append new last tick
             {
                 appendCounter++;
                 list.Add(newTick);

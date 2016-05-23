@@ -1,6 +1,8 @@
 ﻿using System;
 using AutoMapper;
 using CFD_API.DTO;
+using CFD_COMMON;
+using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
@@ -36,6 +38,7 @@ namespace CFD_API
                     ;
 
                 cfg.CreateMap<ProdDef, SecurityDTO>()
+                    .ForMember(dest => dest.name, opt => opt.MapFrom(src =>Translator.GetCName(src.Name)))
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))
                      .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open));
 
@@ -47,12 +50,7 @@ namespace CFD_API
                     //.ForMember(dest => dest.preClose, opt => opt.MapFrom(src => src.CloseAsk))
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open));
 
-                cfg.CreateMap<ProdDef, SecurityDetail2DTO>()
-                    .ForMember(dest => dest.last, opt => opt.MapFrom(src => Quotes.GetLastPrice(src)))
-                    //open
-                    .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))
-                    //.ForMember(dest => dest.preClose, opt => opt.MapFrom(src => src.CloseAsk))
-                    .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open));
+                cfg.CreateMap<ProdDef, ProdDefDTO>();
 
                 cfg.CreateMap<Tick, TickDTO>();
 

@@ -68,7 +68,7 @@ namespace CFD_JOBS.Ayondo
                                 if (old != null) //updating prod def in redis
                                 {
                                     //update open/close time/price depending on state change
-                                    if (old.QuoteType != enmQuoteType.Closed && newProdDef.QuoteType == enmQuoteType.Closed) //open/phone -> close
+                                    if (old.QuoteType != enmQuoteType.Closed && newProdDef.QuoteType == enmQuoteType.Closed) //xxx -> close
                                     {
                                         CFDGlobal.LogLine("PROD CLOSED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " + newProdDef.Bid);
 
@@ -78,9 +78,11 @@ namespace CFD_JOBS.Ayondo
                                         ////prod def will be treated as a new QUOTE when stock open/close
                                         //listToSaveAsQuote.Add(newProdDef);
                                     }
-                                    else if (old.QuoteType == enmQuoteType.Closed && newProdDef.QuoteType != enmQuoteType.Closed) //close -> open/phone
+                                    else if (old.QuoteType != enmQuoteType.Open && old.QuoteType != enmQuoteType.PhoneOnly &&
+                                             (newProdDef.QuoteType == enmQuoteType.Open || newProdDef.QuoteType == enmQuoteType.PhoneOnly)) //xxx -> open/phone
                                     {
-                                        CFDGlobal.LogLine("PROD OPENED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " + newProdDef.Bid);
+                                        CFDGlobal.LogLine("PROD OPENED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " +
+                                                          newProdDef.Bid);
 
                                         //open time
                                         old.LastOpen = newProdDef.Time;

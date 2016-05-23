@@ -42,11 +42,12 @@ namespace CFD_API.DTO
     /// <summary>
     /// for test api use only
     /// </summary>
-    public class SecurityDetail2DTO : SecurityDetailDTO
+    public class ProdDefDTO : ProdDef
     {
-        public string assetClass { get; set; }
-        public string ccy2 { get; set; }
-        public enmQuoteType quoteType { get; set; }
         public string cname { get; set; }
+        public decimal? minValueLong { get; set; }
+        public decimal? minValueShort { get; set; }
+        public decimal? maxValueLong { get; set; }
+        public decimal? maxValueShort { get; set; }
     }
 }

@@ -22,6 +22,11 @@ namespace CFD_COMMON
 
         public static string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
 
+        public static string ASSET_CLASS_STOCK = "Single Stocks";
+        public static string ASSET_CLASS_FX = "Currencies";
+        public static string ASSET_CLASS_INDEX = "Stock Indices";
+        public static string ASSET_CLASS_COMMODITY = "Commodities";
+
         /// <summary>
         /// the default application-wide BasicRedisClientManager, non-pooled, created for current application
         /// </summary>
