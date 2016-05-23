@@ -13,12 +13,12 @@ namespace CFD_COMMON.Utils
         /// </summary>
         /// <param name="d"></param>
         /// <returns></returns>
-        public static bool IsEqualToZero(decimal? d)
+        public static bool IsTradeSizeZero(decimal? d)
         {
             if (d == null)
                 return false;
 
-            return Math.Abs(d.Value) < (decimal) 0.0000000001;
+            return Math.Abs(d.Value) < (decimal) 0.000001;
         }
     }
 }

@@ -161,7 +161,7 @@ namespace CFD_API.Controllers
                     var openReport = positionReports.OrderBy(o => o.CreateTime).First();
                     var closeReport = positionReports.OrderBy(o => o.CreateTime).Last();
 
-                    if (Decimals.IsEqualToZero(closeReport.LongQty) || Decimals.IsEqualToZero(closeReport.ShortQty))
+                    if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
                         //var closeReport = positionReports.FirstOrDefault(o => Decimals.IsEqualToZero(o.LongQty) || Decimals.IsEqualToZero(o.ShortQty));
 

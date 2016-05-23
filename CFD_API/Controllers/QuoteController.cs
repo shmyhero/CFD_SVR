@@ -43,6 +43,9 @@ namespace CFD_API.Controllers
 
             var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
 
+            if (ticks.Count == 0)
+                return new List<TickDTO>();
+
             var lastTickTime = ticks.Last().Time;
 
             var result = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12));
@@ -57,6 +60,9 @@ namespace CFD_API.Controllers
             var redisTickClient = RedisClient.As<Tick>();
 
             var ticks = redisTickClient.Lists["tick10m:" + securityId].GetAll();
+
+            if (ticks.Count == 0)
+                return new List<TickDTO>();
 
             var lastTickTime = ticks.Last().Time;
 
@@ -85,6 +91,9 @@ namespace CFD_API.Controllers
             var redisTickClient = RedisClient.As<Tick>();
 
             var ticks = redisTickClient.Lists["tick1h:" + securityId].GetAll();
+
+            if (ticks.Count == 0)
+                return new List<TickDTO>();
 
             var lastTickTime = ticks.Last().Time;
 

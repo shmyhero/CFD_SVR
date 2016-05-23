@@ -467,7 +467,7 @@ namespace CFD_API.Controllers
                     var openReport = reports.OrderBy(o => o.CreateTime).First();
                     var closeReport = reports.OrderBy(o => o.CreateTime).Last();
 
-                    if (Decimals.IsEqualToZero(closeReport.LongQty) || Decimals.IsEqualToZero(closeReport.ShortQty))
+                    if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
 

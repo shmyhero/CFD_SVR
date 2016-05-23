@@ -118,6 +118,7 @@ namespace CFD_COMMON.Localization
             {"Union Pacific Corp", "太平洋铁路"},
             {"United Technologies Corp", "联合科技"},
             {"Verizon Communications Inc", "威瑞森电信"},
+            {"Verizon Communicaitons Inc", "威瑞森电信"},//Ayondo has a typo
             {"Visa Inc", "维萨"},
             {"Volvo AB", "沃尔沃"},
             {"Wal-Mart Stores Inc", "沃尔玛"},

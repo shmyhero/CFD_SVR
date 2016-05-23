@@ -85,6 +85,11 @@ namespace CFD_API.Controllers
             }
         }
 
+        private IList<ProdDef> GetActiveProds()
+        {
+            return RedisClient.As<ProdDef>().GetAll().Where(o => o.QuoteType != enmQuoteType.Inactive && (DateTime.UtcNow - o.Time) < TimeSpan.FromDays(4)).ToList();
+        }
+
         [HttpGet]
         [Route("bookmark")]
         [BasicAuth]
@@ -126,7 +131,7 @@ namespace CFD_API.Controllers
         {
             var activeProds = GetActiveProds();
 
-            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK).ToList();
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && (o.Symbol.EndsWith(" UW") || o.Symbol.EndsWith(" UN"))).ToList();
 
             //Where(o => o.Financing == "US Stocks" 
 
@@ -144,18 +149,13 @@ namespace CFD_API.Controllers
             return securityDtos;
         }
 
-        private IList<ProdDef> GetActiveProds()
-        {
-            return RedisClient.As<ProdDef>().GetAll().Where(o => o.QuoteType != enmQuoteType.Inactive && (DateTime.UtcNow - o.Time) < TimeSpan.FromDays(4)).ToList();
-        }
-
         [HttpGet]
         [Route("stock/topLoser")]
         public List<SecurityDTO> GetTopLoserList(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds();
 
-            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK).ToList();
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && (o.Symbol.EndsWith(" UW") || o.Symbol.EndsWith(" UN"))).ToList();
 
             //.Where(o => o.Financing == "US Stocks"
 
@@ -290,7 +290,9 @@ namespace CFD_API.Controllers
 
             //var securities = db.AyondoSecurities.Where(o => o.CName != null).ToList();
 
-            var securityDtos = activeProds.Select(o => Mapper.Map<SecurityDTO>(o)).Where(o => o.name.ToLower().Contains(keyword) || o.symbol.ToLower().Contains(keyword))
+            var securityDtos = activeProds
+                .Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || (o.Symbol.EndsWith(" UW") || o.Symbol.EndsWith(" UN")))
+                .Select(o => Mapper.Map<SecurityDTO>(o)).Where(o => (o.name.ToLower().Contains(keyword) || o.symbol.ToLower().Contains(keyword)))
                 .OrderBy(o => o.symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
 
