@@ -22,7 +22,7 @@ namespace CFD_COMMON.Models.Entities
         //public DateTime? CreatedAt { get; set; }
         public int? DisplayOrder { get; set; }
 
-        public virtual AyondoSecurity AyondoSecurity { get; set; }
+        //public virtual AyondoSecurity AyondoSecurity { get; set; }
         public virtual User User { get; set; }
     }
 }

@@ -354,8 +354,6 @@ namespace CFD_API.Controllers
             decimal totalUPL = 0;
             foreach (var report in positionReports)
             {
-                totalUPL += report.UPL.Value;
-
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 //************************************************************************
@@ -367,6 +365,20 @@ namespace CFD_API.Controllers
                     tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
 
                 marginUsed += tradeValueUSD.Value/report.Leverage.Value;
+
+                //upl
+                if (report.UPL.HasValue)
+                    totalUPL += report.UPL.Value;
+                else
+                {
+                    var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                    if (quote == null)
+                        CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID);
+                    else
+                    {
+                        totalUPL += report.LongQty != null ? tradeValueUSD.Value*(quote.Offer/report.SettlPrice - 1) : tradeValueUSD.Value*(1 - quote.Bid/report.SettlPrice);
+                    }
+                }
             }
 
             return new BalanceDTO()
@@ -399,8 +411,8 @@ namespace CFD_API.Controllers
             var positionHistoryReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
             var groupByPositions = positionHistoryReports.GroupBy(o => o.PosMaintRptID);
 
-            var secIds = positionOpenReports.Select(o => o.SecurityID).Concat(positionHistoryReports.Select(o => o.SecurityID)).Distinct().Select(o => Convert.ToInt32(o)).ToList();
-            var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
+            //var secIds = positionOpenReports.Select(o => o.SecurityID).Concat(positionHistoryReports.Select(o => o.SecurityID)).Distinct().Select(o => Convert.ToInt32(o)).ToList();
+            //var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
 
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
@@ -419,7 +431,7 @@ namespace CFD_API.Controllers
                 var secId = Convert.ToInt32(report.SecurityID);
 
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
-                var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
+                //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
 
                 //************************************************************************
                 //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
@@ -430,7 +442,20 @@ namespace CFD_API.Controllers
                     tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
 
                 var invest = tradeValueUSD.Value/report.Leverage.Value;
-                var pl = report.UPL.Value;
+
+                decimal pl = 0;
+                if (report.UPL.HasValue)
+                    pl = report.UPL.Value;
+                else
+                {
+                    var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                    if (quote == null)
+                        CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID);
+                    else
+                    {
+                        pl = report.LongQty != null ? tradeValueUSD.Value*(quote.Offer/report.SettlPrice - 1) : tradeValueUSD.Value*(1 - quote.Bid/report.SettlPrice);
+                    }
+                }
 
                 if (prodDef.AssetClass == "Stock Indices")
                 {
@@ -447,7 +472,7 @@ namespace CFD_API.Controllers
                     commodityPL.invest += invest;
                     commodityPL.pl += pl;
                 }
-                else if (prodDef.AssetClass == "Single Stocks" && dbSec.Financing == "US Stocks")
+                else if (prodDef.AssetClass == "Single Stocks" && Products.IsUsStocks(prodDef.Symbol))
                 {
                     stockUSPL.invest += invest;
                     stockUSPL.pl += pl;
@@ -472,7 +497,7 @@ namespace CFD_API.Controllers
                         var secId = Convert.ToInt32(openReport.SecurityID);
 
                         var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
-                        var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
+                        //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
 
                         //************************************************************************
                         //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
@@ -500,7 +525,7 @@ namespace CFD_API.Controllers
                             commodityPL.invest += invest;
                             commodityPL.pl += pl;
                         }
-                        else if (prodDef.AssetClass == "Single Stocks" && dbSec.Financing == "US Stocks")
+                        else if (prodDef.AssetClass == "Single Stocks" && Products.IsUsStocks(prodDef.Symbol))
                         {
                             stockUSPL.invest += invest;
                             stockUSPL.pl += pl;

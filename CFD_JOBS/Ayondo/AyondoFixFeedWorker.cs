@@ -117,6 +117,9 @@ namespace CFD_JOBS.Ayondo
                                     old.PLUnits = newProdDef.PLUnits;
                                     old.LotSize = newProdDef.LotSize;
                                     old.Ccy2 = newProdDef.Ccy2;
+                                    old.Prec = newProdDef.Prec;
+                                    old.SMD = newProdDef.SMD;
+                                    old.GSMD = newProdDef.GSMD;
 
                                     listToSave.Add(old);
                                 }

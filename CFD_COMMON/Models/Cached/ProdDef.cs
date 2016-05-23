@@ -44,6 +44,11 @@ namespace CFD_COMMON.Models.Cached
         public decimal PLUnits { get; set; }
         public decimal LotSize { get; set; }
         public string Ccy2 { get; set; }
+
+        public int Prec { get; set; }
+        public decimal SMD { get; set; }
+        public decimal GSMD { get; set; }
+
     }
 
     public enum enmQuoteType

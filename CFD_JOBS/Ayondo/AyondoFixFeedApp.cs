@@ -136,6 +136,10 @@ namespace CFD_JOBS.Ayondo
                     PLUnits = message.GetDecimal(DD.FieldsByName["MDS_PLUNITS"].Tag),
                     LotSize = message.GetDecimal(DD.FieldsByName["MDS_LOTSIZE"].Tag),
                     Ccy2 = message.GetString(DD.FieldsByName["MDS_CCY2"].Tag),
+
+                    Prec = message.GetInt(DD.FieldsByName["MDS_PREC"].Tag),
+                    SMD = message.GetDecimal(DD.FieldsByName["MDS_SMD"].Tag),
+                    GSMD = message.GetDecimal(DD.FieldsByName["MDS_GSMD"].Tag),
                 };
 
                 //CFDGlobal.LogLine("MDS2 Received: Id: " + prodDef.Id + " QuoteType: " + prodDef.QuoteType);

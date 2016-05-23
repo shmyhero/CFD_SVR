@@ -95,12 +95,15 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<SecurityDTO> GetBookmarkList(int page = 1, int perPage = 20)
         {
-            var bookmarks = db.Bookmarks
+            var bookmarkIDs = db.Bookmarks
                 .Where(o => o.UserId == UserId)
-                .Include(o => o.AyondoSecurity)
+                //.Include(o => o.AyondoSecurity)
                 .OrderBy(o => o.DisplayOrder)
-                .Skip((page - 1)*perPage).Take(perPage).ToList();
-            var securityDtos = bookmarks.Select(o => Mapper.Map<SecurityDTO>(o.AyondoSecurity)).ToList();
+                .Skip((page - 1)*perPage).Take(perPage).Select(o=>o.AyondoSecurityId).ToList();
+
+            var prodDefs = RedisClient.As<ProdDef>().GetByIds(bookmarkIDs);
+
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
             UpdateProdDefQuote(securityDtos);
 
@@ -131,16 +134,16 @@ namespace CFD_API.Controllers
         {
             var activeProds = GetActiveProds();
 
-            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && (o.Symbol.EndsWith(" UW") || o.Symbol.EndsWith(" UN"))).ToList();
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUsStocks(o.Symbol)).ToList();
 
             //Where(o => o.Financing == "US Stocks" 
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            foreach (var o in securityDtos)
-            {
-                o.tag = "US";
-            }
+            //foreach (var o in securityDtos)
+            //{
+            //    o.tag = "US";
+            //}
 
             UpdateQuote(securityDtos);
 
@@ -155,16 +158,16 @@ namespace CFD_API.Controllers
         {
             var activeProds = GetActiveProds();
 
-            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && (o.Symbol.EndsWith(" UW") || o.Symbol.EndsWith(" UN"))).ToList();
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUsStocks(o.Symbol)).ToList();
 
             //.Where(o => o.Financing == "US Stocks"
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            foreach (var o in securityDtos)
-            {
-                o.tag = "US";
-            }
+            //foreach (var o in securityDtos)
+            //{
+            //    o.tag = "US";
+            //}
 
             UpdateQuote(securityDtos);
 
@@ -291,7 +294,7 @@ namespace CFD_API.Controllers
             //var securities = db.AyondoSecurities.Where(o => o.CName != null).ToList();
 
             var securityDtos = activeProds
-                .Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || (o.Symbol.EndsWith(" UW") || o.Symbol.EndsWith(" UN")))
+                .Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUsStocks(o.Symbol))
                 .Select(o => Mapper.Map<SecurityDTO>(o)).Where(o => (o.name.ToLower().Contains(keyword) || o.symbol.ToLower().Contains(keyword)))
                 .OrderBy(o => o.symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.ServiceModel;
-using System.Text;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
@@ -58,35 +57,35 @@ namespace CFD_API.Controllers
             var prodDefs = redisProdDefClient.GetAll();
             var quotes = redisQuoteClient.GetAll();
 
-            var secIds = result.Select(o => Convert.ToInt32(o.SecurityID)).ToList();
+            //var secIds = result.Select(o => Convert.ToInt32(o.SecurityID)).ToList();
 
-            var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
+            //var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
 
             var positionDtos = result.Select(delegate(PositionReport report)
             {
-                var dbSec = dbSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
-                var security = Mapper.Map<SecurityDetailDTO>(dbSec);
+                var security = Mapper.Map<SecurityDetailDTO>(prodDef);
 
                 if (prodDef != null)
                 {
-                    if (security.name == null) security.name = prodDef.Name;
-                    security.symbol = prodDef.Symbol;
+                    //if (security.name == null) security.name = prodDef.Name;
+                    //security.symbol = prodDef.Symbol;
 
-                    security.preClose = prodDef.PreClose;
-                    security.open = Quotes.GetOpenPrice(prodDef);
-                    security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
+                    //security.preClose = prodDef.PreClose;
+                    //security.open = Quotes.GetOpenPrice(prodDef);
+                    //security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
 
-                    security.lastOpen = prodDef.LastOpen;
-                    security.lastClose = prodDef.LastClose;
+                    //security.lastOpen = prodDef.LastOpen;
+                    //security.lastClose = prodDef.LastClose;
 
-                    if (dbSec.Financing == "US Stocks")
-                        security.tag = "US";
+                    //if (Products.IsUsStocks(prodDef.Symbol))
+                    //    security.tag = "US";
 
-                    if (dbSec.DisplayDecimals != null)
-                        security.dcmCount = Convert.ToInt32(dbSec.DisplayDecimals);
+                    //if (dbSec.DisplayDecimals != null)
+                    //    security.dcmCount = Convert.ToInt32(dbSec.DisplayDecimals);
                 }
 
                 if (quote != null)
@@ -94,11 +93,11 @@ namespace CFD_API.Controllers
                     security.last = Quotes.GetLastPrice(quote);
                 }
 
-                var posDTO = OpenPositionReportToPositionDTO(report);
+                var posDTO = MapPositionReportToPositionDTO(report);
                 posDTO.security = security;
 
-                if (dbSec.DisplayDecimals != null)
-                    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+                //if (prodDef.Prec != null)
+                posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(prodDef.Prec));
 
                 //************************************************************************
                 //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
@@ -141,8 +140,8 @@ namespace CFD_API.Controllers
 
             var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
 
-            var secIds = groupByPositions.Select(o => Convert.ToInt32(o.First().SecurityID)).Distinct().ToList();
-            var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
+            //var secIds = groupByPositions.Select(o => Convert.ToInt32(o.First().SecurityID)).Distinct().ToList();
+            //var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
 
             var redisQuoteClient = RedisClient.As<Quote>();
             var redisProdDefClient = RedisClient.As<ProdDef>();
@@ -188,17 +187,17 @@ namespace CFD_API.Controllers
 
                         dto.invest = tradeValueUSD/dto.leverage;
 
-                        var security = new SecurityDetailDTO();
-                        security.symbol = prodDef.Symbol;
-                        security.id = secId;
+                        var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                        //security.symbol = prodDef.Symbol;
+                        //security.id = secId;
 
-                        var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
-                        if (dbSec.CName != null)
-                            security.name = dbSec.CName;
-                        if (dbSec.Financing == "US Stocks")
-                            security.tag = "US";
-                        if (dbSec.DisplayDecimals != null)
-                            security.dcmCount = Convert.ToInt32(dbSec.DisplayDecimals);
+                        //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
+                        //if (dbSec.CName != null)
+                        //    security.name = dbSec.CName;
+                        //if (dbSec.Financing == "US Stocks")
+                        //    security.tag = "US";
+                        //if (dbSec.DisplayDecimals != null)
+                        //    security.dcmCount = Convert.ToInt32(dbSec.DisplayDecimals);
 
                         dto.security = security;
 
@@ -283,17 +282,18 @@ namespace CFD_API.Controllers
             if (prodDef.Ccy2 != "USD")
                 tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", RedisClient);
 
-            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-            decimal settlP;
-            if (security != null && security.DisplayDecimals != null)
-            {
-                int decimalCount = Convert.ToInt32(security.DisplayDecimals);
-                settlP = Math.Round(result.SettlPrice, decimalCount);
-            }
-            else
-            {
-                settlP = result.SettlPrice;
-            }
+            ////var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            //decimal settlP;
+            //if (security != null && security.DisplayDecimals != null)
+            //{
+            //    int decimalCount = Convert.ToInt32(security.DisplayDecimals);
+            //    settlP = Math.Round(result.SettlPrice, decimalCount);
+            //}
+            //else
+            //{
+            //    settlP = result.SettlPrice;
+            //}
+            decimal settlP = Math.Round(result.SettlPrice, prodDef.Prec);
 
             var posDTO = new PositionDTO()
             {
@@ -340,17 +340,18 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
-            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-            decimal settlP;
-            if (security != null && security.DisplayDecimals != null)
-            {
-                int decimalCount = Convert.ToInt32(security.DisplayDecimals);
-                settlP = Math.Round(result.SettlPrice, decimalCount);
-            }
-            else
-            {
-                settlP = result.SettlPrice;
-            }
+            //var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            //decimal settlP;
+            //if (security != null && security.DisplayDecimals != null)
+            //{
+            //    int decimalCount = Convert.ToInt32(security.DisplayDecimals);
+            //    settlP = Math.Round(result.SettlPrice, decimalCount);
+            //}
+            //else
+            //{
+            //    settlP = result.SettlPrice;
+            //}
+            decimal settlP = Math.Round(result.SettlPrice, prodDef.Prec);
 
             var posDTO = new PositionDTO()
             {
@@ -390,11 +391,14 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
-            var posDTO = OpenPositionReportToPositionDTO(report);
+            var posDTO = MapPositionReportToPositionDTO(report);
 
-            var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-            if (dbSec.DisplayDecimals != null)
-                posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+            //var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            //if (dbSec.DisplayDecimals != null)
+            //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDef = redisProdDefClient.GetById(form.securityId);
+            posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
         }
@@ -422,11 +426,14 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
-            var posDTO = OpenPositionReportToPositionDTO(report);
+            var posDTO = MapPositionReportToPositionDTO(report);
 
-            var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-            if (dbSec.DisplayDecimals != null)
-                posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+            //var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            //if (dbSec.DisplayDecimals != null)
+            //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDef = redisProdDefClient.GetById(form.securityId);
+            posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
         }
@@ -454,16 +461,19 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
-            var posDTO = OpenPositionReportToPositionDTO(report);
+            var posDTO = MapPositionReportToPositionDTO(report);
 
-            var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-            if (dbSec.DisplayDecimals != null)
-                posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+            //var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
+            //if (dbSec.DisplayDecimals != null)
+            //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDef = redisProdDefClient.GetById(form.securityId);
+            posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
         }
 
-        private static PositionDTO OpenPositionReportToPositionDTO(PositionReport report)
+        private static PositionDTO MapPositionReportToPositionDTO(PositionReport report)
         {
             var posDTO = new PositionDTO()
             {
