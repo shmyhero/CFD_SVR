@@ -56,6 +56,9 @@ namespace CFD_JOBS.Ayondo
         public ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>> BusinessMessageRejects =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>>();
 
+        public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>> BusinessMessageRejectsByAccount =
+            new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>>();
+
         public ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>> RejectedExecutionReports =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>>();
 
@@ -364,14 +367,21 @@ namespace CFD_JOBS.Ayondo
         {
             CFDGlobal.LogLine("OnMessage:BusinessMessageReject: " + GetMessageString(reject, true, true));
 
-            var guid = reject.BusinessRejectRefID.Obj;
-
-            if (BusinessMessageRejects.ContainsKey(guid))
+            if (reject.BusinessRejectRefID.Obj == "Unknown") //position history API, when use not logged in, don't have a BusinessRejectRefID
             {
-                CFDGlobal.LogInformation("existed guid for BusinessMessageRejects");
+                //var account = reject.GetString(Tags.Account);
             }
             else
-                BusinessMessageRejects.TryAdd(guid, new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, reject));
+            {
+                var guid = reject.BusinessRejectRefID.Obj;
+
+                if (BusinessMessageRejects.ContainsKey(guid))
+                {
+                    CFDGlobal.LogInformation("existed guid for BusinessMessageRejects");
+                }
+                else
+                    BusinessMessageRejects.TryAdd(guid, new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, reject));
+            }
         }
 
         #endregion

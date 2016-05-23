@@ -230,8 +230,8 @@ namespace AyondoTrade
         {
             var reqId = Global.FixApp.RequestForPositions(account);
 
-            KeyValuePair<DateTime, RequestForPositionsAck> ack = new KeyValuePair<DateTime, RequestForPositionsAck>(DateTime.UtcNow,null);
-            IList<KeyValuePair<DateTime,PositionReport>> reports = null;
+            KeyValuePair<DateTime, RequestForPositionsAck> ack = new KeyValuePair<DateTime, RequestForPositionsAck>(DateTime.UtcNow, null);
+            IList<KeyValuePair<DateTime, PositionReport>> reports = null;
             var dtPositionReport = DateTime.UtcNow;
             do
             {
@@ -246,7 +246,7 @@ namespace AyondoTrade
 
                     if (ack.Value.TotalNumPosReports.Obj == 0) //have no position
                     {
-                        reports =new List<KeyValuePair<DateTime, PositionReport>>();
+                        reports = new List<KeyValuePair<DateTime, PositionReport>>();
                         break;
                     }
 
@@ -270,7 +270,7 @@ namespace AyondoTrade
             if (reports.Count != 0 && reports.Count != reports[0].Value.TotalNumPosReports.Obj)
                 throw new Exception("timeout getting position report. " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
 
-            return reports.Select(o=>o.Value).ToList();
+            return reports.Select(o => o.Value).ToList();
         }
 
         private static IList<PositionReport> SendPositionHistoryRequestAndWait(string account, DateTime startTime, DateTime endTime)
@@ -297,7 +297,7 @@ namespace AyondoTrade
                         break;
                 }
 
-                CheckBusinessMessageReject(reqId);
+                CheckBusinessMessageReject(reqId);////////////////////////////////////////////////////////////////////////////////////////todo
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
             if (reports == null)
@@ -310,7 +310,7 @@ namespace AyondoTrade
             if (lastReportIndex < reportCount - 1)
                 throw new Exception("timeout getting position report. count:" + reportCount + " lastReportIndex:" + lastReportIndex);
 
-            return reports.Select(o=>o.Value).ToList();
+            return reports.Select(o => o.Value).ToList();
         }
 
         private static PositionReport SendNewOrderSingleAndWait(string account, int securityId, bool isLong, decimal orderQty,
@@ -322,9 +322,9 @@ namespace AyondoTrade
                 leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
 
             //wait/get response message(s)
-            IList<KeyValuePair<DateTime,PositionReport>> reports = null;
+            IList<KeyValuePair<DateTime, PositionReport>> reports = null;
             PositionReport report = null;
-            KeyValuePair<DateTime,ExecutionReport> executionReport = new KeyValuePair<DateTime, ExecutionReport>(DateTime.UtcNow,null);
+            KeyValuePair<DateTime, ExecutionReport> executionReport = new KeyValuePair<DateTime, ExecutionReport>(DateTime.UtcNow, null);
             var dt = DateTime.UtcNow;
             do
             {
@@ -403,23 +403,6 @@ namespace AyondoTrade
                 throw new Exception("fail getting new take order result (position report)");
 
             return report;
-        }
-
-        private static void CheckRejectedExecutionReport(string reqId)
-        {
-            if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
-            {
-                KeyValuePair<DateTime, ExecutionReport> executionReport;
-                var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
-
-                if (tryGetValue && executionReport.Value != null)
-                {
-                    //throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
-                    var fault = new OrderRejectedFault();
-                    fault.Text = executionReport.Value.Text.Obj;
-                    throw new FaultException<OrderRejectedFault>(fault);
-                }
-            }
         }
 
         private PositionReport SendReplaceOrderAndWait(string account, int securityId, string orderId, decimal price, string nettingPositionId)
@@ -538,24 +521,6 @@ namespace AyondoTrade
             return balanceWithTime.Value;
         }
 
-        private static void CheckBusinessMessageReject(string reqId)
-        {
-//BusinessMessageReject? e.g. not logged in
-            if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
-            {
-                KeyValuePair<DateTime, BusinessMessageReject> msg = new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, null);
-                var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
-
-                if (tryGetValue)
-                {
-                    if (msg.Value.Text.Obj == "Specified User not logged in")
-                        throw new UserNotLoggedInException();
-                    else
-                        throw new Exception("BusinessMessageReject: "+msg.Value.Text.Obj);
-                }
-            }
-        }
-
         private static string SendLoginRequestAndWait(string username, string password)
         {
             string account = null;
@@ -577,6 +542,41 @@ namespace AyondoTrade
                 throw new Exception("fix log on time out");
 
             return account;
+        }
+
+        private static void CheckBusinessMessageReject(string reqId)
+        {
+//BusinessMessageReject? e.g. not logged in
+            if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
+            {
+                KeyValuePair<DateTime, BusinessMessageReject> msg = new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, null);
+                var tryGetValue = Global.FixApp.BusinessMessageRejects.TryGetValue(reqId, out msg);
+
+                if (tryGetValue)
+                {
+                    if (msg.Value.Text.Obj == "Specified User not logged in")
+                        throw new UserNotLoggedInException();
+                    else
+                        throw new Exception("BusinessMessageReject: " + msg.Value.Text.Obj);
+                }
+            }
+        }
+
+        private static void CheckRejectedExecutionReport(string reqId)
+        {
+            if (Global.FixApp.RejectedExecutionReports.ContainsKey(reqId))
+            {
+                KeyValuePair<DateTime, ExecutionReport> executionReport;
+                var tryGetValue = Global.FixApp.RejectedExecutionReports.TryGetValue(reqId, out executionReport);
+
+                if (tryGetValue && executionReport.Value != null)
+                {
+                    //throw new Exception("Order rejected. Message: " + executionReport.Text.Obj);
+                    var fault = new OrderRejectedFault();
+                    fault.Text = executionReport.Value.Text.Obj;
+                    throw new FaultException<OrderRejectedFault>(fault);
+                }
+            }
         }
     }
 
