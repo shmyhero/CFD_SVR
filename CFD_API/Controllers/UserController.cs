@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.ServiceModel;
 using System.Web.Http;
 using AutoMapper;
@@ -331,15 +332,12 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public BalanceDTO GetBalance()
         {
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             var user = GetUser();
 
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
             var balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
             var positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
@@ -397,12 +395,9 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             var endTime = DateTime.UtcNow;
             var startTime = endTime.AddMonths(-3);

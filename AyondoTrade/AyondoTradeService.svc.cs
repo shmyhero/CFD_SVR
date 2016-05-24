@@ -297,7 +297,8 @@ namespace AyondoTrade
                         break;
                 }
 
-                CheckBusinessMessageReject(reqId);////////////////////////////////////////////////////////////////////////////////////////todo
+                //TODO: how to get 'User not logged in' message?
+                //CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
             if (reports == null)

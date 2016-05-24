@@ -36,7 +36,10 @@ namespace CFD_API.DTO
         public decimal? maxValueShort { get; set; }
         public decimal? maxLeverage { get; set; }
 
-        public List<int> levList { get; set; } 
+        public decimal? smd { get; set; }
+        public decimal? gsmd { get; set; }
+
+        public List<int> levList { get; set; }
     }
 
     /// <summary>

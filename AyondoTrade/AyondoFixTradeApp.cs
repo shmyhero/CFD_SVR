@@ -56,8 +56,8 @@ namespace CFD_JOBS.Ayondo
         public ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>> BusinessMessageRejects =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>>();
 
-        public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>> BusinessMessageRejectsByAccount =
-            new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>>();
+        //public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>> BusinessMessageRejectsByAccount =
+        //    new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>>();
 
         public ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>> RejectedExecutionReports =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>>();
@@ -198,28 +198,39 @@ namespace CFD_JOBS.Ayondo
         {
             CFDGlobal.LogLine("OnMessage:UserResponse: " + GetMessageString(response));
 
-            //for console test
-            var account = response.GetString(Tags.Account);
-            if (!string.IsNullOrEmpty(account))
-                _account = account;
-
-            var username = response.Username.Obj;
-
-            //add to onlinie user list
-            if (response.UserStatus.Obj == UserStatus.LOGGED_IN)
+            if (response.Any(o => o.Key == Tags.Account)) //success
             {
-                if (UsernameAccounts.ContainsKey(username))
-                    UsernameAccounts[username] = account;
-                else
-                    UsernameAccounts.Add(username, account);
+                var account = response.GetString(Tags.Account);
 
-                if (AccountUsernames.ContainsKey(account))
-                    AccountUsernames[account] = username;
+                //for console test
+                if (!string.IsNullOrEmpty(account))
+                    _account = account;
+
+                var username = response.Username.Obj;
+
+                //add to onlinie user list
+                if (response.UserStatus.Obj == UserStatus.LOGGED_IN)
+                {
+                    if (UsernameAccounts.ContainsKey(username))
+                        UsernameAccounts[username] = account;
+                    else
+                        UsernameAccounts.Add(username, account);
+
+                    if (AccountUsernames.ContainsKey(account))
+                        AccountUsernames[account] = username;
+                    else
+                        AccountUsernames.Add(account, username);
+                }
                 else
-                    AccountUsernames.Add(account, username);
+                    CFDGlobal.LogInformation("UserResponse: Account:" + account + " UserStatus:" + response.UserStatus.Obj);
             }
             else
-                CFDGlobal.LogLine("UserResponse:UserStatus:" + response.UserStatus.Obj);
+            {
+                var username = response.Username.Obj;
+                var userStatus = response.UserStatus.Obj;
+                var userStatusText = response.UserStatusText.Obj;
+                CFDGlobal.LogInformation("UserResponse: Username:" + username + " UserStatus:" + userStatus + " UserStatusText:" + userStatusText);
+            }
         }
 
         public void OnMessage(CollateralReport report, SessionID session)

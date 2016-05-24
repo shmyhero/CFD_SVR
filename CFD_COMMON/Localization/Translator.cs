@@ -35,6 +35,8 @@
 
             if (ayondoText == "No such order: StopLoss level within minimum stop distance")
                 return "止损价与当前价间距过小";
+            if (ayondoText == "No such order: Invalid stop level")
+                return "不正确的止损价";
 
             CFDGlobal.LogWarning("Cannot find ayondo translate for: [" + ayondoText + "]");
             return ayondoText;

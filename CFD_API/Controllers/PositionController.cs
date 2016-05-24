@@ -36,12 +36,9 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             var result = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
 
@@ -122,12 +119,9 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             var endTime = DateTime.UtcNow;
             var startTime = endTime.AddMonths(-3);
@@ -227,7 +221,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
@@ -257,9 +251,7 @@ namespace CFD_API.Controllers
             CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
                               "|quantity:" + quantity + " stopPx:" + stopPx);
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             PositionReport result;
             try
@@ -316,7 +308,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var prodDef = redisProdDefClient.GetById(form.securityId);
@@ -326,9 +318,7 @@ namespace CFD_API.Controllers
             //var redisQuoteClient = RedisClient.As<Quote>();
             //var quote = redisQuoteClient.GetById(form.securityId);
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             PositionReport result;
             try
@@ -375,11 +365,9 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             PositionReport report;
             try
@@ -410,11 +398,9 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             PositionReport report;
             try
@@ -445,11 +431,9 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new Exception("user do not have an ayondo account");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            var clientHttp = GetAyondoTradeClient();
 
             PositionReport report;
             try

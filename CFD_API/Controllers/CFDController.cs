@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.ServiceModel;
 using System.Web;
 using System.Web.Http;
 using AutoMapper;
+using AyondoTrade;
+using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
@@ -52,6 +55,15 @@ namespace CFD_API.Controllers
         public User GetUser()
         {
             return db.Users.FirstOrDefault(o => o.Id == UserId);
+        }
+
+        protected static AyondoTradeClient GetAyondoTradeClient()
+        {
+            EndpointAddress edpHttp = new EndpointAddress(CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl"));
+
+            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            return clientHttp;
         }
     }
 }
