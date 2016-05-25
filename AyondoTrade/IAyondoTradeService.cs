@@ -20,6 +20,9 @@ namespace AyondoTrade
         IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime);
 
         [OperationContract]
+        IDictionary<string,IList<PositionReport>> PopAutoClosedPositionReports(IList<string> usernames);
+
+        [OperationContract]
         [FaultContract(typeof (OrderRejectedFault))]
         PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, //char? ordType = null, decimal? price = null,
             decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null);

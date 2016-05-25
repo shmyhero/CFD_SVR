@@ -32,6 +32,8 @@ namespace CFD_COMMON
         /// </summary>
         public static IRedisClientsManager BasicRedisClientManager;
 
+        public static string AYONDO_TRADE_SVC_URL = CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl");
+
         static CFDGlobal()
         {
             JsConfig.TreatEnumAsInteger = true;

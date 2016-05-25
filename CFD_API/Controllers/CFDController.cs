@@ -59,7 +59,7 @@ namespace CFD_API.Controllers
 
         protected static AyondoTradeClient GetAyondoTradeClient()
         {
-            EndpointAddress edpHttp = new EndpointAddress(CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl"));
+            EndpointAddress edpHttp = new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL);
 
             //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
             AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);

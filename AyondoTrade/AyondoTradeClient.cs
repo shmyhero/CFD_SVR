@@ -27,6 +27,11 @@ namespace AyondoTrade
             return base.Channel.GetPositionHistoryReport(username, password, startTime, endTime);
         }
 
+        public IDictionary<string, IList<PositionReport>> PopAutoClosedPositionReports(IList<string> usernames)
+        {
+            return base.Channel.PopAutoClosedPositionReports(usernames);
+        }
+
         public PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, //char? ordType = null, decimal? price = null, 
             decimal? leverage = null, decimal? stopPx = null, string nettingPositionId = null)
         {

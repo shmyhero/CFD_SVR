@@ -41,5 +41,8 @@ namespace AyondoTrade.Model
 
         [DataMember]
         public decimal? Leverage { get; set; }
+
+        [DataMember]
+        public string Text { get; set; }
     }
 }

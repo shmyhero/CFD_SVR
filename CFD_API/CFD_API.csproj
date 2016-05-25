@@ -238,6 +238,7 @@
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
     <Compile Include="DTO\PositionDTO.cs" />
     <Compile Include="DTO\SecurityDTO.cs" />
+    <Compile Include="DTO\SignalRDTO\PositionDTO.cs" />
     <Compile Include="DTO\SignalRDTO\QuoteFeed.cs" />
     <Compile Include="DTO\TickDTO.cs" />
     <Compile Include="DTO\UserDTO.cs" />
@@ -245,6 +246,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="SignalR\PositionHub.cs" />
+    <Compile Include="SignalR\PositionReportTicker.cs" />
     <Compile Include="SignalR\QueryStringAuthorizeAttribute.cs" />
     <Compile Include="SignalR\QuoteFeedHub.cs" />
     <Compile Include="SignalR\QuoteFeedTicker.cs" />

@@ -112,7 +112,10 @@
 
             // Add a client-side hub method that the server will call
             ticker.client.p = function (stocks) {
-                $.each(stocks, function() {
+                $.each(stocks, function () {
+
+                    //alert(this);
+
                     //var displayStock = formatStock(this),
                     //    $row = $(rowTemplate.supplant(displayStock));
 

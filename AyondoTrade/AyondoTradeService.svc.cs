@@ -5,6 +5,7 @@ using System.Linq;
 using System.ServiceModel;
 using System.Threading;
 using AyondoTrade.FaultModel;
+using CFD_COMMON;
 using QuickFix.Fields;
 using QuickFix.FIX44;
 
@@ -22,6 +23,31 @@ namespace AyondoTrade
         {
             //CFDGlobal.LogLine("host service thread id " + Thread.CurrentThread.ManagedThreadId.ToString());
             return "You entered: " + text;
+        }
+
+        public IDictionary<string,IList<Model.PositionReport>> PopAutoClosedPositionReports(IList<string> usernames)
+        {
+            var result = new Dictionary<string, IList<Model.PositionReport>>();
+
+            foreach (var username in usernames)
+            {
+                if (Global.FixApp.AutoClosedPositionReports.ContainsKey(username))
+                {
+                    //CFDGlobal.LogInformation("popping AutoCloseMsg for username:"+username+ "...");
+
+                    IList<KeyValuePair<DateTime, PositionReport>> value;
+                    var tryRemove = Global.FixApp.AutoClosedPositionReports.TryRemove(username, out value);
+
+                    if (tryRemove)
+                    {
+                        CFDGlobal.LogInformation("Got "+value.Count+" AutoCloseMsg(s) for username:" + username);
+
+                        result.Add(username, value.Select(o => MapPositionReport(o.Value)).ToList());
+                    }
+                }
+            }
+
+            return result;
         }
 
         public Model.PositionReport NewOrder(string username, string password, int securityId, bool isLong, decimal orderQty, //char? ordType = null, decimal? price = null,
@@ -45,7 +71,7 @@ namespace AyondoTrade
                     leverage: leverage, stopPx: stopPx, nettingPositionId: nettingPositionId);
             }
 
-            var result = PositionReportMapping(report);
+            var result = MapPositionReport(report);
             return result;
         }
 
@@ -67,7 +93,7 @@ namespace AyondoTrade
                 report = SendNewTakeOrderAndWait(account, securityId, price, nettingPositionId);
             }
 
-            var result = PositionReportMapping(report);
+            var result = MapPositionReport(report);
             return result;
         }
 
@@ -89,7 +115,7 @@ namespace AyondoTrade
                 report = SendReplaceOrderAndWait(account, securityId, orderId, price, nettingPositionId);
             }
 
-            var result = PositionReportMapping(report);
+            var result = MapPositionReport(report);
             return result;
         }
 
@@ -111,7 +137,7 @@ namespace AyondoTrade
                 report = SendCancelOrderAndWait(account, securityId, orderId, nettingPositionId);
             }
 
-            var result = PositionReportMapping(report);
+            var result = MapPositionReport(report);
             return result;
         }
 
@@ -155,7 +181,7 @@ namespace AyondoTrade
             }
 
             //mapping FIX message model --> WCF model
-            var positionReports = result.Select(PositionReportMapping).ToList();
+            var positionReports = result.Select(MapPositionReport).ToList();
 
             return positionReports;
         }
@@ -179,12 +205,12 @@ namespace AyondoTrade
             }
 
             //mapping FIX message model --> WCF model
-            var positionReports = result.Select(PositionReportMapping).ToList();
+            var positionReports = result.Select(MapPositionReport).ToList();
 
             return positionReports;
         }
 
-        private Model.PositionReport PositionReportMapping(PositionReport report)
+        private Model.PositionReport MapPositionReport(PositionReport report)
         {
             var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
             report.GetGroup(1, noPositionsGroup);
@@ -208,6 +234,8 @@ namespace AyondoTrade
                 PL = report.GetDecimal(Global.FixApp.TAG_MDS_PL),
                 UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?) null,
                 Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?) null,
+
+                Text = report.Text.Obj,
             };
         }
 

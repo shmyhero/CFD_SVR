@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.Http;
 using AutoMapper;
@@ -99,7 +98,7 @@ namespace CFD_API.Controllers
                 .Where(o => o.UserId == UserId)
                 //.Include(o => o.AyondoSecurity)
                 .OrderBy(o => o.DisplayOrder)
-                .Skip((page - 1)*perPage).Take(perPage).Select(o=>o.AyondoSecurityId).ToList();
+                .Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList();
 
             var prodDefs = RedisClient.As<ProdDef>().GetByIds(bookmarkIDs);
 
@@ -380,23 +379,31 @@ namespace CFD_API.Controllers
             }
             else if (lev <= 15)
             {
-                result.levList = new List<int>() {1, 2, 5, 10, lev};
+                result.levList = new List<int>() {1, 2, 3, 4, 5, 6, 7, 10, lev};
             }
             else if (lev <= 20)
             {
-                result.levList = new List<int>() {1, 2, 5, 10, 15, lev};
+                result.levList = new List<int>() {1, 2, 3, 4, 5, 6, 7, 10, 15, lev};
+            }
+            else if (lev <= 30)
+            {
+                result.levList = new List<int>() {1, 2, 3, 4, 5, 10, 15, 20, lev};
             }
             else if (lev <= 50)
             {
-                result.levList = new List<int>() {1, 2, 5, 10, 15, 20, lev};
+                result.levList = new List<int>() {1, 2, 3, 4, 5, 10, 15, 20, 30, lev};
+            }
+            else if (lev <= 70)
+            {
+                result.levList = new List<int>() {1, 2, 3, 4, 5, 10, 15, 20, 30, 50, lev};
             }
             else if (lev <= 100)
             {
-                result.levList = new List<int>() {1, 2, 5, 10, 15, 20, 50, lev};
+                result.levList = new List<int>() {1, 2, 3, 4, 5, 10, 15, 20, 30, 50, 70, lev};
             }
             else
             {
-                result.levList = new List<int>() {1, 2, 5, 10, 15, 20, 50, 100, lev};
+                result.levList = new List<int>() {1, 2, 3, 4, 5, 10, 15, 20, 30, 50, 70, 100, lev};
             }
 
             return result;

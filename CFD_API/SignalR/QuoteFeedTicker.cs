@@ -64,26 +64,39 @@ namespace CFD_API.SignalR
 
                 if (_subscription.Count > 0)
                 {
-                    var quotes = _redisClient.GetAll();
-
-                    var updatedQuotes = dicLastQuotes == null ? quotes : quotes.Where(o => !dicLastQuotes.ContainsKey(o.Id) || o.Time != dicLastQuotes[o.Id].Time).ToList();
-
-                    //CFDGlobal.LogLine("Broadcasting to " + _subscription.Count +" subscriber...");
-                    foreach (var pair in _subscription)
+                    try
                     {
-                        var userId = pair.Key;
-                        var subscribedQuotesIds = pair.Value;
-                        var subscribedQuotes = updatedQuotes.Where(o => subscribedQuotesIds.Contains(o.Id));
-                        Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed
-                        {
-                            id = o.Id,
-                            last = Quotes.GetLastPrice(o),
-                            bid = o.Bid,
-                            ask = o.Offer,
-                        }));
-                    }
+                        var quotes = _redisClient.GetAll();
 
-                    dicLastQuotes = quotes.ToDictionary(o => o.Id);
+                        if (dicLastQuotes == null) //first time
+                        {
+                            dicLastQuotes = quotes.ToDictionary(o => o.Id);
+                            continue;
+                        }
+
+                        var updatedQuotes = quotes.Where(o => !dicLastQuotes.ContainsKey(o.Id) || o.Time != dicLastQuotes[o.Id].Time).ToList();
+
+                        //CFDGlobal.LogLine("Broadcasting to " + _subscription.Count +" subscriber...");
+                        foreach (var pair in _subscription)
+                        {
+                            var userId = pair.Key;
+                            var subscribedQuotesIds = pair.Value;
+                            var subscribedQuotes = updatedQuotes.Where(o => subscribedQuotesIds.Contains(o.Id));
+                            Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed
+                            {
+                                id = o.Id,
+                                last = Quotes.GetLastPrice(o),
+                                bid = o.Bid,
+                                ask = o.Offer,
+                            }));
+                        }
+
+                        dicLastQuotes = quotes.ToDictionary(o => o.Id);
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
                 }
 
                 var workTime = DateTime.Now - dtLastBegin;

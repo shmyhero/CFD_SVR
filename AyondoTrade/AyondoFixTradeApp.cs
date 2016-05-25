@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using CFD_COMMON;
-using CFD_COMMON.Models.Context;
-using CFD_COMMON.Utils;
 using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;
@@ -66,6 +64,9 @@ namespace CFD_JOBS.Ayondo
         //    new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, ExecutionReport>>>();
 
         public ConcurrentDictionary<string, KeyValuePair<DateTime, decimal>> Balances = new ConcurrentDictionary<string, KeyValuePair<DateTime, decimal>>();
+
+        public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> AutoClosedPositionReports =
+            new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
 
         private string _account;
         //ayondodemo01 136824778776
@@ -316,34 +317,43 @@ namespace CFD_JOBS.Ayondo
 
                     if (report.Text.Obj == "Position DELETE by StopLossOrder" || report.Text.Obj == "Position DELETE by TakeProfitOrder") //by stop/take
                     {
-                        try
+                        //try
+                        //{
+                        var account = report.Account.Obj;
+                        if (AccountUsernames.ContainsKey(account))
                         {
-                            var account = report.Account.Obj;
-                            if (AccountUsernames.ContainsKey(account))
-                            {
-                                var username = AccountUsernames[account];
-                                using (var db = CFDEntities.Create())
-                                {
-                                    var user = db.Users.FirstOrDefault(o => o.AyondoUsername == username);
-                                    if (user != null && user.Phone != null)
-                                    {
-                                        var secId = Convert.ToInt32(report.SecurityID.Obj);
-                                        var sec = db.AyondoSecurities.FirstOrDefault(o => o.Id == secId);
-                                        var name = sec != null && sec.CName != null ? sec.CName : report.Symbol.Obj;
-                                        var stopTake = report.Text.Obj == "Position DELETE by StopLossOrder" ? "止损" : "止盈";
-                                        var price = report.SettlPrice;
-                                        var pl = report.GetDecimal(TAG_MDS_PL);
-                                        var sendSms = YunPianMessenger.SendSms("【MyHero运营】运营监控，您买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl.ToString("0.00")
-                                                                               + "，回T退订", user.Phone);
-                                        CFDGlobal.LogInformation(sendSms);
-                                    }
-                                }
-                            }
+                            var username = AccountUsernames[account];
+                            //using (var db = CFDEntities.Create())
+                            //{
+                            //    var user = db.Users.FirstOrDefault(o => o.AyondoUsername == username);
+                            //    if (user != null && user.Phone != null)
+                            //    {
+                            //        var secId = Convert.ToInt32(report.SecurityID.Obj);
+                            //        var sec = db.AyondoSecurities.FirstOrDefault(o => o.Id == secId);
+                            //        var name = sec != null && sec.CName != null ? sec.CName : report.Symbol.Obj;
+                            //        var stopTake = report.Text.Obj == "Position DELETE by StopLossOrder" ? "止损" : "止盈";
+                            //        var price = report.SettlPrice;
+                            //        var pl = report.GetDecimal(TAG_MDS_PL);
+                            //        var sendSms = YunPianMessenger.SendSms("【MyHero运营】运营监控，您买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl.ToString("0.00")
+                            //                                               + "，回T退订", user.Phone);
+                            //        CFDGlobal.LogInformation(sendSms);
+                            //    }
+                            //}
+
+                            CFDGlobal.LogInformation("AutoCloseMsg: username:" + username + " posId:" + report.PosMaintRptID.Obj + " secId:" + report.SecurityID.Obj + " text:" +
+                                                     report.Text.Obj + " price:" + report.SettlPrice.Obj + " pl:" + report.GetDecimal(TAG_MDS_PL));
+
+                            if (AutoClosedPositionReports.ContainsKey(username))
+                                AutoClosedPositionReports[username].Add(new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report));
+                            else
+                                AutoClosedPositionReports.TryAdd(username,
+                                    new List<KeyValuePair<DateTime, PositionReport>>() {new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report)});
                         }
-                        catch (Exception e)
-                        {
-                            CFDGlobal.LogException(e);
-                        }
+                        //}
+                        //catch (Exception e)
+                        //{
+                        //    CFDGlobal.LogException(e);
+                        //}
                     }
                     else //by market order
                     {
