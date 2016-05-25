@@ -369,8 +369,8 @@ namespace CFD_API.Controllers
             Random r = new Random();
             result.longPct = (decimal) r.NextDouble();
 
-
-            var lev = (int) prodDef.MaxLeverage;
+            //for single stocks, reduct max lev for gsmd
+            var lev = prodDef.AssetClass == CFDGlobal.ASSET_CLASS_STOCK ? (int) (prodDef.MaxLeverage/2) : (int) prodDef.MaxLeverage;
 
             //1,2,5,10,15,20,50,100
 

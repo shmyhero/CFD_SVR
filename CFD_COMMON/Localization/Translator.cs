@@ -12,6 +12,9 @@
 
         public static string GetCName(string name)
         {
+            if (name.StartsWith("China 50 "))
+                return "上证50";
+
             var str = name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty);
 
             if (Translations.ProdCNames.ContainsKey(str))

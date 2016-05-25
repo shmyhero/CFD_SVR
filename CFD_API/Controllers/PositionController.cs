@@ -156,21 +156,22 @@ namespace CFD_API.Controllers
 
                     if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
+                        var secId = Convert.ToInt32(openReport.SecurityID);
+                        var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+
                         //var closeReport = positionReports.FirstOrDefault(o => Decimals.IsEqualToZero(o.LongQty) || Decimals.IsEqualToZero(o.ShortQty));
 
-                        dto.openPrice = openReport.SettlPrice;
+                        dto.openPrice = Math.Round(openReport.SettlPrice, prodDef.Prec);
                         dto.openAt = openReport.CreateTime;
 
-                        dto.closePrice = closeReport.SettlPrice;
+                        dto.closePrice = Math.Round(closeReport.SettlPrice, prodDef.Prec);
                         dto.closeAt = closeReport.CreateTime;
 
                         dto.leverage = closeReport.Leverage;
                         dto.pl = closeReport.PL.Value;
 
                         dto.isLong = openReport.LongQty != null;
-
-                        var secId = Convert.ToInt32(openReport.SecurityID);
-                        var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                        
                         //************************************************************************
                         //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                         //************************************************************************

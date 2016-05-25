@@ -38,7 +38,7 @@
                 <th>Ccy2</th><th>Time</th>
                 <th>LastOpen</th><th>LastClose</th><th>PreClose</th><th>OpenBid</th><th>OpenAsk</th><th>CloseBid</th><th>CloseAsk</th>
                 <th>MaxLeverage</th><th>Shortable</th><th>MinSizeShort</th><th>MaxSizeShort</th><th>MinSizeLong</th><th>MaxSizeLong</th>
-                <th>PLUnits</th><th>LotSize</th><!--<th>%</th>-->
+                <th>PLUnits</th><th>LotSize</th><th>Prec</th><th>SMD</th><th>GSMD</th><!--<th>%</th>-->
             </tr>
             </thead>
             <tbody>
@@ -77,7 +77,7 @@
                 rowTemplate = '<tr data-symbol="{id}"><td>{Id}</td><td>{Name}</td><td>{Symbol}</td><td>{AssetClass}</td><td>{cname}</td><td>{QuoteType}</td><td>{Ccy2}</td><td>{Time}</td>'
                 + '<td>{LastOpen}</td><td>{LastClose}</td><td>{PreClose}</td><td>{OpenBid}</td><td>{OpenAsk}</td><td>{CloseBid}</td><td>{CloseAsk}</td>'
                 + '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
-                + '<td>{PLUnits}</td><td>{LotSize}</td></tr>';
+                + '<td>{PLUnits}</td><td>{LotSize}</td><td>{Prec}</td><td>{SMD}</td><td>{GSMD}</td></tr>';
 
             function formatStock(stock) {
                 //return $.extend(stock, {
