@@ -82,13 +82,17 @@ namespace CFD_API.SignalR
                             var userId = pair.Key;
                             var subscribedQuotesIds = pair.Value;
                             var subscribedQuotes = updatedQuotes.Where(o => subscribedQuotesIds.Contains(o.Id));
-                            Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed
+
+                            if (subscribedQuotes.Any())
                             {
-                                id = o.Id,
-                                last = Quotes.GetLastPrice(o),
-                                bid = o.Bid,
-                                ask = o.Offer,
-                            }));
+                                Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed
+                                {
+                                    id = o.Id,
+                                    last = Quotes.GetLastPrice(o),
+                                    bid = o.Bid,
+                                    ask = o.Offer,
+                                }));
+                            }
                         }
 
                         dicLastQuotes = quotes.ToDictionary(o => o.Id);
