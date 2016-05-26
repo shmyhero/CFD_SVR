@@ -47,8 +47,14 @@ namespace CFD_JOBS.Ayondo
             if (message.Header.GetString(Tags.MsgType) == MsgType.LOGON)
             {
                 CFDGlobal.LogLine(" sending username and password...");
+
+                //demo
                 message.SetField(new Username("thcnprices"));
                 message.SetField(new Password("sl6map3go"));
+
+                ////demo UAT
+                //message.SetField(new Username("thcnuatprices"));
+                //message.SetField(new Password("slktrp2"));
             }
 
             //message.SetField(new Username("thcntrade"));
