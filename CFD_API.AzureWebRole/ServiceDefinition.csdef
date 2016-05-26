@@ -10,16 +10,18 @@
     </Sites>
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
-
       <Setting name="CFDEntities" />
       <Setting name="redisConnectionString" />
       <Setting name="YunPianApiKey" />
       <Setting name="YunPianTemplateId" />
-
       <Setting name="AyondoTradeSvcUrl" />
     </ConfigurationSettings>
     <Endpoints>
       <InputEndpoint name="Endpoint1" protocol="http" port="80" />
     </Endpoints>
+    <Imports>
+      <Import moduleName="RemoteAccess" />
+      <Import moduleName="RemoteForwarder" />
+    </Imports>
   </WebRole>
 </ServiceDefinition>
