@@ -111,8 +111,8 @@
             }
 
             // Add a client-side hub method that the server will call
-            ticker.client.p = function (stocks) {
-                $.each(stocks, function () {
+            ticker.client.p = function (alerts) {
+                $.each(alerts, function () {
 
                     //alert(this);
 
@@ -122,10 +122,10 @@
                     //$stockTableBody.find('tr[data-symbol=' + stock.Symbol + ']')
                     //    .replaceWith($row);
 
-                    $('#log').append(this.id + " " + this.last +', ');
+                    $('#log').append(this+', ');
                 });
 
-                if (stocks && stocks.length > 0) {
+                if (alerts && alerts.length > 0) {
                     $('#log').append('\r\n');
 
                     var textarea = document.getElementById('log');
