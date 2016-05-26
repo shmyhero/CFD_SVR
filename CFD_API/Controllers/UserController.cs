@@ -4,10 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.ServiceModel;
 using System.Web.Http;
 using AutoMapper;
-using AyondoTrade;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
@@ -426,6 +424,9 @@ namespace CFD_API.Controllers
                 var secId = Convert.ToInt32(report.SecurityID);
 
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+
+                if (prodDef == null) continue;
+
                 //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
 
                 //************************************************************************
@@ -492,6 +493,9 @@ namespace CFD_API.Controllers
                         var secId = Convert.ToInt32(openReport.SecurityID);
 
                         var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+
+                        if (prodDef == null) continue;
+
                         //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
 
                         //************************************************************************

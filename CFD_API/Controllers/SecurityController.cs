@@ -87,7 +87,7 @@ namespace CFD_API.Controllers
 
         private IList<ProdDef> GetActiveProds()
         {
-            return RedisClient.As<ProdDef>().GetAll().Where(o => o.QuoteType != enmQuoteType.Inactive && (DateTime.UtcNow - o.Time) < TimeSpan.FromDays(4)).ToList();
+            return RedisClient.As<ProdDef>().GetAll().Where(o => o.QuoteType != enmQuoteType.Inactive && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS).ToList();
         }
 
         [HttpGet]

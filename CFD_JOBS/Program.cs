@@ -58,6 +58,11 @@ namespace CFD_JOBS
                     AyondoDataImportWorker.Run();
                 }
 
+                if (args.Contains("-AyondoOldProdCleanup"))
+                {
+                    AyondoOldProdCleanup.Run();
+                }
+
                 if (args.Contains("-TickChart"))
                 {
                     TickChartWorker.Run();

@@ -64,6 +64,10 @@ namespace CFD_API.Controllers
             {
                 //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+
+                if (prodDef == null)
+                    return null;
+
                 var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 var security = Mapper.Map<SecurityDetailDTO>(prodDef);
@@ -144,7 +148,7 @@ namespace CFD_API.Controllers
             var prodDefs = redisProdDefClient.GetAll();
             var quotes = redisQuoteClient.GetAll();
 
-            foreach (var positionGroup in groupByPositions)
+            foreach (var positionGroup in groupByPositions) //for every position group
             {
                 var dto = new PositionHistoryDTO();
                 dto.id = positionGroup.Key;
@@ -160,6 +164,8 @@ namespace CFD_API.Controllers
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
                         var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+
+                        if (prodDef == null) continue;
 
                         //var closeReport = positionReports.FirstOrDefault(o => Decimals.IsEqualToZero(o.LongQty) || Decimals.IsEqualToZero(o.ShortQty));
 

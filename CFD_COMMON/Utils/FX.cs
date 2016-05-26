@@ -27,10 +27,14 @@ namespace CFD_COMMON.Utils
                 //CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
 
                 fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
+
                 if (fxProdDef == null)
                 {
                     throw new Exception("Cannot find fx rate: " + fromCcy + "/" + toCcy + " or " + toCcy + "/" + fromCcy);
                 }
+
+                if (DateTime.UtcNow - fxProdDef.Time > CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS)
+                    CFDGlobal.LogWarning("fx rate too old:" + fxProdDef.Id + " " + fxProdDef.Symbol);
 
                 var fxQuote = redisQuoteClient.GetById(fxProdDef.Id);
                 fxRate = 1/Quotes.GetLastPrice(fxQuote);
@@ -60,10 +64,14 @@ namespace CFD_COMMON.Utils
                 //CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
 
                 fxProdDef = prodDefs.FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
+
                 if (fxProdDef == null)
                 {
                     throw new Exception("Cannot find fx rate: " + fromCcy + "/" + toCcy + " or " + toCcy + "/" + fromCcy);
                 }
+
+                if (DateTime.UtcNow - fxProdDef.Time > CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS)
+                    CFDGlobal.LogWarning("fx rate too old:" + fxProdDef.Id + " " + fxProdDef.Symbol);
 
                 var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
                 fxRate = 1/Quotes.GetLastPrice(fxQuote);
