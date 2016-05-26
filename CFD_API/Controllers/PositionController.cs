@@ -34,6 +34,8 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PositionDTO> GetOpenPositions()
         {
+            //throw new NullReferenceException();
+
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));

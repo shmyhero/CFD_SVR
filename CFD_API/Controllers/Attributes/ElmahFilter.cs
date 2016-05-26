@@ -12,17 +12,18 @@ namespace CFD_API.Controllers.Attributes
 {
     public class ElmahHandledErrorLoggerFilter : ExceptionFilterAttribute
     {
-        public override void OnException(HttpActionExecutedContext actionExecutedContext)
+        public override void OnException(HttpActionExecutedContext context)
         {
             // Ignore OperationCanceledException
-            if (actionExecutedContext.Exception is OperationCanceledException)
+            if (context.Exception is OperationCanceledException)
                 return;
 
-            base.OnException(actionExecutedContext);
+            base.OnException(context);
             //Elmah.ErrorLog.GetDefault(HttpContext.Current).Log(new Elmah.Error(actionExecutedContext.Exception));
-            ErrorSignal.FromCurrentContext().Raise(actionExecutedContext.Exception);
+            ErrorSignal.FromCurrentContext().Raise(context.Exception);
 
-            actionExecutedContext.Request.CreateErrorResponse(HttpStatusCode.InternalServerError, Translator.Translate(TransKey.EXCEPTION));
+            //unify error response
+            context.Response = context.Request.CreateErrorResponse(HttpStatusCode.InternalServerError, Translator.Translate(TransKey.EXCEPTION));
         }
     }
 }

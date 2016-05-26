@@ -7,16 +7,16 @@ using Microsoft.AspNet.SignalR.Hubs;
 
 namespace CFD_API.SignalR
 {
-    [HubName("P")]
-    public class PositionHub : Hub
+    [HubName("A")]
+    public class AlertHub : Hub
     {
         private readonly PositionReportTicker _posRptTicker;
 
-        public PositionHub() : this(PositionReportTicker.Instance)
+        public AlertHub() : this(PositionReportTicker.Instance)
         {
         }
 
-        public PositionHub(PositionReportTicker ticker)
+        public AlertHub(PositionReportTicker ticker)
         {
             _posRptTicker = ticker;
 
@@ -42,8 +42,8 @@ namespace CFD_API.SignalR
 
         //private int? userId = null;
 
-        [HubMethodName("S")]
-        public void Subscribe(string auth)
+        [HubMethodName("L")]
+        public void Login(string auth)
         {
             int userId = -1;
             string token = null;

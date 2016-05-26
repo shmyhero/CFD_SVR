@@ -10,7 +10,7 @@ namespace CFD_COMMON.Localization
             {TransKey.INVALID_VERIFY_CODE, "验证码错误"},
             {TransKey.NICKNAME_EXISTS, "昵称已存在"},
             {TransKey.ORDER_REJECTED, "下单失败"},
-            {TransKey.NO_AYONDO_ACCOUNT, "交易系统未开通"},
+            {TransKey.NO_AYONDO_ACCOUNT, "交易功能未开通"},
             {TransKey.EXCEPTION, "服务器繁忙，请稍后再试"},
         };
 

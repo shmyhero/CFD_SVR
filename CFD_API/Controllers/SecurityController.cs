@@ -6,6 +6,7 @@ using AutoMapper;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON;
+using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
@@ -228,21 +229,22 @@ namespace CFD_API.Controllers
         [Route("all")]
         public List<ProdDefDTO> GetAllList(int page = 1, int perPage = 20)
         {
-            var redisProdDefClient = RedisClient.As<ProdDef>();
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
-            var prodDefs = redisProdDefClient.GetAll();
+            var prodDefs = GetActiveProds();
             var quotes = redisQuoteClient.GetAll();
 
-            var securities = db.AyondoSecurities.ToList();
+            //var securities = db.AyondoSecurities.ToList();
 
             var result = prodDefs.Select(o => Mapper.Map<ProdDefDTO>(o)).ToList();
 
             foreach (var prodDTO in result)
             {
-                //get cname
-                var @default = securities.FirstOrDefault(o => o.Id == prodDTO.Id);
-                if (@default != null && @default.CName != null)
-                    prodDTO.cname = @default.CName;
+                ////get cname
+                //var @default = securities.FirstOrDefault(o => o.Id == prodDTO.Id);
+                //if (@default != null && @default.CName != null)
+                //    prodDTO.cname = @default.CName;
+                prodDTO.cname = Translator.GetCName(prodDTO.Name);
 
                 //get new price
                 var quote = quotes.FirstOrDefault(o => o.Id == prodDTO.Id);
