@@ -81,8 +81,9 @@ namespace CFD_JOBS.Ayondo
             if (msgType == MsgType.LOGON)
             {
                 //CFDGlobal.LogLine(" sending username and password...");
-                message.SetField(new Username("thcntrade"));
-                message.SetField(new Password("d093gos3j"));
+
+                message.SetField(new Username(CFDGlobal.GetConfigurationSetting("ayondoFixTradeUsername")));
+                message.SetField(new Password(CFDGlobal.GetConfigurationSetting("ayondoFixTradePassword")));
             }
 
             //CFDGlobal.LogLine("ToAdmin: ");
@@ -664,6 +665,9 @@ namespace CFD_JOBS.Ayondo
             m.SetField(new StringField(DD.FieldsByName["MDS_SendColRep"].Tag) {Obj = "N"});
             m.SetField(new StringField(DD.FieldsByName["MDS_SendNoPos"].Tag) {Obj = "0"});
             SendMessage(m);
+
+            //m.UserRequestID=new UserRequestID(Guid.NewGuid().ToString());
+            //SendMessage(m);
         }
 
         private void QueryLogOut()

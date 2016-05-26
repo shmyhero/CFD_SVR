@@ -352,6 +352,8 @@ namespace CFD_API.Controllers
             {
                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
+                if (prodDef == null) continue;
+
                 //************************************************************************
                 //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                 //************************************************************************
