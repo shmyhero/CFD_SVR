@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.ServiceModel;
 using System.Web.Http;
 using AutoMapper;
-using AyondoTrade;
 using AyondoTrade.FaultModel;
 using AyondoTrade.Model;
 using CFD_API.Controllers.Attributes;
@@ -28,6 +27,8 @@ namespace CFD_API.Controllers
             : base(db, mapper, redisClient)
         {
         }
+
+        private static decimal _minStopPx = 0.000001m;
 
         [HttpGet]
         [Route("open")]
@@ -113,7 +114,7 @@ namespace CFD_API.Controllers
                 posDTO.invest = tradeValueUSD.Value/report.Leverage.Value;
 
                 return posDTO;
-            }).ToList();
+            }).Where(o => o != null).ToList();
 
             return positionDtos;
         }
@@ -179,7 +180,7 @@ namespace CFD_API.Controllers
                         dto.pl = closeReport.PL.Value;
 
                         dto.isLong = openReport.LongQty != null;
-                        
+
                         //************************************************************************
                         //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                         //************************************************************************
@@ -257,6 +258,10 @@ namespace CFD_API.Controllers
             decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
             decimal stopPx = form.isLong ? quotePrice*(1 - 1/form.leverage) : quotePrice*(1 + 1/form.leverage);
 
+            //Long, Leverage=1, stop will be Zero! which is invalid
+            if (stopPx == 0)
+                stopPx = _minStopPx;
+
             CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
                               "|quantity:" + quantity + " stopPx:" + stopPx);
 
@@ -305,6 +310,9 @@ namespace CFD_API.Controllers
                 leverage = result.Leverage.Value,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
+
+                stopPx = result.StopPx,
+                stopOID = result.StopOID,
             };
 
             return posDTO;

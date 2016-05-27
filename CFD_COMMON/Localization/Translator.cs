@@ -41,6 +41,9 @@
             if (ayondoText == "No such order: Invalid stop level")
                 return "不正确的止损价";
 
+            if (ayondoText == "Request Failed")
+                return "操作未成功";
+
             CFDGlobal.LogWarning("Cannot find ayondo translate for: [" + ayondoText + "]");
             return ayondoText;
         }
