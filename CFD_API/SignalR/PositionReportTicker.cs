@@ -27,7 +27,7 @@ namespace CFD_API.SignalR
         //key: ayondoUsername, value: connectionId
         private readonly ConcurrentDictionary<string, string> _subscription = new ConcurrentDictionary<string, string>();
 
-        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(5);
 
         private readonly Timer _timer;
 

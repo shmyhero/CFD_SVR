@@ -43,7 +43,7 @@ namespace CFD_API.SignalR
         //private int? userId = null;
 
         [HubMethodName("L")]
-        public void Login(string auth)
+        public bool Login(string auth)
         {
             int userId = -1;
             string token = null;
@@ -55,21 +55,23 @@ namespace CFD_API.SignalR
             }
             catch (Exception)
             {
-                return;
+                return false;
             }
 
-            if (userId == -1 || token == null) return;
+            if (userId == -1 || token == null) return false;
 
             var db = CFDEntities.Create();
             var user = db.Users.FirstOrDefault(o => o.Id == userId && o.Token == token);
 
-            if (user == null) return;
+            if (user == null) return false;
             
             //join group
             Groups.Add(Context.ConnectionId, Context.ConnectionId); // single-user group
 
             //add subscription
             _posRptTicker.AddSubscription(user.AyondoUsername, Context.ConnectionId);
+
+            return true;
         }
     }
 }
