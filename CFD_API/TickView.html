@@ -24,8 +24,8 @@
         $.getJSON('api/security/all?perPage=99999', function (result) {
             $.each(result, function(i, sec) {
                 select.append($("<option></option>")
-                    .attr("value", sec.id)
-                    .text(sec.id + ' ' + sec.name));
+                    .attr("value", sec.Id)
+                    .text(sec.Id + ' ' + sec.cname));
             });
         }).done(function () { draw($('#select1')[0].value); });
 

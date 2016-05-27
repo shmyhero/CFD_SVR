@@ -33,9 +33,9 @@ namespace CFD_COMMON.Service
         {
             if (secIds.Count == 0) return;
 
-            //remove non-exist securities
-            var allSecIds = db.AyondoSecurities.Select(o => o.Id).ToList();
-            secIds = secIds.Where(o => allSecIds.Contains(o)).ToList();
+            ////remove non-exist securities
+            //var allSecIds = db.AyondoSecurities.Select(o => o.Id).ToList();
+            //secIds = secIds.Where(o => allSecIds.Contains(o)).ToList();
 
             //get my current bookmarks
             var myBookmarks = db.Bookmarks.Where(o => o.UserId == userId).ToList();

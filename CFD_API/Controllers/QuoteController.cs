@@ -116,11 +116,11 @@ namespace CFD_API.Controllers
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var prodDefs = redisProdDefClient.GetAll();
 
-            var securities = db.AyondoSecurities.ToList();
+            //var securities = db.AyondoSecurities.ToList();
 
             var results = quotes.Select(o =>
             {
-                var security = securities.FirstOrDefault(s => s.Id == o.Id);
+                //var security = securities.FirstOrDefault(s => s.Id == o.Id);
                 var prodDef = prodDefs.FirstOrDefault(s => s.Id == o.Id);
 
                 if (prodDef == null)
@@ -141,7 +141,7 @@ namespace CFD_API.Controllers
                     Name = prodDef.Name,
                     Symbol = prodDef.Symbol,
                     AssetClass = prodDef.AssetClass,
-                    Financing = security == null ? null : security.Financing
+                    //Financing = security == null ? null : security.Financing
                 };
             }).ToList();
 

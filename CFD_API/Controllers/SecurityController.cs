@@ -12,6 +12,7 @@ using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
+using ServiceStack.Redis.Generic;
 
 namespace CFD_API.Controllers
 {
@@ -119,9 +120,13 @@ namespace CFD_API.Controllers
 
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
-            var securities = db.AyondoSecurities.Where(o => ids.Contains(o.Id)).ToList();
+            var redisTypedClient = RedisClient.As<ProdDef>();
 
-            var securityDtos = securities.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var prodDefs = redisTypedClient.GetByIds(ids);
+
+            //var securities = db.AyondoSecurities.Where(o => ids.Contains(o.Id)).ToList();
+
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
             UpdateProdDefQuote(securityDtos);
 
@@ -339,10 +344,10 @@ namespace CFD_API.Controllers
             //mapping
             var result = Mapper.Map<SecurityDetailDTO>(prodDef);
 
-            var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
-            //get cname
-            if (security != null && security.CName != null)
-                result.name = security.CName;
+            //var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
+            ////get cname
+            //if (security != null && security.CName != null)
+            //    result.name = security.CName;
 
             //get new price
             var quote = redisQuoteClient.GetById(securityId);
@@ -418,8 +423,10 @@ namespace CFD_API.Controllers
         {
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
+            var idsExistingProducts = RedisClient.As<ProdDef>().GetByIds(ids).Select(o=>o.Id).ToList();
+
             var securityService = new SecurityService(db);
-            securityService.AddBookmarks(UserId, ids);
+            securityService.AddBookmarks(UserId, idsExistingProducts);
 
             return new ResultDTO {success = true};
         }
