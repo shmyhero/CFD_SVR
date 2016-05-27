@@ -325,8 +325,14 @@ namespace AyondoTrade
                         break;
                 }
 
-                //TODO: how to get 'User not logged in' message?
-                //CheckBusinessMessageReject(reqId);
+                try
+                {
+                    CheckBusinessMessageReject(reqId);
+                }
+                catch (NoDataAvailableException)
+                {
+                    return new List<PositionReport>();
+                }
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
             if (reports == null)
@@ -565,12 +571,28 @@ namespace AyondoTrade
                     account = Global.FixApp.UsernameAccounts[username];
                     break;
                 }
+
+                CheckFailedUserResponse(guid);
             } while (DateTime.UtcNow - dtLogon <= TIMEOUT); // timeout
 
             if (string.IsNullOrEmpty(account))
                 throw new Exception("fix log on time out");
 
             return account;
+        }
+
+        private static void CheckFailedUserResponse(string reqId)
+        {
+            if (Global.FixApp.FailedUserResponses.ContainsKey(reqId))
+            {
+                KeyValuePair<DateTime, UserResponse> msg = new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, null);
+                var tryGetValue = Global.FixApp.FailedUserResponses.TryGetValue(reqId, out msg);
+
+                if (tryGetValue)
+                {
+                    throw new Exception(msg.Value.UserStatusText.Obj);
+                }
+            }
         }
 
         private static void CheckBusinessMessageReject(string reqId)
@@ -585,6 +607,8 @@ namespace AyondoTrade
                 {
                     if (msg.Value.Text.Obj == "Specified User not logged in")
                         throw new UserNotLoggedInException();
+                    else if (msg.Value.Text.Obj == "No Data Available")
+                        throw new NoDataAvailableException();
                     else
                         throw new Exception("BusinessMessageReject: " + msg.Value.Text.Obj);
                 }
@@ -617,6 +641,9 @@ namespace AyondoTrade
     //}
 
     internal class UserNotLoggedInException : Exception
+    {
+    }
+    internal class NoDataAvailableException : Exception
     {
     }
 }

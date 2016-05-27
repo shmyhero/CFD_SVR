@@ -25,6 +25,9 @@ namespace CFD_API.DTO
     {
         public int? dcmCount { get; set; }
 
+        public decimal? bid { get; set; }
+        public decimal? ask { get; set; }
+
         public DateTime? lastOpen { get; set; }
         public DateTime? lastClose { get; set; }
 

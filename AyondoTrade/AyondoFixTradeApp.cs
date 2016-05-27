@@ -54,6 +54,9 @@ namespace CFD_JOBS.Ayondo
         public ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>> BusinessMessageRejects =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>>();
 
+        public ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>> FailedUserResponses =
+            new ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>>();
+
         //public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>> BusinessMessageRejectsByAccount =
         //    new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>>();
 
@@ -96,7 +99,7 @@ namespace CFD_JOBS.Ayondo
             if (message.Header.GetString(Tags.MsgType) != MsgType.HEARTBEAT)
             {
                 //CFDGlobal.LogLine("FromAdmin: ");
-                CFDGlobal.LogLine("FromAdmin: " + message.ToString());
+                CFDGlobal.LogInformation("FromAdmin: " + message.ToString());
                 //CFDGlobal.LogLine(GetMessageString(message));
             }
         }
@@ -204,15 +207,14 @@ namespace CFD_JOBS.Ayondo
             {
                 var account = response.GetString(Tags.Account);
 
-                //for console test
-                if (!string.IsNullOrEmpty(account))
-                    _account = account;
-
                 var username = response.Username.Obj;
 
-                //add to onlinie user list
                 if (response.UserStatus.Obj == UserStatus.LOGGED_IN)
                 {
+                    //for console test
+                    _account = account;
+
+                    //add to onlinie user list
                     if (UsernameAccounts.ContainsKey(username))
                         UsernameAccounts[username] = account;
                     else
@@ -228,10 +230,18 @@ namespace CFD_JOBS.Ayondo
             }
             else
             {
-                var username = response.Username.Obj;
-                var userStatus = response.UserStatus.Obj;
-                var userStatusText = response.UserStatusText.Obj;
-                CFDGlobal.LogInformation("UserResponse: Username:" + username + " UserStatus:" + userStatus + " UserStatusText:" + userStatusText);
+                //var username = response.Username.Obj;
+                //var userStatus = response.UserStatus.Obj;
+                //var userStatusText = response.UserStatusText.Obj;
+
+                var guid = response.UserRequestID.Obj;
+
+                if (FailedUserResponses.ContainsKey(guid))
+                    CFDGlobal.LogInformation("existed guid for FailedUserResponses");
+                else
+                    FailedUserResponses.TryAdd(guid, new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, response));
+
+                //CFDGlobal.LogInformation("UserResponse: Username:" + username + " UserStatus:" + userStatus + " UserStatusText:" + userStatusText);
             }
         }
 
@@ -389,20 +399,25 @@ namespace CFD_JOBS.Ayondo
         {
             CFDGlobal.LogLine("OnMessage:BusinessMessageReject: " + GetMessageString(reject, true, true));
 
-            if (reject.BusinessRejectRefID.Obj == "Unknown") //position history API, when use not logged in, don't have a BusinessRejectRefID
-            {
-                //var account = reject.GetString(Tags.Account);
-            }
-            else
+            if (reject.Any(o => o.Key == Tags.BusinessRejectRefID))
             {
                 var guid = reject.BusinessRejectRefID.Obj;
 
-                if (BusinessMessageRejects.ContainsKey(guid))
-                {
-                    CFDGlobal.LogInformation("existed guid for BusinessMessageRejects");
-                }
+                if (guid == "Unknown")
+                    CFDGlobal.LogInformation("BusinessRejectRefID is Unknown");
                 else
-                    BusinessMessageRejects.TryAdd(guid, new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, reject));
+                {
+                    if (BusinessMessageRejects.ContainsKey(guid))
+                    {
+                        CFDGlobal.LogInformation("existed guid for BusinessMessageRejects");
+                    }
+                    else
+                        BusinessMessageRejects.TryAdd(guid, new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, reject));
+                }
+            }
+            else
+            {
+                CFDGlobal.LogInformation("no BusinessRejectRefID");
             }
         }
 
@@ -758,7 +773,7 @@ namespace CFD_JOBS.Ayondo
             m.SetField(new StringField(TAG_MDS_RequestID) {Obj = "PosHis:" + _account});
             m.SetField(new Account(_account));
             m.SetField(new IntField(TAG_MDS_HistoryType) {Obj = 1});
-            m.SetField(new IntField(TAG_MDS_StartTime) {Obj = (int) (new DateTime(2015, 1, 1)).ToUnixTime()});
+            m.SetField(new IntField(TAG_MDS_StartTime) {Obj = (int) (new DateTime(2016, 1, 1)).ToUnixTime()});
             m.SetField(new IntField(TAG_MDS_EndTime) {Obj = (int) (DateTime.UtcNow).ToUnixTime()});
 
             //m.SetField(new IntField(7945) {Obj = 99999});
