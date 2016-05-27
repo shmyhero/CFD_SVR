@@ -73,28 +73,11 @@ namespace CFD_API.Controllers
 
                 var security = Mapper.Map<SecurityDetailDTO>(prodDef);
 
-                if (prodDef != null)
-                {
-                    //if (security.name == null) security.name = prodDef.Name;
-                    //security.symbol = prodDef.Symbol;
-
-                    //security.preClose = prodDef.PreClose;
-                    //security.open = Quotes.GetOpenPrice(prodDef);
-                    //security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
-
-                    //security.lastOpen = prodDef.LastOpen;
-                    //security.lastClose = prodDef.LastClose;
-
-                    //if (Products.IsUsStocks(prodDef.Symbol))
-                    //    security.tag = "US";
-
-                    //if (dbSec.DisplayDecimals != null)
-                    //    security.dcmCount = Convert.ToInt32(dbSec.DisplayDecimals);
-                }
-
                 if (quote != null)
                 {
                     security.last = Quotes.GetLastPrice(quote);
+                    security.ask = quote.Offer;
+                    security.bid = quote.Bid;
                 }
 
                 var posDTO = MapPositionReportToPositionDTO(report);

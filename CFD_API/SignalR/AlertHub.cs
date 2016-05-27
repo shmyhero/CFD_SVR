@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CFD_COMMON.Models.Context;
@@ -34,8 +35,8 @@ namespace CFD_API.SignalR
             //leave group
             Groups.Remove(Context.ConnectionId, Context.ConnectionId);
 
-            ////clear quote subscription
-            //_posRptTicker.RemoveSubscription(Context.ConnectionId);
+            //clear quote subscription
+            _posRptTicker.RemoveSubscription(Context.ConnectionId);
 
             return base.OnDisconnected(stopCalled);
         }
@@ -64,7 +65,7 @@ namespace CFD_API.SignalR
             var user = db.Users.FirstOrDefault(o => o.Id == userId && o.Token == token);
 
             if (user == null) return false;
-            
+
             //join group
             Groups.Add(Context.ConnectionId, Context.ConnectionId); // single-user group
 
@@ -72,6 +73,12 @@ namespace CFD_API.SignalR
             _posRptTicker.AddSubscription(user.AyondoUsername, Context.ConnectionId);
 
             return true;
+        }
+
+        [HubMethodName("TP")]
+        public void TestPublish()
+        {
+            Clients.Group(Context.ConnectionId).p(new List<string>() {"您够买的纳斯达克100已被止损在8888，收益为88.88美元", "您够买的狮子头盖浇饭已被止盈在1.23456，收益为-12.34美元"});
         }
     }
 }

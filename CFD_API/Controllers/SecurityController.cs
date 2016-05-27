@@ -352,6 +352,8 @@ namespace CFD_API.Controllers
             //get new price
             var quote = redisQuoteClient.GetById(securityId);
             result.last = Quotes.GetLastPrice(quote);
+            result.ask = quote.Offer;
+            result.bid = quote.Bid;
 
             //************************************************************************
             //TradeValue (to ccy2) = QuotePrice * (1 / MDS_PLUNITS * MDS_LOTSIZE) * quantity
