@@ -43,6 +43,7 @@
         <textarea id="subIds" style="width: 1000px; height: 80px">20855,20891,20867,20849,20887</textarea>
         <br />
         <input type="button" onclick="subscribe()" value="Login"/>
+        <input type="button" onclick="testP()" value="Test Publish" />
         <br/>
         <br />
         <label>Receiving:</label>
@@ -76,6 +77,10 @@
 
         function subscribe() {
             hub.server.L($('#subIds').text());
+        }
+
+        function testP() {
+            hub.server.TP();
         }
 
         $(function () {

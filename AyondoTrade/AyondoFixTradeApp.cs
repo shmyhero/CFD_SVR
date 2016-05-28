@@ -17,7 +17,10 @@ namespace CFD_JOBS.Ayondo
     public class AyondoFixTradeApp : MessageCracker, IApplication
     {
         public Session Session { get; set; }
+
         private DataDictionary DD;
+        private string _account;
+        private IDictionary<string, DateTime> UserLastLoginTime = new Dictionary<string, DateTime>();
 
         //custom tags
         public int TAG_MDS_SendColRep;
@@ -71,7 +74,6 @@ namespace CFD_JOBS.Ayondo
         public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> AutoClosedPositionReports =
             new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
 
-        private string _account;
         //ayondodemo01 136824778776
         //ivantradehero 138673044476
 
@@ -106,9 +108,37 @@ namespace CFD_JOBS.Ayondo
 
         public void ToApp(Message message, SessionID sessionId)
         {
-            if (message.Header.GetString(Tags.MsgType) == MsgType.BUSINESS_MESSAGE_REJECT)
+            var msgType = message.Header.GetString(Tags.MsgType);
+            if (msgType == MsgType.BUSINESS_MESSAGE_REJECT)
             {
                 CFDGlobal.LogInformation("ToApp: " + message.ToString());
+            }
+            else if (msgType == MsgType.USERREQUEST) //35=BE login
+            {
+                if (message.Any(o => o.Key == Tags.Username))
+                {
+                    var username = message.GetString(Tags.Username);
+
+                    //prevent multiple login of the same user at the same time
+                    if (UserLastLoginTime.ContainsKey(username))
+                    {
+                        var dtLastLogin = UserLastLoginTime[username];
+
+                        if (DateTime.UtcNow - dtLastLogin < TimeSpan.FromSeconds(5))
+                        {
+                            //don't send
+                            throw new DoNotSend();
+
+                            //message.Header.SetField(new MsgType("xx"));
+                        }
+                        else
+                        {
+                            UserLastLoginTime[username] = DateTime.UtcNow;
+                        }
+                    }
+                    else
+                        UserLastLoginTime.Add(username, DateTime.UtcNow);
+                }
             }
             else
             {
@@ -435,6 +465,7 @@ namespace CFD_JOBS.Ayondo
             m.Password = new Password(password);
             m.SetField(new StringField(TAG_MDS_SendColRep) {Obj = "N"});
             m.SetField(new StringField(TAG_MDS_SendNoPos) {Obj = "0"});
+
             SendMessage(m);
 
             return guid;
@@ -929,7 +960,16 @@ namespace CFD_JOBS.Ayondo
         private void SendMessage(Message m)
         {
             if (Session != null)
-                Session.Send(m);
+            {
+                try
+                {
+                    Session.Send(m);
+                }
+                catch (DoNotSend)
+                {
+                    CFDGlobal.LogLine("DoNotSend caught: " + m.ToString());
+                }
+            }
             else
             {
                 //// This probably won't ever happen.
