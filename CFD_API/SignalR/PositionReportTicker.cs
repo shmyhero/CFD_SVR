@@ -85,7 +85,7 @@ namespace CFD_API.SignalR
                                         var stopTake = report.Text == "Position DELETE by StopLossOrder" ? "止损" : "止盈";
                                         var price = Math.Round(report.SettlPrice, prodDef.Prec);
                                         var pl = Math.Round(report.PL.Value, 2);
-                                        return "您够买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl + "美元";
+                                        return "您购买的" + name + "已被" + stopTake + "在" + price + "，收益为" + pl + "美元";
                                     }).ToList();
 
                                     Clients.Group(connectionId).p(alerts);
@@ -112,7 +112,7 @@ namespace CFD_API.SignalR
         {
             _subscription.AddOrUpdate(ayondoUsername, connectionId, (key, value) => connectionId);
 
-            CFDGlobal.LogInformation("AlertHub add: username:" + ayondoUsername + " connectionId:" + connectionId);
+            //CFDGlobal.LogInformation("AlertHub add: username:" + ayondoUsername + " connectionId:" + connectionId);
         }
 
         public void RemoveSubscription(string connectionId)
@@ -132,8 +132,8 @@ namespace CFD_API.SignalR
                 string value;
                 var tryRemove = _subscription.TryRemove(key, out value);
 
-                if(tryRemove)
-                    CFDGlobal.LogInformation("AlertHub remove: username:" + key + " connectionId:" + value);
+                //if(tryRemove)
+                //    CFDGlobal.LogInformation("AlertHub remove: username:" + key + " connectionId:" + value);
             }
         }
     }

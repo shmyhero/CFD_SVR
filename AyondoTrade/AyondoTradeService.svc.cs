@@ -210,50 +210,6 @@ namespace AyondoTrade
             return positionReports;
         }
 
-        private Model.PositionReport MapPositionReport(PositionReport report)
-        {
-            var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
-            report.GetGroup(1, noPositionsGroup);
-
-            return new Model.PositionReport
-            {
-                PosMaintRptID = report.PosMaintRptID.Obj,
-                SecurityID = report.SecurityID.Obj,
-                SettlPrice = report.SettlPrice.Obj,
-
-                //CreateTime = report.ClearingBusinessDate.Obj,
-                CreateTime =
-                    DateTime.ParseExact(report.ClearingBusinessDate.Obj, FIX_DATETIME_MASK, CultureInfo.CurrentCulture,
-                        DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
-                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?) null,
-                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?) null,
-                StopOID = report.Any(o => o.Key == Global.FixApp.TAG_StopOID) ? report.GetString(Global.FixApp.TAG_StopOID) : null,
-                TakeOID = report.Any(o => o.Key == Global.FixApp.TAG_TakeOID) ? report.GetString(Global.FixApp.TAG_TakeOID) : null,
-                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
-                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null,
-                PL = report.GetDecimal(Global.FixApp.TAG_MDS_PL),
-                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?) null,
-                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?) null,
-
-                Text = report.Text.Obj,
-            };
-        }
-
-        private static string GetAccount(string username, string password)
-        {
-            string account;
-//user in online list?
-            if (Global.FixApp.UsernameAccounts.ContainsKey(username))
-            {
-                account = Global.FixApp.UsernameAccounts[username];
-            }
-            else
-            {
-                account = SendLoginRequestAndWait(username, password);
-            }
-            return account;
-        }
-
         private static IList<PositionReport> SendPositionRequestAndWait(string account)
         {
             var reqId = Global.FixApp.RequestForPositions(account);
@@ -375,7 +331,7 @@ namespace AyondoTrade
 
                     if (!tryGetValue) continue;
 
-                    if (nettingPositionId != null) //closing position: a 'Text=Position DELETE by MarketOrder' should be received
+                    if (nettingPositionId != null) //closing position: a 'Text=Position DELETE by MarketOrder' should be received after a 'Text=Position UPDATE by ...'
                     {
                         report = reports.FirstOrDefault(o => o.Value.Text.Obj == "Position DELETE by MarketOrder").Value;
                         if (report != null)
@@ -579,6 +535,50 @@ namespace AyondoTrade
                 throw new Exception("fix log on time out");
 
             return account;
+        }
+
+        private static string GetAccount(string username, string password)
+        {
+            string account;
+            //user in online list?
+            if (Global.FixApp.UsernameAccounts.ContainsKey(username))
+            {
+                account = Global.FixApp.UsernameAccounts[username];
+            }
+            else
+            {
+                account = SendLoginRequestAndWait(username, password);
+            }
+            return account;
+        }
+
+        private Model.PositionReport MapPositionReport(PositionReport report)
+        {
+            var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
+            report.GetGroup(1, noPositionsGroup);
+
+            return new Model.PositionReport
+            {
+                PosMaintRptID = report.PosMaintRptID.Obj,
+                SecurityID = report.SecurityID.Obj,
+                SettlPrice = report.SettlPrice.Obj,
+
+                //CreateTime = report.ClearingBusinessDate.Obj,
+                CreateTime =
+                    DateTime.ParseExact(report.ClearingBusinessDate.Obj, FIX_DATETIME_MASK, CultureInfo.CurrentCulture,
+                        DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null,
+                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?)null,
+                StopOID = report.Any(o => o.Key == Global.FixApp.TAG_StopOID) ? report.GetString(Global.FixApp.TAG_StopOID) : null,
+                TakeOID = report.Any(o => o.Key == Global.FixApp.TAG_TakeOID) ? report.GetString(Global.FixApp.TAG_TakeOID) : null,
+                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?)null,
+                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?)null,
+                PL = report.GetDecimal(Global.FixApp.TAG_MDS_PL),
+                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?)null,
+                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?)null,
+
+                Text = report.Text.Obj,
+            };
         }
 
         private static void CheckFailedUserResponse(string reqId)

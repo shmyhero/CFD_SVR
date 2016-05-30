@@ -10,7 +10,7 @@
       <Setting name="redisConnectionString" value="Password88__@10.0.0.21:6399" />
       <Setting name="YunPianApiKey" value="faf57dcccf1bff886c1ee4626bf1db28" />
       <Setting name="YunPianTemplateId" value="444007" />
-      <Setting name="AyondoTradeSvcUrl" value="http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc" />
+      <Setting name="AyondoTradeSvcUrl" value="http://10.0.0.15/ayondotradeservice.svc" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="true" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="tradehero" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEFSgPFpXCM2QR0UFxmli+gAwDQYJKoZIhvcNAQEBBQAEggEAAbBZOOnac8zyljAZSmPfvYPWX+Z8GZAhY8WJF7uDmCBtxoZX3BVyWfWyljMIXP8lX3f6cJG50Du9PuQzlEXMgOK+spUSmbAVFeTrYRcV5R0QPd/v/1PhWDCXegmZjV/f8+wd3KSgCQcG6zqMYpftQJoYXBOy1EH0BJhRMrCTl4GMRKv2xNtVa7PcR2qsGZwRYv0MpiNhY3zjzsIc0Rh6e81SfIiXoxG9CO3ygHD4zgEXaxHntggqtVsCpkpfxYhc5msgAuCQhxishaQcE0HEHQlU0I9pKOdApoWJyQkuOcn80u7pFP0q2jt6zfYNMdElBZ10DU6Uc5+DA01yEJfcejAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECAIhMtBPMv2tgBC5NkljJYz67qjpVgE7w4d/" />

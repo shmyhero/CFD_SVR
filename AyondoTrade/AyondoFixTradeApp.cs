@@ -16,11 +16,23 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoFixTradeApp : MessageCracker, IApplication
     {
+        public AyondoFixTradeApp()
+        {
+            CFDGlobal.LogLine("AyondoFixTradeApp class constructor");
+        }
+
+        ~AyondoFixTradeApp()
+        {
+            CFDGlobal.LogLine("AyondoFixTradeApp class destructor");
+        }
+
         public Session Session { get; set; }
 
-        private DataDictionary DD;
+        private readonly string _username = CFDGlobal.GetConfigurationSetting("ayondoFixTradeUsername");
+        private readonly string _password = CFDGlobal.GetConfigurationSetting("ayondoFixTradePassword");
+        private DataDictionary _dd;
         private string _account;
-        private IDictionary<string, DateTime> UserLastLoginTime = new Dictionary<string, DateTime>();
+        private readonly IDictionary<string, DateTime> _userLastLoginTime = new Dictionary<string, DateTime>();
 
         //custom tags
         public int TAG_MDS_SendColRep;
@@ -41,36 +53,56 @@ namespace CFD_JOBS.Ayondo
         public IDictionary<string, string> UsernameAccounts = new Dictionary<string, string>();
         public IDictionary<string, string> AccountUsernames = new Dictionary<string, string>();
 
-        //public ConcurrentDictionary<string, UserResponse> UserResponses = new ConcurrentDictionary<string, UserResponse>();
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, KeyValuePair<DateTime, RequestForPositionsAck>> RequestForPositionsAcks =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, RequestForPositionsAck>>();
 
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> PositionReports =
             new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
 
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> OrderPositionReports =
             new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
 
+        /// <summary>
+        /// position id as key
+        /// </summary>
         public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> StopTakePositionReports =
             new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
 
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>> BusinessMessageRejects =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, BusinessMessageReject>>();
 
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>> FailedUserResponses =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>>();
 
-        //public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>> BusinessMessageRejectsByAccount =
-        //    new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, BusinessMessageReject>>>();
-
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>> RejectedExecutionReports =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>>();
 
-        //public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, ExecutionReport>>> StopTakeExecutionReports =
-        //    new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, ExecutionReport>>>();
-
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, KeyValuePair<DateTime, decimal>> Balances = new ConcurrentDictionary<string, KeyValuePair<DateTime, decimal>>();
 
+        /// <summary>
+        /// username as key
+        /// </summary>
         public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> AutoClosedPositionReports =
             new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
 
@@ -87,8 +119,8 @@ namespace CFD_JOBS.Ayondo
             {
                 //CFDGlobal.LogLine(" sending username and password...");
 
-                message.SetField(new Username(CFDGlobal.GetConfigurationSetting("ayondoFixTradeUsername")));
-                message.SetField(new Password(CFDGlobal.GetConfigurationSetting("ayondoFixTradePassword")));
+                message.SetField(new Username(_username));
+                message.SetField(new Password(_password));
             }
 
             //CFDGlobal.LogLine("ToAdmin: ");
@@ -115,14 +147,16 @@ namespace CFD_JOBS.Ayondo
             }
             else if (msgType == MsgType.USERREQUEST) //35=BE login
             {
+                CFDGlobal.LogLine("ToApp: " + message.ToString());//log message
+
                 if (message.Any(o => o.Key == Tags.Username))
                 {
                     var username = message.GetString(Tags.Username);
 
                     //prevent multiple login of the same user at the same time
-                    if (UserLastLoginTime.ContainsKey(username))
+                    if (_userLastLoginTime.ContainsKey(username))
                     {
-                        var dtLastLogin = UserLastLoginTime[username];
+                        var dtLastLogin = _userLastLoginTime[username];
 
                         if (DateTime.UtcNow - dtLastLogin < TimeSpan.FromSeconds(5))
                         {
@@ -133,16 +167,16 @@ namespace CFD_JOBS.Ayondo
                         }
                         else
                         {
-                            UserLastLoginTime[username] = DateTime.UtcNow;
+                            _userLastLoginTime[username] = DateTime.UtcNow;
                         }
                     }
                     else
-                        UserLastLoginTime.Add(username, DateTime.UtcNow);
+                        _userLastLoginTime.Add(username, DateTime.UtcNow);
                 }
             }
             else
             {
-                CFDGlobal.LogLine("ToApp: " + message.ToString());
+                CFDGlobal.LogLine("ToApp: " + message.ToString());//log message
             }
         }
 
@@ -202,22 +236,22 @@ namespace CFD_JOBS.Ayondo
             CFDGlobal.LogLine("OnLogon: " + sessionID);
 
             Session = Session.LookupSession(sessionID);
-            DD = Session.ApplicationDataDictionary;
+            _dd = Session.ApplicationDataDictionary;
 
-            TAG_MDS_SendColRep = DD.FieldsByName["MDS_SendColRep"].Tag;
-            TAG_MDS_SendNoPos = DD.FieldsByName["MDS_SendNoPos"].Tag;
-            TAG_StopOID = DD.FieldsByName["StopOID"].Tag;
-            TAG_TakeOID = DD.FieldsByName["TakeOID"].Tag;
-            TAG_TakePx = DD.FieldsByName["TakePx"].Tag;
-            TAG_MDS_PL = DD.FieldsByName["MDS_PL"].Tag;
-            TAG_Leverage = DD.FieldsByName["Leverage"].Tag;
-            TAG_MDS_RequestID = DD.FieldsByName["MDS_RequestID"].Tag;
-            TAG_MDS_UPL = DD.FieldsByName["MDS_UPL"].Tag;
-            TAG_MDS_HistoryType = DD.FieldsByName["MDS_HistoryType"].Tag;
-            TAG_MDS_StartTime = DD.FieldsByName["MDS_StartTime"].Tag;
-            TAG_MDS_EndTime = DD.FieldsByName["MDS_EndTime"].Tag;
-            TAG_MDS_SetSize = DD.FieldsByName["MDS_SetSize"].Tag;
-            TAG_MDS_SetIndex = DD.FieldsByName["MDS_SetIndex"].Tag;
+            TAG_MDS_SendColRep = _dd.FieldsByName["MDS_SendColRep"].Tag;
+            TAG_MDS_SendNoPos = _dd.FieldsByName["MDS_SendNoPos"].Tag;
+            TAG_StopOID = _dd.FieldsByName["StopOID"].Tag;
+            TAG_TakeOID = _dd.FieldsByName["TakeOID"].Tag;
+            TAG_TakePx = _dd.FieldsByName["TakePx"].Tag;
+            TAG_MDS_PL = _dd.FieldsByName["MDS_PL"].Tag;
+            TAG_Leverage = _dd.FieldsByName["Leverage"].Tag;
+            TAG_MDS_RequestID = _dd.FieldsByName["MDS_RequestID"].Tag;
+            TAG_MDS_UPL = _dd.FieldsByName["MDS_UPL"].Tag;
+            TAG_MDS_HistoryType = _dd.FieldsByName["MDS_HistoryType"].Tag;
+            TAG_MDS_StartTime = _dd.FieldsByName["MDS_StartTime"].Tag;
+            TAG_MDS_EndTime = _dd.FieldsByName["MDS_EndTime"].Tag;
+            TAG_MDS_SetSize = _dd.FieldsByName["MDS_SetSize"].Tag;
+            TAG_MDS_SetIndex = _dd.FieldsByName["MDS_SetIndex"].Tag;
         }
 
         #endregion
@@ -326,7 +360,8 @@ namespace CFD_JOBS.Ayondo
 
         public void OnMessage(PositionReport report, SessionID session)
         {
-            CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report));
+            //CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report));
+
             //var groupTags = report.GetGroupTags();
             //var noPositionsGroup = new PositionReport.NoPositionsGroup();
             //var @group2 = report.GetGroup(1, noPositionsGroup);
@@ -708,8 +743,8 @@ namespace CFD_JOBS.Ayondo
             m.Username = QueryUsername();
             m.Password = QueryPassword();
             m.UserRequestID = new UserRequestID("login:" + m.Username);
-            m.SetField(new StringField(DD.FieldsByName["MDS_SendColRep"].Tag) {Obj = "N"});
-            m.SetField(new StringField(DD.FieldsByName["MDS_SendNoPos"].Tag) {Obj = "0"});
+            m.SetField(new StringField(_dd.FieldsByName["MDS_SendColRep"].Tag) {Obj = "N"});
+            m.SetField(new StringField(_dd.FieldsByName["MDS_SendNoPos"].Tag) {Obj = "0"});
             SendMessage(m);
 
             //m.UserRequestID=new UserRequestID(Guid.NewGuid().ToString());
@@ -867,7 +902,7 @@ namespace CFD_JOBS.Ayondo
 
             var queryTakePx = QueryTakePx();
             if (!string.IsNullOrEmpty(queryTakePx))
-                newOrderSingle.SetField(new DecimalField(DD.FieldsByName["TakePx"].Tag) {Obj = Convert.ToDecimal(queryTakePx)});
+                newOrderSingle.SetField(new DecimalField(_dd.FieldsByName["TakePx"].Tag) {Obj = Convert.ToDecimal(queryTakePx)});
 
             if ((!string.IsNullOrEmpty(queryStopPx) || !string.IsNullOrEmpty(queryTakePx)) || newOrderSingle.OrdType.Obj != 1)
             {
@@ -917,7 +952,7 @@ namespace CFD_JOBS.Ayondo
 
             var queryTakePx = QueryTakePx();
             if (!string.IsNullOrEmpty(queryTakePx))
-                m.SetField(new DecimalField(DD.FieldsByName["TakePx"].Tag) {Obj = Convert.ToDecimal(queryTakePx)});
+                m.SetField(new DecimalField(_dd.FieldsByName["TakePx"].Tag) {Obj = Convert.ToDecimal(queryTakePx)});
 
             m.Account = new Account(_account);
 
@@ -967,7 +1002,7 @@ namespace CFD_JOBS.Ayondo
                 }
                 catch (DoNotSend)
                 {
-                    CFDGlobal.LogLine("DoNotSend caught: " + m.ToString());
+                    CFDGlobal.LogInformation("DoNotSend Caught: " + m.ToString());
                 }
             }
             else
@@ -981,7 +1016,7 @@ namespace CFD_JOBS.Ayondo
 
         private string GetMessageString(Message message, bool showHeader = false, bool showTrailer = false)
         {
-            if (DD == null)
+            if (_dd == null)
                 return message.ToString();
 
             var sb = new StringBuilder();
@@ -990,7 +1025,7 @@ namespace CFD_JOBS.Ayondo
                 //sb.AppendLine("--------------------fix message-------------------");
                 foreach (KeyValuePair<int, IField> pair in message.Header)
                 {
-                    var field = DD.FieldsByTag[pair.Key];
+                    var field = _dd.FieldsByTag[pair.Key];
                     var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
                     sb.AppendLine(field.Name + "=" + value);
                 }
@@ -1001,7 +1036,7 @@ namespace CFD_JOBS.Ayondo
 
             foreach (KeyValuePair<int, IField> pair in message)
             {
-                var field = DD.FieldsByTag[pair.Key];
+                var field = _dd.FieldsByTag[pair.Key];
 
                 var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
                 sb.AppendLine(field.Name + "=" + value);
@@ -1011,7 +1046,7 @@ namespace CFD_JOBS.Ayondo
                     var @group = message.GetGroup(1, pair.Key);
                     foreach (var item in @group)
                     {
-                        var subField = DD.FieldsByTag[item.Key];
+                        var subField = _dd.FieldsByTag[item.Key];
 
                         var subValue = subField.HasEnums() ? subField.EnumDict[item.Value.ToString()] + "(" + item.Value + ")" : item.Value.ToString();
                         sb.AppendLine("\t" + subField.Name + "=" + subValue);
@@ -1027,7 +1062,7 @@ namespace CFD_JOBS.Ayondo
 
                 foreach (KeyValuePair<int, IField> pair in message.Trailer)
                 {
-                    var field = DD.FieldsByTag[pair.Key];
+                    var field = _dd.FieldsByTag[pair.Key];
                     var value = field.HasEnums() ? field.EnumDict[pair.Value.ToString()] + "(" + pair.Value + ")" : pair.Value.ToString();
                     sb.AppendLine(field.Name + "=" + value);
                 }
