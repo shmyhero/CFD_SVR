@@ -12,10 +12,14 @@
 
         public static string GetCName(string name)
         {
-            if (name.StartsWith("China 50 "))
-                return "新华富时A50";
-
             var str = name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty);
+
+            if (str.StartsWith("China 50 "))
+                return "新华富时A50";
+            //return str.Replace("China 50 ","新华富时A50 ");
+            if (str.StartsWith("Japan 225 "))
+                return "日经225";
+            //return str.Replace("Japan 225 ", "日经225 ");
 
             if (Translations.ProdCNames.ContainsKey(str))
                 return Translations.ProdCNames[str];

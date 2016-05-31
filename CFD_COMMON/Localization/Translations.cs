@@ -131,7 +131,6 @@ namespace CFD_COMMON.Localization
             {"EU 50 Rolling", "欧洲斯托克50"},
             {"France 40 Rolling", "法国CAC40"},
             {"Germany 30 Rolling (1 EUR Contract)", "德国DAX30"},
-            {"Japan 225 Jun-16", "日经225"},
             {"UK 100 Rolling", "英国富时100"},
             {"US 500 Rolling", "标准普尔500"},
             {"US Tech 100 Rolling", "纳斯达克100"},
