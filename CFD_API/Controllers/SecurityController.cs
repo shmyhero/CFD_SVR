@@ -88,7 +88,11 @@ namespace CFD_API.Controllers
 
         private IList<ProdDef> GetActiveProds()
         {
-            return RedisClient.As<ProdDef>().GetAll().Where(o => o.QuoteType != enmQuoteType.Inactive && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS).ToList();
+            return RedisClient.As<ProdDef>().GetAll()
+                .Where(o => o.QuoteType != enmQuoteType.Inactive 
+                    && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
+                    )
+                .ToList();
         }
 
         [HttpGet]
@@ -106,7 +110,7 @@ namespace CFD_API.Controllers
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateProdDefQuote(securityDtos);
+            UpdateQuote(securityDtos);
 
             return securityDtos;
         }
@@ -128,7 +132,7 @@ namespace CFD_API.Controllers
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateProdDefQuote(securityDtos);
+            UpdateQuote(securityDtos);
 
             return securityDtos;
         }
@@ -236,7 +240,7 @@ namespace CFD_API.Controllers
         {
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             var redisQuoteClient = RedisClient.As<Quote>();
-            var prodDefs = GetActiveProds();
+            var prodDefs = RedisClient.As<ProdDef>().GetAll();
             var quotes = redisQuoteClient.GetAll();
 
             //var securities = db.AyondoSecurities.ToList();
