@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="CFD_API.AzureWebRole" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2015-04.2.6">
-  <WebRole name="CFD_API" vmsize="Small">
+  <WebRole name="CFD_API" vmsize="Large">
     <Sites>
       <Site name="Web">
         <Bindings>

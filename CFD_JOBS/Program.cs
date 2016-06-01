@@ -73,6 +73,11 @@ namespace CFD_JOBS
                     RedisToDbWorker.Run();
                 }
 
+                if (args.Contains("-LoadTest"))
+                {
+                    LoadTest.Run();
+                }
+
                 return 0;
             }
             catch (Exception ex)
