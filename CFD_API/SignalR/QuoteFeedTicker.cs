@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using CFD_API.Caching;
 using CFD_API.DTO.SignalRDTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
@@ -48,7 +49,7 @@ namespace CFD_API.SignalR
             Clients = clients;
 
             //var basicRedisClientManager = CFDGlobal.GetNewBasicRedisClientManager();
-            _redisClient = CFDGlobal.BasicRedisClientManager.GetClient().As<Quote>();
+            //_redisClient = CFDGlobal.BasicRedisClientManager.GetClient().As<Quote>();
 
             CFDGlobal.LogLine("Starting QuoteFeedTicker...");
             //Start();
@@ -66,7 +67,8 @@ namespace CFD_API.SignalR
                 {
                     try
                     {
-                        var quotes = _redisClient.GetAll();
+                        //var quotes = _redisClient.GetAll();
+                        var quotes = WebCache.Quotes;
 
                         if (dicLastQuotes == null) //first time
                         {

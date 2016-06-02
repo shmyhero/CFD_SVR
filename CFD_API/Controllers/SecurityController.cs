@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using AutoMapper;
+using CFD_API.Caching;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON;
@@ -30,10 +31,11 @@ namespace CFD_API.Controllers
             if (list.Count == 0) return;
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var redisQuoteClient = RedisClient.As<Quote>();
+            //var redisQuoteClient = RedisClient.As<Quote>();
 
             var ids = list.Select(o => o.id).ToList();
-            var quotes = redisQuoteClient.GetByIds(ids);
+            //var quotes = redisQuoteClient.GetByIds(ids);
+            var quotes = Caching.WebCache.Quotes.Where(o=>ids.Contains(o.Id)).ToList();
             //var prodDefs = redisProdDefClient.GetByIds(ids);
 
             foreach (var security in list)
@@ -54,45 +56,55 @@ namespace CFD_API.Controllers
             }
         }
 
-        public void UpdateProdDefQuote(IList<SecurityDTO> list)
-        {
-            if (list.Count == 0) return;
+        //public void UpdateProdDefQuote(IList<SecurityDTO> list)
+        //{
+        //    if (list.Count == 0) return;
 
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var redisQuoteClient = RedisClient.As<Quote>();
+        //    var redisProdDefClient = RedisClient.As<ProdDef>();
+        //    var redisQuoteClient = RedisClient.As<Quote>();
 
-            var ids = list.Select(o => o.id).ToList();
-            var quotes = redisQuoteClient.GetByIds(ids);
-            var prodDefs = redisProdDefClient.GetByIds(ids);
+        //    var ids = list.Select(o => o.id).ToList();
+        //    var quotes = redisQuoteClient.GetByIds(ids);
+        //    var prodDefs = redisProdDefClient.GetByIds(ids);
 
-            foreach (var security in list)
-            {
-                var prodDef = prodDefs.FirstOrDefault(o => o.Id == security.id);
-                if (prodDef != null)
-                {
-                    if (security.name == null) security.name = prodDef.Name;
-                    security.symbol = prodDef.Symbol;
+        //    foreach (var security in list)
+        //    {
+        //        var prodDef = prodDefs.FirstOrDefault(o => o.Id == security.id);
+        //        if (prodDef != null)
+        //        {
+        //            if (security.name == null) security.name = prodDef.Name;
+        //            security.symbol = prodDef.Symbol;
 
-                    security.preClose = prodDef.PreClose;
-                    security.open = Quotes.GetOpenPrice(prodDef);
-                    security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
-                }
+        //            security.preClose = prodDef.PreClose;
+        //            security.open = Quotes.GetOpenPrice(prodDef);
+        //            security.isOpen = prodDef.QuoteType == enmQuoteType.Open;
+        //        }
 
-                var quote = quotes.FirstOrDefault(o => o.Id == security.id);
-                if (quote != null)
-                {
-                    security.last = Quotes.GetLastPrice(quote);
-                }
-            }
-        }
+        //        var quote = quotes.FirstOrDefault(o => o.Id == security.id);
+        //        if (quote != null)
+        //        {
+        //            security.last = Quotes.GetLastPrice(quote);
+        //        }
+        //    }
+        //}
 
         private IList<ProdDef> GetActiveProds()
         {
-            return RedisClient.As<ProdDef>().GetAll()
-                .Where(o => o.QuoteType != enmQuoteType.Inactive 
+            //return RedisClient.As<ProdDef>().GetAll()
+            //    .Where(o => o.QuoteType != enmQuoteType.Inactive 
+            //        && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
+            //        )
+            //    .ToList();
+
+            return Caching.WebCache.ProdDefs
+                    .Where(o => o.QuoteType != enmQuoteType.Inactive
                     && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
                     )
                 .ToList();
+        }
+        private IList<ProdDef> GetActiveProdsByIds(IList<int> ids )
+        {
+            return GetActiveProds().Where(o => ids.Contains(o.Id)).ToList();
         }
 
         [HttpGet]
@@ -106,7 +118,8 @@ namespace CFD_API.Controllers
                 .OrderBy(o => o.DisplayOrder)
                 .Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList();
 
-            var prodDefs = RedisClient.As<ProdDef>().GetByIds(bookmarkIDs);
+            //var prodDefs = RedisClient.As<ProdDef>().GetByIds(bookmarkIDs);
+            var prodDefs = GetActiveProdsByIds(bookmarkIDs);
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
@@ -124,9 +137,10 @@ namespace CFD_API.Controllers
 
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
-            var redisTypedClient = RedisClient.As<ProdDef>();
+            //var redisTypedClient = RedisClient.As<ProdDef>();
 
-            var prodDefs = redisTypedClient.GetByIds(ids);
+            //var prodDefs = redisTypedClient.GetByIds(ids);
+            var prodDefs =GetActiveProdsByIds(ids);
 
             //var securities = db.AyondoSecurities.Where(o => ids.Contains(o.Id)).ToList();
 
@@ -337,10 +351,11 @@ namespace CFD_API.Controllers
         [Route("{securityId}")]
         public SecurityDetailDTO GetSecurity(int securityId)
         {
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var redisQuoteClient = RedisClient.As<Quote>();
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            //var redisQuoteClient = RedisClient.As<Quote>();
 
-            var prodDef = redisProdDefClient.GetById(securityId);
+            //var prodDef = redisProdDefClient.GetById(securityId);
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == securityId);
 
             if (prodDef == null)
                 return null;
@@ -354,7 +369,8 @@ namespace CFD_API.Controllers
             //    result.name = security.CName;
 
             //get new price
-            var quote = redisQuoteClient.GetById(securityId);
+            //var quote = redisQuoteClient.GetById(securityId);
+            var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == securityId);
             result.last = Quotes.GetLastPrice(quote);
             result.ask = quote.Offer;
             result.bid = quote.Bid;
@@ -370,7 +386,7 @@ namespace CFD_API.Controllers
             decimal maxLong = perPriceCcy2*quote.Offer*prodDef.MaxSizeLong;
             decimal maxShort = perPriceCcy2*quote.Bid*prodDef.MaxSizeShort;
 
-            var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", RedisClient);
+            var fxRate = FX.Convert(1, prodDef.Ccy2, "USD",WebCache.ProdDefs,WebCache.Quotes);
 
             result.minValueLong = minLong*fxRate;
             result.minValueShort = minShort*fxRate;
