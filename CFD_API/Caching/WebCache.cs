@@ -73,7 +73,7 @@ namespace CFD_API.Caching
         public static IList<ProdDef> ProdDefs { get; private set; }
         public static IList<Quote> Quotes { get; private set; }
 
-        public static ConcurrentDictionary<int,IList> 
+        //public static ConcurrentDictionary<int,IList> 
 
         //public IList<Quote> Quotes
         //{
