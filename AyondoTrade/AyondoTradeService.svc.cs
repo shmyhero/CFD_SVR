@@ -15,8 +15,8 @@ namespace AyondoTrade
     // NOTE: In order to launch WCF Test Client for testing this service, please select AyondoTradeService.svc or AyondoTradeService.svc.cs at the Solution Explorer and start debugging.
     public class AyondoTradeService : IAyondoTradeService
     {
-        public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(20);
-        public static readonly int SCAN_WAIT_MILLI_SECOND = 500;
+        public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(10);
+        public static readonly int SCAN_WAIT_MILLI_SECOND = 250;
         public static readonly string FIX_DATETIME_MASK = "yyyy-MM-dd HH:mm:ss.FFF";
 
         public string Test(string text)
@@ -25,7 +25,7 @@ namespace AyondoTrade
             return "You entered: " + text;
         }
 
-        public IDictionary<string,IList<Model.PositionReport>> PopAutoClosedPositionReports(IList<string> usernames)
+        public IDictionary<string, IList<Model.PositionReport>> PopAutoClosedPositionReports(IList<string> usernames)
         {
             var result = new Dictionary<string, IList<Model.PositionReport>>();
 
@@ -40,7 +40,7 @@ namespace AyondoTrade
 
                     if (tryRemove)
                     {
-                        CFDGlobal.LogInformation("Got "+value.Count+" AutoCloseMsg(s) for username:" + username);
+                        CFDGlobal.LogInformation("Got " + value.Count + " AutoCloseMsg(s) for username:" + username);
 
                         result.Add(username, value.Select(o => MapPositionReport(o.Value)).ToList());
                     }
@@ -249,10 +249,10 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
             if (ack.Value == null || ack.Value.TotalNumPosReports.Obj != 0 && reports == null)
-                throw new Exception("fail getting position report");
+                throw new Exception("fail getting position report. guid:" + reqId);
 
             if (reports.Count != 0 && reports.Count != reports[0].Value.TotalNumPosReports.Obj)
-                throw new Exception("timeout getting position report. " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
+                throw new Exception("timeout getting position report. guid:" + reqId + " " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
 
             return reports.Select(o => o.Value).ToList();
         }
@@ -292,14 +292,14 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
             if (reports == null)
-                throw new Exception("fail getting position report");
+                throw new Exception("fail getting position report. guid:" + reqId);
 
             var lastPositionReport = reports.Last();
             var reportCount = Convert.ToInt32(lastPositionReport.Value.GetString(Global.FixApp.TAG_MDS_SetSize));
             var lastReportIndex = Convert.ToInt32(lastPositionReport.Value.GetString(Global.FixApp.TAG_MDS_SetIndex));
 
             if (lastReportIndex < reportCount - 1)
-                throw new Exception("timeout getting position report. count:" + reportCount + " lastReportIndex:" + lastReportIndex);
+                throw new Exception("timeout getting position history report. guid:" + reqId + " count:" + reportCount + " lastReportIndex:" + lastReportIndex);
 
             return reports.Select(o => o.Value).ToList();
         }
@@ -567,16 +567,15 @@ namespace AyondoTrade
                 CreateTime =
                     DateTime.ParseExact(report.ClearingBusinessDate.Obj, FIX_DATETIME_MASK, CultureInfo.CurrentCulture,
                         DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
-                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null,
-                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?)null,
+                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?) null,
+                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?) null,
                 StopOID = report.Any(o => o.Key == Global.FixApp.TAG_StopOID) ? report.GetString(Global.FixApp.TAG_StopOID) : null,
                 TakeOID = report.Any(o => o.Key == Global.FixApp.TAG_TakeOID) ? report.GetString(Global.FixApp.TAG_TakeOID) : null,
-                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?)null,
-                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?)null,
+                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
+                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null,
                 PL = report.GetDecimal(Global.FixApp.TAG_MDS_PL),
-                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?)null,
-                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?)null,
-
+                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?) null,
+                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?) null,
                 Text = report.Text.Obj,
             };
         }
@@ -643,6 +642,7 @@ namespace AyondoTrade
     internal class UserNotLoggedInException : Exception
     {
     }
+
     internal class NoDataAvailableException : Exception
     {
     }

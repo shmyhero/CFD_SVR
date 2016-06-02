@@ -75,7 +75,8 @@ namespace CFD_JOBS
 
                 if (args.Contains("-LoadTest"))
                 {
-                    LoadTest.Run();
+                    var loadTest=new LoadTest();
+                    loadTest.Run();
                 }
 
                 return 0;

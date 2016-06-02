@@ -50,7 +50,7 @@ namespace CFD_JOBS.Ayondo
         public int TAG_MDS_SetSize;
         public int TAG_MDS_SetIndex;
 
-        public IDictionary<string, string> UsernameAccounts = new Dictionary<string, string>();
+        public ConcurrentDictionary<string, string> UsernameAccounts = new ConcurrentDictionary<string, string>();
         public IDictionary<string, string> AccountUsernames = new Dictionary<string, string>();
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace CFD_JOBS.Ayondo
             }
             else if (msgType == MsgType.USERREQUEST) //35=BE login
             {
-                CFDGlobal.LogLine("ToApp: " + message.ToString());//log message
+                CFDGlobal.LogLine("ToApp: " + message.ToString()); //log message
 
                 if (message.Any(o => o.Key == Tags.Username))
                 {
@@ -176,7 +176,7 @@ namespace CFD_JOBS.Ayondo
             }
             else
             {
-                CFDGlobal.LogLine("ToApp: " + message.ToString());//log message
+                CFDGlobal.LogLine("ToApp: " + message.ToString()); //log message
             }
         }
 
@@ -260,7 +260,23 @@ namespace CFD_JOBS.Ayondo
 
         public void OnMessage(News news, SessionID sessionID)
         {
-            CFDGlobal.LogLine("OnMessage:News: " + GetMessageString(news, true, true));
+            CFDGlobal.LogInformation("OnMessage:News: " + GetMessageString(news, true, true));
+
+            if (news.Headline.Obj == "Fatal Error")
+            {
+                //var groupTags = news.GetGroupTags();
+                //var tag = groupTags.FirstOrDefault(o => o == Tags.LinesOfText);
+                var group = news.GetGroup(1, Tags.LinesOfText);
+                var account = group.GetString(Tags.Text);
+
+                if (AccountUsernames.ContainsKey(account))
+                {
+                    var username = AccountUsernames[account];
+
+                    string value;
+                    UsernameAccounts.TryRemove(username, out value);
+                }
+            }
         }
 
         public void OnMessage(UserResponse response, SessionID sessionID)
@@ -279,10 +295,7 @@ namespace CFD_JOBS.Ayondo
                     _account = account;
 
                     //add to onlinie user list
-                    if (UsernameAccounts.ContainsKey(username))
-                        UsernameAccounts[username] = account;
-                    else
-                        UsernameAccounts.Add(username, account);
+                    UsernameAccounts.AddOrUpdate(username, account, (k, v) => account);
 
                     if (AccountUsernames.ContainsKey(account))
                         AccountUsernames[account] = username;
@@ -360,7 +373,7 @@ namespace CFD_JOBS.Ayondo
 
         public void OnMessage(PositionReport report, SessionID session)
         {
-            //CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report));
+            CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report));
 
             //var groupTags = report.GetGroupTags();
             //var noPositionsGroup = new PositionReport.NoPositionsGroup();
