@@ -43,23 +43,39 @@ namespace AyondoTrade
             //Converting all the path to the application folder:
             var dictionary = settings.Get(new SessionID("FIX.4.4", "THCN_Trade", "TXIOBridge"));
 
+            //DataDictionary=.\Fix44.xml
             var cfgKey = "DataDictionary";
             var oldValue = dictionary.GetString(cfgKey);
             var newValue = HostingEnvironment.MapPath("~/Fix44.xml");
             CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
             dictionary.SetString(cfgKey, newValue);
-
+            
+            //FileStorePath=.\fixfiles
             cfgKey = "FileStorePath";
             oldValue = dictionary.GetString(cfgKey);
             newValue = HostingEnvironment.MapPath("~/fixfiles");
             CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
             dictionary.SetString(cfgKey, newValue);
 
+            //FileLogPath=.\fixfiles\log
+            cfgKey = "FileLogPath";
+            oldValue = dictionary.GetString(cfgKey);
+            newValue = HostingEnvironment.MapPath("~/fixfiles/log");
+            CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
+            dictionary.SetString(cfgKey, newValue);
+
+            //DebugFileLogPath=.\fixfiles\log
+            cfgKey = "DebugFileLogPath";
+            oldValue = dictionary.GetString(cfgKey);
+            newValue = HostingEnvironment.MapPath("~/fixfiles/log");
+            CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
+            dictionary.SetString(cfgKey, newValue);
+
             //settings.Set(new SessionID("FIX.4.4", "THCN_Trade", "TXIOBridge"), new Dictionary("DataDictionary",));
 
             IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
-            //ILogFactory logFactory = new FileLogFactory(settings);
-            SocketInitiator initiator = new SocketInitiator(application, storeFactory, settings, null);
+            ILogFactory logFactory = new FileLogFactory(settings); //fix logging
+            SocketInitiator initiator = new SocketInitiator(application, storeFactory, settings, logFactory);
 
             initiator.Start();
 

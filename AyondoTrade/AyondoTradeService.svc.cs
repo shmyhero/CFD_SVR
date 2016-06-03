@@ -15,7 +15,7 @@ namespace AyondoTrade
     // NOTE: In order to launch WCF Test Client for testing this service, please select AyondoTradeService.svc or AyondoTradeService.svc.cs at the Solution Explorer and start debugging.
     public class AyondoTradeService : IAyondoTradeService
     {
-        public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(10);
+        public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(5);
         public static readonly int SCAN_WAIT_MILLI_SECOND = 250;
         public static readonly string FIX_DATETIME_MASK = "yyyy-MM-dd HH:mm:ss.FFF";
 
@@ -249,10 +249,16 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
             if (ack.Value == null || ack.Value.TotalNumPosReports.Obj != 0 && reports == null)
-                throw new Exception("fail getting position report. guid:" + reqId);
+            {
+                CFDGlobal.LogError("fail getting position report. guid:" + reqId);
+                return new List<PositionReport>();
+            }
 
             if (reports.Count != 0 && reports.Count != reports[0].Value.TotalNumPosReports.Obj)
-                throw new Exception("timeout getting position report. guid:" + reqId + " " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
+            {
+                CFDGlobal.LogError("timeout getting position report. guid:" + reqId + " " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
+                return reports.Select(o => o.Value).ToList();
+            }
 
             return reports.Select(o => o.Value).ToList();
         }
@@ -292,14 +298,20 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dtPositionReport <= TIMEOUT); // timeout
 
             if (reports == null)
-                throw new Exception("fail getting position report. guid:" + reqId);
+            {
+                CFDGlobal.LogError("fail getting position history report. guid:" + reqId);
+                return new List<PositionReport>();
+            }
 
             var lastPositionReport = reports.Last();
             var reportCount = Convert.ToInt32(lastPositionReport.Value.GetString(Global.FixApp.TAG_MDS_SetSize));
             var lastReportIndex = Convert.ToInt32(lastPositionReport.Value.GetString(Global.FixApp.TAG_MDS_SetIndex));
 
             if (lastReportIndex < reportCount - 1)
-                throw new Exception("timeout getting position history report. guid:" + reqId + " count:" + reportCount + " lastReportIndex:" + lastReportIndex);
+            {
+                CFDGlobal.LogError("timeout getting position history report. guid:" + reqId + " count:" + reportCount + " lastReportIndex:" + lastReportIndex);
+                return reports.Select(o => o.Value).ToList();
+            }
 
             return reports.Select(o => o.Value).ToList();
         }

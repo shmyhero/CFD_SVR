@@ -273,6 +273,8 @@ namespace CFD_JOBS.Ayondo
                 {
                     var username = AccountUsernames[account];
 
+                    CFDGlobal.LogInformation("deleting user " + username + "from online list...");
+
                     string value;
                     UsernameAccounts.TryRemove(username, out value);
                 }
@@ -373,7 +375,7 @@ namespace CFD_JOBS.Ayondo
 
         public void OnMessage(PositionReport report, SessionID session)
         {
-            CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report));
+            //CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report,true,true));
 
             //var groupTags = report.GetGroupTags();
             //var noPositionsGroup = new PositionReport.NoPositionsGroup();
@@ -849,10 +851,10 @@ namespace CFD_JOBS.Ayondo
         {
             Message m = new Message();
             m.Header.SetField(new MsgType("MDS7"));
-            m.SetField(new StringField(TAG_MDS_RequestID) {Obj = "PosHis:" + _account});
+            m.SetField(new StringField(TAG_MDS_RequestID) {Obj = Guid.NewGuid().ToString()});
             m.SetField(new Account(_account));
             m.SetField(new IntField(TAG_MDS_HistoryType) {Obj = 1});
-            m.SetField(new IntField(TAG_MDS_StartTime) {Obj = (int) (new DateTime(2016, 1, 1)).ToUnixTime()});
+            m.SetField(new IntField(TAG_MDS_StartTime) { Obj = (int)(DateTime.UtcNow.AddMonths(-3)).ToUnixTime() });
             m.SetField(new IntField(TAG_MDS_EndTime) {Obj = (int) (DateTime.UtcNow).ToUnixTime()});
 
             //m.SetField(new IntField(7945) {Obj = 99999});
