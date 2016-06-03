@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using AutoMapper;
+using CFD_API.Caching;
 using CFD_API.DTO;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
@@ -38,6 +39,42 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("{securityId}/tick/today")]
         public List<TickDTO> GetTodayTicks(int securityId)
+        {
+            List<TickDTO> result;
+
+            //get from WebCache
+            var tryGetValue = WebCache.TickToday.TryGetValue(securityId, out result);
+            if (tryGetValue)
+                return result;
+
+            //get from Redis
+            var redisTickClient = RedisClient.As<Tick>();
+            var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
+
+            if (ticks.Count == 0)
+                result = new List<TickDTO>();
+            else
+            {
+                var lastTickTime = ticks.Last().Time;
+
+                var ticksToday = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12));
+
+                result = ticksToday.Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            }
+
+            WebCache.TickToday.AddOrUpdate(securityId, result, ((i, dtos) => dtos));
+
+            return result;
+        }
+
+        /// <summary>
+        /// get data directly from redis (no WebCache)
+        /// </summary>
+        /// <param name="securityId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{securityId}/tick/today2")]
+        public List<TickDTO> GetTodayTicks2(int securityId)
         {
             var redisTickClient = RedisClient.As<Tick>();
 

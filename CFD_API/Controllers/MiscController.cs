@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using AutoMapper;
 using CFD_API.Controllers.Attributes;
-using CFD_COMMON;
 using CFD_COMMON.Models.Context;
+using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
 {
     public class MiscController : CFDController
     {
-        public MiscController(CFDEntities db)
-            : base(db)
+        public MiscController(CFDEntities db, IMapper mapper, IRedisClient redisClient) : base(db, mapper, redisClient)
         {
         }
 
@@ -24,19 +21,26 @@ namespace CFD_API.Controllers
         {
             //ApiGlobal.LogLine("");
             string dbName = db.Database.Connection.Database;
-            
+
             return Request.CreateResponse(
                 HttpStatusCode.OK,
-
 #if DEBUG
                 "TH API STATUS: OK [build=DEBUG]" +
 #else
                 "TH API STATUS: OK [build=RELEASE]" +
 #endif
                     " -- v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
-                    +" -- DB=[" + dbName + "]" 
-                    //+" -- top-table cabling: brought to you by The A-Team."
+                + " -- DB=[" + dbName + "]"
+                //+" -- top-table cabling: brought to you by The A-Team."
                 );
+        }
+
+        [HttpGet]
+        [ActionName("redis")]
+        public HttpResponseMessage RedisTest()
+        {
+            var value = RedisClient.GetValue("anykey");
+            return Request.CreateResponse(HttpStatusCode.OK, "dbsize " + RedisClient.DbSize);
         }
 
         [HttpGet]

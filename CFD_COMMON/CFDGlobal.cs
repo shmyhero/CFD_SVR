@@ -156,6 +156,18 @@ namespace CFD_COMMON
             }
         }
 
+        public static void LogExceptionAsInfo(Exception exception)
+        {
+            var ex = exception;
+            while (ex != null)
+            {
+                Trace.TraceInformation(GetLogDatetimePrefix() + ex.Message);
+                Trace.TraceInformation(GetLogDatetimePrefix() + ex.StackTrace);
+
+                ex = ex.InnerException;
+            }
+        }
+
         private static string GetLogDatetimePrefix()
         {
             return DateTime.Now.ToString(DATETIME_MASK_MILLI_SECOND)+" ";
