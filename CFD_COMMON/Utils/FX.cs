@@ -8,45 +8,45 @@ namespace CFD_COMMON.Utils
 {
     public class FX
     {
-        public static decimal Convert(decimal value, string fromCcy, string toCcy, IRedisClient redisClient)
-        {
-            var redisProdDefClient = redisClient.As<ProdDef>();
-            var redisQuoteClient = redisClient.As<Quote>();
+        //public static decimal Convert(decimal value, string fromCcy, string toCcy, IRedisClient redisClient)
+        //{
+        //    var redisProdDefClient = redisClient.As<ProdDef>();
+        //    var redisQuoteClient = redisClient.As<Quote>();
 
-            if (fromCcy == toCcy)
-                return value;
+        //    if (fromCcy == toCcy)
+        //        return value;
 
-            //get fxRate and convert 
-            //the fx for convertion! not the fx that is being bought!
-            decimal fxRate;
+        //    //get fxRate and convert 
+        //    //the fx for convertion! not the fx that is being bought!
+        //    decimal fxRate;
 
-            var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == fromCcy + toCcy);
+        //    var fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == fromCcy + toCcy);
 
-            if (fxProdDef == null)
-            {
-                //CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
+        //    if (fxProdDef == null)
+        //    {
+        //        //CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
 
-                fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
+        //        fxProdDef = redisProdDefClient.GetAll().FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
 
-                if (fxProdDef == null)
-                {
-                    throw new Exception("Cannot find fx rate: " + fromCcy + "/" + toCcy + " or " + toCcy + "/" + fromCcy);
-                }
+        //        if (fxProdDef == null)
+        //        {
+        //            throw new Exception("Cannot find fx rate: " + fromCcy + "/" + toCcy + " or " + toCcy + "/" + fromCcy);
+        //        }
 
-                if (DateTime.UtcNow - fxProdDef.Time > CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS)
-                    CFDGlobal.LogWarning("fx rate too old:" + fxProdDef.Id + " " + fxProdDef.Symbol);
+        //        if (DateTime.UtcNow - fxProdDef.Time > CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS)
+        //            CFDGlobal.LogWarning("fx rate too old:" + fxProdDef.Id + " " + fxProdDef.Symbol);
 
-                var fxQuote = redisQuoteClient.GetById(fxProdDef.Id);
-                fxRate = 1/Quotes.GetLastPrice(fxQuote);
-            }
-            else
-            {
-                var fxQuote = redisQuoteClient.GetById(fxProdDef.Id);
-                fxRate = Quotes.GetLastPrice(fxQuote);
-            }
+        //        var fxQuote = redisQuoteClient.GetById(fxProdDef.Id);
+        //        fxRate = 1/Quotes.GetLastPrice(fxQuote);
+        //    }
+        //    else
+        //    {
+        //        var fxQuote = redisQuoteClient.GetById(fxProdDef.Id);
+        //        fxRate = Quotes.GetLastPrice(fxQuote);
+        //    }
 
-            return value*fxRate;
-        }
+        //    return value*fxRate;
+        //}
 
         public static decimal Convert(decimal value, string fromCcy, string toCcy, IList<ProdDef> prodDefs, IList<Quote> quotes)
         {
@@ -85,9 +85,9 @@ namespace CFD_COMMON.Utils
             return value*fxRate;
         }
 
-        public static decimal ConvertUSDtoCcy(decimal value, string toCcy, IRedisClient redisClient)
+        public static decimal ConvertUSDtoCcy(decimal value, string toCcy, IList<ProdDef> prodDefs, IList<Quote> quotes)
         {
-            return Convert(value, "USD", toCcy, redisClient);
+            return Convert(value, "USD", toCcy, prodDefs,quotes);
         }
     }
 }

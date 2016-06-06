@@ -252,7 +252,7 @@ namespace CFD_JOBS
             var user = (User) obj;
 
             var dt = DateTime.UtcNow;
-            while (DateTime.UtcNow - dt < TimeSpan.FromMinutes(5)) //////////////////test for how long
+            while (DateTime.UtcNow - dt < TimeSpan.FromMinutes(3)) //////////////////test for how long
             {
                 Thread.Sleep(GetRandomIdleTime());
                 var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/stock/topGainer");
@@ -288,12 +288,20 @@ namespace CFD_JOBS
                 request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/today");
                 var tick = GetResponseJArray(GetResponseString(request));
 
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/week");
+                tick = GetResponseJArray(GetResponseString(request));
 
-                ////持仓
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
-                //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
-                //open = GetResponseJArray(GetResponseString(request));
-                //Thread.Sleep(GetRandomIdleTime());
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/month");
+                tick = GetResponseJArray(GetResponseString(request));
+
+
+                //持仓
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
+                request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
+                var open = GetResponseJArray(GetResponseString(request));
 
                 ////平仓
                 //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/closed");

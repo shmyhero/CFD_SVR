@@ -8,12 +8,12 @@ using System.Web.Http;
 using AutoMapper;
 using AyondoTrade.FaultModel;
 using AyondoTrade.Model;
+using CFD_API.Caching;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.FormDTO;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
-using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
@@ -51,11 +51,11 @@ namespace CFD_API.Controllers
             //order by recent created
             result = result.OrderByDescending(o => o.CreateTime).ToList();
 
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var redisQuoteClient = RedisClient.As<Quote>();
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            //var redisQuoteClient = RedisClient.As<Quote>();
 
-            var prodDefs = redisProdDefClient.GetAll();
-            var quotes = redisQuoteClient.GetAll();
+            //var prodDefs = redisProdDefClient.GetAll();
+            //var quotes = redisQuoteClient.GetAll();
 
             //var secIds = result.Select(o => Convert.ToInt32(o.SecurityID)).ToList();
 
@@ -64,12 +64,12 @@ namespace CFD_API.Controllers
             var positionDtos = result.Select(delegate(PositionReport report)
             {
                 //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
-                var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 if (prodDef == null)
                     return null;
 
-                var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 var security = Mapper.Map<SecurityDetailDTO>(prodDef);
 
@@ -92,7 +92,7 @@ namespace CFD_API.Controllers
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
                 var tradeValueUSD = tradeValue;
                 if (prodDef.Ccy2 != "USD")
-                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
                 posDTO.invest = tradeValueUSD.Value/report.Leverage.Value;
 
@@ -127,10 +127,10 @@ namespace CFD_API.Controllers
             //var secIds = groupByPositions.Select(o => Convert.ToInt32(o.First().SecurityID)).Distinct().ToList();
             //var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
 
-            var redisQuoteClient = RedisClient.As<Quote>();
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDefs = redisProdDefClient.GetAll();
-            var quotes = redisQuoteClient.GetAll();
+            //var redisQuoteClient = RedisClient.As<Quote>();
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            //var prodDefs = redisProdDefClient.GetAll();
+            //var quotes = redisQuoteClient.GetAll();
 
             foreach (var positionGroup in groupByPositions) //for every position group
             {
@@ -147,7 +147,7 @@ namespace CFD_API.Controllers
                     if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
-                        var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null) continue;
 
@@ -170,7 +170,7 @@ namespace CFD_API.Controllers
                         var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
                         var tradeValueUSD = tradeValue;
                         if (prodDef.Ccy2 != "USD")
-                            tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+                            tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
                         dto.invest = tradeValueUSD/dto.leverage;
 
@@ -216,15 +216,15 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var redisQuoteClient = RedisClient.As<Quote>();
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            //var redisQuoteClient = RedisClient.As<Quote>();
 
             //var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
 
             //if (security == null)
             //    throw new Exception("security not found");
 
-            var prodDef = redisProdDefClient.GetById(form.securityId);
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             if (prodDef == null)
                 throw new Exception("security not found");
 
@@ -234,9 +234,9 @@ namespace CFD_API.Controllers
             //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
             //************************************************************************
 
-            decimal tradeValueCcy2 = FX.ConvertUSDtoCcy(tradeValueUSD, prodDef.Ccy2, RedisClient);
+            decimal tradeValueCcy2 = FX.ConvertUSDtoCcy(tradeValueUSD, prodDef.Ccy2, WebCache.ProdDefs, WebCache.Quotes);
 
-            var quote = redisQuoteClient.GetById(form.securityId);
+            var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
             var quotePrice = form.isLong ? quote.Offer : quote.Bid;
             decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
             decimal stopPx = form.isLong ? quotePrice*(1 - 1/form.leverage) : quotePrice*(1 + 1/form.leverage);
@@ -269,7 +269,7 @@ namespace CFD_API.Controllers
             var tradedValue = result.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(result.LongQty ?? result.ShortQty);
             var tradedValueUSD = tradedValue.Value;
             if (prodDef.Ccy2 != "USD")
-                tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", RedisClient);
+                tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
             ////var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
             //decimal settlP;
@@ -293,7 +293,6 @@ namespace CFD_API.Controllers
                 leverage = result.Leverage.Value,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
-
                 stopPx = result.StopPx,
                 stopOID = result.StopOID,
             };
@@ -310,8 +309,8 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = redisProdDefClient.GetById(form.securityId);
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             if (prodDef == null)
                 throw new Exception("security not found");
 
@@ -384,8 +383,8 @@ namespace CFD_API.Controllers
             //var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = redisProdDefClient.GetById(form.securityId);
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
@@ -417,8 +416,8 @@ namespace CFD_API.Controllers
             //var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = redisProdDefClient.GetById(form.securityId);
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
@@ -450,8 +449,8 @@ namespace CFD_API.Controllers
             //var dbSec = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = redisProdDefClient.GetById(form.securityId);
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;

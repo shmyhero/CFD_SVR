@@ -32,6 +32,8 @@ namespace CFD_API.Caching
             ProdDefs = new List<ProdDef>();
             Quotes = new List<Quote>();
             TickToday = new ConcurrentDictionary<int, List<TickDTO>>();
+            TickWeek = new ConcurrentDictionary<int, List<TickDTO>>();
+            TickMonth = new ConcurrentDictionary<int, List<TickDTO>>();
 
             //get value from Redis
             try
