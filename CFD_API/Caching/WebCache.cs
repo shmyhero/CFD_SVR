@@ -6,7 +6,7 @@ using System.Threading;
 using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
-using Elmah;
+using CFD_COMMON.Utils;
 
 namespace CFD_API.Caching
 {
@@ -23,6 +23,8 @@ namespace CFD_API.Caching
         public static IList<ProdDef> ProdDefs { get; private set; }
         public static IList<Quote> Quotes { get; private set; }
         public static ConcurrentDictionary<int, List<TickDTO>> TickToday { get; private set; }
+        public static ConcurrentDictionary<int, List<TickDTO>> TickWeek { get; private set; }
+        public static ConcurrentDictionary<int, List<TickDTO>> TickMonth { get; private set; }
 
         static WebCache()
         {
@@ -50,9 +52,20 @@ namespace CFD_API.Caching
 
         private static void UpdateTicks(object state)
         {
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //the logic here must be identical as CFD_JOBS.Ayondo.TickChartWorker
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            UpdateTicksByConditions(TickToday, TickSize.OneMinute, TimeSpan.FromHours(12));
+            UpdateTicksByConditions(TickWeek, TickSize.TenMinute, TimeSpan.FromDays(7));
+            UpdateTicksByConditions(TickMonth, TickSize.OneHour, TimeSpan.FromDays(30));
+        }
+
+        private static void UpdateTicksByConditions(ConcurrentDictionary<int, List<TickDTO>> dicTicks, TickSize tickSize, TimeSpan tsTickListLength)
+        {
             try
             {
-                foreach (var pair in TickToday)
+                foreach (var pair in dicTicks)
                 {
                     //var count = TickToday[pair.Key].Count;
                     //var first = TickToday[pair.Key].First();
@@ -73,7 +86,8 @@ namespace CFD_API.Caching
                     var newTick = new TickDTO()
                     {
                         p = CFD_COMMON.Utils.Quotes.GetLastPrice(quote),
-                        time = quote.Time
+                        //time = quote.Time
+                        time = Quotes.Max(o => o.Time) //为了在价格不变的时候补点
                     };
 
                     if (pair.Value.Count == 0)
@@ -86,7 +100,7 @@ namespace CFD_API.Caching
                     if (lastInList.time >= newTick.time)
                         continue;
 
-                    if (CFD_COMMON.Utils.DateTimes.IsEqualDownToMinute(lastInList.time, newTick.time))
+                    if (Ticks.IsTickEqual(lastInList.time, newTick.time, tickSize))
                         pair.Value[pair.Value.Count - 1] = newTick; //update
                     else
                     {
@@ -96,9 +110,9 @@ namespace CFD_API.Caching
                     //delete old (before xxx hours ago)
                     var dtLast = pair.Value.Last().time;
                     var dtFirst = pair.Value.First().time;
-                    if (dtLast - dtFirst > TimeSpan.FromHours(12))
+                    if (dtLast - dtFirst > tsTickListLength)
                     {
-                        TickToday[pair.Key] = pair.Value.Where(o => dtLast - o.time <= TimeSpan.FromHours(12)).ToList();
+                        TickToday[pair.Key] = pair.Value.Where(o => dtLast - o.time <= tsTickListLength).ToList();
                     }
 
                     //var count2 = TickToday[pair.Key].Count;
@@ -107,7 +121,7 @@ namespace CFD_API.Caching
                     //CFDGlobal.LogLine(count + " => " + count2 + "   " + first.time + " ~ " + last.time + "  =>  " + first2.time + " ~ " + last2.time);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 CFDGlobal.LogExceptionAsInfo(e);
             }

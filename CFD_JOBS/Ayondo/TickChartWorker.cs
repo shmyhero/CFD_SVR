@@ -121,7 +121,7 @@ namespace CFD_JOBS.Ayondo
             ref int appendCounter, ref int updateCounter, ref int ignoreCount)
         {
             //redis tick list
-            var list = redisTickClient.Lists[GetTickListNamePrefix(tickSize) + secId];
+            var list = redisTickClient.Lists[Ticks.GetTickListNamePrefix(tickSize) + secId];
 
             var newTick = new Tick {P = Quotes.GetLastPrice(quote), Time = dtAyondoNow};
 
@@ -142,7 +142,7 @@ namespace CFD_JOBS.Ayondo
             }
 
             //update last tick in redis
-            if (IsTickEqual(last.Time, dtAyondoNow, tickSize))
+            if (Ticks.IsTickEqual(last.Time, dtAyondoNow, tickSize))
             {
                 updateCounter++;
                 list[list.Count - 1] = newTick;
@@ -174,7 +174,7 @@ namespace CFD_JOBS.Ayondo
             int appendCount = 0;
             int newCount = 0;
 
-            string redisListKeyPrefix = GetTickListNamePrefix(tickSize);
+            string redisListKeyPrefix = Ticks.GetTickListNamePrefix(tickSize);
 
             var clearWhenSize = GetClearWhenSize(tickSize);
             var clearToSize = GetClearToSize(tickSize);
@@ -216,7 +216,7 @@ namespace CFD_JOBS.Ayondo
                 //var lastTick = JsonConvert.DeserializeObject<Tick>(redisClient.GetItemFromList(listName, (int) listCount - 1)); //last tick in cache
                 if (newTick.Time > lastTick.Time)
                 {
-                    if (IsTickEqual(newTick.Time, lastTick.Time, tickSize))
+                    if (Ticks.IsTickEqual(newTick.Time, lastTick.Time, tickSize))
                     {
                         //CFDGlobal.LogLine(quote.Id + " update");
                         updateCount++;
@@ -243,42 +243,6 @@ namespace CFD_JOBS.Ayondo
 
             CFDGlobal.LogLine(tickSize + " total: " + quotes.Count +
                               " update: " + updateCount + " append: " + appendCount + " identical: " + identicalCount + " new: " + newCount + " overdue: " + overdueCount);
-        }
-
-        private static string GetTickListNamePrefix(TickSize tickSize)
-        {
-            switch (tickSize)
-            {
-                case TickSize.OneMinute:
-                    return "tick:";
-                    break;
-                case TickSize.TenMinute:
-                    return "tick10m:";
-                    break;
-                case TickSize.OneHour:
-                    return "tick1h:";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
-            }
-        }
-
-        private static bool IsTickEqual(DateTime t1, DateTime t2, TickSize tickSize)
-        {
-            switch (tickSize)
-            {
-                case TickSize.OneMinute:
-                    return DateTimes.IsEqualDownToMinute(t1, t2);
-                    break;
-                case TickSize.TenMinute:
-                    return DateTimes.IsEqualDownTo10Minute(t1, t2);
-                    break;
-                case TickSize.OneHour:
-                    return DateTimes.IsEqualDownToHour(t1, t2);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
-            }
         }
 
         private static int GetClearWhenSize(TickSize tickSize)
@@ -317,11 +281,6 @@ namespace CFD_JOBS.Ayondo
             }
         }
 
-        public enum TickSize
-        {
-            OneMinute,
-            TenMinute,
-            OneHour
-        }
+        
     }
 }

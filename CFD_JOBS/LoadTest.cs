@@ -20,7 +20,7 @@ namespace CFD_JOBS
 
         public void Run()
         {
-            var defaultConnectionLimit = System.Net.ServicePointManager.DefaultConnectionLimit=10000;
+            var defaultConnectionLimit = System.Net.ServicePointManager.DefaultConnectionLimit = 10000;
 
             var db = CFDEntities.Create();
 
@@ -31,11 +31,13 @@ namespace CFD_JOBS
             //IList<Task> tasks = new List<Task>();
             IList<Thread> threads = new List<Thread>();
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 10; i++)
             {
                 foreach (var user in users)
                 {
-                    var threadStart = new ParameterizedThreadStart(DoUserOperation);
+                    //var threadStart = new ParameterizedThreadStart(DoUserOperation);
+                    var threadStart = new ParameterizedThreadStart(DoRandomAPI);
+
                     //var threadStart = new ThreadStart(DoUserOperation);
                     var thread = new Thread(threadStart);
                     thread.Start(user);
@@ -75,7 +77,7 @@ namespace CFD_JOBS
 
             foreach (var group in groupBy)
             {
-                CFDGlobal.LogLine(group.Key+":");
+                CFDGlobal.LogLine(group.Key + ":");
                 foreach (var responseInfo in group)
                 {
                     CFDGlobal.LogLine(responseInfo.TotalMilliSecond.ToString());
@@ -85,7 +87,7 @@ namespace CFD_JOBS
 
         private void DoUserOperation(Object obj)
         {
-            var user = (User)obj;
+            var user = (User) obj;
 
             //-----------------Initialize----------------------
             CFDGlobal.LogLine(Thread.CurrentThread.ManagedThreadId + " " + user.Id + " Initializing...");
@@ -245,6 +247,67 @@ namespace CFD_JOBS
             hubConnection.Stop();
         }
 
+        private void DoRandomAPI(Object obj)
+        {
+            var user = (User) obj;
+
+            var dt = DateTime.UtcNow;
+            while (DateTime.UtcNow - dt < TimeSpan.FromMinutes(5)) //////////////////test for how long
+            {
+                Thread.Sleep(GetRandomIdleTime());
+                var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/stock/topGainer");
+                var topGainer = GetResponseJArray(GetResponseString(request));
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/index");
+                var index = GetResponseJArray(GetResponseString(request));
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/fx");
+                var fx = GetResponseJArray(GetResponseString(request));
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/futures");
+                var futures = GetResponseJArray(GetResponseString(request));
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/byIds/34821,34804,34768,34858,34847,34817,34763,34864");
+                var byIds = GetResponseJArray(GetResponseString(request));
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/banner");
+                var banner = GetResponseJArray(GetResponseString(request));
+
+                var secId = 34804; //fx
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/" + secId);
+                var security = GetResponseJObject(GetResponseString(request));
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/today");
+                var tick = GetResponseJArray(GetResponseString(request));
+
+
+                ////持仓
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
+                //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
+                //open = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+
+                ////平仓
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/closed");
+                //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
+                //closed = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+
+                ////统计
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/user/plReport");
+                //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
+                //var plReport = GetResponseJArray(GetResponseString(request));
+            }
+        }
+
         private string GetResponseString(WebRequest request)
         {
             var url = request.RequestUri.AbsolutePath;
@@ -257,7 +320,7 @@ namespace CFD_JOBS
             {
                 var dtBegin = DateTime.UtcNow;
                 CFDGlobal.LogLine(Thread.CurrentThread.ManagedThreadId + " getting " + url + "...");
-                using(var response = request.GetResponseAsync().Result)
+                using (var response = request.GetResponseAsync().Result)
                 {
                     using (var responseStream = response.GetResponseStream())
                     {
@@ -265,11 +328,11 @@ namespace CFD_JOBS
                         {
                             result = sr.ReadToEnd();
                             totalMilliseconds = (DateTime.UtcNow - dtBegin).TotalMilliseconds;
-                            CFDGlobal.LogLine(Thread.CurrentThread.ManagedThreadId + " end " + url + " -> " + totalMilliseconds);
+                            //CFDGlobal.LogLine(Thread.CurrentThread.ManagedThreadId + " end " + url + " -> " + totalMilliseconds);
                         }
                     }
                 }
-}
+            }
             catch
             {
                 isSuccess = false;

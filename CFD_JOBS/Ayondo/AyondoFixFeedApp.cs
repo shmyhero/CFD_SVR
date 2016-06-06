@@ -216,11 +216,7 @@ namespace CFD_JOBS.Ayondo
             var now = DateTime.Now;
             if (now - BeginTimeForMsgCount > TimeSpan.FromSeconds(1))
             {
-                CFDGlobal.LogLine("Count: " + MsgCount + "/" + MsgTotalCount
-                                  + " Time: " + quotes.Min(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
-                                  + " ~ " + quotes.Max(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
-                                  + ". Saving to redis...");
-
+                var dtBeginSave = DateTime.Now;
                 try
                 {
                     using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
@@ -233,6 +229,11 @@ namespace CFD_JOBS.Ayondo
                 {
                     CFDGlobal.LogException(e);
                 }
+
+                CFDGlobal.LogLine("Count: " + MsgCount + "/" + MsgTotalCount
+                                  + " Time: " + quotes.Min(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
+                                  + " ~ " + quotes.Max(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
+                                  + ". Save to redis "+(DateTime.Now-dtBeginSave).TotalMilliseconds);
 
                 //reset vars
                 BeginTimeForMsgCount = now;

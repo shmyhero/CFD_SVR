@@ -132,6 +132,7 @@
     <Compile Include="Utils\Products.cs" />
     <Compile Include="Utils\Quotes.cs" />
     <Compile Include="Utils\Randoms.cs" />
+    <Compile Include="Utils\Ticks.cs" />
     <Compile Include="Utils\YunPianMessenger.cs" />
   </ItemGroup>
   <ItemGroup>

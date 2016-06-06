@@ -94,6 +94,42 @@ namespace CFD_API.Controllers
         [Route("{securityId}/tick/week")]
         public List<TickDTO> GetWeekTicks(int securityId)
         {
+            List<TickDTO> result;
+
+            //get from WebCache
+            var tryGetValue = WebCache.TickWeek.TryGetValue(securityId, out result);
+            if (tryGetValue)
+                return result;
+
+            //get from Redis
+            var redisTickClient = RedisClient.As<Tick>();
+            var ticks = redisTickClient.Lists["tick10m:" + securityId].GetAll();
+
+            if (ticks.Count == 0)
+                result = new List<TickDTO>();
+            else
+            {
+                var lastTickTime = ticks.Last().Time;
+
+                var ticksWeek = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromDays(7));
+
+                result = ticksWeek.Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            }
+
+            WebCache.TickWeek.AddOrUpdate(securityId, result, ((i, dtos) => dtos));
+
+            return result;
+        }
+
+        /// <summary>
+        /// obsolete
+        /// </summary>
+        /// <param name="securityId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{securityId}/tick/week2")]
+        public List<TickDTO> GetWeekTicks2(int securityId)
+        {
             var redisTickClient = RedisClient.As<Tick>();
 
             var ticks = redisTickClient.Lists["tick10m:" + securityId].GetAll();
@@ -124,6 +160,42 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("{securityId}/tick/month")]
         public List<TickDTO> GetMonthTicks(int securityId)
+        {
+            List<TickDTO> result;
+
+            //get from WebCache
+            var tryGetValue = WebCache.TickMonth.TryGetValue(securityId, out result);
+            if (tryGetValue)
+                return result;
+
+            //get from Redis
+            var redisTickClient = RedisClient.As<Tick>();
+            var ticks = redisTickClient.Lists["tick1h:" + securityId].GetAll();
+
+            if (ticks.Count == 0)
+                result = new List<TickDTO>();
+            else
+            {
+                var lastTickTime = ticks.Last().Time;
+
+                var ticksMonth = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromDays(30));
+
+                result = ticksMonth.Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            }
+
+            WebCache.TickMonth.AddOrUpdate(securityId, result, ((i, dtos) => dtos));
+
+            return result;
+        }
+
+        /// <summary>
+        /// obsolete
+        /// </summary>
+        /// <param name="securityId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{securityId}/tick/month2")]
+        public List<TickDTO> GetMonthTicks2(int securityId)
         {
             var redisTickClient = RedisClient.As<Tick>();
 
