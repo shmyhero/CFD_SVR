@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
+using CFD_API.Caching;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
@@ -340,17 +341,17 @@ namespace CFD_API.Controllers
             var balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
             var positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
 
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var redisQuoteClient = RedisClient.As<Quote>();
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            //var redisQuoteClient = RedisClient.As<Quote>();
 
-            var prodDefs = redisProdDefClient.GetAll();
-            var quotes = redisQuoteClient.GetAll();
+            //var prodDefs = redisProdDefClient.GetAll();
+            //var quotes = redisQuoteClient.GetAll();
 
             decimal marginUsed = 0;
             decimal totalUPL = 0;
             foreach (var report in positionReports)
             {
-                var prodDef = prodDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 if (prodDef == null) continue;
 
@@ -360,7 +361,7 @@ namespace CFD_API.Controllers
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
                 var tradeValueUSD = tradeValue;
                 if (prodDef.Ccy2 != "USD")
-                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
                 marginUsed += tradeValueUSD.Value/report.Leverage.Value;
 
@@ -369,7 +370,7 @@ namespace CFD_API.Controllers
                     totalUPL += report.UPL.Value;
                 else
                 {
-                    var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                    var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                     if (quote == null)
                         CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID);
                     else
@@ -409,11 +410,11 @@ namespace CFD_API.Controllers
             //var secIds = positionOpenReports.Select(o => o.SecurityID).Concat(positionHistoryReports.Select(o => o.SecurityID)).Distinct().Select(o => Convert.ToInt32(o)).ToList();
             //var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
 
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var redisQuoteClient = RedisClient.As<Quote>();
+            //var redisProdDefClient = RedisClient.As<ProdDef>();
+            //var redisQuoteClient = RedisClient.As<Quote>();
 
-            var prodDefs = redisProdDefClient.GetAll();
-            var quotes = redisQuoteClient.GetAll();
+            //var prodDefs = redisProdDefClient.GetAll();
+            //var quotes = redisQuoteClient.GetAll();
 
             var indexPL = new PLReportDTO() {name = "指数"};
             var fxPL = new PLReportDTO() {name = "外汇"};
@@ -425,7 +426,7 @@ namespace CFD_API.Controllers
             {
                 var secId = Convert.ToInt32(report.SecurityID);
 
-                var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                 if (prodDef == null) continue;
 
@@ -437,7 +438,7 @@ namespace CFD_API.Controllers
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
                 var tradeValueUSD = tradeValue;
                 if (prodDef.Ccy2 != "USD")
-                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
                 var invest = tradeValueUSD.Value/report.Leverage.Value;
 
@@ -446,7 +447,7 @@ namespace CFD_API.Controllers
                     pl = report.UPL.Value;
                 else
                 {
-                    var quote = quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                    var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                     if (quote == null)
                         CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID);
                     else
@@ -494,7 +495,7 @@ namespace CFD_API.Controllers
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
 
-                        var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null) continue;
 
@@ -506,7 +507,7 @@ namespace CFD_API.Controllers
                         var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
                         var tradeValueUSD = tradeValue;
                         if (prodDef.Ccy2 != "USD")
-                            tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", prodDefs, quotes);
+                            tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
                         var invest = tradeValueUSD.Value/openReport.Leverage.Value;
                         var pl = closeReport.PL.Value;

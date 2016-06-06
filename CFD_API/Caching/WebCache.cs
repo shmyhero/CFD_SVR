@@ -114,7 +114,7 @@ namespace CFD_API.Caching
                     var dtFirst = pair.Value.First().time;
                     if (dtLast - dtFirst > tsTickListLength)
                     {
-                        TickToday[pair.Key] = pair.Value.Where(o => dtLast - o.time <= tsTickListLength).ToList();
+                        dicTicks[pair.Key] = pair.Value.Where(o => dtLast - o.time <= tsTickListLength).ToList();
                     }
 
                     //var count2 = TickToday[pair.Key].Count;
