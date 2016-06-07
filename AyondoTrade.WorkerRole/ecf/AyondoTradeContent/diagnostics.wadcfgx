@@ -4,8 +4,7 @@
     <WadCfg>
       <DiagnosticMonitorConfiguration overallQuotaInMB="4096">
         <DiagnosticInfrastructureLogs scheduledTransferLogLevelFilter="Error" />
-        <!--<Logs scheduledTransferPeriod="PT1M" scheduledTransferLogLevelFilter="Error" />-->
-        <Logs scheduledTransferPeriod="PT1M" />
+        <Logs scheduledTransferPeriod="PT1M" scheduledTransferLogLevelFilter="Error" />
         <Directories scheduledTransferPeriod="PT1M">
           <IISLogs containerName="wad-iis-logfiles" />
           <FailedRequestLogs containerName="wad-failedrequestlogs" />

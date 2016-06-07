@@ -31,7 +31,7 @@ namespace CFD_JOBS
             //IList<Task> tasks = new List<Task>();
             IList<Thread> threads = new List<Thread>();
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
             {
                 foreach (var user in users)
                 {
@@ -252,54 +252,54 @@ namespace CFD_JOBS
             var user = (User) obj;
 
             var dt = DateTime.UtcNow;
-            while (DateTime.UtcNow - dt < TimeSpan.FromMinutes(3)) //////////////////test for how long
+            while (DateTime.UtcNow - dt < TimeSpan.FromMinutes(0.01)) //////////////////test for how long
             {
-                Thread.Sleep(GetRandomIdleTime());
-                var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/stock/topGainer");
-                var topGainer = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/stock/topGainer");
+                //var topGainer = GetResponseJArray(GetResponseString(request));
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/index");
-                var index = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/index");
+                //var index = GetResponseJArray(GetResponseString(request));
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/fx");
-                var fx = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/fx");
+                //var fx = GetResponseJArray(GetResponseString(request));
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/futures");
-                var futures = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/futures");
+                //var futures = GetResponseJArray(GetResponseString(request));
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/byIds/34821,34804,34768,34858,34847,34817,34763,34864");
-                var byIds = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/byIds/34821,34804,34768,34858,34847,34817,34763,34864");
+                //var byIds = GetResponseJArray(GetResponseString(request));
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/banner");
-                var banner = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/banner");
+                //var banner = GetResponseJArray(GetResponseString(request));
 
-                var secId = 34804; //fx
+                //var secId = 34804; //fx
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/" + secId);
-                var security = GetResponseJObject(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/" + secId);
+                //var security = GetResponseJObject(GetResponseString(request));
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/today");
-                var tick = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/today");
+                //var tick = GetResponseJArray(GetResponseString(request));
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/week");
-                tick = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/week");
+                //tick = GetResponseJArray(GetResponseString(request));
 
-                Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/month");
-                tick = GetResponseJArray(GetResponseString(request));
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/month");
+                //tick = GetResponseJArray(GetResponseString(request));
 
 
                 //持仓
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
+                var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
                 request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 var open = GetResponseJArray(GetResponseString(request));
 

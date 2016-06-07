@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Threading;
+using AyondoTrade;
 using CFD_COMMON;
 using QuickFix;
 using QuickFix.FIX44;
@@ -11,6 +12,43 @@ using QuickFix.Transport;
 
 namespace CFD_JOBS.Ayondo
 {
+    //public class MyLogFactory : ILogFactory
+    //{
+    //    public ILog Create(SessionID sessionID)
+    //    {
+    //        return new MyLog();
+    //    }
+    //}
+    //public class MyLog : ILog
+    //{
+    //    IList<string> logs=new List<string>(); 
+
+    //    public void Dispose()
+    //    {
+    //        //throw new NotImplementedException();
+    //    }
+
+    //    public void Clear()
+    //    {
+    //        //throw new NotImplementedException();
+    //    }
+
+    //    public void OnIncoming(string msg)
+    //    {
+    //        logs.Add(DateTime.UtcNow.ToString("HH:mm:ss.ffffff") + " "+msg);
+    //    }
+
+    //    public void OnOutgoing(string msg)
+    //    {
+    //        //throw new NotImplementedException();
+    //    }
+
+    //    public void OnEvent(string s)
+    //    {
+    //        //throw new NotImplementedException();
+    //    }
+    //}
+
     internal class AyondoFixTradeWorker
     {
         public static void Run()
@@ -18,8 +56,8 @@ namespace CFD_JOBS.Ayondo
             //Start FIX
             SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath"));
             AyondoFixTradeApp myApp = new AyondoFixTradeApp();
-            IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
-            ILogFactory logFactory = new FileLogFactory(settings);
+            IMessageStoreFactory storeFactory = new MemoryStoreFactory();// FileStoreFactory(settings);
+            ILogFactory logFactory =new FileLogFactory(settings);
             SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings, logFactory);
 
             initiator.Start();

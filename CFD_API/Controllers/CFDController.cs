@@ -56,20 +56,5 @@ namespace CFD_API.Controllers
         {
             return db.Users.FirstOrDefault(o => o.Id == UserId);
         }
-
-        protected static AyondoTradeClient GetAyondoTradeClient()
-        {
-            EndpointAddress edpHttp = new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL);
-
-            //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-
-            var basicHttp = new BasicHttpBinding(BasicHttpSecurityMode.None);
-
-            //The maximum message size quota for incoming messages (65536) has been exceeded. To increase the quota, use the MaxReceivedMessageSize property on the appropriate binding element.
-            basicHttp.MaxReceivedMessageSize = 10*1024*1024;
-
-            AyondoTradeClient clientHttp = new AyondoTradeClient(basicHttp, edpHttp);
-            return clientHttp;
-        }
     }
 }

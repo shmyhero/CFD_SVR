@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
 using CFD_API.Controllers.Attributes;
+using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using ServiceStack.Redis;
 

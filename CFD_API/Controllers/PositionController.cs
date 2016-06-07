@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.ServiceModel;
 using System.Web.Http;
 using AutoMapper;
+using AyondoTrade;
 using AyondoTrade.FaultModel;
 using AyondoTrade.Model;
 using CFD_API.Caching;
@@ -41,7 +42,7 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             var result = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
 
@@ -111,10 +112,10 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             var endTime = DateTime.UtcNow;
-            var startTime = endTime.AddMonths(-3);
+            var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
             var historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
 
             var result = new List<PositionHistoryDTO>();
@@ -248,7 +249,7 @@ namespace CFD_API.Controllers
             CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
                               "|quantity:" + quantity + " stopPx:" + stopPx);
 
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             PositionReport result;
             try
@@ -317,7 +318,7 @@ namespace CFD_API.Controllers
             //var redisQuoteClient = RedisClient.As<Quote>();
             //var quote = redisQuoteClient.GetById(form.securityId);
 
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             PositionReport result;
             try
@@ -366,7 +367,7 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             PositionReport report;
             try
@@ -399,7 +400,7 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             PositionReport report;
             try
@@ -432,7 +433,7 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             PositionReport report;
             try

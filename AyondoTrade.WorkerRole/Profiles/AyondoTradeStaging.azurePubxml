@@ -3,9 +3,9 @@
   <PropertyGroup>
     <AzureCredentials>{"ServiceManagementEndpoint":"https:\/\/management.core.chinacloudapi.cn\/","SubscriptionId":"f745a967-b2bf-4265-903a-c85772287ff7"}</AzureCredentials>
     <AzureDeleteDeploymentOnFailure>False</AzureDeleteDeploymentOnFailure>
-    <AzureDeploymentLabel>AyondoTrade.AzureService</AzureDeploymentLabel>
+    <AzureDeploymentLabel>AyondoTrade.WorkerRole</AzureDeploymentLabel>
     <AzureDeploymentReplacementMethod>AutomaticUpgrade</AzureDeploymentReplacementMethod>
-    <AzureSlot>Production</AzureSlot>
+    <AzureSlot>Staging</AzureSlot>
     <AzureEnableRemoteDesktop>True</AzureEnableRemoteDesktop>
     <AzureEnableWebDeploy>False</AzureEnableWebDeploy>
     <AzureFallbackToDeleteAndRecreateIfUpgradeFails>False</AzureFallbackToDeleteAndRecreateIfUpgradeFails>
@@ -19,6 +19,6 @@
     <AzureStorageAccountName>cfdstorage</AzureStorageAccountName>
     <AzureAppendTimestampToDeploymentLabel>True</AzureAppendTimestampToDeploymentLabel>
     <EnableRemoteDebugger>True</EnableRemoteDebugger>
-    <RemoteDebuggerConnectorCertificateThumbprint>03FEDDC913EBFD2B46A39E0DC06732D3CD8A255F</RemoteDebuggerConnectorCertificateThumbprint>
+    <RemoteDebuggerConnectorCertificateThumbprint>9818BC62F9E6567362EF326929E8DFB915ABD49F</RemoteDebuggerConnectorCertificateThumbprint>
   </PropertyGroup>
 </Project>

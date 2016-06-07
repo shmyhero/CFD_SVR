@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.ServiceModel;
 using System.Threading;
 using AyondoTrade;
+using CFD_API.Caching;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
@@ -31,7 +31,7 @@ namespace CFD_API.SignalR
 
         private readonly Timer _timer;
 
-        private readonly IRedisTypedClient<ProdDef> _redisClient;
+        //private readonly IRedisTypedClient<ProdDef> _redisClient;
 
         private IHubConnectionContext<dynamic> Clients { get; set; }
 
@@ -39,7 +39,7 @@ namespace CFD_API.SignalR
         {
             Clients = clients;
 
-            _redisClient = CFDGlobal.BasicRedisClientManager.GetClient().As<ProdDef>();
+            //_redisClient = CFDGlobal.BasicRedisClientManager.GetClient().As<ProdDef>();
 
             CFDGlobal.LogLine("Starting QuoteFeedTicker...");
             //Start();
@@ -59,16 +59,14 @@ namespace CFD_API.SignalR
 
                     try
                     {
-                        EndpointAddress edpHttp = new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL);
-                        //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-                        AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+                        var clientHttp = new AyondoTradeClient();
 
                         var dicUserPositionReports = clientHttp.PopAutoClosedPositionReports(ayondoUsernames);
 
                         if (dicUserPositionReports.Count > 0)
                         {
                             var secIds = dicUserPositionReports.SelectMany(o => o.Value.Select(p => Convert.ToInt32(p.SecurityID))).Distinct().ToList();
-                            var prodDefs = _redisClient.GetByIds(secIds);
+                            //var prodDefs = _redisClient.GetByIds(secIds);
 
                             foreach (var pair in dicUserPositionReports) //for every ayondo username
                             {
@@ -80,7 +78,7 @@ namespace CFD_API.SignalR
                                     var alerts = pair.Value.Select(report =>
                                     {
                                         var secId = Convert.ToInt32(report.SecurityID);
-                                        var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
                                         var name = Translator.GetCName(prodDef.Name);
                                         var stopTake = report.Text == "Position DELETE by StopLossOrder" ? "止损" : "止盈";
                                         var price = Math.Round(report.SettlPrice, prodDef.Prec);
@@ -95,7 +93,7 @@ namespace CFD_API.SignalR
                     }
                     catch (Exception e)
                     {
-                        CFDGlobal.LogException(e);
+                        CFDGlobal.LogExceptionAsInfo(e);
                     }
                 }
 

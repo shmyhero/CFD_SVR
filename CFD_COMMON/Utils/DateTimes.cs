@@ -33,5 +33,10 @@ namespace CFD_COMMON.Utils
                    && t1.Month == t2.Month
                    && t1.Year == t2.Year;
         }
+
+        public static DateTime GetHistoryQueryStartTime(DateTime endTime)
+        {
+            return endTime.AddDays(-10);
+        }
     }
 }

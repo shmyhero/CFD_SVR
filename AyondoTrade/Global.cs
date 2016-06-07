@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Web.Hosting;
 using CFD_COMMON;
-using CFD_JOBS.Ayondo;
 using QuickFix;
 using QuickFix.FIX44;
 using QuickFix.Transport;
@@ -13,16 +11,6 @@ namespace AyondoTrade
 {
     public class Global
     {
-        public Global()
-        {
-            CFDGlobal.LogLine("Global class constructor");
-        }
-
-        ~Global()
-        {
-            CFDGlobal.LogLine("Global class destructor");
-        }
-
         private static Timer _timer;
         private static TimeSpan _updateInterval = TimeSpan.FromMinutes(10);
 
@@ -33,47 +21,49 @@ namespace AyondoTrade
 
             var application = new AyondoFixTradeApp();
 
-            var path = CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath");
-            var serverPath = HostingEnvironment.MapPath("~/" + path);
+            SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath"));
 
-            SessionSettings settings = new SessionSettings(serverPath);
+            //var path = CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath");
+            //var serverPath = HostingEnvironment.MapPath("~/" + path);
 
-            //Resetting some config path because this code is run by IIS, different from RoleEntryPoint
-            //Therefore the current path is now in IIS folder, not application folder
-            //Converting all the path to the application folder:
-            var dictionary = settings.Get(new SessionID("FIX.4.4", "THCN_Trade", "TXIOBridge"));
+            //SessionSettings settings = new SessionSettings(serverPath);
 
-            //DataDictionary=.\Fix44.xml
-            var cfgKey = "DataDictionary";
-            var oldValue = dictionary.GetString(cfgKey);
-            var newValue = HostingEnvironment.MapPath("~/Fix44.xml");
-            CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
-            dictionary.SetString(cfgKey, newValue);
+            ////Resetting some config path because this code is run by IIS, different from RoleEntryPoint
+            ////Therefore the current path is now in IIS folder, not application folder
+            ////Converting all the path to the application folder:
+            //var dictionary = settings.Get(new SessionID("FIX.4.4", "THCN_Trade", "TXIOBridge"));
+
+            ////DataDictionary=.\Fix44.xml
+            //var cfgKey = "DataDictionary";
+            //var oldValue = dictionary.GetString(cfgKey);
+            //var newValue = HostingEnvironment.MapPath("~/Fix44.xml");
+            //CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
+            //dictionary.SetString(cfgKey, newValue);
             
-            //FileStorePath=.\fixfiles
-            cfgKey = "FileStorePath";
-            oldValue = dictionary.GetString(cfgKey);
-            newValue = HostingEnvironment.MapPath("~/fixfiles");
-            CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
-            dictionary.SetString(cfgKey, newValue);
+            ////FileStorePath=.\fixfiles
+            //cfgKey = "FileStorePath";
+            //oldValue = dictionary.GetString(cfgKey);
+            //newValue = HostingEnvironment.MapPath("~/fixfiles");
+            //CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
+            //dictionary.SetString(cfgKey, newValue);
 
-            //FileLogPath=.\fixfiles\log
-            cfgKey = "FileLogPath";
-            oldValue = dictionary.GetString(cfgKey);
-            newValue = HostingEnvironment.MapPath("~/fixfiles/log");
-            CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
-            dictionary.SetString(cfgKey, newValue);
+            ////FileLogPath=.\fixfiles\log
+            //cfgKey = "FileLogPath";
+            //oldValue = dictionary.GetString(cfgKey);
+            //newValue = HostingEnvironment.MapPath("~/fixfiles/log");
+            //CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
+            //dictionary.SetString(cfgKey, newValue);
 
-            //DebugFileLogPath=.\fixfiles\log
-            cfgKey = "DebugFileLogPath";
-            oldValue = dictionary.GetString(cfgKey);
-            newValue = HostingEnvironment.MapPath("~/fixfiles/log");
-            CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
-            dictionary.SetString(cfgKey, newValue);
+            ////DebugFileLogPath=.\fixfiles\log
+            //cfgKey = "DebugFileLogPath";
+            //oldValue = dictionary.GetString(cfgKey);
+            //newValue = HostingEnvironment.MapPath("~/fixfiles/log");
+            //CFDGlobal.LogLine("Setting FIX Config - " + cfgKey + ": " + oldValue + " -> " + newValue);
+            //dictionary.SetString(cfgKey, newValue);
 
-            //settings.Set(new SessionID("FIX.4.4", "THCN_Trade", "TXIOBridge"), new Dictionary("DataDictionary",));
+            ////settings.Set(new SessionID("FIX.4.4", "THCN_Trade", "TXIOBridge"), new Dictionary("DataDictionary",));
 
-            IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
+            IMessageStoreFactory storeFactory = new MemoryStoreFactory();//new FileStoreFactory(settings);
             ILogFactory logFactory = new FileLogFactory(settings); //fix logging
             SocketInitiator initiator = new SocketInitiator(application, storeFactory, settings, logFactory);
 

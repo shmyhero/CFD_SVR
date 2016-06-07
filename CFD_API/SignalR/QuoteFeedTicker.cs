@@ -38,7 +38,7 @@ namespace CFD_API.SignalR
         private readonly Timer _timer;
         //private volatile bool _updatingStockPrices = false;
 
-        private readonly IRedisTypedClient<Quote> _redisClient;
+        //private readonly IRedisTypedClient<Quote> _redisClient;
 
         private IDictionary<int, Quote> dicLastQuotes;
 

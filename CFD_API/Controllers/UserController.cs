@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
+using AyondoTrade;
 using CFD_API.Caching;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
@@ -331,7 +332,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public BalanceDTO GetBalance()
         {
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             var user = GetUser();
 
@@ -398,10 +399,10 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var clientHttp = GetAyondoTradeClient();
+            var clientHttp = new AyondoTradeClient();
 
             var endTime = DateTime.UtcNow;
-            var startTime = endTime.AddMonths(-3);
+            var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
 
             var positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
             var positionHistoryReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);

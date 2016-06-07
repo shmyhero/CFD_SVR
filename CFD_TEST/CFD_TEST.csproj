@@ -89,7 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AyondoTrade\AyondoTrade.csproj">
-      <Project>{F1D574AD-2C9B-4519-BD1C-2A4CDD71F6D0}</Project>
+      <Project>{bba7bba6-7410-44a1-9948-b3a22ab76e7c}</Project>
       <Name>AyondoTrade</Name>
     </ProjectReference>
     <ProjectReference Include="..\CFD_COMMON\CFD_COMMON.csproj">

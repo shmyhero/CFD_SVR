@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ServiceModel;
 using AyondoTrade.Model;
+using CFD_COMMON;
 
 namespace AyondoTrade
 {
@@ -12,12 +13,36 @@ namespace AyondoTrade
         {
         }
 
+        public AyondoTradeClient()
+            : this(new NetTcpBinding(SecurityMode.None) {MaxReceivedMessageSize = 10*1024*1024}, new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL))
+        {
+        }
+
+        //public static AyondoTradeClient GetAyondoTradeClient()
+        //{
+        //    //EndpointAddress edpHttp = new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL);
+        //    EndpointAddress edpTcp = new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL);
+
+        //    //var basicHttp = new BasicHttpBinding(BasicHttpSecurityMode.None);
+        //    var netTcp = new NetTcpBinding(SecurityMode.None);
+
+        //    //The maximum message size quota for incoming messages (65536) has been exceeded. To increase the quota, use the MaxReceivedMessageSize property on the appropriate binding element.
+        //    //basicHttp.MaxReceivedMessageSize = 10*1024*1024;
+        //    netTcp.MaxReceivedMessageSize = 10 * 1024 * 1024;
+
+        //    //AyondoTradeClient clientHttp = new AyondoTradeClient(basicHttp, edpHttp);
+        //    AyondoTradeClient clientTcp = new AyondoTradeClient(netTcp, edpTcp);
+
+        //    //return clientHttp;
+        //    return clientTcp;
+        //}
+
         public string Test(string text)
         {
             return base.Channel.Test(text);
         }
 
-        public IList<Model.PositionReport> GetPositionReport(string username, string password)
+        public IList<PositionReport> GetPositionReport(string username, string password)
         {
             return base.Channel.GetPositionReport(username, password);
         }

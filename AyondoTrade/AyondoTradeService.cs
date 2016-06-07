@@ -579,15 +579,15 @@ namespace AyondoTrade
                 CreateTime =
                     DateTime.ParseExact(report.ClearingBusinessDate.Obj, FIX_DATETIME_MASK, CultureInfo.CurrentCulture,
                         DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
-                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?) null,
-                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?) null,
+                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null,
+                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?)null,
                 StopOID = report.Any(o => o.Key == Global.FixApp.TAG_StopOID) ? report.GetString(Global.FixApp.TAG_StopOID) : null,
                 TakeOID = report.Any(o => o.Key == Global.FixApp.TAG_TakeOID) ? report.GetString(Global.FixApp.TAG_TakeOID) : null,
-                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
-                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null,
+                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?)null,
+                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?)null,
                 PL = report.GetDecimal(Global.FixApp.TAG_MDS_PL),
-                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?) null,
-                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?) null,
+                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?)null,
+                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?)null,
                 Text = report.Text.Obj,
             };
         }
@@ -608,7 +608,7 @@ namespace AyondoTrade
 
         private static void CheckBusinessMessageReject(string reqId)
         {
-//BusinessMessageReject? e.g. not logged in
+            //BusinessMessageReject? e.g. not logged in
             if (Global.FixApp.BusinessMessageRejects.ContainsKey(reqId))
             {
                 KeyValuePair<DateTime, BusinessMessageReject> msg = new KeyValuePair<DateTime, BusinessMessageReject>(DateTime.UtcNow, null);

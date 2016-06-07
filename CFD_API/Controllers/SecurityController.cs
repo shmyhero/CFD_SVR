@@ -13,7 +13,6 @@ using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
-using ServiceStack.Redis.Generic;
 
 namespace CFD_API.Controllers
 {
@@ -35,7 +34,7 @@ namespace CFD_API.Controllers
 
             var ids = list.Select(o => o.id).ToList();
             //var quotes = redisQuoteClient.GetByIds(ids);
-            var quotes = Caching.WebCache.Quotes.Where(o=>ids.Contains(o.Id)).ToList();
+            var quotes = Caching.WebCache.Quotes.Where(o => ids.Contains(o.Id)).ToList();
             //var prodDefs = redisProdDefClient.GetByIds(ids);
 
             foreach (var security in list)
@@ -97,12 +96,14 @@ namespace CFD_API.Controllers
             //    .ToList();
 
             return Caching.WebCache.ProdDefs
-                    .Where(o => o.QuoteType != enmQuoteType.Inactive
-                    && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
-                    )
+                .Where(o => o.QuoteType != enmQuoteType.Inactive
+                            && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
+                            && o.Bid.HasValue && o.Offer.HasValue
+                )
                 .ToList();
         }
-        private IList<ProdDef> GetActiveProdsByIds(IList<int> ids )
+
+        private IList<ProdDef> GetActiveProdsByIds(IList<int> ids)
         {
             return GetActiveProds().Where(o => ids.Contains(o.Id)).ToList();
         }
@@ -140,7 +141,7 @@ namespace CFD_API.Controllers
             //var redisTypedClient = RedisClient.As<ProdDef>();
 
             //var prodDefs = redisTypedClient.GetByIds(ids);
-            var prodDefs =GetActiveProdsByIds(ids);
+            var prodDefs = GetActiveProdsByIds(ids);
 
             //var securities = db.AyondoSecurities.Where(o => ids.Contains(o.Id)).ToList();
 
@@ -386,7 +387,7 @@ namespace CFD_API.Controllers
             decimal maxLong = perPriceCcy2*quote.Offer*prodDef.MaxSizeLong;
             decimal maxShort = perPriceCcy2*quote.Bid*prodDef.MaxSizeShort;
 
-            var fxRate = FX.Convert(1, prodDef.Ccy2, "USD",WebCache.ProdDefs,WebCache.Quotes);
+            var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
             result.minValueLong = minLong*fxRate;
             result.minValueShort = minShort*fxRate;
@@ -445,7 +446,7 @@ namespace CFD_API.Controllers
         {
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
-            var idsExistingProducts = RedisClient.As<ProdDef>().GetByIds(ids).Select(o=>o.Id).ToList();
+            var idsExistingProducts = WebCache.ProdDefs.Where(o => ids.Contains(o.Id)).Select(o => o.Id).ToList();
 
             var securityService = new SecurityService(db);
             securityService.AddBookmarks(UserId, idsExistingProducts);

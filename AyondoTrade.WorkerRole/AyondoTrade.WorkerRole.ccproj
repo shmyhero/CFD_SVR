@@ -5,13 +5,13 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>2.8</ProductVersion>
-    <ProjectGuid>0d87afc0-b56b-4d18-8c4c-5e6dfe4b1372</ProjectGuid>
+    <ProjectGuid>e3c7f636-ce79-4f96-88bc-a54057c23692</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AyondoTrade.AzureService</RootNamespace>
-    <AssemblyName>AyondoTrade.AzureService</AssemblyName>
+    <RootNamespace>AyondoTrade.WorkerRole</RootNamespace>
+    <AssemblyName>AyondoTrade.WorkerRole</AssemblyName>
     <StartDevelopmentStorage>True</StartDevelopmentStorage>
-    <Name>AyondoTrade.AzureService</Name>
+    <Name>AyondoTrade.WorkerRole</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,9 +39,9 @@
   <ItemGroup>
     <ProjectReference Include="..\AyondoTrade\AyondoTrade.csproj">
       <Name>AyondoTrade</Name>
-      <Project>{f1d574ad-2c9b-4519-bd1c-2a4cdd71f6d0}</Project>
+      <Project>{bba7bba6-7410-44a1-9948-b3a22ab76e7c}</Project>
       <Private>True</Private>
-      <RoleType>Web</RoleType>
+      <RoleType>Worker</RoleType>
       <RoleName>AyondoTrade</RoleName>
       <UpdateDiagnosticsConnectionStringOnPublish>True</UpdateDiagnosticsConnectionStringOnPublish>
     </ProjectReference>
@@ -54,8 +54,8 @@
     <DiagnosticsConfiguration Include="AyondoTradeContent\diagnostics.wadcfgx" />
   </ItemGroup>
   <ItemGroup>
-    <PublishProfile Include="Profiles\AyondoTradeProduction.azurePubxml" />
     <PublishProfile Include="Profiles\AyondoTradeStaging.azurePubxml" />
+    <PublishProfile Include="Profiles\AyondoTradeProduction.azurePubxml" />
   </ItemGroup>
   <!-- Import the target files for this project template -->
   <PropertyGroup>

@@ -15,7 +15,7 @@ namespace CFD_JOBS.Ayondo
         {
             SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixFeedCfgFilePath"));
             AyondoFixFeedApp myApp = new AyondoFixFeedApp();
-            IMessageStoreFactory storeFactory = new FileStoreFactory(settings);
+            IMessageStoreFactory storeFactory = new MemoryStoreFactory();//new FileStoreFactory(settings);
             //ILogFactory logFactory = new FileLogFactory(settings);
             SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings
                 //,logFactory

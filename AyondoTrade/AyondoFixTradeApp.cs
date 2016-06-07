@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using CFD_COMMON;
+using CFD_COMMON.Utils;
 using QuickFix;
 using QuickFix.DataDictionary;
 using QuickFix.Fields;
@@ -12,26 +13,16 @@ using QuickFix.FIX44;
 using ServiceStack.Text;
 using Message = QuickFix.Message;
 
-namespace CFD_JOBS.Ayondo
+namespace AyondoTrade
 {
     public class AyondoFixTradeApp : MessageCracker, IApplication
     {
-        public AyondoFixTradeApp()
-        {
-            CFDGlobal.LogLine("AyondoFixTradeApp class constructor");
-        }
-
-        ~AyondoFixTradeApp()
-        {
-            CFDGlobal.LogLine("AyondoFixTradeApp class destructor");
-        }
-
         public Session Session { get; set; }
 
         private readonly string _username = CFDGlobal.GetConfigurationSetting("ayondoFixTradeUsername");
         private readonly string _password = CFDGlobal.GetConfigurationSetting("ayondoFixTradePassword");
         private DataDictionary _dd;
-        private string _account;
+        private string _account = "138927238972";
         private readonly IDictionary<string, DateTime> _userLastLoginTime = new Dictionary<string, DateTime>();
 
         //custom tags
@@ -182,6 +173,8 @@ namespace CFD_JOBS.Ayondo
 
         public void FromApp(Message message, SessionID sessionID)
         {
+            //return;
+
             try
             {
                 //CFDGlobal.LogLine("FromApp: ");
@@ -203,7 +196,7 @@ namespace CFD_JOBS.Ayondo
             catch (Exception e)
             {
                 CFDGlobal.LogLine("FromApp: " + message.ToString());
-                CFDGlobal.LogException(e);
+                CFDGlobal.LogExceptionAsInfo(e);
             }
         }
 
@@ -252,6 +245,10 @@ namespace CFD_JOBS.Ayondo
             TAG_MDS_EndTime = _dd.FieldsByName["MDS_EndTime"].Tag;
             TAG_MDS_SetSize = _dd.FieldsByName["MDS_SetSize"].Tag;
             TAG_MDS_SetIndex = _dd.FieldsByName["MDS_SetIndex"].Tag;
+
+            ////testing
+            //LogOn("thcn1", "3IcFhY");
+            ////LogOn("thcn23Dbrd", "Gqb9tA");
         }
 
         #endregion
@@ -361,7 +358,9 @@ namespace CFD_JOBS.Ayondo
 
         public void OnMessage(RequestForPositionsAck response, SessionID session)
         {
-            CFDGlobal.LogLine("OnMessage:RequestForPositionsAck: " + GetMessageString(response));
+            //return;
+
+            //CFDGlobal.LogLine("OnMessage:RequestForPositionsAck: " + GetMessageString(response));
 
             var guid = response.PosReqID.Obj;
 
@@ -375,7 +374,9 @@ namespace CFD_JOBS.Ayondo
 
         public void OnMessage(PositionReport report, SessionID session)
         {
-            //CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report,true,true));
+            //return;
+
+            //CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report, true, true));
 
             //var groupTags = report.GetGroupTags();
             //var noPositionsGroup = new PositionReport.NoPositionsGroup();
@@ -786,13 +787,33 @@ namespace CFD_JOBS.Ayondo
         private void QueryPositionReport()
         {
             var m = new RequestForPositions();
-            m.PosReqID = new PosReqID("pos_req:" + _account);
+            m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
             m.PosReqType = new PosReqType(PosReqType.POSITIONS);
             m.ClearingBusinessDate = new ClearingBusinessDate("0-0-0");
             m.TransactTime = new TransactTime(DateTime.UtcNow);
             m.Account = new Account(_account);
             m.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
             SendMessage(m);
+
+            ////testing
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
+            //m.PosReqID = new PosReqID(Guid.NewGuid().ToString());
+            //SendMessage(m);
         }
 
         private void QueryOrderMassStatus()
@@ -854,7 +875,7 @@ namespace CFD_JOBS.Ayondo
             m.SetField(new StringField(TAG_MDS_RequestID) {Obj = Guid.NewGuid().ToString()});
             m.SetField(new Account(_account));
             m.SetField(new IntField(TAG_MDS_HistoryType) {Obj = 1});
-            m.SetField(new IntField(TAG_MDS_StartTime) { Obj = (int)(DateTime.UtcNow.AddMonths(-3)).ToUnixTime() });
+            m.SetField(new IntField(TAG_MDS_StartTime) { Obj = (int)(DateTimes.GetHistoryQueryStartTime(DateTime.UtcNow)).ToUnixTime() });
             m.SetField(new IntField(TAG_MDS_EndTime) {Obj = (int) (DateTime.UtcNow).ToUnixTime()});
 
             //m.SetField(new IntField(7945) {Obj = 99999});
