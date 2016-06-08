@@ -12,6 +12,8 @@ using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
+using Pinyin4net;
+using Pinyin4net.Format;
 using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
@@ -318,9 +320,38 @@ namespace CFD_API.Controllers
 
             //var securities = db.AyondoSecurities.Where(o => o.CName != null).ToList();
 
+            var format = new HanyuPinyinOutputFormat();
+            format.ToneType = HanyuPinyinToneType.WITHOUT_TONE;
+            format.CaseType = HanyuPinyinCaseType.LOWERCASE;
+            format.VCharType = HanyuPinyinVCharType.WITH_V;
+
             var securityDtos = activeProds
-                .Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUsStocks(o.Symbol))
-                .Select(o => Mapper.Map<SecurityDTO>(o)).Where(o => (o.name.ToLower().Contains(keyword) || o.symbol.ToLower().Contains(keyword)))
+                .Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUsStocks(o.Symbol)) //US Stocks and non-stocks
+                .Select(o => Mapper.Map<SecurityDTO>(o))
+                .Where(delegate(SecurityDTO o)
+                {
+                    //for example 雅培制药
+
+                    var charArray = o.name.ToCharArray();//雅,培,制,药
+                    var arrPinyin = charArray.Select(c => PinyinHelper.ToHanyuPinyinStringArray(c, format))
+                        .Where(arr => arr != null && arr.Length > 0)
+                        .Select(arr => arr[0]);//ya,pei,zhi,yao
+
+                    bool pinyinMatch = false;
+
+                    if (arrPinyin.Any())
+                    {
+                        var aggregateFirstLetters = arrPinyin.Select(p=>p.Substring(0,1)).Aggregate((p, n) => p + n);//ypzy
+                        var aggregateFullPinyin = arrPinyin.Aggregate((p, n) => p + n);//yapeizhiyao
+
+                        pinyinMatch = aggregateFirstLetters.Contains(keyword)|| aggregateFullPinyin.Contains(keyword);
+                    }
+
+                    return (o.name.ToLower().Contains(keyword)
+                            || o.symbol.ToLower().Contains(keyword)
+                            || pinyinMatch
+                            );
+                })
                 .OrderBy(o => o.symbol)
                 .Skip((page - 1)*perPage).Take(perPage).ToList();
 
