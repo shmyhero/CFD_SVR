@@ -181,16 +181,16 @@ namespace CFD_TEST
                 //    CFDGlobal.BasicRedisClientManager.GetClient());
                 //userController.CreateAyondoAccount(user);
 
-                //购买商品
-                var positionController = new PositionController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(), CFDGlobal.BasicRedisClientManager.GetClient());
-                for (int j = 0; j < 100; j++)
-                {
-                    //positionController.ControllerContext.Request=new HttpRequestMessage(HttpMethod.Post,"");
-                    //positionController.ControllerContext.Request.Headers.Authorization = new AuthenticationHeaderValue("Basic", user.Id + "_" + user.Token);
+                ////购买商品
+                //var positionController = new PositionController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(), CFDGlobal.BasicRedisClientManager.GetClient());
+                //for (int j = 0; j < 100; j++)
+                //{
+                //    //positionController.ControllerContext.Request=new HttpRequestMessage(HttpMethod.Post,"");
+                //    //positionController.ControllerContext.Request.Headers.Authorization = new AuthenticationHeaderValue("Basic", user.Id + "_" + user.Token);
 
-                    positionController.UserId = user.Id;
-                    positionController.NewPosition(new NewPositionFormDTO() {invest = 100, isLong = true, leverage = 20, securityId = 34804});
-                }
+                //    positionController.UserId = user.Id;
+                //    positionController.NewPosition(new NewPositionFormDTO() {invest = 100, isLong = true, leverage = 20, securityId = 34804});
+                //}
             }
         }
     }
