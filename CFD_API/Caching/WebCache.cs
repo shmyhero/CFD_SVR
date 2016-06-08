@@ -17,7 +17,7 @@ namespace CFD_API.Caching
         private static Timer _timerTick;
 
         private static TimeSpan _updateIntervalProdDef = TimeSpan.FromSeconds(5);
-        private static TimeSpan _updateIntervalQuote = TimeSpan.FromSeconds(1);
+        private static TimeSpan _updateIntervalQuote = TimeSpan.FromMilliseconds(500);
         private static TimeSpan _updateIntervalTick = TimeSpan.FromSeconds(10);
 
         public static IList<ProdDef> ProdDefs { get; private set; }

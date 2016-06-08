@@ -112,6 +112,10 @@
 
             // Add a client-side hub method that the server will call
             ticker.client.p = function (stocks) {
+                if (stocks && stocks.length > 0)
+                    var date = new Date();
+                $('#log').append(date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "." + date.getMilliseconds() + " ");
+
                 $.each(stocks, function () {
 
                     //alert(this);
@@ -122,7 +126,7 @@
                     //$stockTableBody.find('tr[data-symbol=' + stock.Symbol + ']')
                     //    .replaceWith($row);
 
-                    $('#log').append(this.id + " " + this.last + " " + this.bid + " " + this.ask + ', ');
+                    $('#log').append(this.id + " " + this.last + " " + this.bid + " " + this.ask + " " + this.time + ', ');
                 });
 
                 if (stocks && stocks.length > 0) {

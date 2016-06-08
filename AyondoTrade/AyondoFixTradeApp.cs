@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using CFD_COMMON;
+using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using QuickFix;
 using QuickFix.DataDictionary;
@@ -713,6 +715,10 @@ namespace AyondoTrade
                         QueryPositionHistory();
                     else if (action == 'q' || action == 'Q')
                         break;
+                    else if (action == 't')
+                        TestUserLogin();
+                    else if (action == 'p')
+                        TestPositionReport();
                 }
                 catch (System.Exception e)
                 {
@@ -723,9 +729,41 @@ namespace AyondoTrade
             Console.WriteLine("Program shutdown.");
         }
 
+        private void TestPositionReport()
+        {
+            foreach (var pair in UsernameAccounts)
+            {
+                var account = pair.Value;
+
+                RequestForPositions(account);
+            }
+        }
+
+        private void TestUserLogin()
+        {
+            var db = CFDEntities.Create();
+            var users = db.Users.Where(o => o.Id >= 2042 && o.Id <= 2087).ToList();
+
+            IList<string> loginReqIds = new List<string>();
+            foreach (var user in users)
+            {
+                var logOnReqId = LogOn(user.AyondoUsername, user.AyondoPassword);
+                loginReqIds.Add(logOnReqId);
+            }
+
+            var dtLogon = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(1000);
+
+                if (users.All(u => UsernameAccounts.ContainsKey(u.AyondoUsername)))
+                    break;
+            } while (DateTime.UtcNow - dtLogon <= TimeSpan.FromSeconds(60)); // timeout
+        }
+
         private char QueryAction()
         {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,g,x".Split(','));
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,g,t,p".Split(','));
 
             string cmd = Console.ReadLine().Trim();
             if (cmd.Length != 1 || validActions.Contains(cmd) == false)
@@ -875,7 +913,7 @@ namespace AyondoTrade
             m.SetField(new StringField(TAG_MDS_RequestID) {Obj = Guid.NewGuid().ToString()});
             m.SetField(new Account(_account));
             m.SetField(new IntField(TAG_MDS_HistoryType) {Obj = 1});
-            m.SetField(new IntField(TAG_MDS_StartTime) { Obj = (int)(DateTimes.GetHistoryQueryStartTime(DateTime.UtcNow)).ToUnixTime() });
+            m.SetField(new IntField(TAG_MDS_StartTime) {Obj = (int) (DateTimes.GetHistoryQueryStartTime(DateTime.UtcNow)).ToUnixTime()});
             m.SetField(new IntField(TAG_MDS_EndTime) {Obj = (int) (DateTime.UtcNow).ToUnixTime()});
 
             //m.SetField(new IntField(7945) {Obj = 99999});

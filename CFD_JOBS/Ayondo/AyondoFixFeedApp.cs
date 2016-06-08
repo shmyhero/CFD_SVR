@@ -214,7 +214,7 @@ namespace CFD_JOBS.Ayondo
 
             //do save Every Second
             var now = DateTime.Now;
-            if (now - BeginTimeForMsgCount > TimeSpan.FromSeconds(1))
+            if (now - BeginTimeForMsgCount > TimeSpan.FromMilliseconds(500))
             {
                 var dtBeginSave = DateTime.Now;
                 try

@@ -193,7 +193,7 @@ namespace CFD_API.Controllers
         private static readonly string AMS_HEADER_AUTH = "Bearer RDFFMzY2NDktMDlDRC00OTg4LUEwNjAtRUM0NDIxMTNDMDBCMDQ5QUU3NjgtRTUyMy00RkE0LTk5MTQtNTMwQUM1RjY5MDY5";
         private static readonly string AMS_HOST = "https://www.ayondo-ams.com/tradeherocn/";
 
-        private void CreateAyondoAccount(User user)
+        public void CreateAyondoAccount(User user)
         {
             //Must be 5-20 alphanumeric characters (letter and numerals only).
             //Usernames cannot be purely numeric.

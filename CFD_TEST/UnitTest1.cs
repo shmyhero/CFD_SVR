@@ -1,16 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using AyondoTrade;
+using CFD_API;
+using CFD_API.Controllers;
+using CFD_API.DTO.FormDTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
+using CFD_COMMON.Models.Context;
+using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
-using CFD_JOBS.Ayondo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using ServiceStack.Redis.Generic;
-using ServiceStack.Text;
 
 namespace CFD_TEST
 {
@@ -67,7 +69,6 @@ namespace CFD_TEST
             var utc = JsonConvert.SerializeObject(DateTime.UtcNow);
             var local = JsonConvert.SerializeObject(DateTime.Now);
             var unspecify = JsonConvert.SerializeObject(new DateTime(2008, 12, 28));
-            
         }
 
         [TestMethod]
@@ -75,11 +76,11 @@ namespace CFD_TEST
         {
             var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
 
-            redisClient.SetEntry("key1","value1");
+            redisClient.SetEntry("key1", "value1");
 
             var value = redisClient.GetValue("key1");
 
-            Assert.AreEqual("value1",value);
+            Assert.AreEqual("value1", value);
 
             redisClient.RemoveEntry(new[] {"key1"});
         }
@@ -132,10 +133,10 @@ namespace CFD_TEST
 
                 IRedisList<Tick> redisList = redisTickClient.Lists["tick10m:" + prodDef.Id];
 
-                if(redisList.Count==0)
+                if (redisList.Count == 0)
                     continue;
 
-                var list =redisList.GetAll();
+                var list = redisList.GetAll();
                 var last = list[list.Count - 1];
                 var last2 = list[list.Count - 2];
 
@@ -143,7 +144,7 @@ namespace CFD_TEST
                     && last.Time - last2.Time >= TimeSpan.FromHours(1))
                 {
                     var totalHours = (last.Time - last2.Time).TotalHours;
-                    CFDGlobal.LogLine(prodDef.Id+":"+totalHours.ToString());
+                    CFDGlobal.LogLine(prodDef.Id + ":" + totalHours.ToString());
 
                     var tick = redisTickClient.Lists["tick:" + prodDef.Id].Pop();
                 }
@@ -155,6 +156,42 @@ namespace CFD_TEST
         {
             var sendSms = YunPianMessenger.SendSms("【MyHero运营】运营监控，本条为测试短信123！@#，回T退订", "13764349804");
             CFDGlobal.LogLine(sendSms);
+        }
+
+        [TestMethod]
+        public void TestAccounts()
+        {
+            var db = CFDEntities.Create();
+            var userService = new UserService(db);
+            var users = db.Users.ToList();
+
+            var id = 11144440001;
+            for (int i = 0; i < 100; i++)
+            {
+                if (i < 28) continue;
+
+                var phone = (id + i).ToString();
+
+                //注册cfd账号
+                //userService.CreateUserByPhone(phone);
+
+                //注册ayondo账号
+                var user = users.FirstOrDefault(o => o.Phone == phone);
+                //var userController = new UserController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(),
+                //    CFDGlobal.BasicRedisClientManager.GetClient());
+                //userController.CreateAyondoAccount(user);
+
+                //购买商品
+                var positionController = new PositionController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(), CFDGlobal.BasicRedisClientManager.GetClient());
+                for (int j = 0; j < 100; j++)
+                {
+                    //positionController.ControllerContext.Request=new HttpRequestMessage(HttpMethod.Post,"");
+                    //positionController.ControllerContext.Request.Headers.Authorization = new AuthenticationHeaderValue("Basic", user.Id + "_" + user.Token);
+
+                    positionController.UserId = user.Id;
+                    positionController.NewPosition(new NewPositionFormDTO() {invest = 100, isLong = true, leverage = 20, securityId = 34804});
+                }
+            }
         }
     }
 }

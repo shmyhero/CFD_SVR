@@ -32,7 +32,7 @@ namespace CFD_API.SignalR
         ////stock can go up or down by a percentage of this factor on each change
         //private readonly double _rangePercent = .002;
 
-        private readonly TimeSpan _updateInterval = TimeSpan.FromMilliseconds(1000);
+        private readonly TimeSpan _updateInterval = TimeSpan.FromMilliseconds(500);
         //private readonly Random _updateOrNotRandom = new Random();
 
         private readonly Timer _timer;
@@ -93,6 +93,8 @@ namespace CFD_API.SignalR
                                     last = Quotes.GetLastPrice(o),
                                     bid = o.Bid,
                                     ask = o.Offer,
+
+                                    time=o.Time,
                                 }));
                             }
                         }

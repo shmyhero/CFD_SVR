@@ -40,6 +40,9 @@ namespace CFD_API.Controllers
         public int UserId
         {
             get { return Convert.ToInt32(HttpContext.Current.User.Identity.Name); }
+
+            ////for unit testing
+            //get; set;
         }
 
         /// <summary>

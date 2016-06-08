@@ -9,7 +9,10 @@ namespace CFD_API.DTO.SignalRDTO
     {
         public int id { get; set; }
         public decimal last { get; set; }
+
         public decimal bid { get; set; }
         public decimal ask { get; set; }
+
+        public DateTime time { get; set; }
     }
 }
