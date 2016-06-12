@@ -103,16 +103,27 @@ namespace AyondoTrade
 
             int countOld = 0;
             int countNew = 0;
+            List<string> keysToRemove;
 
             CFDGlobal.LogLine("AutoClosedPositionReports:" + FixApp.AutoClosedPositionReports.Sum(o => o.Value.Count));
             CFDGlobal.LogLine("Balances:" + FixApp.Balances.Count);
             CFDGlobal.LogLine("BusinessMessageRejects:" + FixApp.BusinessMessageRejects.Count);
             CFDGlobal.LogLine("FailedUserResponses:" + FixApp.FailedUserResponses.Count);
-            CFDGlobal.LogLine("OrderPositionReports:" + FixApp.OrderPositionReports.Sum(o => o.Value.Count));
+
+            //OrderPositionReports
+            countOld = FixApp.OrderPositionReports.Sum(o => o.Value.Count);
+            keysToRemove = FixApp.OrderPositionReports.Where(pair => pair.Value.Count > 0 && dtNow - pair.Value.Last().Key > ts).Select(pair => pair.Key).ToList();
+            foreach (var key in keysToRemove)
+            {
+                IList<KeyValuePair<DateTime, PositionReport>> value;
+                FixApp.OrderPositionReports.TryRemove(key, out value);
+            }
+            countNew = FixApp.OrderPositionReports.Sum(o => o.Value.Count);
+            CFDGlobal.LogLine("OrderPositionReports:" + countOld + " -> " + countNew);
 
             //PositionReports
             countOld = FixApp.PositionReports.Sum(o => o.Value.Count);
-            var keysToRemove = FixApp.PositionReports.Where(pair => pair.Value.Count > 0 && dtNow - pair.Value.Last().Key > ts).Select(pair => pair.Key).ToList();
+            keysToRemove = FixApp.PositionReports.Where(pair => pair.Value.Count > 0 && dtNow - pair.Value.Last().Key > ts).Select(pair => pair.Key).ToList();
             foreach (var key in keysToRemove)
             {
                 IList<KeyValuePair<DateTime, PositionReport>> value;
@@ -121,8 +132,20 @@ namespace AyondoTrade
             countNew = FixApp.PositionReports.Sum(o => o.Value.Count);
             CFDGlobal.LogLine("PositionReports:" + countOld + " -> " + countNew);
 
+            //RejectedExecutionReports
             CFDGlobal.LogLine("RejectedExecutionReports:" + FixApp.RejectedExecutionReports.Count);
-            CFDGlobal.LogLine("RequestForPositionsAcks:" + FixApp.RequestForPositionsAcks.Count);
+
+            //RequestForPositionsAcks
+            countOld = FixApp.RequestForPositionsAcks.Count;
+            keysToRemove = FixApp.RequestForPositionsAcks.Where(pair => dtNow - pair.Value.Key > ts).Select(pair => pair.Key).ToList();
+            foreach (var key in keysToRemove)
+            {
+                KeyValuePair<DateTime, RequestForPositionsAck> value;
+                FixApp.RequestForPositionsAcks.TryRemove(key, out value);
+            }
+            countNew = FixApp.RequestForPositionsAcks.Count;
+            CFDGlobal.LogLine("RequestForPositionsAcks:" + countOld + " -> " + countNew);
+
             CFDGlobal.LogLine("StopTakePositionReports:" + FixApp.StopTakePositionReports.Sum(o => o.Value.Count));
 
             CFDGlobal.LogLine("End clearing old fix messages.");
