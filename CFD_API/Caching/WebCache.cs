@@ -16,7 +16,7 @@ namespace CFD_API.Caching
         private static Timer _timerQuote;
         private static Timer _timerTick;
 
-        private static TimeSpan _updateIntervalProdDef = TimeSpan.FromSeconds(5);
+        private static TimeSpan _updateIntervalProdDef = TimeSpan.FromSeconds(3);
         private static TimeSpan _updateIntervalQuote = TimeSpan.FromMilliseconds(500);
         private static TimeSpan _updateIntervalTick = TimeSpan.FromSeconds(10);
 
@@ -36,31 +36,39 @@ namespace CFD_API.Caching
             TickMonth = new ConcurrentDictionary<int, List<TickDTO>>();
 
             //get value from Redis
-            try
+            using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
             {
-                ProdDefs = CFDGlobal.BasicRedisClientManager.GetClient().As<ProdDef>().GetAll();
-                Quotes = CFDGlobal.BasicRedisClientManager.GetClient().As<Quote>().GetAll();
-            }
-            catch (Exception e)
-            {
-                CFDGlobal.LogExceptionAsInfo(e);
+                try
+                {
+                    ProdDefs = redisClient.As<ProdDef>().GetAll();
+                    Quotes = redisClient.As<Quote>().GetAll();
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogExceptionAsInfo(e);
+                }
             }
 
             //set timer
-            _timerProdDef = new Timer(UpdateProdDefs, null, _updateIntervalProdDef, _updateIntervalProdDef);
-            _timerQuote = new Timer(UpdateQuotes, null, _updateIntervalQuote, _updateIntervalQuote);
-            _timerTick = new Timer(UpdateTicks, null, _updateIntervalTick, _updateIntervalTick);
+            _timerProdDef = new Timer(UpdateProdDefs, null, _updateIntervalProdDef, TimeSpan.FromMilliseconds(-1));
+            _timerQuote = new Timer(UpdateQuotes, null, _updateIntervalQuote, TimeSpan.FromMilliseconds(-1));
+            _timerTick = new Timer(UpdateTicks, null, _updateIntervalTick, TimeSpan.FromMilliseconds(-1));
         }
 
         private static void UpdateTicks(object state)
         {
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //the logic here must be identical as CFD_JOBS.Ayondo.TickChartWorker
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            while (true)
+            {
+                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //the logic here must be identical as CFD_JOBS.Ayondo.TickChartWorker
+                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            UpdateTicksByConditions(TickToday, TickSize.OneMinute, TimeSpan.FromHours(12));
-            UpdateTicksByConditions(TickWeek, TickSize.TenMinute, TimeSpan.FromDays(7));
-            UpdateTicksByConditions(TickMonth, TickSize.OneHour, TimeSpan.FromDays(30));
+                UpdateTicksByConditions(TickToday, TickSize.OneMinute, TimeSpan.FromHours(12));
+                UpdateTicksByConditions(TickWeek, TickSize.TenMinute, TimeSpan.FromDays(7));
+                UpdateTicksByConditions(TickMonth, TickSize.OneHour, TimeSpan.FromDays(30));
+
+                Thread.Sleep(_updateIntervalTick);
+            }
         }
 
         private static void UpdateTicksByConditions(ConcurrentDictionary<int, List<TickDTO>> dicTicks, TickSize tickSize, TimeSpan tsTickListLength)
@@ -131,29 +139,43 @@ namespace CFD_API.Caching
 
         private static void UpdateProdDefs(object state)
         {
-            //CFDGlobal.LogLine("Updating WebCache ProdDefs...");
+            while (true)
+            {
+                //CFDGlobal.LogLine("Updating WebCache ProdDefs...");
+                using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+                {
+                    try
+                    {
+                        ProdDefs = redisClient.As<ProdDef>().GetAll();
+                    }
+                    catch (Exception e)
+                    {
+                        CFDGlobal.LogExceptionAsInfo(e);
+                    }
+                }
 
-            try
-            {
-                ProdDefs = CFDGlobal.BasicRedisClientManager.GetClient().As<ProdDef>().GetAll();
-            }
-            catch (Exception e)
-            {
-                CFDGlobal.LogExceptionAsInfo(e);
+                Thread.Sleep(_updateIntervalProdDef);
             }
         }
 
         private static void UpdateQuotes(object state)
         {
-            //CFDGlobal.LogLine("Updating WebCache Quotes...");
+            while (true)
+            {
+                //CFDGlobal.LogLine("Updating WebCache Quotes...");
+                using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+                {
+                    try
+                    {
+                        Quotes = redisClient.As<Quote>().GetAll();
+                    }
+                    catch (Exception e)
+                    {
+                        CFDGlobal.LogExceptionAsInfo(e);
+                    }
+                }
 
-            try
-            {
-                Quotes = CFDGlobal.BasicRedisClientManager.GetClient().As<Quote>().GetAll();
-            }
-            catch (Exception e)
-            {
-                CFDGlobal.LogExceptionAsInfo(e);
+                Thread.Sleep(_updateIntervalQuote);
             }
         }
     }
