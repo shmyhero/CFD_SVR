@@ -42,6 +42,8 @@ namespace CFD_API.DTO
         public decimal? smd { get; set; }
         public decimal? gsmd { get; set; }
 
+        public string ccy { get; set; }
+
         public List<int> levList { get; set; }
     }
 

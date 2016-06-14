@@ -48,7 +48,8 @@ namespace CFD_API
                     //.ForMember(dest => dest.preClose, opt => opt.MapFrom(src => src.CloseAsk))
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open))
                     .ForMember(dest => dest.tag, opt => opt.MapFrom(src => Products.IsUsStocks(src.Symbol) ? "US" : null))
-                    .ForMember(dest => dest.dcmCount, opt => opt.MapFrom(src => src.Prec));
+                    .ForMember(dest => dest.dcmCount, opt => opt.MapFrom(src => src.Prec))
+                    .ForMember(dest => dest.ccy, opt => opt.MapFrom(src => src.Ccy2));
 
                 cfg.CreateMap<ProdDef, ProdDefDTO>();
 
