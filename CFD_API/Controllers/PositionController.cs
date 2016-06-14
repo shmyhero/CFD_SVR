@@ -91,11 +91,11 @@ namespace CFD_API.Controllers
                 //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                 //************************************************************************
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
-                var tradeValueUSD = tradeValue;
-                if (prodDef.Ccy2 != "USD")
-                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                //var tradeValueUSD = tradeValue;
+                //if (prodDef.Ccy2 != "USD")
+                //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-                posDTO.invest = tradeValueUSD.Value/report.Leverage.Value;
+                posDTO.invest = tradeValue.Value/report.Leverage.Value;
 
                 return posDTO;
             }).Where(o => o != null).ToList();
@@ -169,11 +169,11 @@ namespace CFD_API.Controllers
                         //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                         //************************************************************************
                         var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
-                        var tradeValueUSD = tradeValue;
-                        if (prodDef.Ccy2 != "USD")
-                            tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                        //var tradeValueUSD = tradeValue;
+                        //if (prodDef.Ccy2 != "USD")
+                        //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-                        dto.invest = tradeValueUSD/dto.leverage;
+                        dto.invest = tradeValue/dto.leverage;
 
                         var security = Mapper.Map<SecurityDetailDTO>(prodDef);
                         //security.symbol = prodDef.Symbol;
@@ -268,9 +268,9 @@ namespace CFD_API.Controllers
             }
 
             var tradedValue = result.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(result.LongQty ?? result.ShortQty);
-            var tradedValueUSD = tradedValue.Value;
-            if (prodDef.Ccy2 != "USD")
-                tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+            //var tradedValueUSD = tradedValue.Value;
+            //if (prodDef.Ccy2 != "USD")
+            //    tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
             ////var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
             //decimal settlP;
@@ -290,13 +290,15 @@ namespace CFD_API.Controllers
                 id = result.PosMaintRptID,
                 isLong = result.LongQty != null,
                 settlePrice = settlP,
-                invest = tradedValueUSD/result.Leverage.Value,
+                invest = tradedValue.Value/result.Leverage.Value,
                 leverage = result.Leverage.Value,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
                 stopPx = result.StopPx,
                 stopOID = result.StopOID,
             };
+
+            posDTO.security = new SecurityDetailDTO() {ccy = prodDef.Ccy2};
 
             return posDTO;
         }
