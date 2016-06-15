@@ -75,7 +75,11 @@ namespace CFD_API.SignalR
 
                                 if (tryGetValue)
                                 {
-                                    var alerts = pair.Value.Select(report =>
+                                    var dtNow = DateTime.UtcNow;
+
+                                    var alerts = pair.Value
+                                        .Where(o => dtNow -o.CreateTime <= TimeSpan.FromMinutes(1))//do not send alert about the positions that are closed more than 1 minute ago
+                                        .Select(report =>
                                     {
                                         var secId = Convert.ToInt32(report.SecurityID);
                                         var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
