@@ -25,6 +25,28 @@ namespace AyondoTrade
             return "You entered: " + text;
         }
 
+        public IList<Model.PositionReport> DataTest(int count)
+        {
+            var result=new List<Model.PositionReport>();
+            for (int i = 0; i < count; i++)
+            {
+                result.Add(new Model.PositionReport()
+                {
+                    CreateTime = DateTime.UtcNow,
+                    Leverage = 10,
+                    LongQty = 1.234567890m,
+                    PosMaintRptID = "138111122223",
+                    SecurityID = "12345",
+                    SettlPrice = 123.4567m,
+                    StopOID = "138111133334",
+                    StopPx = 123.7654m,
+                    //PL=null,
+                    //ShortQty = null,
+                });
+            }
+            return result;
+        }
+
         public IDictionary<string, IList<Model.PositionReport>> PopAutoClosedPositionReports(IList<string> usernames)
         {
             var result = new Dictionary<string, IList<Model.PositionReport>>();

@@ -42,6 +42,11 @@ namespace AyondoTrade
             return base.Channel.Test(text);
         }
 
+        public IList<PositionReport> DataTest(int count)
+        {
+            return base.Channel.DataTest(count);
+        }
+
         public IList<PositionReport> GetPositionReport(string username, string password)
         {
             return base.Channel.GetPositionReport(username, password);

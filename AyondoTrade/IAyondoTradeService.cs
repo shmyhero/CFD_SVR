@@ -14,6 +14,9 @@ namespace AyondoTrade
         string Test(string text);
 
         [OperationContract]
+        IList<PositionReport> DataTest(int count);
+
+        [OperationContract]
         IList<PositionReport> GetPositionReport(string username, string password);
 
         [OperationContract]
