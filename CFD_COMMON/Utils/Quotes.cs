@@ -11,7 +11,7 @@ namespace CFD_COMMON.Utils
             int c2 = BitConverter.GetBytes(decimal.GetBits(quote.Bid)[3])[2];
             int decimalCount = Math.Max(c1, c2);
 
-            return Math.Round((quote.Offer + quote.Bid)/2, decimalCount);
+            return Math.Round((quote.Offer + quote.Bid) / 2, decimalCount, MidpointRounding.AwayFromZero);
         }
 
         //public static decimal? GetLastPrice(AyondoSecurity security)
@@ -28,7 +28,7 @@ namespace CFD_COMMON.Utils
             int c2 = BitConverter.GetBytes(decimal.GetBits(prodDef.Bid.Value)[3])[2];
             int decimalCount = Math.Max(c1, c2);
 
-            return Math.Round((prodDef.Offer.Value + prodDef.Bid.Value) / 2, decimalCount);
+            return Math.Round((prodDef.Offer.Value + prodDef.Bid.Value) / 2, decimalCount, MidpointRounding.AwayFromZero);
         }
 
         public static decimal? GetClosePrice(ProdDef prodDef)
@@ -40,7 +40,7 @@ namespace CFD_COMMON.Utils
             int c2 = BitConverter.GetBytes(decimal.GetBits(prodDef.CloseBid.Value)[3])[2];
             int decimalCount = Math.Max(c1, c2);
 
-            return Math.Round((prodDef.CloseAsk.Value + prodDef.CloseBid.Value) / 2, decimalCount);
+            return Math.Round((prodDef.CloseAsk.Value + prodDef.CloseBid.Value) / 2, decimalCount, MidpointRounding.AwayFromZero);
         }
 
         public static decimal? GetOpenPrice(ProdDef prodDef)
@@ -52,7 +52,7 @@ namespace CFD_COMMON.Utils
             int c2 = BitConverter.GetBytes(decimal.GetBits(prodDef.OpenBid.Value)[3])[2];
             int decimalCount = Math.Max(c1, c2);
 
-            return Math.Round((prodDef.OpenAsk.Value + prodDef.OpenBid.Value) / 2, decimalCount);
+            return Math.Round((prodDef.OpenAsk.Value + prodDef.OpenBid.Value) / 2, decimalCount, MidpointRounding.AwayFromZero);
         }
     }
 }
