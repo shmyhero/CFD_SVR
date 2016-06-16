@@ -242,6 +242,9 @@ namespace CFD_API.Controllers
             decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
             decimal stopPx = form.isLong ? quotePrice*(1 - 1/form.leverage) : quotePrice*(1 + 1/form.leverage);
 
+            //prevent lost >100%
+            stopPx = form.isLong ? Maths.Ceiling(stopPx, prodDef.Prec) : Maths.Floor(stopPx, prodDef.Prec);
+
             //Long, Leverage=1, stop will be Zero! which is invalid
             if (stopPx == 0)
                 stopPx = _minStopPx;
@@ -298,7 +301,7 @@ namespace CFD_API.Controllers
                 stopOID = result.StopOID,
             };
 
-            posDTO.security = new SecurityDetailDTO() {ccy = prodDef.Ccy2};
+            posDTO.security = new SecurityDetailDTO() {id=prodDef.Id, ccy = prodDef.Ccy2};
 
             return posDTO;
         }
