@@ -106,7 +106,18 @@ namespace AyondoTrade
             List<string> keysToRemove;
 
             CFDGlobal.LogLine("AutoClosedPositionReports:" + FixApp.AutoClosedPositionReports.Sum(o => o.Value.Count));
-            CFDGlobal.LogLine("Balances:" + FixApp.Balances.Count);
+
+            //Balance
+            countOld = FixApp.Balances.Count;
+            keysToRemove = FixApp.Balances.Where(pair => dtNow - pair.Value.Key > ts).Select(pair => pair.Key).ToList();
+            foreach (var key in keysToRemove)
+            {
+                KeyValuePair<DateTime, decimal> value;
+                FixApp.Balances.TryRemove(key, out value);
+            }
+            countNew = FixApp.Balances.Count;
+            CFDGlobal.LogLine("Balances:" + countOld + " -> " + countNew);
+
             CFDGlobal.LogLine("BusinessMessageRejects:" + FixApp.BusinessMessageRejects.Count);
             CFDGlobal.LogLine("FailedUserResponses:" + FixApp.FailedUserResponses.Count);
 

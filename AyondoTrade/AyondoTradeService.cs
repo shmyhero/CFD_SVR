@@ -62,7 +62,7 @@ namespace AyondoTrade
 
                     if (tryRemove)
                     {
-                        CFDGlobal.LogInformation("Got " + value.Count + " AutoCloseMsg(s) for username:" + username);
+                        CFDGlobal.LogInformation("Popping " + value.Count + " AutoCloseMsg(s) for username:" + username);
 
                         result.Add(username, value.Select(o => MapPositionReport(o.Value)).ToList());
                     }

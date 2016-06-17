@@ -197,7 +197,7 @@ namespace AyondoTrade
             }
             catch (Exception e)
             {
-                CFDGlobal.LogLine("FromApp: " + message.ToString());
+                CFDGlobal.LogInformation("FromApp: " + message.ToString());
                 CFDGlobal.LogExceptionAsInfo(e);
             }
         }
