@@ -240,6 +240,7 @@ namespace CFD_API.Controllers
             var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
             var quotePrice = form.isLong ? quote.Offer : quote.Bid;
             decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
+            quantity = Maths.Floor(quantity, 8);
             decimal stopPx = form.isLong ? quotePrice*(1 - 1/form.leverage) : quotePrice*(1 + 1/form.leverage);
 
             //prevent lost >100%
@@ -248,9 +249,6 @@ namespace CFD_API.Controllers
             //Long, Leverage=1, stop will be Zero! which is invalid
             if (stopPx == 0)
                 stopPx = _minStopPx;
-
-            CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
-                              "|quantity:" + quantity + " stopPx:" + stopPx);
 
             var clientHttp = new AyondoTradeClient();
 
@@ -270,22 +268,36 @@ namespace CFD_API.Controllers
                     __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
+            CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
+                              " | quote:" + quotePrice + " | quantity:" + quantity + " stopPx:" + stopPx + " | Qty:" + (result.LongQty ?? result.ShortQty) + " SettlePrice:" +
+                              result.SettlPrice);
+
+            ////when price changes, set stop again
+            //if (quotePrice != result.SettlPrice)
+            //{
+            //    decimal newStopPx = result.LongQty.HasValue ? result.SettlPrice*(1 - 1/result.Leverage.Value) : result.SettlPrice*(1 + 1/result.Leverage.Value);
+            //    newStopPx = result.LongQty.HasValue ? Maths.Ceiling(newStopPx, prodDef.Prec) : Maths.Floor(newStopPx, prodDef.Prec);
+
+            //    if (newStopPx != stopPx)
+            //    {
+            //        CFDGlobal.LogLine("ReSet StopPx: quote:" + quotePrice + " settlePrice:" + result.SettlPrice + " | oldStop:" + stopPx + " newStop:" + newStopPx);
+            //        try
+            //        {
+            //            var positionReport = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, Convert.ToInt32(result.SecurityID), result.StopOID, newStopPx,
+            //                result.PosMaintRptID);
+            //        }
+            //        catch (FaultException<OrderRejectedFault> e)
+            //        {
+            //            CFDGlobal.LogWarning(Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text));
+            //        }
+            //    }
+            //}
+
             var tradedValue = result.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(result.LongQty ?? result.ShortQty);
             //var tradedValueUSD = tradedValue.Value;
             //if (prodDef.Ccy2 != "USD")
             //    tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-            ////var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-            //decimal settlP;
-            //if (security != null && security.DisplayDecimals != null)
-            //{
-            //    int decimalCount = Convert.ToInt32(security.DisplayDecimals);
-            //    settlP = Math.Round(result.SettlPrice, decimalCount);
-            //}
-            //else
-            //{
-            //    settlP = result.SettlPrice;
-            //}
             decimal settlP = Math.Round(result.SettlPrice, prodDef.Prec);
 
             var posDTO = new PositionDTO()
@@ -301,7 +313,7 @@ namespace CFD_API.Controllers
                 stopOID = result.StopOID,
             };
 
-            posDTO.security = new SecurityDetailDTO() {id=prodDef.Id, ccy = prodDef.Ccy2};
+            posDTO.security = new SecurityDetailDTO() {id = prodDef.Id, ccy = prodDef.Ccy2};
 
             return posDTO;
         }

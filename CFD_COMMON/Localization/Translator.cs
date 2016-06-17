@@ -39,6 +39,10 @@
                 return "杠杆高于最大限制";
             if (ayondoText == "Server detected error: Trading not permitted outside of market hours")
                 return "闭市时间不能交易";
+            if (ayondoText == "Server detected error: The target position is pending close")
+                return "该仓位正在被系统自动关闭中";
+            if (ayondoText == "No Position")
+                return "仓位不存在";
 
             if (ayondoText == "No such order: StopLoss level within minimum stop distance")
                 return "止损价与当前价间距过小";
