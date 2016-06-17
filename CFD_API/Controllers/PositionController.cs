@@ -97,6 +97,9 @@ namespace CFD_API.Controllers
 
                 posDTO.invest = tradeValue.Value/report.Leverage.Value;
 
+                //var upl = report.LongQty != null ? tradeValueUSD.Value * (quote.Bid / report.SettlPrice - 1) : tradeValueUSD.Value * (1 - quote.Offer / report.SettlPrice);
+                //CFDGlobal.LogLine(security.ccy+"\t"+ report.UPL+"\t"+upl);
+
                 return posDTO;
             }).Where(o => o != null).ToList();
 
@@ -272,26 +275,26 @@ namespace CFD_API.Controllers
                               " | quote:" + quotePrice + " | quantity:" + quantity + " stopPx:" + stopPx + " | Qty:" + (result.LongQty ?? result.ShortQty) + " SettlePrice:" +
                               result.SettlPrice);
 
-            ////when price changes, set stop again
-            //if (quotePrice != result.SettlPrice)
-            //{
-            //    decimal newStopPx = result.LongQty.HasValue ? result.SettlPrice*(1 - 1/result.Leverage.Value) : result.SettlPrice*(1 + 1/result.Leverage.Value);
-            //    newStopPx = result.LongQty.HasValue ? Maths.Ceiling(newStopPx, prodDef.Prec) : Maths.Floor(newStopPx, prodDef.Prec);
+            //when price changes, set stop again to prevent >100% loss
+            if (quotePrice != result.SettlPrice)
+            {
+                decimal newStopPx = result.LongQty.HasValue ? result.SettlPrice*(1 - 1/result.Leverage.Value) : result.SettlPrice*(1 + 1/result.Leverage.Value);
+                newStopPx = result.LongQty.HasValue ? Maths.Ceiling(newStopPx, prodDef.Prec) : Maths.Floor(newStopPx, prodDef.Prec);
 
-            //    if (newStopPx != stopPx)
-            //    {
-            //        CFDGlobal.LogLine("ReSet StopPx: quote:" + quotePrice + " settlePrice:" + result.SettlPrice + " | oldStop:" + stopPx + " newStop:" + newStopPx);
-            //        try
-            //        {
-            //            var positionReport = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, Convert.ToInt32(result.SecurityID), result.StopOID, newStopPx,
-            //                result.PosMaintRptID);
-            //        }
-            //        catch (FaultException<OrderRejectedFault> e)
-            //        {
-            //            CFDGlobal.LogWarning(Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text));
-            //        }
-            //    }
-            //}
+                if (result.LongQty.HasValue && newStopPx > stopPx || result.ShortQty.HasValue && newStopPx < stopPx)
+                {
+                    CFDGlobal.LogLine("ReSet StopPx: quote:" + quotePrice + " settlePrice:" + result.SettlPrice + " | oldStop:" + stopPx + " newStop:" + newStopPx);
+                    try
+                    {
+                        var positionReport = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, Convert.ToInt32(result.SecurityID), result.StopOID, newStopPx,
+                            result.PosMaintRptID);
+                    }
+                    catch (FaultException<OrderRejectedFault> e)
+                    {
+                        CFDGlobal.LogWarning("Error while ReSetting StopPx: "+ Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text));
+                    }
+                }
+            }
 
             var tradedValue = result.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(result.LongQty ?? result.ShortQty);
             //var tradedValueUSD = tradedValue.Value;
