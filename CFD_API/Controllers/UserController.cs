@@ -368,7 +368,7 @@ namespace CFD_API.Controllers
                 //upl
                 if (report.UPL.HasValue)
                     totalUPL += report.UPL.Value;
-                else
+                else//sometimes ayondo doesn't send upl
                 {
                     var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                     if (quote == null)

@@ -97,8 +97,13 @@ namespace CFD_API.Controllers
 
                 posDTO.invest = tradeValue.Value/report.Leverage.Value;
 
-                //var upl = report.LongQty != null ? tradeValueUSD.Value * (quote.Bid / report.SettlPrice - 1) : tradeValueUSD.Value * (1 - quote.Offer / report.SettlPrice);
-                //CFDGlobal.LogLine(security.ccy+"\t"+ report.UPL+"\t"+upl);
+                if (posDTO.upl == null)//sometimes ayondo doesn't send upl
+                {
+                    decimal upl = report.LongQty.HasValue ? tradeValue.Value * (quote.Bid / report.SettlPrice - 1) : tradeValue.Value * (1 - quote.Offer / report.SettlPrice);
+                    var uplUSD = FX.Convert(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                    //CFDGlobal.LogLine(security.ccy + "\t" + report.UPL + "\t" + uplUSD);
+                    posDTO.upl = uplUSD;
+                }
 
                 return posDTO;
             }).Where(o => o != null).ToList();
