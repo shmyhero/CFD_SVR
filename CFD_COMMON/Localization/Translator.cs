@@ -31,6 +31,8 @@
         {
             if (ayondoText == "Order Delete: Not Sufficient Funds")
                 return "剩余资金不足";
+            if (ayondoText == "Order Delete: NOLIQ")
+                return "商品流动性不足，请稍后再试";
             if (ayondoText == "Server detected error: Above maximum lotsize")
                 return "高于最大下单金额";
             if (ayondoText == "Server detected error: Below minimum lotsize")
