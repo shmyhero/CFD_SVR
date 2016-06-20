@@ -184,8 +184,17 @@ namespace CFD_API.Controllers
                         dto.invest = tradeValue/dto.leverage;
 
                         var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                        //security.symbol = prodDef.Symbol;
-                        //security.id = secId;
+                        security.bid = null;
+                        security.ask = null;
+                        security.lastOpen = null;
+                        security.lastClose = null;
+                        security.maxLeverage = null;
+                        security.smd = null;
+                        security.gsmd = null;
+                        security.preClose = null;
+                        security.open = null;
+                        security.last = null;
+                        security.isOpen = null;
 
                         //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
                         //if (dbSec.CName != null)
