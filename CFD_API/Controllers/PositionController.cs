@@ -68,7 +68,11 @@ namespace CFD_API.Controllers
                 var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 if (prodDef == null)
+                {
+                    CFDGlobal.LogInformation("cannot find prodDef for secId: " + report.SecurityID + " in open positions of userId: " + UserId +
+                                             " | posId:" + report.PosMaintRptID + " longQty:" + report.LongQty + " shortQty:" + report.ShortQty);
                     return null;
+                }
 
                 var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
@@ -97,9 +101,9 @@ namespace CFD_API.Controllers
 
                 posDTO.invest = tradeValue.Value/report.Leverage.Value;
 
-                if (posDTO.upl == null)//sometimes ayondo doesn't send upl
+                if (posDTO.upl == null) //sometimes ayondo doesn't send upl
                 {
-                    decimal upl = report.LongQty.HasValue ? tradeValue.Value * (quote.Bid / report.SettlPrice - 1) : tradeValue.Value * (1 - quote.Offer / report.SettlPrice);
+                    decimal upl = report.LongQty.HasValue ? tradeValue.Value*(quote.Bid/report.SettlPrice - 1) : tradeValue.Value*(1 - quote.Offer/report.SettlPrice);
                     var uplUSD = FX.Convert(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
                     //CFDGlobal.LogLine(security.ccy + "\t" + report.UPL + "\t" + uplUSD);
                     posDTO.upl = uplUSD;
@@ -158,7 +162,11 @@ namespace CFD_API.Controllers
                         var secId = Convert.ToInt32(openReport.SecurityID);
                         var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
-                        if (prodDef == null) continue;
+                        if (prodDef == null)
+                        {
+                            CFDGlobal.LogLine("cannot find product definition for sec id: " + secId + " in history position reports of user id: " + UserId);
+                            continue;
+                        }
 
                         //var closeReport = positionReports.FirstOrDefault(o => Decimals.IsEqualToZero(o.LongQty) || Decimals.IsEqualToZero(o.ShortQty));
 
@@ -305,7 +313,7 @@ namespace CFD_API.Controllers
                     }
                     catch (FaultException<OrderRejectedFault> e)
                     {
-                        CFDGlobal.LogWarning("Error while ReSetting StopPx: "+ Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text));
+                        CFDGlobal.LogWarning("Error while ReSetting StopPx: " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text));
                     }
                 }
             }
