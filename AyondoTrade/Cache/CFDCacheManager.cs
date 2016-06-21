@@ -126,7 +126,7 @@ namespace AyondoTrade
                 });
         }
 
-        public void ClosePosition(string account, PositionReport position)
+        public void ClosePosition(string account, PositionReport closedPosition)
         {
             Task.Factory.StartNew(
                 () => {
@@ -139,7 +139,7 @@ namespace AyondoTrade
                     }
 
                     //not found in open list - should not happen
-                    if (!openPositionList[account].Any(item => item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue()))
+                    if (!openPositionList[account].Any(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue()))
                     {
                         return;
                     }
@@ -150,29 +150,33 @@ namespace AyondoTrade
                         return;
                     }
 
-                    PositionReport openPosition = openPositionList[account].FirstOrDefault(item => item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue());
+                    PositionReport openPosition = openPositionList[account].FirstOrDefault(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue());
                     if (openPosition == null)
                         return;
                     //remove from open list
                     openPositionList[account].Remove(openPosition);
-                    //copy some value 
-                    position.SettlPrice = openPosition.SettlPrice;
-                    position.ClearingBusinessDate = openPosition.ClearingBusinessDate;
-                    if (openPosition.Any(o => o.Key == Tags.StopPx))
-                    {
-                        position.SetField(new DecimalField(Tags.StopPx) { Obj = openPosition.GetDecimal(Tags.StopPx) });
-                    }
+                    ////copy some value 
+                    //position.SettlPrice = openPosition.SettlPrice;
+                    //position.ClearingBusinessDate = openPosition.ClearingBusinessDate;
+                    //if (openPosition.Any(o => o.Key == Tags.StopPx))
+                    //{
+                    //    position.SetField(new DecimalField(Tags.StopPx) { Obj = openPosition.GetDecimal(Tags.StopPx) });
+                    //}
 
-                    if (openPosition.Any(o => o.Key == Global.FixApp.TAG_TakePx))
-                    {
-                        position.SetField(new DecimalField(Global.FixApp.TAG_TakePx) { Obj = openPosition.GetDecimal(Global.FixApp.TAG_TakePx) });
-                    }
-                    if (openPosition.Any(o => o.Key == Global.FixApp.TAG_Leverage))
-                    {
-                        position.SetField(new DecimalField(Global.FixApp.TAG_Leverage) { Obj = openPosition.GetDecimal(Global.FixApp.TAG_Leverage) });
-                    }
-
-                    closedPositionList[account].Add(position);
+                    //if (openPosition.Any(o => o.Key == Global.FixApp.TAG_TakePx))
+                    //{
+                    //    position.SetField(new DecimalField(Global.FixApp.TAG_TakePx) { Obj = openPosition.GetDecimal(Global.FixApp.TAG_TakePx) });
+                    //}
+                    //if (openPosition.Any(o => o.Key == Global.FixApp.TAG_Leverage))
+                    //{
+                    //    position.SetField(new DecimalField(Global.FixApp.TAG_Leverage) { Obj = openPosition.GetDecimal(Global.FixApp.TAG_Leverage) });
+                    //}
+                    
+                    //logic below is that Closed Position List should keep all position history, including open one and closed one.
+                    //move open position to closed list
+                    closedPositionList[account].Add(openPosition);
+                    //add closed position to closed list
+                    closedPositionList[account].Add(closedPosition);
                 });
         }
 

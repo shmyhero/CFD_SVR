@@ -464,7 +464,15 @@ namespace AyondoTrade
                             OrderPositionReports.TryAdd(clOrdID,
                                 new List<KeyValuePair<DateTime, PositionReport>>() {new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report)});
 
-                        CFDCacheManager.Instance.OpenPosition(report.Account.Obj, report);
+                        if (report.Text.Obj == "Position DELETE by MarketOrder")
+                        {
+                            CFDCacheManager.Instance.ClosePosition(report.Account.Obj, report);
+                        }
+                        else
+                        {
+                            CFDCacheManager.Instance.OpenPosition(report.Account.Obj, report);
+                        }
+                        
                     }
                 }
                 else //after replace Stop/Take or new Stop/Take
