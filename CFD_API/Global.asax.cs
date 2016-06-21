@@ -13,6 +13,7 @@ using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Entities;
+using Elmah;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
@@ -55,5 +56,13 @@ namespace CFD_API
             //var setting = CFDGlobal.GetConfigurationSetting("asdf");
             //var s = CFDGlobal.GetConfigurationSetting("YunPianApiKey");
         }
+
+        void ErrorLog_Filtering(object sender, ExceptionFilterEventArgs e)
+        {
+            // perform filtering here   
+            if(e.Exception is HttpException && e.Exception.Message.Contains("was not found or does not implement IController"))
+                e.Dismiss();
+        }
+
     }
 }
