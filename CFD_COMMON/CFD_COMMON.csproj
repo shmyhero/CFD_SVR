@@ -128,6 +128,7 @@
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\FX.cs" />
     <Compile Include="Utils\GeTui.cs" />
+    <Compile Include="Utils\Maths.cs" />
     <Compile Include="Utils\Phone.cs" />
     <Compile Include="Utils\Products.cs" />
     <Compile Include="Utils\Quotes.cs" />

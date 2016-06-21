@@ -193,5 +193,30 @@ namespace CFD_TEST
                 //}
             }
         }
+
+        [TestMethod]
+        public void UtilTest()
+        {
+            var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
+            var redisProdDefClient = redisClient.As<ProdDef>();
+            var p = redisProdDefClient.GetById("34824");
+            var openPrice = Quotes.GetOpenPrice(p);
+        }
+
+        [TestMethod]
+        public void UtilTest2()
+        {
+            Assert.AreEqual(2m, Maths.Ceiling(1.23456789m, 0));
+            Assert.AreEqual(1.3m, Maths.Ceiling(1.23456789m, 1));
+            Assert.AreEqual(1.24m, Maths.Ceiling(1.23456789m, 2));
+            Assert.AreEqual(1.235m, Maths.Ceiling(1.23456789m, 3));
+            Assert.AreEqual(1.2346m, Maths.Ceiling(1.23456789m, 4));
+
+            Assert.AreEqual(1m, Maths.Floor(1.23456789m, 0));
+            Assert.AreEqual(1.2m, Maths.Floor(1.23456789m, 1));
+            Assert.AreEqual(1.23m, Maths.Floor(1.23456789m, 2));
+            Assert.AreEqual(1.234m, Maths.Floor(1.23456789m, 3));
+            Assert.AreEqual(1.2345m, Maths.Floor(1.23456789m, 4));
+        }
     }
 }

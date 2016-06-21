@@ -68,7 +68,11 @@ namespace CFD_API.Controllers
                 var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 if (prodDef == null)
+                {
+                    CFDGlobal.LogInformation("cannot find prodDef for secId: " + report.SecurityID + " in open positions of userId: " + UserId +
+                                             " | posId:" + report.PosMaintRptID + " longQty:" + report.LongQty + " shortQty:" + report.ShortQty);
                     return null;
+                }
 
                 var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
@@ -96,6 +100,14 @@ namespace CFD_API.Controllers
                 //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
                 posDTO.invest = tradeValue.Value/report.Leverage.Value;
+
+                if (posDTO.upl == null) //sometimes ayondo doesn't send upl
+                {
+                    decimal upl = report.LongQty.HasValue ? tradeValue.Value*(quote.Bid/report.SettlPrice - 1) : tradeValue.Value*(1 - quote.Offer/report.SettlPrice);
+                    var uplUSD = FX.Convert(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                    //CFDGlobal.LogLine(security.ccy + "\t" + report.UPL + "\t" + uplUSD);
+                    posDTO.upl = uplUSD;
+                }
 
                 return posDTO;
             }).Where(o => o != null).ToList();
@@ -150,7 +162,11 @@ namespace CFD_API.Controllers
                         var secId = Convert.ToInt32(openReport.SecurityID);
                         var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
-                        if (prodDef == null) continue;
+                        if (prodDef == null)
+                        {
+                            CFDGlobal.LogLine("cannot find product definition for sec id: " + secId + " in history position reports of user id: " + UserId);
+                            continue;
+                        }
 
                         //var closeReport = positionReports.FirstOrDefault(o => Decimals.IsEqualToZero(o.LongQty) || Decimals.IsEqualToZero(o.ShortQty));
 
@@ -176,8 +192,17 @@ namespace CFD_API.Controllers
                         dto.invest = tradeValue/dto.leverage;
 
                         var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                        //security.symbol = prodDef.Symbol;
-                        //security.id = secId;
+                        security.bid = null;
+                        security.ask = null;
+                        security.lastOpen = null;
+                        security.lastClose = null;
+                        security.maxLeverage = null;
+                        security.smd = null;
+                        security.gsmd = null;
+                        security.preClose = null;
+                        security.open = null;
+                        security.last = null;
+                        security.isOpen = null;
 
                         //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
                         //if (dbSec.CName != null)
@@ -240,14 +265,15 @@ namespace CFD_API.Controllers
             var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
             var quotePrice = form.isLong ? quote.Offer : quote.Bid;
             decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
+            quantity = Maths.Floor(quantity, 8);
             decimal stopPx = form.isLong ? quotePrice*(1 - 1/form.leverage) : quotePrice*(1 + 1/form.leverage);
+
+            //prevent lost >100%
+            stopPx = form.isLong ? Maths.Ceiling(stopPx, prodDef.Prec) : Maths.Floor(stopPx, prodDef.Prec);
 
             //Long, Leverage=1, stop will be Zero! which is invalid
             if (stopPx == 0)
                 stopPx = _minStopPx;
-
-            CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
-                              "|quantity:" + quantity + " stopPx:" + stopPx);
 
             var clientHttp = new AyondoTradeClient();
 
@@ -267,22 +293,36 @@ namespace CFD_API.Controllers
                     __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
             }
 
+            CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
+                              " | quote:" + quotePrice + " | quantity:" + quantity + " stopPx:" + stopPx + " | Qty:" + (result.LongQty ?? result.ShortQty) + " SettlePrice:" +
+                              result.SettlPrice);
+
+            //when price changes, set stop again to prevent >100% loss
+            if (quotePrice != result.SettlPrice)
+            {
+                decimal newStopPx = result.LongQty.HasValue ? result.SettlPrice*(1 - 1/result.Leverage.Value) : result.SettlPrice*(1 + 1/result.Leverage.Value);
+                newStopPx = result.LongQty.HasValue ? Maths.Ceiling(newStopPx, prodDef.Prec) : Maths.Floor(newStopPx, prodDef.Prec);
+
+                if (result.LongQty.HasValue && newStopPx > stopPx || result.ShortQty.HasValue && newStopPx < stopPx)
+                {
+                    CFDGlobal.LogLine("ReSet StopPx: quote:" + quotePrice + " settlePrice:" + result.SettlPrice + " | oldStop:" + stopPx + " newStop:" + newStopPx);
+                    try
+                    {
+                        var positionReport = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, Convert.ToInt32(result.SecurityID), result.StopOID, newStopPx,
+                            result.PosMaintRptID);
+                    }
+                    catch (FaultException<OrderRejectedFault> e)
+                    {
+                        CFDGlobal.LogWarning("Error while ReSetting StopPx: " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text));
+                    }
+                }
+            }
+
             var tradedValue = result.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(result.LongQty ?? result.ShortQty);
             //var tradedValueUSD = tradedValue.Value;
             //if (prodDef.Ccy2 != "USD")
             //    tradedValueUSD = FX.Convert(tradedValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-            ////var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
-            //decimal settlP;
-            //if (security != null && security.DisplayDecimals != null)
-            //{
-            //    int decimalCount = Convert.ToInt32(security.DisplayDecimals);
-            //    settlP = Math.Round(result.SettlPrice, decimalCount);
-            //}
-            //else
-            //{
-            //    settlP = result.SettlPrice;
-            //}
             decimal settlP = Math.Round(result.SettlPrice, prodDef.Prec);
 
             var posDTO = new PositionDTO()
@@ -298,7 +338,7 @@ namespace CFD_API.Controllers
                 stopOID = result.StopOID,
             };
 
-            posDTO.security = new SecurityDetailDTO() {ccy = prodDef.Ccy2};
+            posDTO.security = new SecurityDetailDTO() {id = prodDef.Id, ccy = prodDef.Ccy2};
 
             return posDTO;
         }

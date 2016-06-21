@@ -14,7 +14,6 @@ using CFD_API.DTO.Form;
 using CFD_COMMON;
 using CFD_COMMON.Azure;
 using CFD_COMMON.Localization;
-using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
@@ -369,14 +368,14 @@ namespace CFD_API.Controllers
                 //upl
                 if (report.UPL.HasValue)
                     totalUPL += report.UPL.Value;
-                else
+                else//sometimes ayondo doesn't send upl
                 {
                     var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                     if (quote == null)
                         CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID);
                     else
                     {
-                        totalUPL += report.LongQty != null ? tradeValueUSD.Value*(quote.Offer/report.SettlPrice - 1) : tradeValueUSD.Value*(1 - quote.Bid/report.SettlPrice);
+                        totalUPL += report.LongQty.HasValue ? tradeValueUSD.Value*(quote.Bid/report.SettlPrice - 1) : tradeValueUSD.Value*(1 - quote.Offer/report.SettlPrice);
                     }
                 }
             }
