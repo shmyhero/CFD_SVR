@@ -180,6 +180,8 @@ namespace AyondoTrade
                 result = SendPositionRequestAndWait(account);
             }
 
+            CFDCacheManager.Instance.SetOpenPositions(account, result);
+
             //mapping FIX message model --> WCF model
             var positionReports = result.Select(MapPositionReport).ToList();
 
@@ -203,6 +205,8 @@ namespace AyondoTrade
                 //get data again
                 result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
             }
+
+            CFDCacheManager.Instance.SetClosedPositions(account, result);
 
             //mapping FIX message model --> WCF model
             var positionReports = result.Select(MapPositionReport).ToList();
@@ -641,6 +645,11 @@ namespace AyondoTrade
                     throw new FaultException<OrderRejectedFault>(fault);
                 }
             }
+        }
+
+        public string GetCacheStatus(string account)
+        {
+            return CFDCacheManager.Instance.PrintStatusHtml(account);
         }
     }
 

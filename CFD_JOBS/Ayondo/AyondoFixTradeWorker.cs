@@ -53,14 +53,28 @@ namespace CFD_JOBS.Ayondo
     {
         public static void Run()
         {
-            //Start FIX
-            SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath"));
-            AyondoFixTradeApp myApp = new AyondoFixTradeApp();
-            IMessageStoreFactory storeFactory = new MemoryStoreFactory();// FileStoreFactory(settings);
-            ILogFactory logFactory =new FileLogFactory(settings);
-            SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings, logFactory);
+            ////Start FIX
+            //SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixTradeCfgFilePath"));
+            //AyondoFixTradeApp myApp = new AyondoFixTradeApp();
+            //IMessageStoreFactory storeFactory = new MemoryStoreFactory();// FileStoreFactory(settings);
+            //ILogFactory logFactory =new FileLogFactory(settings);
+            //SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings, logFactory);
 
-            initiator.Start();
+            //initiator.Start();
+
+            var serviceHost = new ServiceHost(typeof(AyondoTradeService));
+
+            NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
+
+            string endpoint = "net.tcp://localhost:10100/AyondoTrade";
+
+            serviceHost.AddServiceEndpoint(typeof(IAyondoTradeService), binding, endpoint);
+
+            //enable exception detail in faults
+            var serviceDebugBehavior = serviceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
+            serviceDebugBehavior.IncludeExceptionDetailInFaults = true;
+
+            serviceHost.Open();
 
             //CFDGlobal.LogLine("job main worker id " + Thread.CurrentThread.ManagedThreadId.ToString());
 
@@ -82,7 +96,7 @@ namespace CFD_JOBS.Ayondo
             //smb.HttpGetUrl = new Uri("http://"+hostname+":14002/ayondo");
             //smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
             //host.Description.Behaviors.Add(smb);
-            
+
             ////auth
             //var collection = new ReadOnlyCollection<IAuthorizationPolicy>(new IAuthorizationPolicy[] { new MyPolicy() });
             //ServiceAuthorizationBehavior sa = host.Description.Behaviors.Find<ServiceAuthorizationBehavior>();
@@ -96,14 +110,14 @@ namespace CFD_JOBS.Ayondo
             //host.Open();
             //host.Close();
 
-            myApp.Run();
+            Global.FixApp.Run();
             //while (true)
             //{
             //    //System.Console.WriteLine("o hai");
             //    System.Threading.Thread.Sleep(1000);
             //}
 
-            initiator.Stop();
+            //initiator.Stop();
         }
     }
 

@@ -277,6 +277,8 @@ namespace AyondoTrade
                     string value;
                     UsernameAccounts.TryRemove(username, out value);
                 }
+
+                CFDCacheManager.Instance.UserLogout(account);
             }
         }
 
@@ -302,6 +304,8 @@ namespace AyondoTrade
                         AccountUsernames[account] = username;
                     else
                         AccountUsernames.Add(account, username);
+
+                    CFDCacheManager.Instance.UserLogin(account);
                 }
                 else
                     CFDGlobal.LogInformation("UserResponse: Account:" + account + " UserStatus:" + response.UserStatus.Obj);
@@ -448,6 +452,9 @@ namespace AyondoTrade
                         //{
                         //    CFDGlobal.LogException(e);
                         //}
+
+                        CFDCacheManager.Instance.ClosePosition(account, report);
+
                     }
                     else //by market order
                     {
@@ -456,6 +463,8 @@ namespace AyondoTrade
                         else
                             OrderPositionReports.TryAdd(clOrdID,
                                 new List<KeyValuePair<DateTime, PositionReport>>() {new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report)});
+
+                        CFDCacheManager.Instance.OpenPosition(report.Account.Obj, report);
                     }
                 }
                 else //after replace Stop/Take or new Stop/Take
@@ -467,6 +476,8 @@ namespace AyondoTrade
                     else
                         StopTakePositionReports.TryAdd(posMaintRptID,
                             new List<KeyValuePair<DateTime, PositionReport>>() {new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report)});
+
+                    CFDCacheManager.Instance.UpdatePosition(report.Account.Obj, report);
                 }
             }
             else //after position report request
@@ -693,7 +704,7 @@ namespace AyondoTrade
                 {
                     char action = QueryAction();
 
-                    if (action == (char) 0)
+                    if (action == (char)0)
                         ShowInfo();
                     else if (action == '1')
                         QueryEnterOrder();
@@ -713,6 +724,12 @@ namespace AyondoTrade
                         QueryCancelOrder();
                     else if (action == '9')
                         QueryPositionHistory();
+                    else if (action == 'c')
+                        PrintCacheStatus();//show cache status
+                    else if (action == 'r')
+                        GetPositionReport(); //get open positions by calling trade service
+                    else if (action == 'h')
+                        GetPositionHistoryReport(); //get closed positions by calling trade service
                     else if (action == 'q' || action == 'Q')
                         break;
                     else if (action == 't')
@@ -763,13 +780,13 @@ namespace AyondoTrade
 
         private char QueryAction()
         {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,g,t,p".Split(','));
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c".Split(','));
 
             string cmd = Console.ReadLine().Trim();
             if (cmd.Length != 1 || validActions.Contains(cmd) == false)
                 return (char) 0;
 
-            return cmd.ToCharArray()[0];
+              return cmd.ToCharArray()[0];
         }
 
         private void ShowInfo()
@@ -920,6 +937,26 @@ namespace AyondoTrade
             //m.SetField(new IntField(7946) {Obj = 0});
 
             SendMessage(m);
+        }
+
+        private void PrintCacheStatus()
+        {
+            Console.Write("account");
+            string account = Console.ReadLine();
+            //Console.Write(CFDCacheManager.Instance.PrintStatus(account));
+            Console.Write(CFDCacheManager.Instance.PrintStatusHtml(account));
+        }
+
+        private void GetPositionReport()
+        {
+            AyondoTradeService svr = new AyondoTradeService();
+            svr.GetPositionReport("thcn2031", "yJUKrh");
+        }
+
+        private void GetPositionHistoryReport()
+        {
+            AyondoTradeService svr = new AyondoTradeService();
+            svr.GetPositionHistoryReport("thcn2031", "yJUKrh", DateTime.UtcNow.AddDays(-10), DateTime.UtcNow);
         }
 
         private bool QueryConfirm(string query)
@@ -1088,7 +1125,7 @@ namespace AyondoTrade
             }
         }
 
-        private string GetMessageString(Message message, bool showHeader = false, bool showTrailer = false)
+        public string GetMessageString(Message message, bool showHeader = false, bool showTrailer = false)
         {
             if (_dd == null)
                 return message.ToString();

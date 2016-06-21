@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>CFDTradeCacheMonitor</title>
+	<meta charset="utf-8" />
+    <script src="/Scripts/jquery-1.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var queryString = location.search;
+
+            if (queryString == null || queryString == undefined || queryString == "")
+            {
+                queryString = "?account=139121848962";
+            }
+
+            var html = $.ajax({ url: "api/Position/printcache" + queryString, async: false });
+            $("#divResult").html(html.responseText);
+        });
+    </script>
+</head>
+<body>
+
+    <div id="divResult">
+
+    </div>
+</body>
+</html>

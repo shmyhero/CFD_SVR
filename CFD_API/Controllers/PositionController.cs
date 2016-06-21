@@ -459,6 +459,16 @@ namespace CFD_API.Controllers
             return posDTO;
         }
 
+        [HttpGet]
+        [Route("printcache")]
+        public string PrintCache(string account = "")
+        {
+            var clientHttp = new AyondoTradeClient();
+
+            var result = clientHttp.GetCacheStatus(account);
+            return result;
+        }
+
         private static PositionDTO MapPositionReportToPositionDTO(PositionReport report)
         {
             var posDTO = new PositionDTO()

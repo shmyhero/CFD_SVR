@@ -41,5 +41,8 @@ namespace AyondoTrade
 
         [OperationContract]
         decimal GetBalance(string username, string password);
+
+        [OperationContract]
+        string GetCacheStatus(string account);
     }
 }
