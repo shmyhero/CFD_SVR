@@ -89,9 +89,9 @@ namespace AyondoTrade
             return base.Channel.GetBalance(username, password);
         }
 
-        public string GetCacheStatus(string account)
+        public string PrintCache(string username)
         {
-            return base.Channel.GetCacheStatus(account);
+            return base.Channel.PrintCache(username);
         }
     }
 }
