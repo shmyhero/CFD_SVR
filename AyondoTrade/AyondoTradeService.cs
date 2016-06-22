@@ -669,9 +669,14 @@ namespace AyondoTrade
             }
         }
 
-        public string GetCacheStatus(string account)
+        public string PrintCache(string username)
         {
-            return CFDCacheManager.Instance.PrintStatusHtml(account);
+            if (!Global.FixApp.UsernameAccounts.ContainsKey(username))
+            {
+                return "User name doesn't not exist";
+            }
+
+            return CFDCacheManager.Instance.PrintStatusHtml(Global.FixApp.UsernameAccounts[username], username);
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using QuickFix.Fields;
+﻿using CFD_COMMON;
+using QuickFix.Fields;
 using QuickFix.FIX44;
 using System;
 using System.Collections.Concurrent;
@@ -37,8 +38,19 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
+#if DEBUG
+                    CFDGlobal.LogLine(string.Format("Cache - UserLogin ({0}", account));
+#else
+                    CFDGlobal.LogInformation(string.Format("Cache - UserLogin ({0}", account));
+#endif
+
                     if (!openPositionList.ContainsKey(account))
                     {
+#if DEBUG
+                        CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
+#else
+                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) added into open position list", account));
+#endif
                         openPositionList.TryAdd(account, null);
                     }
                 });
@@ -48,8 +60,19 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
+#if DEBUG
+                    CFDGlobal.LogLine(string.Format("Cache - UserLogout ({0}", account));
+#else
+                    CFDGlobal.LogInformation(string.Format("Cache - UserLogout ({0}", account));
+#endif
                     if (openPositionList.ContainsKey(account))
                     {
+#if DEBUG
+                        CFDGlobal.LogLine(string.Format("Cache - Account ({0}) removed from open/closed position list", account));
+#else
+                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0})  removed from open/closed position list", account));
+#endif
+
                         List<PositionReport> posList = null;
                         openPositionList.TryRemove(account, out posList);
 
@@ -65,6 +88,12 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
+#if DEBUG
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Query Open PositionReport", account));
+#else
+                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) Query Open PositionReport", account));
+#endif
+
                     if (openPositionList.ContainsKey(account))
                     {
                         openPositionList[account] = positions.ToList();
@@ -85,6 +114,12 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
+#if DEBUG
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) received a new Position", account));
+#else
+                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) received a new Position", account));
+#endif
+
                     PositionReport target = openPositionList[account].FirstOrDefault(item =>
                     item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue());
                     if (target != null)
@@ -104,6 +139,12 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
+#if DEBUG
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) received an updated Position", account));
+#else
+                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) received an updated Position", account));
+#endif
+
                     if (!openPositionList.ContainsKey(account))
                     {
                         return;
@@ -130,6 +171,12 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
+#if DEBUG
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) closed a Position", account));
+#else
+                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) closed a Position", account));
+#endif
+
                     //if position not exist in open list, remove closed list. force closed list to refresh from Ayondo
                     if (!openPositionList.ContainsKey(account) || openPositionList[account] == null)
                     {
@@ -189,6 +236,12 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
+#if DEBUG
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) query Closed Position List", account));
+#else
+                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) query Closed Position List", account));
+#endif
+
                     if (closedPositionList.ContainsKey(account))
                     {
                         closedPositionList[account] = positions.ToList();
@@ -202,7 +255,7 @@ namespace AyondoTrade
         
        
 
-        public string PrintStatusHtml(string account)
+        public string PrintStatusHtml(string account, string userName)
         {
             StringBuilder sb = new StringBuilder();
             if (string.IsNullOrEmpty(account))
@@ -212,18 +265,18 @@ namespace AyondoTrade
 
             if (openPositionList.ContainsKey(account))
             {
-                sb.Append("<div>");
-                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Open Position List:</span><hr/>", account));
+                sb.Append("<pre>");
+                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Open Position List:</span><hr/>", userName));
                 sb.Append(GeneratePositionTable(openPositionList[account]));
-                sb.Append("</div>");
+                sb.Append("</pre>");
             }
 
             if (closedPositionList.ContainsKey(account))
             {
-                sb.Append("<div>");
-                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Closed Position List:</span><hr/>", account));
+                sb.Append("<pre>");
+                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Closed Position List:</span><hr/>", userName));
                 sb.Append(GeneratePositionTable(closedPositionList[account]));
-                sb.Append("</div>");
+                sb.Append("</pre>");
             }
 
             return sb.ToString();
@@ -355,9 +408,9 @@ namespace AyondoTrade
 
             foreach (PositionReport pos in posList)
             {
-                sb.Append("<div>");
+                sb.Append("<pre>");
                 sb.Append(Global.FixApp.GetMessageString(pos).Replace("\r\n", "<br/>")); 
-                sb.Append("</div>");
+                sb.Append("</pre>");
             }
 
             return sb.ToString();

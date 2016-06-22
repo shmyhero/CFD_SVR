@@ -501,11 +501,11 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("printcache")]
-        public string PrintCache(string account = "")
+        public string PrintCache(string username = "")
         {
             var clientHttp = new AyondoTradeClient();
 
-            var result = clientHttp.GetCacheStatus(account);
+            var result = clientHttp.PrintCache(username);
             return result;
         }
 

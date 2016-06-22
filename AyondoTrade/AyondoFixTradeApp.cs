@@ -949,10 +949,12 @@ namespace AyondoTrade
 
         private void PrintCacheStatus()
         {
-            Console.Write("account");
-            string account = Console.ReadLine();
-            //Console.Write(CFDCacheManager.Instance.PrintStatus(account));
-            Console.Write(CFDCacheManager.Instance.PrintStatusHtml(account));
+            //Console.Write("account");
+            //string account = Console.ReadLine();
+            ////Console.Write(CFDCacheManager.Instance.PrintStatus(account));
+            //Console.Write(CFDCacheManager.Instance.PrintStatusHtml(account));
+            AyondoTradeService svr = new AyondoTradeService();
+            Console.Write(svr.PrintCache("thcn2031"));
         }
 
         private void GetPositionReport()
