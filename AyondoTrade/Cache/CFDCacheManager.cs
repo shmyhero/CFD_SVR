@@ -38,19 +38,12 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-#if DEBUG
                     CFDGlobal.LogLine(string.Format("Cache - UserLogin ({0}", account));
-#else
-                    CFDGlobal.LogInformation(string.Format("Cache - UserLogin ({0}", account));
-#endif
 
                     if (!openPositionList.ContainsKey(account))
                     {
-#if DEBUG
                         CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
-#else
-                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) added into open position list", account));
-#endif
+
                         openPositionList.TryAdd(account, null);
                     }
                 });
@@ -60,18 +53,11 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-#if DEBUG
                     CFDGlobal.LogLine(string.Format("Cache - UserLogout ({0}", account));
-#else
-                    CFDGlobal.LogInformation(string.Format("Cache - UserLogout ({0}", account));
-#endif
+
                     if (openPositionList.ContainsKey(account))
                     {
-#if DEBUG
                         CFDGlobal.LogLine(string.Format("Cache - Account ({0}) removed from open/closed position list", account));
-#else
-                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0})  removed from open/closed position list", account));
-#endif
 
                         List<PositionReport> posList = null;
                         openPositionList.TryRemove(account, out posList);
@@ -88,11 +74,7 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-#if DEBUG
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Query Open PositionReport", account));
-#else
-                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) Query Open PositionReport", account));
-#endif
 
                     if (openPositionList.ContainsKey(account))
                     {
@@ -114,11 +96,7 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-#if DEBUG
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) received a new Position", account));
-#else
-                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) received a new Position", account));
-#endif
 
                     PositionReport target = openPositionList[account].FirstOrDefault(item =>
                     item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue());
@@ -139,11 +117,7 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-#if DEBUG
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) received an updated Position", account));
-#else
-                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) received an updated Position", account));
-#endif
 
                     if (!openPositionList.ContainsKey(account))
                     {
@@ -152,17 +126,20 @@ namespace AyondoTrade
 
                     PositionReport posToUpdate = openPositionList[account].FirstOrDefault(item =>
                             item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue());
-                    if (posToUpdate != null) //update stop/take px order
+                    if (posToUpdate != null) //update stop/take px order. at current stage, replace whole position
                     {
-                        if (position.Any(o => o.Key == Tags.StopPx))
-                        {
-                            posToUpdate.SetField(new DecimalField(Tags.StopPx) { Obj = position.GetDecimal(Tags.StopPx) });
-                        }
+                        int index = openPositionList[account].IndexOf(posToUpdate);
+                        openPositionList[account].RemoveAt(index);
+                        openPositionList[account].Insert(index, position);
+                        //if (position.Any(o => o.Key == Tags.StopPx))
+                        //{
+                        //    posToUpdate.SetField(new DecimalField(Tags.StopPx) { Obj = position.GetDecimal(Tags.StopPx) });
+                        //}
 
-                        if (position.Any(o => o.Key == Global.FixApp.TAG_TakePx))
-                        {
-                            posToUpdate.SetField(new DecimalField(Global.FixApp.TAG_TakePx) { Obj = position.GetDecimal(Global.FixApp.TAG_TakePx) });
-                        }
+                        //if (position.Any(o => o.Key == Global.FixApp.TAG_TakePx))
+                        //{
+                        //    posToUpdate.SetField(new DecimalField(Global.FixApp.TAG_TakePx) { Obj = position.GetDecimal(Global.FixApp.TAG_TakePx) });
+                        //}
                     }
                 });
         }
@@ -171,11 +148,7 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-#if DEBUG
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) closed a Position", account));
-#else
-                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) closed a Position", account));
-#endif
 
                     //if position not exist in open list, remove closed list. force closed list to refresh from Ayondo
                     if (!openPositionList.ContainsKey(account) || openPositionList[account] == null)
@@ -236,11 +209,7 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-#if DEBUG
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) query Closed Position List", account));
-#else
-                        CFDGlobal.LogInformation(string.Format("Cache - Account ({0}) query Closed Position List", account));
-#endif
 
                     if (closedPositionList.ContainsKey(account))
                     {
@@ -252,8 +221,6 @@ namespace AyondoTrade
                     }
                 });
         }
-        
-       
 
         public string PrintStatusHtml(string account, string userName)
         {
