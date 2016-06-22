@@ -276,14 +276,14 @@ namespace AyondoTrade
 
             if (ack.Value == null || ack.Value.TotalNumPosReports.Obj != 0 && reports == null)
             {
-                CFDGlobal.LogError("fail getting position report. guid:" + reqId);
-                return new List<PositionReport>();
+                throw new Exception("fail getting position report. guid:" + reqId);
+                //return new List<PositionReport>();
             }
 
             if (reports.Count != 0 && reports.Count != reports[0].Value.TotalNumPosReports.Obj)
             {
-                CFDGlobal.LogError("timeout getting position report. guid:" + reqId + " " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
-                return reports.Select(o => o.Value).ToList();
+                throw new Exception("timeout getting position report. guid:" + reqId + " " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
+                //return reports.Select(o => o.Value).ToList();
             }
 
             return reports.Select(o => o.Value).ToList();
