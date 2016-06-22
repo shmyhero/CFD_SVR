@@ -230,6 +230,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Caching\WebCache.cs" />
+    <Compile Include="Controllers\Attributes\ApiHitRecord.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />
     <Compile Include="Controllers\Attributes\ElmahFilter.cs" />
     <Compile Include="Controllers\Attributes\RequireHttpsAttribute.cs" />
