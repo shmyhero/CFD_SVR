@@ -354,8 +354,8 @@ namespace CFD_API.Controllers
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
-            if (prodDef == null)
-                throw new Exception("security not found");
+            //if (prodDef == null)
+            //    throw new Exception("security not found");
 
             //var redisQuoteClient = RedisClient.As<Quote>();
             //var quote = redisQuoteClient.GetById(form.securityId);
@@ -383,7 +383,7 @@ namespace CFD_API.Controllers
             //{
             //    settlP = result.SettlPrice;
             //}
-            decimal settlP = Math.Round(result.SettlPrice, prodDef.Prec);
+            decimal settlP = prodDef == null ? result.SettlPrice : Math.Round(result.SettlPrice, prodDef.Prec);
 
             var posDTO = new PositionDTO()
             {
