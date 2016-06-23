@@ -163,46 +163,62 @@ namespace AyondoTrade
             return result;
         }
 
-        public decimal GetBalance(string username, string password)
+        public decimal GetBalance(string username, string password, bool ignoreCache = false)
         {
             string account = GetAccount(username, password);
 
             decimal balance;
-            try
-            {
-                balance = SendBalanceRequestAndWait(account);
-            }
-            catch (UserNotLoggedInException)
-            {
-                //user is not logged in, try to login ONCE
-                account = SendLoginRequestAndWait(username, password);
 
-                //get data again
-                balance = SendBalanceRequestAndWait(account);
+            if(!ignoreCache && CFDCacheManager.Instance.TryGetBalance(account, out balance))
+            {
+                return balance;
             }
+            else
+            {
+                try
+                {
+                    balance = SendBalanceRequestAndWait(account);
+                }
+                catch (UserNotLoggedInException)
+                {
+                    //user is not logged in, try to login ONCE
+                    account = SendLoginRequestAndWait(username, password);
 
-            return balance;
+                    //get data again
+                    balance = SendBalanceRequestAndWait(account);
+                }
+                return balance;
+            }
         }
 
-        public IList<Model.PositionReport> GetPositionReport(string username, string password)
+        public IList<Model.PositionReport> GetPositionReport(string username, string password, bool ignoreCache = false)
         {
             string account = GetAccount(username, password);
 
-            IList<PositionReport> result;
-            try
-            {
-                result = SendPositionRequestAndWait(account);
-            }
-            catch (UserNotLoggedInException)
-            {
-                //user is not logged in, try to login ONCE
-                account = SendLoginRequestAndWait(username, password);
+            IList<PositionReport> result = null;
 
-                //get data again
-                result = SendPositionRequestAndWait(account);
+            if (!ignoreCache)
+            {
+                result = CFDCacheManager.Instance.GetOpenPosition(account);
             }
+            
+            if(result == null)
+            {
+                try
+                {
+                    result = SendPositionRequestAndWait(account);
+                }
+                catch (UserNotLoggedInException)
+                {
+                    //user is not logged in, try to login ONCE
+                    account = SendLoginRequestAndWait(username, password);
 
-            CFDCacheManager.Instance.SetOpenPositions(account, result);
+                    //get data again
+                    result = SendPositionRequestAndWait(account);
+                }
+
+                CFDCacheManager.Instance.SetOpenPositions(account, result);
+            }
 
             //mapping FIX message model --> WCF model
             var positionReports = result.Select(MapPositionReport).ToList();
@@ -210,25 +226,34 @@ namespace AyondoTrade
             return positionReports;
         }
 
-        public IList<Model.PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime)
+        public IList<Model.PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache = false)
         {
             string account = GetAccount(username, password);
 
-            IList<PositionReport> result;
-            try
-            {
-                result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
-            }
-            catch (UserNotLoggedInException)
-            {
-                //user is not logged in, try to login ONCE
-                account = SendLoginRequestAndWait(username, password);
+            IList<PositionReport> result = null;
 
-                //get data again
-                result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
+            if(!ignoreCache)
+            {
+                result = CFDCacheManager.Instance.GetClosedPosition(account);
             }
+            
+            if(result == null)
+            {
+                try
+                {
+                    result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
+                }
+                catch (UserNotLoggedInException)
+                {
+                    //user is not logged in, try to login ONCE
+                    account = SendLoginRequestAndWait(username, password);
 
-            CFDCacheManager.Instance.SetClosedPositions(account, result);
+                    //get data again
+                    result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
+                }
+
+                CFDCacheManager.Instance.SetClosedPositions(account, result);
+            }
 
             //mapping FIX message model --> WCF model
             var positionReports = result.Select(MapPositionReport).ToList();
@@ -677,6 +702,18 @@ namespace AyondoTrade
             }
 
             return CFDCacheManager.Instance.PrintStatusHtml(Global.FixApp.UsernameAccounts[username], username);
+        }
+
+        public void SwitchCache(string mode)
+        {
+            if (mode.ToLower() == "off")
+            {
+                CFDCacheManager.Instance.SwitchCache(false);
+            }
+            else if(mode.ToLower() == "on")
+            {
+                CFDCacheManager.Instance.SwitchCache(true);
+            }
         }
     }
 

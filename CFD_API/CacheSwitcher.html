@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>CFD Cache Switcher</title>
+	<meta charset="utf-8" />
+    <script src="/Scripts/jquery-1.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#btnSwitchOn").click(function () {
+                $.ajax({ url: "api/Position/SwitchCache?mode=on", async: false });
+                $("#divResult").html("Cache has been turned on");
+            });
+
+            $("#btnSwitchOff").click(function () {
+                $.ajax({ url: "api/Position/SwitchCache?mode=off", async: false });
+                $("#divResult").html("Cache has been turned off");
+            });
+        });
+
+    </script>
+</head>
+<body>
+    <input type="button" value="Switch On" id="btnSwitchOn" /> &nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="Switch Off" id="btnSwitchOff" />
+
+    <div id="divResult">
+
+    </div>
+</body>
+</html>

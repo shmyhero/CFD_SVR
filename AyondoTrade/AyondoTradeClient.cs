@@ -47,12 +47,12 @@ namespace AyondoTrade
             return base.Channel.DataTest(count);
         }
 
-        public IList<PositionReport> GetPositionReport(string username, string password)
+        public IList<PositionReport> GetPositionReport(string username, string password, bool ignoreCache = false)
         {
             return base.Channel.GetPositionReport(username, password);
         }
 
-        public IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime)
+        public IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache = false)
         {
             return base.Channel.GetPositionHistoryReport(username, password, startTime, endTime);
         }
@@ -84,7 +84,7 @@ namespace AyondoTrade
             return base.Channel.CancelOrder(username, password, securityId, orderId, nettingPositionId);
         }
 
-        public decimal GetBalance(string username, string password)
+        public decimal GetBalance(string username, string password, bool ignoreCache = false)
         {
             return base.Channel.GetBalance(username, password);
         }
@@ -92,6 +92,11 @@ namespace AyondoTrade
         public string PrintCache(string username)
         {
             return base.Channel.PrintCache(username);
+        }
+
+        public void SwitchCache(string mode)
+        {
+            base.Channel.SwitchCache(mode);
         }
     }
 }

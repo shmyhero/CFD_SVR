@@ -509,6 +509,14 @@ namespace CFD_API.Controllers
             return result;
         }
 
+        [HttpGet]
+        [Route("switchcache")]
+        public void SwitchCache(string mode = "")
+        {
+            var clientHttp = new AyondoTradeClient();
+            clientHttp.SwitchCache(mode);
+        }
+
         private static PositionDTO MapPositionReportToPositionDTO(PositionReport report)
         {
             var posDTO = new PositionDTO()

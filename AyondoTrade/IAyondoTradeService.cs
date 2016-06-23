@@ -17,10 +17,10 @@ namespace AyondoTrade
         IList<PositionReport> DataTest(int count);
 
         [OperationContract]
-        IList<PositionReport> GetPositionReport(string username, string password);
+        IList<PositionReport> GetPositionReport(string username, string password, bool ignoreCache = false);
 
         [OperationContract]
-        IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime);
+        IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache = false);
 
         [OperationContract]
         IDictionary<string,IList<PositionReport>> PopAutoClosedPositionReports(IList<string> usernames);
@@ -43,9 +43,12 @@ namespace AyondoTrade
         PositionReport CancelOrder(string username, string password, int securityId, string orderId, string nettingPositionId);
 
         [OperationContract]
-        decimal GetBalance(string username, string password);
+        decimal GetBalance(string username, string password, bool ignoreCache = false);
 
         [OperationContract]
         string PrintCache(string username);
+
+        [OperationContract]
+        void SwitchCache(string mode);
     }
 }

@@ -191,6 +191,9 @@ namespace AyondoTrade
                     var guid = message.GetString(TAG_MDS_RequestID);
                     var quantity = message.GetDecimal(Tags.Quantity);
                     Balances.TryAdd(guid, new KeyValuePair<DateTime, decimal>(DateTime.UtcNow, quantity));
+
+                    var account = message.GetString(Tags.Account);
+                    CFDCacheManager.Instance.SetBalance(account, quantity);
                 }
                 else
                     Crack(message, sessionID);
@@ -336,6 +339,9 @@ namespace AyondoTrade
             //    userAyondos.BalanceCash = report.MarginExcess.Obj;
             //}
             //db.SaveChanges();
+            var quantity = report.GetDecimal(Tags.Quantity);
+            var account = report.GetString(Tags.Account);
+            CFDCacheManager.Instance.SetBalance(account, quantity);
 
             CFDGlobal.LogLine("OnMessage:CollateralReport: " + GetMessageString(report));
         }
@@ -892,7 +898,7 @@ namespace AyondoTrade
         {
             var m = new Message();
             m.Header.SetField(new MsgType("MDS5"));
-            m.SetField(new StringField(TAG_MDS_RequestID) {Obj = "balance:" + _account});
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = "balance:" + _account });
             m.SetField(new Account(_account));
             SendMessage(m);
         }

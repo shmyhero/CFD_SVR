@@ -27,6 +27,13 @@ namespace AyondoTrade
         /// Value:ClosedPositions for an account
         /// </summary>
         private static ConcurrentDictionary<string, List<PositionReport>> closedPositionList = new ConcurrentDictionary<string, List<PositionReport>>();
+        /// <summary>
+        /// Key: Account
+        /// Value: Balance
+        /// </summary>
+        private static ConcurrentDictionary<string, decimal?> balanceList = new ConcurrentDictionary<string, decimal?>();
+
+        private static bool isEnabled = true;
 
         public static CFDCacheManager Instance { get { return instance.Value; } }
 
@@ -38,7 +45,7 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-                    CFDGlobal.LogLine(string.Format("Cache - UserLogin ({0}", account));
+                    CFDGlobal.LogLine(string.Format("Cache - UserLogin ({0})", account));
 
                     if (!openPositionList.ContainsKey(account))
                     {
@@ -53,7 +60,7 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-                    CFDGlobal.LogLine(string.Format("Cache - UserLogout ({0}", account));
+                    CFDGlobal.LogLine(string.Format("Cache - UserLogout ({0})", account));
 
                     if (openPositionList.ContainsKey(account))
                     {
@@ -63,6 +70,9 @@ namespace AyondoTrade
                         openPositionList.TryRemove(account, out posList);
 
                         closedPositionList.TryRemove(account, out posList);
+
+                        decimal? balance = 0;
+                        balanceList.TryRemove(account, out balance);
                     }
                 });
         }
@@ -85,6 +95,19 @@ namespace AyondoTrade
                         openPositionList.TryAdd(account, positions.ToList());
                     }
                 });
+        }
+
+        public IList<PositionReport> GetOpenPosition(string account)
+        {
+            if (!isEnabled)
+                return null;
+
+            if (openPositionList.ContainsKey(account))
+            {
+                return openPositionList[account];
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -222,12 +245,72 @@ namespace AyondoTrade
                 });
         }
 
+        public IList<PositionReport> GetClosedPosition(string account)
+        {
+            if (!isEnabled)
+                return null;
+
+            if (closedPositionList.ContainsKey(account))
+            {
+                return closedPositionList[account];
+            }
+
+            return null;
+        }
+
+        public void SetBalance(string account, decimal? balance)
+        {
+            Task.Factory.StartNew(
+                () => {
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) set balance: {1}", account, balance));
+
+                    if (balanceList.ContainsKey(account))
+                    {
+                        balanceList[account] = balance;
+                    }
+                    else
+                    {
+                        balanceList.TryAdd(account, balance);
+                    }
+                });
+        }
+
+        public bool TryGetBalance(string account, out decimal balance)
+        {
+            balance = default(decimal);
+
+            if (!isEnabled)
+                return false;
+
+            if (balanceList.ContainsKey(account))
+            {
+                balance = balanceList[account].HasValue? balanceList[account].Value : default(decimal);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void SwitchCache(bool mode)
+        {
+            isEnabled = mode;
+        }
+
         public string PrintStatusHtml(string account, string userName)
         {
             StringBuilder sb = new StringBuilder();
             if (string.IsNullOrEmpty(account))
             {
                 account = "139121848962";
+            }
+
+            if(balanceList.ContainsKey(account))
+            {
+                sb.Append("<pre>");
+                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Balance:{1}</span><hr/>", userName, balanceList[account].HasValue? balanceList[account] : 0));
+                sb.Append("</pre>");
             }
 
             if (openPositionList.ContainsKey(account))
@@ -361,15 +444,6 @@ namespace AyondoTrade
         private string GeneratePositionTable(List<PositionReport> posList)
         {
             StringBuilder sb = new StringBuilder();
-            //sb.Append("<table><tr><th>PosMaintRptID</th><th>SettlPrice</th></tr>");
-            //foreach (PositionReport pos in posList)
-            //{
-            //    sb.Append("<tr>");
-            //    sb.Append(string.Format("<td>{0}</td>", pos.PosMaintRptID));
-            //    sb.Append(string.Format("<td>{0}</td>", pos.SettlPrice));
-            //    sb.Append("</tr>");
-            //}
-            //sb.Append("</table>");
             if (posList == null)
                 return string.Empty;
 
