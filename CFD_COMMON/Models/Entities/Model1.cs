@@ -12,7 +12,7 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<Feedback> Feedbacks { get; set; }
+        public virtual DbSet<ApiHit> ApiHits { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

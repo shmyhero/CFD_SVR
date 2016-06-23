@@ -109,6 +109,7 @@
     <Compile Include="Models\Cached\Tick.cs" />
     <Compile Include="Models\Context\CFDEntities.cs" />
     <Compile Include="Models\Context\CFDEntitiesFactory.cs" />
+    <Compile Include="Models\Entities\ApiHit.cs" />
     <Compile Include="Models\Entities\Banner.cs" />
     <Compile Include="Models\Entities\AyondoSecurity.cs" />
     <Compile Include="Models\Entities\Bookmark.cs" />
