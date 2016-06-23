@@ -8,6 +8,7 @@ using CFD_API.DTO.FormDTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -217,6 +218,16 @@ namespace CFD_TEST
             Assert.AreEqual(1.23m, Maths.Floor(1.23456789m, 2));
             Assert.AreEqual(1.234m, Maths.Floor(1.23456789m, 3));
             Assert.AreEqual(1.2345m, Maths.Floor(1.23456789m, 4));
+        }
+
+        [TestMethod]
+        public void CreateAyondoAccount()
+        {
+            var db = CFDEntities.Create();
+            var ivan = db.Users.FirstOrDefault(o => o.Id == 1);
+            var userController = new UserController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(), CFDGlobal.BasicRedisClientManager.GetClient());
+            userController.CreateAyondoAccount(ivan);
+
         }
     }
 }
