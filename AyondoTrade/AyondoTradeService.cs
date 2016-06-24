@@ -595,7 +595,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dtLogon <= TIMEOUT); // timeout
 
             if (string.IsNullOrEmpty(account))
-                throw new Exception("fix log on time out");
+                throw new Exception("fix log on time out "+ guid);
 
             return account;
         }
