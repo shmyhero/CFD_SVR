@@ -294,6 +294,15 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [BasicAuth]
+        [ActionName("resetAyondoAccount")]
+        public void ResetAyondoAccount()
+        {
+            var user = GetUser();
+            CreateAyondoAccount(user);
+        }
+
+        [HttpGet]
         //[RequireHttps]
         [ActionName("me")]
         [BasicAuth]
