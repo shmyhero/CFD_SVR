@@ -75,10 +75,10 @@ namespace CFD_API.SignalR
 
                                 if (tryGetValue)
                                 {
-                                    var dtNow = DateTime.UtcNow;
+                                    //var dtNow = DateTime.UtcNow;
 
                                     var alerts = pair.Value
-                                        .Where(o => dtNow -o.CreateTime <= TimeSpan.FromMinutes(3))//do not send AutoClose alert about the positions that are closed more than xxx minute ago
+                                        //.Where(o => dtNow -o.CreateTime <= TimeSpan.FromMinutes(3))//do not send AutoClose alert about the positions that are closed more than xxx minute ago
                                         .Select(report =>
                                     {
                                         var secId = Convert.ToInt32(report.SecurityID);
