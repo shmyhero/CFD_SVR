@@ -410,19 +410,13 @@ namespace AyondoTrade
             {
                 if (report.Any(o => o.Key == Tags.ClOrdID)) //after order filled
                 {
-                    //Text=Position CREATE by MarketOrder
-                    //Text=Position UPDATE by MarketOrder
-
-                    //Text=Position DELETE by MarketOrder
-                    //Text=Position DELETE by TakeProfitOrder
-                    //Text=Position DELETE by StopLossOrder
-
                     var clOrdID = report.GetString(Tags.ClOrdID);
 
-                    if (report.Text.Obj == "Position DELETE by StopLossOrder" || report.Text.Obj == "Position DELETE by TakeProfitOrder") //by stop/take
+                    if (report.Text.Obj == "Position DELETE by StopLossOrder" || report.Text.Obj == "Position DELETE by TakeProfitOrder") //auto closed by stop/take
                     {
-                        //try
-                        //{
+                        //Text=Position DELETE by TakeProfitOrder
+                        //Text=Position DELETE by StopLossOrder
+
                         var account = report.Account.Obj;
                         if (AccountUsernames.ContainsKey(account))
                         {
@@ -464,6 +458,8 @@ namespace AyondoTrade
                     }
                     else //by market order
                     {
+                        //Text=Position CREATE by MarketOrder
+
                         if (OrderPositionReports.ContainsKey(clOrdID))
                             OrderPositionReports[clOrdID].Add(new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report));
                         else
@@ -472,13 +468,21 @@ namespace AyondoTrade
 
                         if (report.Text.Obj == "Position DELETE by MarketOrder")
                         {
+                            //Text=Position DELETE by MarketOrder
                             CFDCacheManager.Instance.ClosePosition(report.Account.Obj, report);
                         }
                         else
                         {
-                            CFDCacheManager.Instance.OpenPosition(report.Account.Obj, report);
+                            //Text=Position UPDATE by MarketOrder
+                            //Text=Position UPDATE by TakeProfitOrder
+                            //Text=Position UPDATE by StopLossOrder
+
+                            //if position is updated by order and quantity become 0 then it will be deleted
+                            if (report.Text.Obj != "Position UPDATE by MarketOrder" && report.Text.Obj != "Position UPDATE by TakeProfitOrder" && report.Text.Obj != "Position UPDATE by StopLossOrder")
+                            {
+                                CFDCacheManager.Instance.OpenPosition(report.Account.Obj, report);
+                            }
                         }
-                        
                     }
                 }
                 else //after replace Stop/Take or new Stop/Take

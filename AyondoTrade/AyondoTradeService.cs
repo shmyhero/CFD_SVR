@@ -411,7 +411,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
-                throw new Exception("fail getting order result");
+                throw new Exception("fail getting order result "+reqId);
 
             return report;
         }
