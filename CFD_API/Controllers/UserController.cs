@@ -374,18 +374,15 @@ namespace CFD_API.Controllers
 
                 marginUsed += tradeValueUSD.Value/report.Leverage.Value;
 
-                //upl
-                if (report.UPL.HasValue)
-                    totalUPL += report.UPL.Value;
-                else//sometimes ayondo doesn't send upl
+                //calculate UPL
+                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                if (quote != null)
                 {
-                    var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
-                    if (quote == null)
-                        CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID);
-                    else
-                    {
-                        totalUPL += report.LongQty.HasValue ? tradeValueUSD.Value*(quote.Bid/report.SettlPrice - 1) : tradeValueUSD.Value*(1 - quote.Offer/report.SettlPrice);
-                    }
+                    totalUPL += report.LongQty.HasValue ? tradeValueUSD.Value*(quote.Bid/report.SettlPrice - 1) : tradeValueUSD.Value*(1 - quote.Offer/report.SettlPrice);
+                }
+                else
+                {
+                    CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID +" when calculating UPL for totalUPL");
                 }
             }
 
@@ -451,18 +448,16 @@ namespace CFD_API.Controllers
 
                 var invest = tradeValueUSD.Value/report.Leverage.Value;
 
+                //calculate UPL
                 decimal pl = 0;
-                if (report.UPL.HasValue)
-                    pl = report.UPL.Value;
+                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                if (quote != null)
+                {
+                    pl += report.LongQty.HasValue ? tradeValueUSD.Value * (quote.Bid / report.SettlPrice - 1) : tradeValueUSD.Value * (1 - quote.Offer / report.SettlPrice);
+                }
                 else
                 {
-                    var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
-                    if (quote == null)
-                        CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID);
-                    else
-                    {
-                        pl = report.LongQty != null ? tradeValueUSD.Value*(quote.Offer/report.SettlPrice - 1) : tradeValueUSD.Value*(1 - quote.Bid/report.SettlPrice);
-                    }
+                    CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID + " when calculating UPL for PLReport");
                 }
 
                 if (prodDef.AssetClass == "Stock Indices")
