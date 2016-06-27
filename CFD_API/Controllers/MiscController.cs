@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
+using AyondoTrade;
 using CFD_API.Controllers.Attributes;
 using CFD_COMMON;
 using CFD_COMMON.Models.Context;
@@ -52,6 +54,15 @@ namespace CFD_API.Controllers
             string s = null;
             string s2 = s.ToString();
             return Request.CreateResponse(HttpStatusCode.OK, s2);
+        }
+
+        [HttpGet]
+        [ActionName("wcf")]
+        public HttpResponseMessage TestWCF()
+        {
+            var ayondoTradeClient = new AyondoTradeClient();
+            var testSleep = ayondoTradeClient.TestSleep(TimeSpan.FromSeconds(3));
+            return Request.CreateResponse(HttpStatusCode.OK, testSleep);
         }
 
         [HttpGet]

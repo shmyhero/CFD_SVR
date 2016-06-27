@@ -14,7 +14,11 @@ namespace AyondoTrade
         }
 
         public AyondoTradeClient()
-            : this(new NetTcpBinding(SecurityMode.None) {MaxReceivedMessageSize = 10*1024*1024}, new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL))
+            : this(new NetTcpBinding(SecurityMode.None)
+            {
+                MaxReceivedMessageSize = 10*1024*1024,
+            //MaxConnections = 10000,
+            }, new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL))
         {
         }
 
@@ -40,6 +44,11 @@ namespace AyondoTrade
         public string Test(string text)
         {
             return base.Channel.Test(text);
+        }
+
+        public string TestSleep(TimeSpan ts)
+        {
+            return base.Channel.TestSleep(ts);
         }
 
         public IList<PositionReport> DataTest(int count)

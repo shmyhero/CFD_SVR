@@ -754,6 +754,8 @@ namespace AyondoTrade
                         TestUserLogin();
                     else if (action == 'p')
                         TestPositionReport();
+                    else if (action == 'd')
+                        TestNewOrder();
                 }
                 catch (System.Exception e)
                 {
@@ -762,6 +764,16 @@ namespace AyondoTrade
                 }
             }
             Console.WriteLine("Program shutdown.");
+        }
+
+        private void TestNewOrder()
+        {
+            foreach (var pair in UsernameAccounts)
+            {
+                var account = pair.Value;
+
+                NewOrderSingle(account,"34820",'1','2',1,leverage:1);
+            }
         }
 
         private void TestPositionReport()
@@ -777,7 +789,8 @@ namespace AyondoTrade
         private void TestUserLogin()
         {
             var db = CFDEntities.Create();
-            var users = db.Users.Where(o => o.Id >= 2042 && o.Id <= 2087).ToList();
+            //var users = db.Users.Where(o => o.Id >= 2042 && o.Id <= 2087).ToList();
+            var users = db.Users.Where(o => o.Id >= 2092 && o.Id <= 2141).ToList();
 
             IList<string> loginReqIds = new List<string>();
             foreach (var user in users)
@@ -798,7 +811,7 @@ namespace AyondoTrade
 
         private char QueryAction()
         {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c".Split(','));
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d".Split(','));
 
             string cmd = Console.ReadLine().Trim();
             if (cmd.Length != 1 || validActions.Contains(cmd) == false)

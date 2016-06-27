@@ -14,6 +14,9 @@ namespace AyondoTrade
         string Test(string text);
 
         [OperationContract]
+        string TestSleep(TimeSpan ts);
+
+        [OperationContract]
         IList<PositionReport> DataTest(int count);
 
         [OperationContract]

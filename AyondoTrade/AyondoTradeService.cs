@@ -25,6 +25,11 @@ namespace AyondoTrade
             return "You entered: " + text;
         }
 
+        public string TestSleep(TimeSpan ts)
+        {
+            return "OK";
+        }
+
         public IList<Model.PositionReport> DataTest(int count)
         {
             var result=new List<Model.PositionReport>();
