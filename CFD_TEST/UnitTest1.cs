@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.ServiceModel;
+using System.Threading;
 using AyondoTrade;
 using CFD_API;
 using CFD_API.Controllers;
@@ -227,7 +230,45 @@ namespace CFD_TEST
             var ivan = db.Users.FirstOrDefault(o => o.Id == 1);
             var userController = new UserController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(), CFDGlobal.BasicRedisClientManager.GetClient());
             userController.CreateAyondoAccount(ivan);
+        }
 
+        [TestMethod]
+        public void WCFConnectionLimitTest()
+        {
+            ServicePointManager.DefaultConnectionLimit = 10000;
+
+            CFDGlobal.LogLine("begin");
+
+            IList<Thread> threads = new List<Thread>();
+
+            for (int i = 0; i < 50; i++)
+            {
+                //var threadStart = new ParameterizedThreadStart(DoUserOperation);
+                var threadStart = new ParameterizedThreadStart(CallWCFService);
+
+                //var threadStart = new ThreadStart(DoUserOperation);
+                var thread = new Thread(threadStart);
+                thread.Start();
+                //thread.Start();
+                threads.Add(thread);
+
+                //var task = Task.Run(() => { DoUserOperation(user); });
+                //tasks.Add(task);
+            }
+
+
+            while (threads.Any(o => o.IsAlive))
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+
+            CFDGlobal.LogLine("end");
+        }
+
+        private void CallWCFService(object obj)
+        {
+            var ayondoTradeClient = new AyondoTradeClient();
+            ayondoTradeClient.TestSleep(TimeSpan.FromSeconds(5));
         }
     }
 }
