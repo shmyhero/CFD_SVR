@@ -27,6 +27,7 @@ namespace AyondoTrade
 
         public string TestSleep(TimeSpan ts)
         {
+            Thread.Sleep(ts);
             return "OK";
         }
 

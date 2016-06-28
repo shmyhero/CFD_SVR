@@ -244,7 +244,7 @@ namespace CFD_TEST
             for (int i = 0; i < 50; i++)
             {
                 //var threadStart = new ParameterizedThreadStart(DoUserOperation);
-                var threadStart = new ParameterizedThreadStart(CallWCFService);
+                var threadStart = new ParameterizedThreadStart(ThreadTest);
 
                 //var threadStart = new ThreadStart(DoUserOperation);
                 var thread = new Thread(threadStart);
@@ -265,10 +265,26 @@ namespace CFD_TEST
             CFDGlobal.LogLine("end");
         }
 
-        private void CallWCFService(object obj)
+        private void ThreadTest(object obj)
         {
-            var ayondoTradeClient = new AyondoTradeClient();
-            ayondoTradeClient.TestSleep(TimeSpan.FromSeconds(5));
+            CFDGlobal.LogLine("start "+Thread.CurrentThread.ManagedThreadId);
+
+            //test web role
+            //var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/misc/sleep");
+            //var webResponse = request.GetResponse();
+
+            //test local threadpool
+            //Thread.Sleep(5000);
+
+            //test wcf only
+            //var ayondoTradeClient = new AyondoTradeClient();
+            //ayondoTradeClient.TestSleep(TimeSpan.FromSeconds(5));
+
+            //test web role via wcf
+            var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/misc/wcf");
+            var webResponse = request.GetResponse();
+
+            CFDGlobal.LogLine("end " + Thread.CurrentThread.ManagedThreadId);
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.EnterpriseServices;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -23,6 +25,8 @@ namespace CFD_API
     {
         void Application_Start(object sender, EventArgs e)
         {
+            ThreadPool.SetMinThreads(1000, 1000);
+
             // Code that runs on application startup
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);

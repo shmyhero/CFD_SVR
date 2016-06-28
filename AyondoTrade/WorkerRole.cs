@@ -31,7 +31,9 @@ namespace AyondoTrade
         public override bool OnStart()
         {
             // Set the maximum number of concurrent connections
-            ServicePointManager.DefaultConnectionLimit = 10000;
+            ServicePointManager.DefaultConnectionLimit = 1000;
+
+            ThreadPool.SetMinThreads(1000, 1000);
 
             // For information on handling configuration changes
             // see the MSDN topic at http://go.microsoft.com/fwlink/?LinkId=166357.
@@ -56,7 +58,7 @@ namespace AyondoTrade
             serviceHost = new ServiceHost(typeof (AyondoTradeService));
 
             NetTcpBinding binding = new NetTcpBinding(SecurityMode.None);
-            binding.MaxConnections = 10000;
+            binding.MaxConnections = 1000;
 
             RoleInstanceEndpoint externalEndPoint =
                 RoleEnvironment.CurrentRoleInstance.InstanceEndpoints["WCFEndpoint"];
@@ -70,9 +72,9 @@ namespace AyondoTrade
 
             serviceHost.Description.Behaviors.Add(new ServiceThrottlingBehavior
             {
-                MaxConcurrentSessions = 10000,
-                MaxConcurrentCalls = 10000,
-                MaxConcurrentInstances = 10000,
+                MaxConcurrentSessions = 1000,
+                MaxConcurrentCalls = 1000,
+                MaxConcurrentInstances = 1000,
             });
 
             serviceHost.Open();
