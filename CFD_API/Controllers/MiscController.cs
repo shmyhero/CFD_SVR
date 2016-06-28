@@ -2,11 +2,11 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
 using CFD_API.Controllers.Attributes;
-using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using ServiceStack.Redis;
 
@@ -63,6 +63,14 @@ namespace CFD_API.Controllers
             var ayondoTradeClient = new AyondoTradeClient();
             var testSleep = ayondoTradeClient.TestSleep(TimeSpan.FromSeconds(3));
             return Request.CreateResponse(HttpStatusCode.OK, testSleep);
+        }
+
+        [HttpGet]
+        [ActionName("sleep")]
+        public HttpResponseMessage TestSleep(int second = 5)
+        {
+            Thread.Sleep(TimeSpan.FromSeconds(second));
+            return Request.CreateResponse(HttpStatusCode.OK, "");
         }
 
         [HttpGet]
