@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
@@ -25,7 +26,7 @@ namespace CFD_JOBS.Ayondo
 
             while (true)
             {
-                
+                Thread.Sleep(1000);
             }
 
             //initiator.Stop();
