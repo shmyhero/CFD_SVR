@@ -91,6 +91,8 @@
     <Compile Include="Ayondo\AyondoDataImportWorker.cs" />
     <Compile Include="Ayondo\AyondoFixFeedWorker.cs" />
     <Compile Include="Ayondo\AyondoFixFeedApp.cs" />
+    <Compile Include="Ayondo\AyondoFixTestApp.cs" />
+    <Compile Include="Ayondo\AyondoFixTestWorker.cs" />
     <Compile Include="Ayondo\AyondoFixTradeClient.cs" />
     <Compile Include="Ayondo\AyondoFixTradeWorker.cs" />
     <Compile Include="Ayondo\AyondoOldProdCleanup.cs" />
@@ -102,6 +104,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="AyondoTest.cfg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="AyondoTrade.cfg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
