@@ -1,18 +1,76 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
+using System.Threading;
 using System.Web;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using CFD_COMMON;
+using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
+using EntityFramework.BulkInsert.Extensions;
 using Newtonsoft.Json;
 
 namespace CFD_API.Controllers.Attributes
 {
     public class ApiHitRecordFilter : ActionFilterAttribute
     {
+        private static Timer _timer;
+        private static readonly TimeSpan _dbSaveInterval = TimeSpan.FromSeconds(10);
+
+        private static readonly Lazy<ConcurrentQueue<ApiHit>> _apiHitsQueue = new Lazy<ConcurrentQueue<ApiHit>>(() =>
+        {
+            _timer = new Timer(SaveApiHitsToDB, null, _dbSaveInterval, TimeSpan.FromMilliseconds(-1));
+
+            return new ConcurrentQueue<ApiHit>();
+        });
+
+        private static ConcurrentQueue<ApiHit> ApiHitsQueue
+        {
+            get { return _apiHitsQueue.Value; }
+        }
+
+        private static void SaveApiHitsToDB(object state)
+        {
+            while (true)
+            {
+                try
+                {
+                    var apiHits = new List<ApiHit>();
+                    while (!ApiHitsQueue.IsEmpty)
+                    {
+                        ApiHit apiHit;
+                        ApiHitsQueue.TryDequeue(out apiHit);
+                        apiHits.Add(apiHit);
+                    }
+
+                    if (apiHits.Count > 0)
+                    {
+                        using (var db = CFDHistoryEntities.Create())
+                        {
+                            //ef extension - BulkInsert
+                            //using (var transactionScope = new TransactionScope())
+                            //{
+                                db.BulkInsert(apiHits);
+                                db.SaveChanges();
+                                //transactionScope.Complete();
+                            //}
+
+                            ////ef - AddRange
+                            //db.ApiHits.AddRange(apiHits);
+                            //db.SaveChanges();
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogExceptionAsInfo(e);
+                }
+
+                Thread.Sleep(_dbSaveInterval);
+            }
+        }
+
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
             base.OnActionExecuting(actionContext);
@@ -42,18 +100,18 @@ namespace CFD_API.Controllers.Attributes
                 userId = null;
             }
 
-            var isException = actionExecutedContext.Exception !=null;
+            var isException = actionExecutedContext.Exception != null;
 
             var param = JsonConvert.SerializeObject(actionExecutedContext.ActionContext.ActionArguments);
 
             string ip = null;
             if (actionExecutedContext.Request.Properties.ContainsKey("MS_HttpContext"))
             {
-                var requestBase = ((HttpContextWrapper)actionExecutedContext.Request.Properties["MS_HttpContext"]).Request;
+                var requestBase = ((HttpContextWrapper) actionExecutedContext.Request.Properties["MS_HttpContext"]).Request;
                 ip = requestBase.UserHostAddress;
             }
 
-            controller.db.ApiHits.Add(new ApiHit()
+            var apiHit = new ApiHit()
             {
                 HitAt = startAt,
                 HttpMethod = httpMethod,
@@ -63,8 +121,9 @@ namespace CFD_API.Controllers.Attributes
                 TimeSpent = timeSpent,
                 Url = actionExecutedContext.Request.RequestUri.AbsoluteUri,
                 UserId = userId
-            });
-            controller.db.SaveChanges();
+            };
+
+            ApiHitsQueue.Enqueue(apiHit);
         }
     }
 }
