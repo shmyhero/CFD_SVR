@@ -187,39 +187,22 @@ namespace AyondoTrade
                         return;
                     }
 
-                    //close list is empty
-                    if (!closedPositionList.ContainsKey(account))
+                    PositionReport openPosition = openPositionList[account].FirstOrDefault(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue());
+                    if (openPosition == null)
                     {
                         return;
                     }
-
-                    PositionReport openPosition = openPositionList[account].FirstOrDefault(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue());
-                    if (openPosition == null)
-                        return;
+                    
                     //remove from open list
                     openPositionList[account].Remove(openPosition);
-                    ////copy some value 
-                    //position.SettlPrice = openPosition.SettlPrice;
-                    //position.ClearingBusinessDate = openPosition.ClearingBusinessDate;
-                    //if (openPosition.Any(o => o.Key == Tags.StopPx))
-                    //{
-                    //    position.SetField(new DecimalField(Tags.StopPx) { Obj = openPosition.GetDecimal(Tags.StopPx) });
-                    //}
-
-                    //if (openPosition.Any(o => o.Key == Global.FixApp.TAG_TakePx))
-                    //{
-                    //    position.SetField(new DecimalField(Global.FixApp.TAG_TakePx) { Obj = openPosition.GetDecimal(Global.FixApp.TAG_TakePx) });
-                    //}
-                    //if (openPosition.Any(o => o.Key == Global.FixApp.TAG_Leverage))
-                    //{
-                    //    position.SetField(new DecimalField(Global.FixApp.TAG_Leverage) { Obj = openPosition.GetDecimal(Global.FixApp.TAG_Leverage) });
-                    //}
                     
-                    //logic below is that Closed Position List should keep all position history, including open one and closed one.
-                    //move open position to closed list
-                    closedPositionList[account].Add(openPosition);
-                    //add closed position to closed list
-                    closedPositionList[account].Add(closedPosition);
+                    //close list is not empty
+                    if (closedPositionList.ContainsKey(account))
+                    {
+                        closedPositionList[account].Add(openPosition);
+                        //add closed position to closed list
+                        closedPositionList[account].Add(closedPosition);
+                    }
                 });
         }
 
