@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -9,17 +9,17 @@ using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace CFD_COMMON.Models.Context
 {
-    public partial class CFDEntities
+    public partial class CFDHistoryEntities
     {
-        public CFDEntities(string connectionString)
+        public CFDHistoryEntities(string connectionString)
             : base(connectionString)
         {
         }
 
-        public static CFDEntities Create(bool log = false, bool UseDatabaseNullSemantics = true)
+        public static CFDHistoryEntities Create(bool log = false, bool UseDatabaseNullSemantics = true)
         {
-            string connectionString = CFDGlobal.GetDbConnectionString("CFDEntities");
-            var db = new CFDEntities(connectionString);
+            string connectionString = CFDGlobal.GetDbConnectionString("CFDHistoryEntities");
+            var db = new CFDHistoryEntities(connectionString);
 
             db.Configuration.UseDatabaseNullSemantics = UseDatabaseNullSemantics;
 

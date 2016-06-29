@@ -37,7 +37,7 @@ namespace CFD_API
 
             GlobalConfiguration.Configuration.Filters.Add(new ElmahHandledErrorLoggerFilter());
 
-            //GlobalConfiguration.Configuration.Filters.Add(new ApiHitRecordFilter());
+            GlobalConfiguration.Configuration.Filters.Add(new ApiHitRecordFilter());
 
 
 

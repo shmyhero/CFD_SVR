@@ -79,6 +79,28 @@ namespace CFD_COMMON
             }
         }
 
+        public static string GetDbConnectionString(string connectStringName)
+        {
+            if (RoleEnvironment.IsAvailable)
+            {
+                string value = null;
+                try
+                {
+                    value = RoleEnvironment.GetConfigurationSettingValue(connectStringName);
+                }
+                catch (Exception e)
+                {
+                }
+
+                //if there's no cloud config, return local config
+                return value ?? ConfigurationManager.ConnectionStrings[connectStringName].ConnectionString;
+            }
+            else
+            {
+                return ConfigurationManager.ConnectionStrings[connectStringName].ConnectionString;
+            }
+        }
+
         public static T RetryMaxOrThrow<T>(Func<T> p, int sleepMilliSeconds = 10000, int retryMax = 3, bool verboseErrorLog = true)
         {
             int retryCount = 0;
@@ -113,7 +135,7 @@ namespace CFD_COMMON
                         //       " stack: [" + Global.LogStack() + "]");
                         //}
 
-                        throw new System.ApplicationException("exceed retry count: " + ex.Message, ex);
+                        throw new ApplicationException("exceed retry count: " + ex.Message, ex);
                     }
 
                     //if (verboseErrorLog)
