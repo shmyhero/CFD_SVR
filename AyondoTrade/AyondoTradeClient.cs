@@ -107,5 +107,10 @@ namespace AyondoTrade
         {
             base.Channel.SwitchCache(mode);
         }
+
+        public void ClearCache(string username)
+        {
+            base.Channel.ClearCache(username);
+        }
     }
 }

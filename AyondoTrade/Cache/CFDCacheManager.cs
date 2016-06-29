@@ -281,6 +281,40 @@ namespace AyondoTrade
             isEnabled = mode;
         }
 
+        /// <summary>
+        /// Clear cache by account
+        /// </summary>
+        /// <param name="account"></param>
+        public void ClearCache(string account)
+        {
+            List<PositionReport> list = null;
+            if(openPositionList.ContainsKey(account))
+            {
+                openPositionList.TryRemove(account, out list);
+            }
+
+            if(closedPositionList.ContainsKey(account))
+            {
+                closedPositionList.TryRemove(account, out list);
+            }
+
+            decimal? balance = 0;
+            if(balanceList.ContainsKey(account))
+            {
+                balanceList.TryRemove(account, out balance);
+            }
+        }
+
+        /// <summary>
+        /// Clear whole cache
+        /// </summary>
+        public void ClearCache()
+        {
+            openPositionList.Clear();
+            closedPositionList.Clear();
+            balanceList.Clear();
+        }
+
         public string PrintStatusHtml(string account, string userName)
         {
             StringBuilder sb = new StringBuilder();

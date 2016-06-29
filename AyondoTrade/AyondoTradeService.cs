@@ -721,6 +721,18 @@ namespace AyondoTrade
                 CFDCacheManager.Instance.SwitchCache(true);
             }
         }
+
+        public void ClearCache(string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                CFDCacheManager.Instance.ClearCache();
+            }
+            else if(Global.FixApp.UsernameAccounts.ContainsKey(username))
+            {
+                CFDCacheManager.Instance.ClearCache(Global.FixApp.UsernameAccounts[username]);
+            }
+        }
     }
 
     //internal class BusinessMessageRejectException : Exception

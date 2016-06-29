@@ -53,5 +53,8 @@ namespace AyondoTrade
 
         [OperationContract]
         void SwitchCache(string mode);
+
+        [OperationContract]
+        void ClearCache(string username);
     }
 }

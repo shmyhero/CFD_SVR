@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>CFD Cache Clear</title>
+	<meta charset="utf-8" />
+    <script src="/Scripts/jquery-1.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#btnClear").click(function () {
+                if ($("#txtUserName").val() == "")
+                {
+                    alert('please input user name.');
+                    return;
+                }
+
+                $.ajax({ url: "api/Position/ClearCache?username=" + $("#txtUserName").val(), async: false });
+                $("#divResult").html($("#txtUserName").val() + " has been removed from cache.");
+            });
+
+            $("#btnClearAll").click(function () {
+                $.ajax({ url: "api/Position/ClearCache", async: false });
+                $("#divResult").html("Cache has been cleared");
+            });
+        });
+
+    </script>
+</head>
+<body>
+    <span>User Name:</span> &nbsp;&nbsp;&nbsp;&nbsp;<input id="txtUserName" style="width:150px;" />
+    <br />
+    <input type="button" value="Clear" id="btnClear" />&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="Clear All" id="btnClearAll" />
+
+    <div id="divResult">
+
+    </div>
+</body>
+</html>
