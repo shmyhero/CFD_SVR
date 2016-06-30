@@ -14,5 +14,6 @@ namespace CFD_COMMON.Localization
         ORDER_REJECTED,
         NO_AYONDO_ACCOUNT,
         EXCEPTION,
+        PHONE_SIGNUP_FORBIDDEN,
     }
 }

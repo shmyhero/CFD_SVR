@@ -97,11 +97,11 @@ namespace CFD_TEST
             EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
 
             //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
-            AyondoTradeClient clientHttp = new AyondoTradeClient(new BasicHttpBinding(BasicHttpSecurityMode.None), edpHttp);
+            AyondoTradeClient clientHttp = new AyondoTradeClient();
 
             //var r1 = clientTcp.Test("haha tcp");
             //var r2 = clientHttp.Test("haha http");
-            var positionReport = clientHttp.GetPositionReport("jiangyi1985", "ivan");
+            var positionReport = clientHttp.Test("jiangyi1985");
 
             //// 创建Binding  
             //NetTcpBinding tcpBinding = new NetTcpBinding(SecurityMode.None);

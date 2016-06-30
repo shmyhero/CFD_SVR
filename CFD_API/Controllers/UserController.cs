@@ -35,10 +35,25 @@ namespace CFD_API.Controllers
         [ActionName("signupByPhone")]
         public SignupResultDTO SignupByPhone(SignupByPhoneFormDTO form)
         {
-            var dtValidSince = DateTime.UtcNow.AddMinutes(-60);
-            var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
+            db.PhoneSignupHistories.Add(new PhoneSignupHistory() { CreateAt = DateTime.UtcNow, Phone = form.phone });
+            db.SaveChanges();
 
             var result = new SignupResultDTO();
+
+            var oneDayAgo = DateTime.UtcNow.AddDays(-1);
+            var phoneList = db.PhoneSignupHistories.Where(item => item.CreateAt >= oneDayAgo && item.Phone == form.phone).ToList();
+
+            if (phoneList.Count(item => (DateTime.UtcNow - item.CreateAt) <= TimeSpan.FromMinutes(1)) > 3
+                || phoneList.Count(item => (DateTime.UtcNow - item.CreateAt) <= TimeSpan.FromHours(1)) > 10
+                || phoneList.Count > 20)
+            {
+                result.success = false;
+                result.message = __(TransKey.PHONE_SIGNUP_FORBIDDEN);
+                return result;
+            }
+
+            var dtValidSince = DateTime.UtcNow.AddMinutes(-60);
+            var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
 
             if (verifyCodes.Any())
             {
