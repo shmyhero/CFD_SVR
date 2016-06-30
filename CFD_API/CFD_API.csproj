@@ -244,6 +244,7 @@
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />
     <Compile Include="Controllers\Attributes\ElmahFilter.cs" />
     <Compile Include="Controllers\Attributes\RequireHttpsAttribute.cs" />
+    <Compile Include="Controllers\Attributes\RestrictByIp.cs" />
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
     <Compile Include="Controllers\PositionController.cs" />

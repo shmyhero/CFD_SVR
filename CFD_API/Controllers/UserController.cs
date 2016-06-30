@@ -32,6 +32,7 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         //[RequireHttps]
+        //[RestrictByIp]
         [ActionName("signupByPhone")]
         public SignupResultDTO SignupByPhone(SignupByPhoneFormDTO form)
         {
