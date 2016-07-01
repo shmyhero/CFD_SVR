@@ -19,6 +19,24 @@ namespace AyondoTrade
         public static readonly int SCAN_WAIT_MILLI_SECOND = 250;
         public static readonly string FIX_DATETIME_MASK = "yyyy-MM-dd HH:mm:ss.FFF";
 
+        public AyondoTradeService()
+        {
+            string token = null;
+            try
+            {
+                token = OperationContext.Current.IncomingMessageHeaders.GetHeader<string>(Global.WCF_MSG_HEADER_TOKEN_KEY, Global.WCF_MSG_HEADER_TOKEN_NS);
+            }
+            catch (Exception)
+            {
+                throw new Exception("authentication failed. no token in message header");
+            }
+
+            if (token != Global.WCF_MSG_HEADER_TOKEN_VALUE)
+            {
+                throw new Exception("authentication failed. wrong token");
+            }
+        }
+
         public string Test(string text)
         {
             //CFDGlobal.LogLine("host service thread id " + Thread.CurrentThread.ManagedThreadId.ToString());
@@ -33,7 +51,7 @@ namespace AyondoTrade
 
         public IList<Model.PositionReport> DataTest(int count)
         {
-            var result=new List<Model.PositionReport>();
+            var result = new List<Model.PositionReport>();
             for (int i = 0; i < count; i++)
             {
                 result.Add(new Model.PositionReport()
@@ -175,7 +193,7 @@ namespace AyondoTrade
 
             decimal balance;
 
-            if(!ignoreCache && CFDCacheManager.Instance.TryGetBalance(account, out balance))
+            if (!ignoreCache && CFDCacheManager.Instance.TryGetBalance(account, out balance))
             {
                 return balance;
             }
@@ -207,8 +225,8 @@ namespace AyondoTrade
             {
                 result = CFDCacheManager.Instance.GetOpenPosition(account);
             }
-            
-            if(result == null)
+
+            if (result == null)
             {
                 try
                 {
@@ -238,12 +256,12 @@ namespace AyondoTrade
 
             IList<PositionReport> result = null;
 
-            if(!ignoreCache)
+            if (!ignoreCache)
             {
                 result = CFDCacheManager.Instance.GetClosedPosition(account);
             }
-            
-            if(result == null)
+
+            if (result == null)
             {
                 try
                 {
@@ -417,7 +435,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
-                throw new Exception("fail getting order result "+reqId);
+                throw new Exception("fail getting order result " + reqId);
 
             return report;
         }
@@ -601,7 +619,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dtLogon <= TIMEOUT); // timeout
 
             if (string.IsNullOrEmpty(account))
-                throw new Exception("fix log on time out "+ guid);
+                throw new Exception("fix log on time out " + guid);
 
             return account;
         }
@@ -636,15 +654,15 @@ namespace AyondoTrade
                 CreateTime =
                     DateTime.ParseExact(report.ClearingBusinessDate.Obj, FIX_DATETIME_MASK, CultureInfo.CurrentCulture,
                         DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
-                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null,
-                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?)null,
+                ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?) null,
+                LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?) null,
                 StopOID = report.Any(o => o.Key == Global.FixApp.TAG_StopOID) ? report.GetString(Global.FixApp.TAG_StopOID) : null,
                 TakeOID = report.Any(o => o.Key == Global.FixApp.TAG_TakeOID) ? report.GetString(Global.FixApp.TAG_TakeOID) : null,
-                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?)null,
-                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?)null,
+                StopPx = report.Any(o => o.Key == Tags.StopPx) ? report.GetDecimal(Tags.StopPx) : (decimal?) null,
+                TakePx = report.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? report.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?) null,
                 PL = report.GetDecimal(Global.FixApp.TAG_MDS_PL),
-                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?)null,
-                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?)null,
+                UPL = report.Any(o => o.Key == Global.FixApp.TAG_MDS_UPL) ? report.GetDecimal(Global.FixApp.TAG_MDS_UPL) : (decimal?) null,
+                Leverage = report.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? report.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?) null,
                 Text = report.Text.Obj,
             };
         }
@@ -716,7 +734,7 @@ namespace AyondoTrade
             {
                 CFDCacheManager.Instance.SwitchCache(false);
             }
-            else if(mode.ToLower() == "on")
+            else if (mode.ToLower() == "on")
             {
                 CFDCacheManager.Instance.SwitchCache(true);
             }
@@ -728,7 +746,7 @@ namespace AyondoTrade
             {
                 CFDCacheManager.Instance.ClearCache();
             }
-            else if(Global.FixApp.UsernameAccounts.ContainsKey(username))
+            else if (Global.FixApp.UsernameAccounts.ContainsKey(username))
             {
                 CFDCacheManager.Instance.ClearCache(Global.FixApp.UsernameAccounts[username]);
             }
