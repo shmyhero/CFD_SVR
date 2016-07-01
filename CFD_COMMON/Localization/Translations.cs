@@ -135,8 +135,7 @@ namespace CFD_COMMON.Localization
             {"UK 100 Rolling", "英国富时100"},
             {"US 500 Rolling", "标准普尔500"},
             {"US Tech 100 Rolling", "纳斯达克100"},
-            {"Wall Street Rolling", "华尔街指数"},
-            //{"Wall Street Rolling", "道琼斯工业指数"},
+            {"Wall Street Rolling", "道琼斯工业指数"},
         };
     }
 }
