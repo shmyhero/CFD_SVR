@@ -11,6 +11,10 @@ namespace AyondoTrade
 {
     public class Global
     {
+        public const string WCF_MSG_HEADER_TOKEN_KEY = "token";
+        public const string WCF_MSG_HEADER_TOKEN_NS = "TH";
+        public const string WCF_MSG_HEADER_TOKEN_VALUE = "xM3dY7pZ4bH7mB0oC2xY5vF1aP0bN7eV4iL1sT2";
+
         private static Timer _timer;
         private static TimeSpan _updateInterval = TimeSpan.FromMinutes(10);
 
