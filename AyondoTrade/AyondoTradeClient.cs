@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ServiceModel;
 using AyondoTrade.Model;
 using CFD_COMMON;
+using System.ServiceModel.Channels;
 
 namespace AyondoTrade
 {
@@ -11,13 +12,15 @@ namespace AyondoTrade
         public AyondoTradeClient(System.ServiceModel.Channels.Binding binding, EndpointAddress edpAddr)
             : base(binding, edpAddr)
         {
+            var scope = new OperationContextScope(base.InnerChannel);
+            MessageHeader myHeader = MessageHeader.CreateHeader("token", "TH", Guid.NewGuid().ToString());
+            OperationContext.Current.OutgoingMessageHeaders.Add(myHeader);
         }
 
         public AyondoTradeClient()
             : this(new NetTcpBinding(SecurityMode.None)
             {
                 MaxReceivedMessageSize = 10*1024*1024,
-            //MaxConnections = 10000,
             }, new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL))
         {
         }

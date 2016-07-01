@@ -17,6 +17,7 @@ using CFD_COMMON.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using ServiceStack.Redis.Generic;
+using System.ServiceModel.Channels;
 
 namespace CFD_TEST
 {
@@ -98,10 +99,30 @@ namespace CFD_TEST
 
             //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
             AyondoTradeClient clientHttp = new AyondoTradeClient();
+            //using (OperationContextScope scope = new OperationContextScope(clientHttp.InnerChannel))
+            //{
+            //    MessageHeader myHeader = MessageHeader.CreateHeader(
+            //        "token", "TH", Guid.NewGuid().ToString());
+            //    OperationContext.Current.OutgoingMessageHeaders.Add(myHeader);
+
+            //    var positionReport = clientHttp.Test("jiangyi1985");
+            //}
+
+            var positionReport = clientHttp.Test("jiangyi1985");
+
+            //using (OperationContextScope scope = new OperationContextScope(clientHttp.InnerChannel))
+            //{
+            //    MessageHeader myHeader = MessageHeader.CreateHeader(
+            //            "header", "http://my", Guid.NewGuid().ToString());
+            //    OperationContext.Current.OutgoingMessageHeaders.Add(myHeader);
+            //}
+
+
+
 
             //var r1 = clientTcp.Test("haha tcp");
             //var r2 = clientHttp.Test("haha http");
-            var positionReport = clientHttp.Test("jiangyi1985");
+
 
             //// 创建Binding  
             //NetTcpBinding tcpBinding = new NetTcpBinding(SecurityMode.None);
