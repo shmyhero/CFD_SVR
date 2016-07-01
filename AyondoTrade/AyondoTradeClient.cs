@@ -13,7 +13,7 @@ namespace AyondoTrade
             : base(binding, edpAddr)
         {
             var scope = new OperationContextScope(base.InnerChannel);
-            MessageHeader myHeader = MessageHeader.CreateHeader("token", "TH", Guid.NewGuid().ToString());
+            MessageHeader myHeader = MessageHeader.CreateHeader(Global.WCF_MSG_HEADER_TOKEN_KEY, Global.WCF_MSG_HEADER_TOKEN_NS, Global.WCF_MSG_HEADER_TOKEN_VALUE);
             OperationContext.Current.OutgoingMessageHeaders.Add(myHeader);
         }
 
