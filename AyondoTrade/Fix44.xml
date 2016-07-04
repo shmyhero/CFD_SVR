@@ -4575,6 +4575,7 @@
       <value enum="8" description="ADYEN_PP_DEPOSIT"/>
       <value enum="9" description="ADYEN_PP_WITHDRAWAL"/>
       <value enum="10" description="MANUAL_WITHDRAWAL"/>
+      <value enum="11" description="CUP_DEPOSIT"/>
     </field>
     <field number="7912" name="MDS_SetSize" type="STRING"/>
     <field number="7913" name="MDS_SetIndex" type="STRING"/>

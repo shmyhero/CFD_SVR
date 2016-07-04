@@ -195,6 +195,10 @@ namespace AyondoTrade
                     var account = message.GetString(Tags.Account);
                     CFDCacheManager.Instance.SetBalance(account, quantity);
                 }
+                else if (msgType == "MDS4")
+                {
+                    CFDGlobal.LogLine("MDS4:MDSTransfer: " + GetMessageString(message));
+                }
                 else
                     Crack(message, sessionID);
             }
