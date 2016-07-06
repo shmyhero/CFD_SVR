@@ -42,9 +42,9 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(user.AyondoUsername))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
-            var clientHttp = new AyondoTradeClient();
+            var wcfClient = new AyondoTradeClient();
 
-            var result = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+            var result = wcfClient.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
 
             if (result.Count == 0)
                 return new List<PositionDTO>();
