@@ -111,10 +111,16 @@ namespace CFD_API.Controllers.Attributes
                 ip = requestBase.UserHostAddress;
             }
 
+            var httpActionDescriptor = (ReflectedHttpActionDescriptor) actionExecutedContext.ActionContext.ActionDescriptor;
+            var methodInfo = httpActionDescriptor.MethodInfo.ToString().Trim('{', '}');
+            var methodName = methodInfo.Substring(methodInfo.IndexOf(' ') + 1);
+            var controllerName = actionExecutedContext.ActionContext.ControllerContext.Controller.ToString();
+
             var apiHit = new ApiHit()
             {
                 HitAt = startAt,
                 HttpMethod = httpMethod,
+                ApiName = controllerName + '.' + methodName,
                 Ip = ip,
                 IsException = isException,
                 Param = param,

@@ -21,6 +21,9 @@ namespace CFD_COMMON.Models.Entities
         public string HttpMethod { get; set; }
 
         [StringLength(200)]
+        public string ApiName { get; set; }
+
+        [StringLength(200)]
         public string Param { get; set; }
 
         public int? UserId { get; set; }
