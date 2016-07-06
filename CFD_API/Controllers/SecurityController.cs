@@ -179,6 +179,40 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("stock")]
+        public List<SecurityDTO> GetAllStocks(int page = 1, int perPage = 20)
+        {
+            var activeProds = GetActiveProds();
+
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK).ToList();
+
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateQuote(securityDtos);
+
+            securityDtos = securityDtos.OrderByDescending(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
+
+            return securityDtos;
+        }
+
+        [HttpGet]
+        [Route("stock/us")]
+        public List<SecurityDTO> GetUSStocks(int page = 1, int perPage = 20)
+        {
+            var activeProds = GetActiveProds();
+
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
+
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateQuote(securityDtos);
+
+            securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
+
+            return securityDtos;
+        }
+
+        [HttpGet]
         [Route("stock/hk")]
         public List<SecurityDTO> GetHKStocks(int page = 1, int perPage = 20)
         {
@@ -186,18 +220,11 @@ namespace CFD_API.Controllers
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsHKStocks(o.Symbol)).ToList();
 
-            //.Where(o => o.Financing == "US Stocks"
-
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
-
-            //foreach (var o in securityDtos)
-            //{
-            //    o.tag = "US";
-            //}
 
             UpdateQuote(securityDtos);
 
-            securityDtos = securityDtos.OrderBy(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
+            securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
 
             return securityDtos;
         }

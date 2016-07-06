@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CFD_COMMON.Utils
+﻿namespace CFD_COMMON.Utils
 {
     public class Products
     {
@@ -15,6 +9,24 @@ namespace CFD_COMMON.Utils
 
             if (IsHKStocks(symbol))
                 return "HK";
+
+            if (IsUKStocks(symbol))
+                return "UK";
+
+            if (IsFrenchStocks(symbol))
+                return "FR";
+
+            if (IsGermanStocks(symbol))
+                return "DE";
+
+            if (IsSpanishStocks(symbol))
+                return "ES";
+
+            if (IsSwedishStocks(symbol))
+                return "SE";
+
+            if (IsSwissStocks(symbol))
+                return "CH";
 
             return null;
         }
@@ -27,6 +39,11 @@ namespace CFD_COMMON.Utils
         public static bool IsHKStocks(string symbol)
         {
             return symbol.EndsWith(" HK");
+        }
+
+        public static bool IsUKStocks(string symbol)
+        {
+            return symbol.EndsWith(" LN");
         }
 
         public static bool IsGermanStocks(string symbol)
