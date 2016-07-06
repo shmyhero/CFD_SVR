@@ -230,6 +230,8 @@ namespace AyondoTrade
                 }
             }
 
+            CFDCacheManager.Instance.ClearCache();
+
             CFDGlobal.LogInformation("OnLogout: " + sessionID + " StackTrace: " + sb.ToString());
         }
 

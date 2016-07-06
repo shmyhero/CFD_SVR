@@ -34,7 +34,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("open")]
         [BasicAuth]
-        public List<PositionDTO> GetOpenPositions()
+        public List<PositionDTO> GetOpenPositions(bool ignoreCache = false)
         {
             //throw new NullReferenceException();
 
@@ -44,7 +44,7 @@ namespace CFD_API.Controllers
 
             var clientHttp = new AyondoTradeClient();
 
-            var result = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+            var result = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
 
             if (result.Count == 0)
                 return new List<PositionDTO>();
@@ -122,7 +122,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("closed")]
         [BasicAuth]
-        public List<PositionHistoryDTO> GetPositionHistory()
+        public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
             var user = GetUser();
             if (string.IsNullOrEmpty(user.AyondoUsername))
@@ -132,7 +132,7 @@ namespace CFD_API.Controllers
 
             var endTime = DateTime.UtcNow;
             var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
-            var historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
+            var historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, ignoreCache);
 
             var result = new List<PositionHistoryDTO>();
 

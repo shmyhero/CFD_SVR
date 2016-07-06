@@ -357,7 +357,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [ActionName("balance")]
         [BasicAuth]
-        public BalanceDTO GetBalance()
+        public BalanceDTO GetBalance(bool ignoreCache = false)
         {
             var clientHttp = new AyondoTradeClient();
 
@@ -367,7 +367,7 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
 
             var balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
-            var positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+            var positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
