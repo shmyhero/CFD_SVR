@@ -494,7 +494,7 @@ namespace CFD_API.Controllers
                     commodityPL.invest += invest;
                     commodityPL.pl += pl;
                 }
-                else if (prodDef.AssetClass == "Single Stocks" && Products.IsUsStocks(prodDef.Symbol))
+                else if (prodDef.AssetClass == "Single Stocks" && Products.IsUSStocks(prodDef.Symbol))
                 {
                     stockUSPL.invest += invest;
                     stockUSPL.pl += pl;
@@ -550,7 +550,7 @@ namespace CFD_API.Controllers
                             commodityPL.invest += invest;
                             commodityPL.pl += pl;
                         }
-                        else if (prodDef.AssetClass == "Single Stocks" && Products.IsUsStocks(prodDef.Symbol))
+                        else if (prodDef.AssetClass == "Single Stocks" && Products.IsUSStocks(prodDef.Symbol))
                         {
                             stockUSPL.invest += invest;
                             stockUSPL.pl += pl;

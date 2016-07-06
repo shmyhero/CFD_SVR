@@ -38,7 +38,7 @@ namespace CFD_API
                     .ForMember(dest => dest.name, opt => opt.MapFrom(src => Translator.GetCName(src.Name)))
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open))
-                    .ForMember(dest => dest.tag, opt => opt.MapFrom(src => Products.IsUsStocks(src.Symbol) ? "US" : null));
+                    .ForMember(dest => dest.tag, opt => opt.MapFrom(src => Products.GetStockTag(src.Symbol)));
 
                 cfg.CreateMap<ProdDef, SecurityDetailDTO>()
                     .ForMember(dest => dest.last, opt => opt.MapFrom(src => Quotes.GetLastPrice(src)))
@@ -47,7 +47,7 @@ namespace CFD_API
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))
                     //.ForMember(dest => dest.preClose, opt => opt.MapFrom(src => src.CloseAsk))
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open))
-                    .ForMember(dest => dest.tag, opt => opt.MapFrom(src => Products.IsUsStocks(src.Symbol) ? "US" : null))
+                    .ForMember(dest => dest.tag, opt => opt.MapFrom(src => Products.GetStockTag(src.Symbol)))
                     .ForMember(dest => dest.dcmCount, opt => opt.MapFrom(src => src.Prec))
                     .ForMember(dest => dest.ccy, opt => opt.MapFrom(src => src.Ccy2));
 

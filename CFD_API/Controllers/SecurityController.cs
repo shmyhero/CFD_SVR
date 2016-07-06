@@ -160,7 +160,7 @@ namespace CFD_API.Controllers
         {
             var activeProds = GetActiveProds();
 
-            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUsStocks(o.Symbol)).ToList();
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
 
             //Where(o => o.Financing == "US Stocks" 
 
@@ -179,12 +179,12 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("stock/topLoser")]
-        public List<SecurityDTO> GetTopLoserList(int page = 1, int perPage = 20)
+        [Route("stock/hk")]
+        public List<SecurityDTO> GetHKStocks(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds();
 
-            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUsStocks(o.Symbol)).ToList();
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsHKStocks(o.Symbol)).ToList();
 
             //.Where(o => o.Financing == "US Stocks"
 
@@ -326,7 +326,7 @@ namespace CFD_API.Controllers
             format.VCharType = HanyuPinyinVCharType.WITH_V;
 
             var securityDtos = activeProds
-                .Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUsStocks(o.Symbol)) //US Stocks and non-stocks
+                .Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUSStocks(o.Symbol)) //US Stocks and non-stocks
                 .Select(o => Mapper.Map<SecurityDTO>(o))
                 .Where(delegate(SecurityDTO o)
                 {
