@@ -3717,6 +3717,7 @@
       <field name="MDS_PREC" required="N"/>
       <field name="MDS_SMD" required="N"/>
       <field name="MDS_GSMD" required="N"/>
+      <field name="MDS_GSMS" required="N"/>
       <field name="Text" required="N"/>
       <field name="EncodedTextLen" required="N"/>
       <field name="EncodedText" required="N"/>
@@ -4627,6 +4628,7 @@
     <field number="7947" name="MDS_PREC" type="INT"/>
     <field number="7948" name="MDS_SMD" type="FLOAT"/>
     <field number="7949" name="MDS_GSMD" type="FLOAT"/>
+    <field number="7950" name="MDS_GSMS" type="FLOAT"/>
 
     <field number="8000" name="AuxTime" type="UTCTIMESTAMP" />
     <field number="100" name="ExDestination" type="EXCHANGE"/>
