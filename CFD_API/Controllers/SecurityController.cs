@@ -260,6 +260,21 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("fx/outright")]
+        public List<SecurityDTO> GetFxOutrightList(int page = 1, int perPage = 20)
+        {
+            var activeProds = GetActiveProds();
+
+            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_FX && o.Name.EndsWith(" Outright")).ToList();
+
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+
+            UpdateQuote(securityDtos);
+
+            return securityDtos;
+        }
+
+        [HttpGet]
         [Route("futures")]
         public List<SecurityDTO> GetFuturesList(int page = 1, int perPage = 20)
         {

@@ -69,7 +69,7 @@ namespace CFD_JOBS.Ayondo
 
                             if (quote == null)
                             {
-                                CFDGlobal.LogLine("cannot find quote for " + p.Id);
+                                CFDGlobal.LogLine("cannot find quote for " + p.Id + " " + p.Name);
                                 continue;
                             }
 
