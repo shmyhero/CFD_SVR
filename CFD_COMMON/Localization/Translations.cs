@@ -129,7 +129,7 @@ namespace CFD_COMMON.Localization
             {"Wal-Mart Stores Inc", "沃尔玛"},
             {"Walt Disney Co", "迪斯尼"},
             {"Yahoo! Inc", "雅虎"},
-            {"EU 50 Rolling", "	欧洲50"},
+            {"EU 50 Rolling", "欧洲50"},
             {"France 40 Rolling", "法国40"},
             {"Germany 30 Rolling (1 EUR Contract)", "德国30"},
             {"UK 100 Rolling", "英国100"},

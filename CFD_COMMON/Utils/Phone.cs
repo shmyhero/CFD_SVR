@@ -23,5 +23,18 @@ namespace CFD_COMMON.Utils
 
             return match.Success;
         }
+
+        /// <summary>
+        /// for apple app review
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        public static bool IsTrustedPhone(string phone)
+        {
+            if (phone == "11111110001")
+                return true;
+
+            return false;
+        }
     }
 }

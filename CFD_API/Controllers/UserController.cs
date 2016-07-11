@@ -59,7 +59,8 @@ namespace CFD_API.Controllers
             var dtValidSince = DateTime.UtcNow.AddMinutes(-60);
             var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
 
-            if (verifyCodes.Any())
+            //auth success
+            if (Phone.IsTrustedPhone(form.phone) || verifyCodes.Any())
             {
                 var user = db.Users.FirstOrDefault(o => o.Phone == form.phone);
 
