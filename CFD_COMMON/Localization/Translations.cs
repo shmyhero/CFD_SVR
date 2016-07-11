@@ -129,13 +129,13 @@ namespace CFD_COMMON.Localization
             {"Wal-Mart Stores Inc", "沃尔玛"},
             {"Walt Disney Co", "迪斯尼"},
             {"Yahoo! Inc", "雅虎"},
-            {"EU 50 Rolling", "欧洲斯托克50"},
-            {"France 40 Rolling", "法国CAC40"},
-            {"Germany 30 Rolling (1 EUR Contract)", "德国DAX30"},
-            {"UK 100 Rolling", "英国富时100"},
-            {"US 500 Rolling", "标准普尔500"},
-            {"US Tech 100 Rolling", "纳斯达克100"},
-            {"Wall Street Rolling", "道琼斯工业指数"},
+            {"EU 50 Rolling", "	欧洲50"},
+            {"France 40 Rolling", "法国40"},
+            {"Germany 30 Rolling (1 EUR Contract)", "德国30"},
+            {"UK 100 Rolling", "英国100"},
+            {"US 500 Rolling", "美国标准500"},
+            {"US Tech 100 Rolling", "美国科技股100"},
+            {"Wall Street Rolling", "华尔街"},
         };
     }
 }
