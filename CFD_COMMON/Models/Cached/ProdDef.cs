@@ -48,6 +48,7 @@ namespace CFD_COMMON.Models.Cached
         public int Prec { get; set; }
         public decimal SMD { get; set; }
         public decimal GSMD { get; set; }
+        public decimal GSMS { get; set; }
 
     }
 

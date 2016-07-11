@@ -146,6 +146,7 @@ namespace CFD_JOBS.Ayondo
                     Prec = message.GetInt(DD.FieldsByName["MDS_PREC"].Tag),
                     SMD = message.GetDecimal(DD.FieldsByName["MDS_SMD"].Tag),
                     GSMD = message.GetDecimal(DD.FieldsByName["MDS_GSMD"].Tag),
+                    GSMS = message.GetDecimal(DD.FieldsByName["MDS_GSMS"].Tag),
                 };
 
                 //CFDGlobal.LogLine("MDS2 Received: Id: " + prodDef.Id + " QuoteType: " + prodDef.QuoteType);

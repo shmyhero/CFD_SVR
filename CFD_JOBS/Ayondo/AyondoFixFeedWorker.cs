@@ -120,6 +120,7 @@ namespace CFD_JOBS.Ayondo
                                     old.Prec = newProdDef.Prec;
                                     old.SMD = newProdDef.SMD;
                                     old.GSMD = newProdDef.GSMD;
+                                    old.GSMS = newProdDef.GSMS;
 
                                     listToSave.Add(old);
                                 }

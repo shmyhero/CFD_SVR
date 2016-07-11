@@ -455,10 +455,19 @@ namespace CFD_API.Controllers
 
             var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
 
+            //GSMS limit
+            var maxLongSize = prodDef.MaxSizeLong;
+            var maxShortSize = prodDef.MaxSizeShort;
+            if (prodDef.GSMS > 0)
+            {
+                maxLongSize = prodDef.GSMS;
+                maxShortSize = prodDef.GSMS;
+            }
+
             decimal minLong = perPriceCcy2*quote.Offer*prodDef.MinSizeLong;
             decimal minShort = perPriceCcy2*quote.Bid*prodDef.MinSizeShort;
-            decimal maxLong = perPriceCcy2*quote.Offer*prodDef.MaxSizeLong;
-            decimal maxShort = perPriceCcy2*quote.Bid*prodDef.MaxSizeShort;
+            decimal maxLong = perPriceCcy2 * quote.Offer * maxLongSize;
+            decimal maxShort = perPriceCcy2 * quote.Bid * maxShortSize;
 
             var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
