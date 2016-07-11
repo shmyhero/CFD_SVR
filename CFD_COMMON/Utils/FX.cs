@@ -47,44 +47,44 @@ namespace CFD_COMMON.Utils
         //    return value*fxRate;
         //}
 
-        public static decimal Convert(decimal value, string fromCcy, string toCcy, IList<ProdDef> prodDefs, IList<Quote> quotes)
-        {
-            if (fromCcy == toCcy)
-                return value;
+        //public static decimal Convert(decimal value, string fromCcy, string toCcy, IList<ProdDef> prodDefs, IList<Quote> quotes)
+        //{
+        //    if (fromCcy == toCcy)
+        //        return value;
 
-            //get fxRate and convert 
-            //the fx for convertion! not the fx that is being bought!
-            decimal fxRate;
+        //    //get fxRate and convert 
+        //    //the fx for convertion! not the fx that is being bought!
+        //    decimal fxRate;
 
-            var fxProdDef = prodDefs.FirstOrDefault(o => o.Symbol == fromCcy + toCcy);
+        //    var fxProdDef = prodDefs.FirstOrDefault(o => o.Symbol == fromCcy + toCcy);
 
-            if (fxProdDef == null)
-            {
-                //CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
+        //    if (fxProdDef == null)
+        //    {
+        //        //CFDGlobal.LogInformation("Cannot find fx rate: " + fromCcy + "/" + toCcy + ". Trying: " + toCcy + "/" + fromCcy);
 
-                fxProdDef = prodDefs.FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
+        //        fxProdDef = prodDefs.FirstOrDefault(o => o.Symbol == toCcy + fromCcy);
 
-                if (fxProdDef == null)
-                {
-                    throw new Exception("Cannot find fx rate: " + fromCcy + "/" + toCcy + " or " + toCcy + "/" + fromCcy);
-                }
+        //        if (fxProdDef == null)
+        //        {
+        //            throw new Exception("Cannot find fx rate: " + fromCcy + "/" + toCcy + " or " + toCcy + "/" + fromCcy);
+        //        }
 
-                var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
-                fxRate = 1/Quotes.GetLastPrice(fxQuote);
-            }
-            else
-            {
-                var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
-                fxRate = Quotes.GetLastPrice(fxQuote);
-            }
+        //        var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
+        //        fxRate = 1/Quotes.GetLastPrice(fxQuote);
+        //    }
+        //    else
+        //    {
+        //        var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
+        //        fxRate = Quotes.GetLastPrice(fxQuote);
+        //    }
 
-            return value*fxRate;
-        }
+        //    return value*fxRate;
+        //}
 
-        public static decimal ConvertUSDtoCcy(decimal value, string toCcy, IList<ProdDef> prodDefs, IList<Quote> quotes)
-        {
-            return Convert(value, "USD", toCcy, prodDefs, quotes);
-        }
+        //public static decimal ConvertUSDtoCcy(decimal value, string toCcy, IList<ProdDef> prodDefs, IList<Quote> quotes)
+        //{
+        //    return Convert(value, "USD", toCcy, prodDefs, quotes);
+        //}
 
         /// <summary>
         /// for margin fx conversion
@@ -124,7 +124,7 @@ namespace CFD_COMMON.Utils
 
         /// <summary>
         /// for pl/upl fx calculation
-        /// use bid/offer -/+0.5% of outright products
+        /// use bid/offer -/+0.5% of outright products depending on whether the pl is + or -
         /// </summary>
         public static decimal ConvertPlByOutright(decimal pl, string fromCcy, string toCcy, IList<ProdDef> prodDefs, IList<Quote> quotes)
         {

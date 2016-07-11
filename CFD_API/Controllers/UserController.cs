@@ -387,17 +387,15 @@ namespace CFD_API.Controllers
                 //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                 //************************************************************************
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
-                var tradeValueUSD = tradeValue;
-                if (prodDef.Ccy2 != "USD")
-                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-                marginUsed += tradeValueUSD.Value/report.Leverage.Value;
+                marginUsed += FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes)/report.Leverage.Value;
 
                 //calculate UPL
                 var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 if (quote != null)
                 {
-                    totalUPL += report.LongQty.HasValue ? tradeValueUSD.Value*(quote.Bid/report.SettlPrice - 1) : tradeValueUSD.Value*(1 - quote.Offer/report.SettlPrice);
+                    var upl = report.LongQty.HasValue ? tradeValue.Value*(quote.Bid/report.SettlPrice - 1) : tradeValue.Value*(1 - quote.Offer/report.SettlPrice);
+                    totalUPL += FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
                 }
                 else
                 {
@@ -461,18 +459,16 @@ namespace CFD_API.Controllers
                 //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                 //************************************************************************
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
-                var tradeValueUSD = tradeValue;
-                if (prodDef.Ccy2 != "USD")
-                    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-                var invest = tradeValueUSD.Value/report.Leverage.Value;
+                var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes)/report.Leverage.Value;
 
                 //calculate UPL
-                decimal pl = 0;
+                decimal uplUSD = 0;
                 var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 if (quote != null)
                 {
-                    pl += report.LongQty.HasValue ? tradeValueUSD.Value * (quote.Bid / report.SettlPrice - 1) : tradeValueUSD.Value * (1 - quote.Offer / report.SettlPrice);
+                    var upl = report.LongQty.HasValue ? tradeValue.Value * (quote.Bid / report.SettlPrice - 1) : tradeValue.Value * (1 - quote.Offer / report.SettlPrice);
+                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
                 }
                 else
                 {
@@ -482,22 +478,22 @@ namespace CFD_API.Controllers
                 if (prodDef.AssetClass == "Stock Indices")
                 {
                     indexPL.invest += invest;
-                    indexPL.pl += pl;
+                    indexPL.pl += uplUSD;
                 }
                 else if (prodDef.AssetClass == "Currencies")
                 {
                     fxPL.invest += invest;
-                    fxPL.pl += pl;
+                    fxPL.pl += uplUSD;
                 }
                 else if (prodDef.AssetClass == "Commodities")
                 {
                     commodityPL.invest += invest;
-                    commodityPL.pl += pl;
+                    commodityPL.pl += uplUSD;
                 }
                 else if (prodDef.AssetClass == "Single Stocks" && Products.IsUSStocks(prodDef.Symbol))
                 {
                     stockUSPL.invest += invest;
-                    stockUSPL.pl += pl;
+                    stockUSPL.pl += uplUSD;
                 }
             }
 
@@ -530,7 +526,7 @@ namespace CFD_API.Controllers
                         var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
                         var tradeValueUSD = tradeValue;
                         if (prodDef.Ccy2 != "USD")
-                            tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                            tradeValueUSD = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
                         var invest = tradeValueUSD.Value/openReport.Leverage.Value;
                         var pl = closeReport.PL.Value;

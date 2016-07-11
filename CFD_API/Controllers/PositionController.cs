@@ -105,7 +105,7 @@ namespace CFD_API.Controllers
                 if (quote != null)
                 {
                     decimal upl = report.LongQty.HasValue ? tradeValue.Value*(quote.Bid/report.SettlPrice - 1) : tradeValue.Value*(1 - quote.Offer/report.SettlPrice);
-                    var uplUSD = FX.Convert(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                    var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
                     posDTO.upl = uplUSD;
                 }
                 else
@@ -264,7 +264,7 @@ namespace CFD_API.Controllers
             //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
             //************************************************************************
 
-            decimal tradeValueCcy2 = FX.ConvertUSDtoCcy(tradeValueUSD, prodDef.Ccy2, WebCache.ProdDefs, WebCache.Quotes);
+            decimal tradeValueCcy2 = FX.ConvertByOutrightMidPrice(tradeValueUSD, "USD", prodDef.Ccy2, WebCache.ProdDefs, WebCache.Quotes);
 
             var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
             var quotePrice = form.isLong ? quote.Offer : quote.Bid;

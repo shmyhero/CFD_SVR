@@ -332,12 +332,12 @@ namespace CFD_API.Controllers
 
                     try
                     {
-                        var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", prodDefs, quotes);
+                        var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", prodDefs, quotes);
 
-                        prodDTO.minValueLong = minLong*fxRate;
-                        prodDTO.minValueShort = minShort*fxRate;
-                        prodDTO.maxValueLong = maxLong*fxRate;
-                        prodDTO.maxValueShort = maxShort*fxRate;
+                        prodDTO.minValueLong = minLong*perSizeValueUSD;
+                        prodDTO.minValueShort = minShort*perSizeValueUSD;
+                        prodDTO.maxValueLong = maxLong*perSizeValueUSD;
+                        prodDTO.maxValueShort = maxShort*perSizeValueUSD;
                     }
                     catch (Exception e)
                     {
@@ -469,12 +469,12 @@ namespace CFD_API.Controllers
             decimal maxLong = perPriceCcy2 * quote.Offer * maxLongSize;
             decimal maxShort = perPriceCcy2 * quote.Bid * maxShortSize;
 
-            var fxRate = FX.Convert(1, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+            var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-            result.minValueLong = minLong*fxRate;
-            result.minValueShort = minShort*fxRate;
-            result.maxValueLong = maxLong*fxRate;
-            result.maxValueShort = maxShort*fxRate;
+            result.minValueLong = minLong*perSizeValueUSD;
+            result.minValueShort = minShort*perSizeValueUSD;
+            result.maxValueLong = maxLong*perSizeValueUSD;
+            result.maxValueShort = maxShort*perSizeValueUSD;
 
             //demo data
             Random r = new Random();
