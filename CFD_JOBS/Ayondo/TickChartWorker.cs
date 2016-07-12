@@ -34,7 +34,7 @@ namespace CFD_JOBS.Ayondo
             {
                 try
                 {
-                    using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+                    using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
                     {
                         var redisQuoteClient = redisClient.As<Quote>();
                         var redisTickClient = redisClient.As<Tick>();

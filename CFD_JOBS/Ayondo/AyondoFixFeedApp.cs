@@ -220,7 +220,7 @@ namespace CFD_JOBS.Ayondo
                 var dtBeginSave = DateTime.Now;
                 try
                 {
-                    using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+                    using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
                     {
                         var redisQuoteClient = redisClient.As<Quote>();
                         redisQuoteClient.StoreAll(quotes);

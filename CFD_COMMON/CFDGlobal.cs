@@ -32,6 +32,11 @@ namespace CFD_COMMON
         /// </summary>
         public static IRedisClientsManager BasicRedisClientManager;
 
+        /// <summary>
+        /// the default application-wide PooledRedisClientsManager
+        /// </summary>
+        public static IRedisClientsManager PooledRedisClientsManager;
+
         public static string AYONDO_TRADE_SVC_URL = CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl");
         public static TimeSpan PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS = TimeSpan.FromDays(5);
 
@@ -42,6 +47,14 @@ namespace CFD_COMMON
 
             //create default application-wide BasicRedisClientManager
             BasicRedisClientManager = GetNewBasicRedisClientManager();
+
+            PooledRedisClientsManager = GetNewPooledRedisClientManager();
+        }
+
+        private static IRedisClientsManager GetNewPooledRedisClientManager()
+        {
+            var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString");
+            return new PooledRedisClientManager(redisConStr);
         }
 
         /// <summary>

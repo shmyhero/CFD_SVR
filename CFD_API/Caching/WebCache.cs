@@ -36,7 +36,7 @@ namespace CFD_API.Caching
             TickMonth = new ConcurrentDictionary<int, List<TickDTO>>();
 
             //get value from Redis
-            using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+            using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
             {
                 try
                 {
@@ -142,7 +142,7 @@ namespace CFD_API.Caching
             while (true)
             {
                 //CFDGlobal.LogLine("Updating WebCache ProdDefs...");
-                using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+                using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
                 {
                     try
                     {
@@ -163,7 +163,7 @@ namespace CFD_API.Caching
             while (true)
             {
                 //CFDGlobal.LogLine("Updating WebCache Quotes...");
-                using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+                using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
                 {
                     try
                     {

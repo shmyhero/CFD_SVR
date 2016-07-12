@@ -69,7 +69,7 @@ namespace CFD_API
             builder.Register<CFDEntities>(c => CFDEntities.Create()).InstancePerRequest();
             //builder.Register<tradeheroNewsEntities>(c => tradeheroNewsEntities.Create()).InstancePerRequest();
             //builder.Register<StatisticEntities>(c => StatisticEntities.Create()).InstancePerRequest();
-            builder.Register<IRedisClient>(c => CFDGlobal.BasicRedisClientManager.GetClient()).InstancePerRequest();
+            builder.Register<IRedisClient>(c => CFDGlobal.PooledRedisClientsManager.GetClient()).InstancePerRequest();
 
             //// JSON formatter settings for MVC controllers
             //builder.Register<JsonSerializerSettings>(c => config.Formatters.JsonFormatter.SerializerSettings).InstancePerRequest();

@@ -33,7 +33,7 @@ namespace CFD_JOBS.Ayondo
 
                 try
                 {
-                    using (var redisClient = CFDGlobal.BasicRedisClientManager.GetClient())
+                    using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
                     {
                         var redisProdDefClient = redisClient.As<ProdDef>();
 
