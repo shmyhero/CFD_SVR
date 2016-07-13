@@ -280,7 +280,5 @@ namespace CFD_JOBS.Ayondo
                     throw new ArgumentOutOfRangeException("tickSize", tickSize, null);
             }
         }
-
-        
     }
 }

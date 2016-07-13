@@ -18,14 +18,15 @@ namespace CFD_JOBS.Ayondo
         public Session Session { get; set; }
         private DataDictionary DD;
 
-        private DateTime BeginTimeForMsgCount = DateTime.MinValue;
-        private int MsgCount = 0;
-        private int MsgTotalCount = 0;
-        private IList<Quote> quotes = new List<Quote>();
+        //private DateTime BeginTimeForMsgCount = DateTime.MinValue;
+        //private int MsgCount = 0;
+        //private int MsgTotalCount = 0;
+        //private IList<Quote> quotes = new List<Quote>();
 
         //private IList<int> _activeProdIds = new List<int>(); 
 
         public ConcurrentQueue<ProdDef> ProdDefs = new ConcurrentQueue<ProdDef>();
+        public ConcurrentQueue<Quote> Quotes = new ConcurrentQueue<Quote>();
 
         //private IRedisTypedClient<Quote> redisQuoteClient;
         //private IRedisTypedClient<ProdDef> redisProdDefClient;
@@ -142,7 +143,6 @@ namespace CFD_JOBS.Ayondo
                     PLUnits = message.GetDecimal(DD.FieldsByName["MDS_PLUNITS"].Tag),
                     LotSize = message.GetDecimal(DD.FieldsByName["MDS_LOTSIZE"].Tag),
                     Ccy2 = message.GetString(DD.FieldsByName["MDS_CCY2"].Tag),
-
                     Prec = message.GetInt(DD.FieldsByName["MDS_PREC"].Tag),
                     SMD = message.GetDecimal(DD.FieldsByName["MDS_SMD"].Tag),
                     GSMD = message.GetDecimal(DD.FieldsByName["MDS_GSMD"].Tag),
@@ -202,50 +202,53 @@ namespace CFD_JOBS.Ayondo
             //if (quote.SecurityID.getValue() == "20867")
             //    CFDGlobal.LogLine("20867 " + quote.BidPx.getValue() + " " + quote.OfferPx.getValue());
 
-            //count and add to list for saving
-            MsgCount++;
-            MsgTotalCount++;
-            quotes.Add(new Quote()
+            ////count and add to list for saving
+            //MsgCount++;
+            //MsgTotalCount++;
+            //quotes.Add(new Quote()
+            //{
+            //    Bid = quote.BidPx.getValue(),
+            //    Id = Convert.ToInt32(quote.SecurityID.getValue()),
+            //    Offer = quote.OfferPx.getValue(),
+            //    Time = quote.Header.GetDateTime(Tags.SendingTime)
+            //});
+
+            ////do save Every Second
+            //var now = DateTime.Now;
+            //if (now - BeginTimeForMsgCount > TimeSpan.FromMilliseconds(500))
+            //{
+            //    var dtBeginSave = DateTime.Now;
+            //    try
+            //    {
+            //        using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+            //        {
+            //            var redisQuoteClient = redisClient.As<Quote>();
+            //            redisQuoteClient.StoreAll(quotes);
+            //        }
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        CFDGlobal.LogException(e);
+            //    }
+
+            //    CFDGlobal.LogLine("Count: " + MsgCount + "(" + quotes.Select(o => o.Id).Distinct().Count() + ")" + "/" + MsgTotalCount
+            //                      + " Time: " + quotes.Min(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
+            //                      + " ~ " + quotes.Max(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
+            //                      + ". Save to redis " + (DateTime.Now - dtBeginSave).TotalMilliseconds);
+
+            //    //reset vars
+            //    BeginTimeForMsgCount = now;
+            //    MsgCount = 0;
+            //    quotes = new List<Quote>();
+            //}
+
+            Quotes.Enqueue(new Quote
             {
                 Bid = quote.BidPx.getValue(),
                 Id = Convert.ToInt32(quote.SecurityID.getValue()),
                 Offer = quote.OfferPx.getValue(),
                 Time = quote.Header.GetDateTime(Tags.SendingTime)
             });
-
-            //do save Every Second
-            var now = DateTime.Now;
-            if (now - BeginTimeForMsgCount > TimeSpan.FromMilliseconds(500))
-            {
-                var dtBeginSave = DateTime.Now;
-                try
-                {
-                    using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
-                    {
-                        var redisQuoteClient = redisClient.As<Quote>();
-                        redisQuoteClient.StoreAll(quotes);
-                    }
-                }
-                catch (Exception e)
-                {
-                    CFDGlobal.LogException(e);
-                }
-
-                CFDGlobal.LogLine("Count: " + MsgCount + "/" + MsgTotalCount
-                                  + " Time: " + quotes.Min(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
-                                  + " ~ " + quotes.Max(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
-                                  + ". Save to redis "+(DateTime.Now-dtBeginSave).TotalMilliseconds);
-
-                //reset vars
-                BeginTimeForMsgCount = now;
-                MsgCount = 0;
-                quotes = new List<Quote>();
-            }
-
-            //if (quote.QuoteType.getValue() != QuoteType.TRADEABLE)
-            //{
-
-            //}
         }
 
         public void OnCreate(SessionID sessionID)

@@ -49,6 +49,6 @@ namespace CFD_COMMON.Utils
     {
         OneMinute,
         TenMinute,
-        OneHour
+        OneHour,
     }
 }

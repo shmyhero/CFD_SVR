@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Utils;
@@ -11,14 +12,21 @@ namespace CFD_JOBS.Ayondo
 {
     internal class AyondoFixFeedWorker
     {
+        private static Timer _timerQuotes;
+        private static Timer _timerProdDefs;
+        private static AyondoFixFeedApp myApp;
+
+        private static readonly TimeSpan _intervalProdDefs = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan _intervalQuotes = TimeSpan.FromMilliseconds(500);
+
         public static void Run()
         {
             SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixFeedCfgFilePath"));
-            AyondoFixFeedApp myApp = new AyondoFixFeedApp();
-            IMessageStoreFactory storeFactory = new MemoryStoreFactory();//new FileStoreFactory(settings);
+            myApp = new AyondoFixFeedApp();
+            IMessageStoreFactory storeFactory = new MemoryStoreFactory(); //new FileStoreFactory(settings);
             //ILogFactory logFactory = new FileLogFactory(settings);
             SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings,
-                null//logFactory
+                null //logFactory
                 );
 
             //var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
@@ -26,34 +34,83 @@ namespace CFD_JOBS.Ayondo
             //var redisTickClient = redisClient.As<Tick>();
 
             initiator.Start();
+
+            _timerProdDefs = new Timer(SaveProdDefs, null, _intervalProdDefs, TimeSpan.FromMilliseconds(-1));
+            _timerQuotes = new Timer(SaveQuotes, null, _intervalQuotes, TimeSpan.FromMilliseconds(-1));
+
             while (true)
             {
                 //System.Console.WriteLine("o hai");
                 System.Threading.Thread.Sleep(1000);
+            }
 
+            //initiator.Stop();
+        }
+
+        private static void SaveQuotes(object state)
+        {
+            while (true)
+            {
                 try
                 {
-                    using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                    //new prod list from Ayondo MDS2
+                    IList<Quote> quotes = new List<Quote>();
+                    while (!myApp.Quotes.IsEmpty)
                     {
-                        var redisProdDefClient = redisClient.As<ProdDef>();
+                        Quote obj;
+                        var tryDequeue = myApp.Quotes.TryDequeue(out obj);
+                        quotes.Add(obj);
+                    }
 
-                        //save ProdDefs
-                        if (!myApp.ProdDefs.IsEmpty)
+                    if (quotes.Count > 0)
+                    {
+                        var distinctQuotes = quotes.GroupBy(o => o.Id).Select(o => o.OrderByDescending(p => p.Time).First()).ToList();
+
+                        var dtBeginSave = DateTime.Now;
+
+                        using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
                         {
-                            //CFDGlobal.LogLine("Pending ProdDefs detected. Loading from queue...");
+                            var redisQuoteClient = redisClient.As<Quote>();
+                            redisQuoteClient.StoreAll(distinctQuotes);
+                        }
 
-                            //new prod list from Ayondo MDS2
-                            IList<ProdDef> listNew = new List<ProdDef>();
+                        CFDGlobal.LogLine("Count: " + distinctQuotes.Count + "/" + quotes.Count + " (distinct/raw) "
+                                          + " Time: " + quotes.Min(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
+                                          + " ~ " + quotes.Max(o => o.Time).ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND)
+                                          + ". Saved to redis " + (DateTime.Now - dtBeginSave).TotalMilliseconds);
+                    }
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogException(e);
+                }
 
-                            while (!myApp.ProdDefs.IsEmpty)
-                            {
-                                ProdDef obj;
-                                var tryDequeue = myApp.ProdDefs.TryDequeue(out obj);
-                                listNew.Add(obj);
-                            }
+                Thread.Sleep(_intervalQuotes);
+            }
+        }
 
-                            //-----------------SAVING PROD DEF-------------------------------------------
-                            CFDGlobal.LogLine("Saving " + listNew.Count + " ProdDefs to Redis...");
+        private static void SaveProdDefs(object state)
+        {
+            while (true)
+            {
+                try
+                {
+                    //new prod list from Ayondo MDS2
+                    IList<ProdDef> listNew = new List<ProdDef>();
+                    while (!myApp.ProdDefs.IsEmpty)
+                    {
+                        ProdDef obj;
+                        var tryDequeue = myApp.ProdDefs.TryDequeue(out obj);
+                        listNew.Add(obj);
+                    }
+
+                    if (listNew.Count > 0)
+                    {
+                        CFDGlobal.LogLine("Saving " + listNew.Count + " ProdDefs to Redis...");
+
+                        using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                        {
+                            var redisProdDefClient = redisClient.As<ProdDef>();
 
                             //current redis list
                             var listOld = redisProdDefClient.GetAll();
@@ -131,19 +188,6 @@ namespace CFD_JOBS.Ayondo
                             }
 
                             redisProdDefClient.StoreAll(listToSave);
-
-                            ////-----------------SAVING QUOTE-------------------------------------------
-                            //if (listToSaveAsQuote.Count > 0)
-                            //{
-                            //    var quotes = listToSaveAsQuote.Select(o => new Quote()
-                            //    {
-                            //        Bid = o.Bid.Value,
-                            //        Id = o.Id,
-                            //        Offer = o.Offer.Value,
-                            //        Time = o.Time
-                            //    }).ToList();
-                            //    TickChartWorker.SaveQuoteTicks(quotes, redisTickClient, TickChartWorker.TickSize.OneMinute);
-                            //}
                         }
                     }
                 }
@@ -151,8 +195,9 @@ namespace CFD_JOBS.Ayondo
                 {
                     CFDGlobal.LogException(e);
                 }
+
+                Thread.Sleep(_intervalProdDefs);
             }
-            //initiator.Stop();
         }
     }
 }
