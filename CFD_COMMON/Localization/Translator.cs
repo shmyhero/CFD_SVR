@@ -12,7 +12,7 @@
 
         public static string GetCName(string name)
         {
-            var str = name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty);
+            var str = name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty).Replace(" Outright", string.Empty).Replace(" Spot", string.Empty);
 
             if (str.StartsWith("China 50 "))
                 return "新华富时A50";
