@@ -14,10 +14,13 @@ namespace CFD_JOBS.Ayondo
     {
         private static Timer _timerQuotes;
         private static Timer _timerProdDefs;
+        private static Timer _timerTicks;
+
         private static AyondoFixFeedApp myApp;
 
         private static readonly TimeSpan _intervalProdDefs = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan _intervalQuotes = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan _intervalTicks = TimeSpan.FromMilliseconds(1000);
 
         public static void Run()
         {
@@ -37,6 +40,7 @@ namespace CFD_JOBS.Ayondo
 
             _timerProdDefs = new Timer(SaveProdDefs, null, _intervalProdDefs, TimeSpan.FromMilliseconds(-1));
             _timerQuotes = new Timer(SaveQuotes, null, _intervalQuotes, TimeSpan.FromMilliseconds(-1));
+            _timerTicks = new Timer(SaveTicks, null, _intervalTicks, TimeSpan.FromMilliseconds(-1));
 
             while (true)
             {
@@ -47,6 +51,79 @@ namespace CFD_JOBS.Ayondo
             //initiator.Stop();
         }
 
+        private static void SaveTicks(object state)
+        {
+            while (true)
+            {
+                try
+                {
+                    IList<Quote> quotes = new List<Quote>();
+                    while (!myApp.QueueQuotes2.IsEmpty)
+                    {
+                        Quote obj;
+                        var tryDequeue = myApp.QueueQuotes2.TryDequeue(out obj);
+                        quotes.Add(obj);
+                    }
+
+                    if (quotes.Count > 0)
+                    {
+                        var distinctQuotes = quotes.GroupBy(o => o.Id).Select(o => o.OrderByDescending(p => p.Time).First()).ToList();
+
+                        var dtBeginSave = DateTime.Now;
+                        var count = 0;
+
+                        using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                        {
+                            var redisTickClient = redisClient.As<Tick>();
+
+                            foreach (var quote in distinctQuotes)
+                            {
+                                if (!myApp.ProdDefs.ContainsKey(quote.Id)) //no product definition
+                                {
+                                    CFDGlobal.LogLine("no prodDef for tick " + quote.Id);
+                                    continue;
+                                }
+
+                                var prodDef = myApp.ProdDefs[quote.Id];
+                                if (prodDef.QuoteType != enmQuoteType.Open && prodDef.QuoteType != enmQuoteType.PhoneOnly) //not open not phoneOnly
+                                {
+                                    CFDGlobal.LogLine("prod not opening. tick ignored. " + prodDef.Id + " " + prodDef.Name);
+                                    continue;
+                                }
+
+                                var list = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.Raw) + quote.Id];
+
+                                var tick = new Tick {P = Quotes.GetLastPrice(quote), Time = quote.Time};
+
+                                list.Add(tick);
+                                count++;
+
+                                //clear history/prevent data increasing for good
+                                var clearWhenSize = Ticks.GetClearWhenSize(TickSize.Raw);
+                                var clearToSize = Ticks.GetClearToSize(TickSize.Raw);
+                                if (list.Count > clearWhenSize) //data count at most possible size (in x days )
+                                {
+                                    CFDGlobal.LogLine("Raw Ticks " + quote.Id + " Clearing data from " + list.Count + " to " + clearToSize);
+                                    var ticks = list.GetAll();
+                                    var newTicks = ticks.Skip(ticks.Count - clearToSize);
+                                    list.RemoveAll();
+                                    list.AddRange(newTicks);
+                                }
+                            }
+                        }
+
+                        CFDGlobal.LogLine("\t\tSaved " + count + "/" + distinctQuotes.Count + " ticks " + (DateTime.Now - dtBeginSave).TotalMilliseconds);
+                    }
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogException(e);
+                }
+
+                Thread.Sleep(_intervalTicks);
+            }
+        }
+
         private static void SaveQuotes(object state)
         {
             while (true)
@@ -55,10 +132,10 @@ namespace CFD_JOBS.Ayondo
                 {
                     //new prod list from Ayondo MDS2
                     IList<Quote> quotes = new List<Quote>();
-                    while (!myApp.Quotes.IsEmpty)
+                    while (!myApp.QueueQuotes.IsEmpty)
                     {
                         Quote obj;
-                        var tryDequeue = myApp.Quotes.TryDequeue(out obj);
+                        var tryDequeue = myApp.QueueQuotes.TryDequeue(out obj);
                         quotes.Add(obj);
                     }
 
@@ -97,10 +174,10 @@ namespace CFD_JOBS.Ayondo
                 {
                     //new prod list from Ayondo MDS2
                     IList<ProdDef> listNew = new List<ProdDef>();
-                    while (!myApp.ProdDefs.IsEmpty)
+                    while (!myApp.QueueProdDefs.IsEmpty)
                     {
                         ProdDef obj;
-                        var tryDequeue = myApp.ProdDefs.TryDequeue(out obj);
+                        var tryDequeue = myApp.QueueProdDefs.TryDequeue(out obj);
                         listNew.Add(obj);
                     }
 

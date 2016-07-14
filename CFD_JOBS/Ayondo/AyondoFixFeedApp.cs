@@ -25,8 +25,11 @@ namespace CFD_JOBS.Ayondo
 
         //private IList<int> _activeProdIds = new List<int>(); 
 
-        public ConcurrentQueue<ProdDef> ProdDefs = new ConcurrentQueue<ProdDef>();
-        public ConcurrentQueue<Quote> Quotes = new ConcurrentQueue<Quote>();
+        public ConcurrentQueue<ProdDef> QueueProdDefs = new ConcurrentQueue<ProdDef>();
+        public ConcurrentQueue<Quote> QueueQuotes = new ConcurrentQueue<Quote>();
+        public ConcurrentQueue<Quote> QueueQuotes2 = new ConcurrentQueue<Quote>();
+
+        public ConcurrentDictionary<int,ProdDef> ProdDefs=new ConcurrentDictionary<int, ProdDef>();
 
         //private IRedisTypedClient<Quote> redisQuoteClient;
         //private IRedisTypedClient<ProdDef> redisProdDefClient;
@@ -149,12 +152,9 @@ namespace CFD_JOBS.Ayondo
                     GSMS = message.GetDecimal(DD.FieldsByName["MDS_GSMS"].Tag),
                 };
 
-                //CFDGlobal.LogLine("MDS2 Received: Id: " + prodDef.Id + " QuoteType: " + prodDef.QuoteType);
-                ProdDefs.Enqueue(prodDef);
-                //redisProdDefClient.Store(prodDef);
+                QueueProdDefs.Enqueue(prodDef);
 
-                //if(!_activeProdIds.Contains(prodDef.Id))
-                //    _activeProdIds.Add(prodDef.Id);
+                ProdDefs.AddOrUpdate(prodDef.Id, prodDef, ((i, def) => def));
             }
             else
             {
@@ -242,12 +242,25 @@ namespace CFD_JOBS.Ayondo
             //    quotes = new List<Quote>();
             //}
 
-            Quotes.Enqueue(new Quote
+            var bid = quote.BidPx.getValue();
+            var secId = Convert.ToInt32(quote.SecurityID.getValue());
+            var offer = quote.OfferPx.getValue();
+            var time = quote.Header.GetDateTime(Tags.SendingTime);
+
+            QueueQuotes.Enqueue(new Quote
             {
-                Bid = quote.BidPx.getValue(),
-                Id = Convert.ToInt32(quote.SecurityID.getValue()),
-                Offer = quote.OfferPx.getValue(),
-                Time = quote.Header.GetDateTime(Tags.SendingTime)
+                Bid = bid,
+                Id = secId,
+                Offer = offer,
+                Time = time
+            });
+
+            QueueQuotes2.Enqueue(new Quote
+            {
+                Bid = bid,
+                Id = secId,
+                Offer = offer,
+                Time = time
             });
         }
 
