@@ -37,6 +37,24 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("{securityId}/tick/10m")]
+        public List<TickDTO> Get10MinutesTicks(int securityId)
+        {
+            var redisTickClient = RedisClient.As<Tick>();
+
+            var ticks = redisTickClient.Lists["tickRaw:" + securityId].GetAll();
+
+            if (ticks.Count == 0)
+                return new List<TickDTO>();
+
+            var lastTickTime = ticks.Last().Time;
+
+            var result = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromMinutes(10));
+
+            return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
+        }
+
+        [HttpGet]
         [Route("{securityId}/tick/2h")]
         public List<TickDTO> Get2HoursTicks(int securityId)
         {
