@@ -24,6 +24,8 @@ namespace CFD_API.Caching
         private static TimeSpan _updateIntervalTick = TimeSpan.FromSeconds(10);
         private static TimeSpan _updateIntervalTickRaw = TimeSpan.FromMilliseconds(1000);
 
+        private static IMapper mapper;
+
         public static IList<ProdDef> ProdDefs { get; private set; }
         public static IList<Quote> Quotes { get; private set; }
         public static ConcurrentDictionary<int, List<TickDTO>> TickRaw { get; private set; }
@@ -40,6 +42,8 @@ namespace CFD_API.Caching
             TickToday = new ConcurrentDictionary<int, List<TickDTO>>();
             TickWeek = new ConcurrentDictionary<int, List<TickDTO>>();
             TickMonth = new ConcurrentDictionary<int, List<TickDTO>>();
+
+            mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
             //get value from Redis
             using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
@@ -267,7 +271,7 @@ namespace CFD_API.Caching
             {
                 var lastTickTime = ticks.Last().Time;
 
-                rawTickDTOs = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromMinutes(30)).Select(o => Mapper.Map<TickDTO>(o)).ToList();
+                rawTickDTOs = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromMinutes(30)).Select(o => mapper.Map<TickDTO>(o)).ToList();
             }
 
             TickRaw.AddOrUpdate(secId, rawTickDTOs, ((i, dtos) => dtos));
@@ -294,7 +298,7 @@ namespace CFD_API.Caching
             {
                 var lastTickTime = ticks.Last().Time;
 
-                tickDTOs = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12)).Select(o => Mapper.Map<TickDTO>(o)).ToList();
+                tickDTOs = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12)).Select(o => mapper.Map<TickDTO>(o)).ToList();
             }
 
             TickToday.AddOrUpdate(secId, tickDTOs, ((i, dtos) => dtos));
