@@ -80,7 +80,7 @@ namespace CFD_JOBS.Ayondo
                             {
                                 if (!myApp.ProdDefs.ContainsKey(quote.Id)) //no product definition
                                 {
-                                    CFDGlobal.LogLine("no prodDef for tick " + quote.Id);
+                                    CFDGlobal.LogLine("no prodDef. tick ignored " + quote.Id);
                                     continue;
                                 }
 

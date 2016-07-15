@@ -29,7 +29,7 @@ namespace CFD_JOBS.Ayondo
         public ConcurrentQueue<Quote> QueueQuotes = new ConcurrentQueue<Quote>();
         public ConcurrentQueue<Quote> QueueQuotes2 = new ConcurrentQueue<Quote>();
 
-        public ConcurrentDictionary<int,ProdDef> ProdDefs=new ConcurrentDictionary<int, ProdDef>();
+        public ConcurrentDictionary<int, ProdDef> ProdDefs = new ConcurrentDictionary<int, ProdDef>();
 
         //private IRedisTypedClient<Quote> redisQuoteClient;
         //private IRedisTypedClient<ProdDef> redisProdDefClient;
@@ -119,42 +119,88 @@ namespace CFD_JOBS.Ayondo
                 //CFDGlobal.LogLine(message.ToString());
                 //CFDGlobal.LogLine(GetMessageString(message));
 
-                //var name=
-                var prodDef = new ProdDef()
+                var id = Convert.ToInt32(message.GetString(Tags.SecurityID));
+                var time = message.Header.GetDateTime(Tags.SendingTime);
+                var quoteType = (enmQuoteType) message.GetInt(Tags.QuoteType);
+                var name = message.GetString(Tags.Symbol);
+                var symbol = message.GetString(DD.FieldsByName["MDS_BBC"].Tag);
+                var assetClass = message.GetString(DD.FieldsByName["MDS_ASSETCLASS"].Tag);
+
+                //some security MDS2 dont have Bid/Offer...
+                var bid = message.Any(o => o.Key == Tags.BidPx) ? message.GetDecimal(Tags.BidPx) : (decimal?) null;
+                var offer = message.Any(o => o.Key == Tags.OfferPx) ? message.GetDecimal(Tags.OfferPx) : (decimal?) null;
+                //some security MDS2 dont have MDS_CLOSEBID/MDS_CLOSEASK...
+                var closeBid = message.Any(o => o.Key == DD.FieldsByName["MDS_CLOSEBID"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_CLOSEBID"].Tag) : (decimal?) null;
+                var closeAsk = message.Any(o => o.Key == DD.FieldsByName["MDS_CLOSEASK"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_CLOSEASK"].Tag) : (decimal?) null;
+
+                //
+                var shortable = Convert.ToBoolean(message.GetString(DD.FieldsByName["MDS_SHORTABLE"].Tag));
+                var minSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MinSizeShort"].Tag);
+                var maxSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeShort"].Tag);
+                var minSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MinSizeLong"].Tag);
+                var maxSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeLong"].Tag);
+                var maxLeverage = message.GetDecimal(DD.FieldsByName["MDS_EFFLEVERAGE"].Tag);
+                var plUnits = message.GetDecimal(DD.FieldsByName["MDS_PLUNITS"].Tag);
+                var lotSize = message.GetDecimal(DD.FieldsByName["MDS_LOTSIZE"].Tag);
+                var ccy2 = message.GetString(DD.FieldsByName["MDS_CCY2"].Tag);
+                var prec = message.GetInt(DD.FieldsByName["MDS_PREC"].Tag);
+                var smd = message.GetDecimal(DD.FieldsByName["MDS_SMD"].Tag);
+                var gsmd = message.GetDecimal(DD.FieldsByName["MDS_GSMD"].Tag);
+                var gsms = message.GetDecimal(DD.FieldsByName["MDS_GSMS"].Tag);
+
+                QueueProdDefs.Enqueue(new ProdDef
                 {
-                    Id = Convert.ToInt32(message.GetString(Tags.SecurityID)),
-                    Time = message.Header.GetDateTime(Tags.SendingTime),
-                    QuoteType = (enmQuoteType) message.GetInt(Tags.QuoteType),
-                    Name = message.GetString(Tags.Symbol),
-                    Symbol = message.GetString(DD.FieldsByName["MDS_BBC"].Tag),
-                    AssetClass = message.GetString(DD.FieldsByName["MDS_ASSETCLASS"].Tag),
+                    Id = id,
+                    Time = time,
+                    QuoteType = quoteType,
+                    Name = name,
+                    Symbol = symbol,
+                    AssetClass = assetClass,
+                    Bid = bid,
+                    Offer = offer,
+                    CloseBid = closeBid,
+                    CloseAsk = closeAsk,
+                    Shortable = shortable,
+                    MinSizeShort = minSizeShort,
+                    MaxSizeShort = maxSizeShort,
+                    MinSizeLong = minSizeLong,
+                    MaxSizeLong = maxSizeLong,
+                    MaxLeverage = maxLeverage,
+                    PLUnits = plUnits,
+                    LotSize = lotSize,
+                    Ccy2 = ccy2,
+                    Prec = prec,
+                    SMD = smd,
+                    GSMD = gsmd,
+                    GSMS = gsms,
+                });
 
-                    //some security MDS2 dont have Bid/Offer...
-                    Bid = message.Any(o => o.Key == Tags.BidPx) ? message.GetDecimal(Tags.BidPx) : (decimal?) null,
-                    Offer = message.Any(o => o.Key == Tags.OfferPx) ? message.GetDecimal(Tags.OfferPx) : (decimal?) null,
-                    //some security MDS2 dont have MDS_CLOSEBID/MDS_CLOSEASK...
-                    CloseBid = message.Any(o => o.Key == DD.FieldsByName["MDS_CLOSEBID"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_CLOSEBID"].Tag) : (decimal?) null,
-                    CloseAsk = message.Any(o => o.Key == DD.FieldsByName["MDS_CLOSEASK"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_CLOSEASK"].Tag) : (decimal?) null,
-
-                    //
-                    Shortable = Convert.ToBoolean(message.GetString(DD.FieldsByName["MDS_SHORTABLE"].Tag)),
-                    MinSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MinSizeShort"].Tag),
-                    MaxSizeShort = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeShort"].Tag),
-                    MinSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MinSizeLong"].Tag),
-                    MaxSizeLong = message.GetDecimal(DD.FieldsByName["MDS_MaxSizeLong"].Tag),
-                    MaxLeverage = message.GetDecimal(DD.FieldsByName["MDS_EFFLEVERAGE"].Tag),
-                    PLUnits = message.GetDecimal(DD.FieldsByName["MDS_PLUNITS"].Tag),
-                    LotSize = message.GetDecimal(DD.FieldsByName["MDS_LOTSIZE"].Tag),
-                    Ccy2 = message.GetString(DD.FieldsByName["MDS_CCY2"].Tag),
-                    Prec = message.GetInt(DD.FieldsByName["MDS_PREC"].Tag),
-                    SMD = message.GetDecimal(DD.FieldsByName["MDS_SMD"].Tag),
-                    GSMD = message.GetDecimal(DD.FieldsByName["MDS_GSMD"].Tag),
-                    GSMS = message.GetDecimal(DD.FieldsByName["MDS_GSMS"].Tag),
-                };
-
-                QueueProdDefs.Enqueue(prodDef);
-
-                ProdDefs.AddOrUpdate(prodDef.Id, prodDef, ((i, def) => def));
+                ProdDefs.AddOrUpdate(id, new ProdDef
+                {
+                    Id = id,
+                    Time = time,
+                    QuoteType = quoteType,
+                    Name = name,
+                    Symbol = symbol,
+                    AssetClass = assetClass,
+                    Bid = bid,
+                    Offer = offer,
+                    CloseBid = closeBid,
+                    CloseAsk = closeAsk,
+                    Shortable = shortable,
+                    MinSizeShort = minSizeShort,
+                    MaxSizeShort = maxSizeShort,
+                    MinSizeLong = minSizeLong,
+                    MaxSizeLong = maxSizeLong,
+                    MaxLeverage = maxLeverage,
+                    PLUnits = plUnits,
+                    LotSize = lotSize,
+                    Ccy2 = ccy2,
+                    Prec = prec,
+                    SMD = smd,
+                    GSMD = gsmd,
+                    GSMS = gsms,
+                }, ((i, def) => def));
             }
             else
             {
