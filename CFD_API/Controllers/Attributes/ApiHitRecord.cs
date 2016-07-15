@@ -8,6 +8,7 @@ using System.Web.Http.Filters;
 using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Utils.Extensions;
 using EntityFramework.BulkInsert.Extensions;
 using Newtonsoft.Json;
 
@@ -119,13 +120,13 @@ namespace CFD_API.Controllers.Attributes
             var apiHit = new ApiHit()
             {
                 HitAt = startAt,
-                HttpMethod = httpMethod,
-                ApiName = controllerName + '.' + methodName,
+                HttpMethod = httpMethod.TruncateMax(20),
+                ApiName = (controllerName + '.' + methodName).TruncateMax(200),
                 Ip = ip,
                 IsException = isException,
-                Param = param,
+                Param = param.TruncateMax(200),
                 TimeSpent = timeSpent,
-                Url = actionExecutedContext.Request.RequestUri.AbsoluteUri,
+                Url = actionExecutedContext.Request.RequestUri.AbsoluteUri.TruncateMax(200),
                 UserId = userId
             };
 
