@@ -7,6 +7,7 @@ using CFD_API.Caching;
 using CFD_API.DTO;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
@@ -24,7 +25,7 @@ namespace CFD_API.Controllers
         public List<TickDTO> GetTicks(int securityId)
         {
             var redisTypedClient = RedisClient.As<Tick>();
-            var ticks = redisTypedClient.Lists["tick:" + securityId].GetAll();
+            var ticks = redisTypedClient.Lists[Ticks.GetTickListNamePrefix(TickSize.OneMinute) + securityId].GetAll();
 
             //ticks = ticks.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromDays(1)).ToList();
             //foreach (var tick in ticks)
@@ -40,33 +41,19 @@ namespace CFD_API.Controllers
         [Route("{securityId}/tick/10m")]
         public List<TickDTO> Get10MinutesTicks(int securityId)
         {
-            List<TickDTO> rawTicks;
-            DateTime lastTickTime;
+            var rawTickDTOs = WebCache.GetOrCreateTickRaw(securityId, RedisClient);
 
-            //get from WebCache
-            var tryGetValue = WebCache.TickRaw.TryGetValue(securityId, out rawTicks);
-            if (tryGetValue)
+            var lastTickTime = rawTickDTOs.Last().time;
+
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == securityId);
+            if (prodDef != null && prodDef.QuoteType != enmQuoteType.Closed && prodDef.QuoteType != enmQuoteType.Inactive //is opening
+                && lastTickTime - prodDef.LastOpen < TimeSpan.FromMinutes(10)) // is opened during the last 10 minutes of the ticks data
             {
-                lastTickTime = rawTicks.Last().time;
-                return rawTicks.Where(o => lastTickTime - o.time <= TimeSpan.FromMinutes(10)).ToList();
+                //return data since lastOpen
+                return rawTickDTOs.Where(o => o.time >= prodDef.LastOpen).ToList();
             }
 
-            //get from Redis
-            var redisTickClient = RedisClient.As<Tick>();
-            var ticks = redisTickClient.Lists["tickRaw:" + securityId].GetAll();
-
-            if (ticks.Count == 0)
-                rawTicks = new List<TickDTO>();
-            else
-            {
-                lastTickTime = ticks.Last().Time;
-
-                rawTicks = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromMinutes(10)).Select(o => Mapper.Map<TickDTO>(o)).ToList();
-            }
-
-            WebCache.TickRaw.AddOrUpdate(securityId, rawTicks, ((i, dtos) => dtos));
-
-            return rawTicks;
+            return rawTickDTOs.Where(o => lastTickTime - o.time <= TimeSpan.FromMinutes(10)).ToList();
         }
 
         [HttpGet]
@@ -75,53 +62,31 @@ namespace CFD_API.Controllers
         {
             var redisTickClient = RedisClient.As<Tick>();
 
-            var ticks = redisTickClient.Lists["tickRaw:" + securityId].GetAll();
+            var ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.Raw) + securityId].GetAll();
 
             if (ticks.Count == 0)
                 return new List<TickDTO>();
 
             var lastTickTime = ticks.Last().Time;
 
-            var result = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromMinutes(10));
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == securityId);
+            if (prodDef != null && prodDef.QuoteType != enmQuoteType.Closed && prodDef.QuoteType != enmQuoteType.Inactive //is opening
+                && lastTickTime - prodDef.LastOpen < TimeSpan.FromMinutes(10)) // is opened during the last 10 minutes of the ticks data
+            {
+                //return data since lastOpen
+                return ticks.Where(o => o.Time >= prodDef.LastOpen).Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            }
 
-            return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            return ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromMinutes(10)).Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
 
         [HttpGet]
         [Route("{securityId}/tick/2h")]
         public List<TickDTO> Get2HoursTicks(int securityId)
         {
-            List<TickDTO> tickToday;
-            DateTime lastTickTime;
+            var tickToday = WebCache.GetOrCreateTickToday(securityId, RedisClient);
 
-            //get from WebCache
-            var tryGetValue = WebCache.TickToday.TryGetValue(securityId, out tickToday);
-            if (tryGetValue)
-            {
-                //return last 2 hours results
-                lastTickTime = tickToday.Last().time;
-                return tickToday.Where(o => lastTickTime-o.time<=TimeSpan.FromHours(2)).ToList();
-            }
-
-            //get from Redis
-            var redisTickClient = RedisClient.As<Tick>();
-            var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
-
-            if (ticks.Count == 0)
-                tickToday = new List<TickDTO>();
-            else
-            {
-                lastTickTime = ticks.Last().Time;
-
-                var ticksToday = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12));
-
-                tickToday = ticksToday.Select(o => Mapper.Map<TickDTO>(o)).ToList();
-            }
-
-            WebCache.TickToday.AddOrUpdate(securityId, tickToday, ((i, dtos) => dtos));
-
-            //return last 2 hours results
-            lastTickTime = tickToday.Last().time;
+            var lastTickTime = tickToday.Last().time;
             return tickToday.Where(o => lastTickTime - o.time <= TimeSpan.FromHours(2)).ToList();
         }
 
@@ -129,30 +94,7 @@ namespace CFD_API.Controllers
         [Route("{securityId}/tick/today")]
         public List<TickDTO> GetTodayTicks(int securityId)
         {
-            List<TickDTO> result;
-
-            //get from WebCache
-            var tryGetValue = WebCache.TickToday.TryGetValue(securityId, out result);
-            if (tryGetValue)
-                return result;
-
-            //get from Redis
-            var redisTickClient = RedisClient.As<Tick>();
-            var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
-
-            if (ticks.Count == 0)
-                result = new List<TickDTO>();
-            else
-            {
-                var lastTickTime = ticks.Last().Time;
-
-                var ticksToday = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12));
-
-                result = ticksToday.Select(o => Mapper.Map<TickDTO>(o)).ToList();
-            }
-
-            WebCache.TickToday.AddOrUpdate(securityId, result, ((i, dtos) => dtos));
-
+            var result = WebCache.GetOrCreateTickToday(securityId, RedisClient);
             return result;
         }
 
@@ -167,7 +109,7 @@ namespace CFD_API.Controllers
         {
             var redisTickClient = RedisClient.As<Tick>();
 
-            var ticks = redisTickClient.Lists["tick:" + securityId].GetAll();
+            var ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.OneMinute) + securityId].GetAll();
 
             if (ticks.Count == 0)
                 return new List<TickDTO>();

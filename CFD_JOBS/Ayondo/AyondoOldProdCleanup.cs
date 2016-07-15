@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
+using CFD_COMMON.Utils;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -24,9 +25,9 @@ namespace CFD_JOBS.Ayondo
             CFDGlobal.LogLine("deleting ticks...");
             foreach (var id in idsToRemove)
             {
-                redisTickClient.RemoveEntry("tick:" + id);
-                redisTickClient.RemoveEntry("tick10m:" + id);
-                redisTickClient.RemoveEntry("tick1h:" + id);
+                redisTickClient.RemoveEntry(Ticks.GetTickListNamePrefix(TickSize.OneMinute) + id);
+                redisTickClient.RemoveEntry(Ticks.GetTickListNamePrefix(TickSize.TenMinute) + id);
+                redisTickClient.RemoveEntry(Ticks.GetTickListNamePrefix(TickSize.OneHour) + id);
             }
             CFDGlobal.LogLine("deleting prods...");
             redisProdDefClient.DeleteByIds(idsToRemove);

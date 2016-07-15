@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using AutoMapper;
 using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Utils;
+using ServiceStack.Redis;
 
 namespace CFD_API.Caching
 {
@@ -34,7 +36,7 @@ namespace CFD_API.Caching
             //initialize
             ProdDefs = new List<ProdDef>();
             Quotes = new List<Quote>();
-            TickRaw=new ConcurrentDictionary<int, List<TickDTO>>();
+            TickRaw = new ConcurrentDictionary<int, List<TickDTO>>();
             TickToday = new ConcurrentDictionary<int, List<TickDTO>>();
             TickWeek = new ConcurrentDictionary<int, List<TickDTO>>();
             TickMonth = new ConcurrentDictionary<int, List<TickDTO>>();
@@ -63,7 +65,7 @@ namespace CFD_API.Caching
         private static void UpdateRawTicks(object state)
         {
             var tsTickListLengthCleanWhen = TimeSpan.FromMinutes(60);
-            var tsTickListLengthCleanTo = TimeSpan.FromMinutes(20);
+            var tsTickListLengthCleanTo = TimeSpan.FromMinutes(30);
 
             while (true)
             {
@@ -244,6 +246,60 @@ namespace CFD_API.Caching
 
                 Thread.Sleep(_updateIntervalQuote);
             }
+        }
+
+        public static List<TickDTO> GetOrCreateTickRaw(int secId, IRedisClient redisClient)
+        {
+            List<TickDTO> rawTickDTOs;
+
+            //get from WebCache
+            var tryGetValue = TickRaw.TryGetValue(secId, out rawTickDTOs);
+            if (tryGetValue)
+                return rawTickDTOs;
+
+            //get from Redis
+            var redisTickClient = redisClient.As<Tick>();
+            var ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.Raw) + secId].GetAll();
+
+            if (ticks.Count == 0)
+                rawTickDTOs = new List<TickDTO>();
+            else
+            {
+                var lastTickTime = ticks.Last().Time;
+
+                rawTickDTOs = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromMinutes(30)).Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            }
+
+            TickRaw.AddOrUpdate(secId, rawTickDTOs, ((i, dtos) => dtos));
+
+            return rawTickDTOs;
+        }
+
+        public static List<TickDTO> GetOrCreateTickToday(int secId, IRedisClient redisClient)
+        {
+            List<TickDTO> tickDTOs;
+
+            //get from WebCache
+            var tryGetValue = TickToday.TryGetValue(secId, out tickDTOs);
+            if (tryGetValue)
+                return tickDTOs;
+
+            //get from Redis
+            var redisTickClient = redisClient.As<Tick>();
+            var ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.OneMinute) + secId].GetAll();
+
+            if (ticks.Count == 0)
+                tickDTOs = new List<TickDTO>();
+            else
+            {
+                var lastTickTime = ticks.Last().Time;
+
+                tickDTOs = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12)).Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            }
+
+            TickToday.AddOrUpdate(secId, tickDTOs, ((i, dtos) => dtos));
+
+            return tickDTOs;
         }
     }
 }
