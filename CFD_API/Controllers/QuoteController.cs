@@ -43,6 +43,9 @@ namespace CFD_API.Controllers
         {
             var rawTickDTOs = WebCache.GetOrCreateTickRaw(securityId, RedisClient);
 
+            if (rawTickDTOs.Count == 0)
+                return new List<TickDTO>();
+
             var lastTickTime = rawTickDTOs.Last().time;
 
             var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == securityId);
@@ -85,6 +88,9 @@ namespace CFD_API.Controllers
         public List<TickDTO> Get2HoursTicks(int securityId)
         {
             var tickToday = WebCache.GetOrCreateTickToday(securityId, RedisClient);
+
+            if (tickToday.Count == 0)
+                return new List<TickDTO>();
 
             var lastTickTime = tickToday.Last().time;
             return tickToday.Where(o => lastTickTime - o.time <= TimeSpan.FromHours(2)).ToList();
