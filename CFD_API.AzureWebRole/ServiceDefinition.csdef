@@ -20,7 +20,7 @@
     <Endpoints>
       <InputEndpoint name="Endpoint1" protocol="http" port="80" />
       <InputEndpoint name="HttpsIn" protocol="https" port="443" 
-              certificate="thcer" />
+              certificate="CFD_API_CERT" />
     </Endpoints>
     <Imports>
       <Import moduleName="RemoteAccess" />
