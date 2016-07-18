@@ -28,7 +28,7 @@
     </Imports>
   
     <Certificates>  
-      <Certificate name="thcer" storeLocation="LocalMachine" storeName="My" />  
+      <Certificate name="CFD_API_CERT" storeLocation="LocalMachine" storeName="My" />  
     </Certificates>  
   </WebRole>
 </ServiceDefinition>
