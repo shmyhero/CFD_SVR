@@ -29,7 +29,7 @@ namespace CFD_JOBS.Ayondo
         public ConcurrentQueue<Quote> QueueQuotes = new ConcurrentQueue<Quote>();
         public ConcurrentQueue<Quote> QueueQuotes2 = new ConcurrentQueue<Quote>();
 
-        public ConcurrentDictionary<int, ProdDef> ProdDefs = new ConcurrentDictionary<int, ProdDef>();
+        public IDictionary<int, ProdDef> ProdDefs = new Dictionary<int, ProdDef>();
 
         //private IRedisTypedClient<Quote> redisQuoteClient;
         //private IRedisTypedClient<ProdDef> redisProdDefClient;
@@ -175,7 +175,7 @@ namespace CFD_JOBS.Ayondo
                     GSMS = gsms,
                 });
 
-                ProdDefs.AddOrUpdate(id, new ProdDef
+                ProdDefs[id] = new ProdDef
                 {
                     Id = id,
                     Time = time,
@@ -200,7 +200,7 @@ namespace CFD_JOBS.Ayondo
                     SMD = smd,
                     GSMD = gsmd,
                     GSMS = gsms,
-                }, ((i, def) => def));
+                };
             }
             else
             {
