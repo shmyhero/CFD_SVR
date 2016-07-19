@@ -762,6 +762,8 @@ namespace AyondoTrade
                         TestPositionReport();
                     else if (action == 'd')
                         TestNewOrder();
+                    else if (action == 'a')
+                        QueryMDS3();
                 }
                 catch (System.Exception e)
                 {
@@ -770,6 +772,36 @@ namespace AyondoTrade
                 }
             }
             Console.WriteLine("Program shutdown.");
+        }
+
+        private void QueryMDS3()
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new Message();
+            m.Header.SetField(new MsgType("MDS3"));
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+            m.SetField(new Account(_account));
+
+            var transferType = _dd.FieldsByName["MDS_TransferType"];
+            m.SetField(new IntField(transferType.Tag){Obj = Convert.ToInt32(transferType.EnumDict.FirstOrDefault(o=>o.Value=="CUP_DEPOSIT").Key)});
+
+            var transferAmount=_dd.FieldsByName["MDS_TransferAmount"];
+            m.SetField(new DecimalField(transferAmount.Tag){Obj = 1.23m});
+
+            var transferCurrency=_dd.FieldsByName["MDS_TransferCurrency"];
+            m.SetField(new StringField(transferCurrency.Tag) { Obj = "USD" });
+            
+      //<field name="MDS_TransferLabel" required="N"/>
+      //<field name="MDS_SourceBalanceID" required="N"/>
+      //<field name="MDS_TargetBalanceID" required="N"/>
+      //<field name="MDS_Actor" required="N"/>
+      //<field name="MDS_CardType" required="N"/>
+      //<field name="MDS_CardAlias" required="N"/>
+
+            SendMessage(m);
+
+            //return guid;
         }
 
         private void TestNewOrder()
@@ -817,7 +849,7 @@ namespace AyondoTrade
 
         private char QueryAction()
         {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d".Split(','));
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a".Split(','));
 
             string cmd = Console.ReadLine().Trim();
             if (cmd.Length != 1 || validActions.Contains(cmd) == false)
