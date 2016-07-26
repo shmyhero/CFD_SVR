@@ -20,7 +20,8 @@ namespace CFD_COMMON
         public static string USER_PIC_BLOB_CONTAINER="user-picture";
         public static string USER_PIC_BLOB_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + USER_PIC_BLOB_CONTAINER+"/";
 
-        public static string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
+        public const string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
+        public const string AYONDO_DATETIME_MASK = "yyyy-MM-dd HH:mm:ss.FFF";
 
         public static string ASSET_CLASS_STOCK = "Single Stocks";
         public static string ASSET_CLASS_FX = "Currencies";
@@ -198,6 +199,18 @@ namespace CFD_COMMON
             {
                 Trace.TraceInformation(GetLogDatetimePrefix() + ex.Message);
                 Trace.TraceInformation(GetLogDatetimePrefix() + ex.StackTrace);
+
+                ex = ex.InnerException;
+            }
+        }
+
+        public static void LogExceptionAsWarning(Exception exception)
+        {
+            var ex = exception;
+            while (ex != null)
+            {
+                Trace.TraceWarning(GetLogDatetimePrefix() + ex.Message);
+                Trace.TraceWarning(GetLogDatetimePrefix() + ex.StackTrace);
 
                 ex = ex.InnerException;
             }

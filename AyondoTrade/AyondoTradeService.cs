@@ -17,7 +17,6 @@ namespace AyondoTrade
     {
         public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(5);
         public static readonly int SCAN_WAIT_MILLI_SECOND = 250;
-        public static readonly string FIX_DATETIME_MASK = "yyyy-MM-dd HH:mm:ss.FFF";
 
         public AyondoTradeService()
         {
@@ -652,7 +651,7 @@ namespace AyondoTrade
 
                 //CreateTime = report.ClearingBusinessDate.Obj,
                 CreateTime =
-                    DateTime.ParseExact(report.ClearingBusinessDate.Obj, FIX_DATETIME_MASK, CultureInfo.CurrentCulture,
+                    DateTime.ParseExact(report.ClearingBusinessDate.Obj, CFDGlobal.AYONDO_DATETIME_MASK, CultureInfo.CurrentCulture,
                         DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
                 ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?) null,
                 LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?) null,

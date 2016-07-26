@@ -67,6 +67,11 @@ namespace CFD_JOBS
                     AyondoOldProdCleanup.Run();
                 }
 
+                if (args.Contains("-AyondoTradeHistory"))
+                {
+                    AyondoTradeHistory.Run();
+                }
+
                 if (args.Contains("-TickChart"))
                 {
                     TickChartWorker.Run();

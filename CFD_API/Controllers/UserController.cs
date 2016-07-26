@@ -203,7 +203,7 @@ namespace CFD_API.Controllers
                 }
                 catch (Exception e)
                 {
-                    CFDGlobal.LogException(e);
+                    CFDGlobal.LogExceptionAsWarning(e);
                 }
 
             return result;
