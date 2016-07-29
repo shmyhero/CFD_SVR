@@ -11,6 +11,10 @@ using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
+using System.Threading.Tasks;
+using System.Web;
+using System.IO;
+using System.Data.SqlTypes;
 
 namespace CFD_API.Controllers
 {
@@ -94,6 +98,157 @@ namespace CFD_API.Controllers
             });
             db.SaveChanges();
             return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        [Route("getbannerbyid")]
+        [HttpGet]
+        public BannerDTO GetBannerById(int id)
+        {
+            var banners = db.Banners2.Where(item => item.Id == id ).ToList();
+            if (banners != null && banners.Count > 0)
+            {
+               return Mapper.Map<BannerDTO>(banners.FirstOrDefault());
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        [Route("deletebanner")]
+        [HttpDelete]
+        public HttpResponseMessage DeleteBanner(int id)
+        {
+            Banner2 banner = null;
+            var banners = db.Banners2.Where(item => item.Id == id).ToList();
+            if (banners != null && banners.Count > 0)
+            {
+                banner = banners.FirstOrDefault();
+            }
+            else
+            {
+                Request.CreateResponse(HttpStatusCode.OK);
+            }
+            banner.Expiration = DateTime.Now;
+            db.SaveChanges();
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        [Route("postbanner")]
+        [HttpPost]
+        public async Task<Dictionary<string, string>> PostBanner()
+        {
+           Dictionary<string, string> dicFiles =  await UploadHelper.UploadImage(Request, file => new Dictionary<string, string>
+                {
+                    {"url", file == null? string.Empty : file.Location.AbsoluteUri}
+                });
+
+            Dictionary<string, string> dicFormData = new Dictionary<string, string>();
+            Stream reqStream = Request.Content.ReadAsStreamAsync().Result;
+            if (reqStream.CanSeek)
+            {
+                reqStream.Position = 0;
+            }
+            try
+            {
+                string fullPath = HttpContext.Current.Server.MapPath("~/App_Data");
+                var streamProvider = new MultipartFormDataStreamProvider(fullPath);
+                await Request.Content.ReadAsMultipartAsync(streamProvider);
+                foreach (var key in streamProvider.FormData.AllKeys)
+                {//接收FormData  
+                    dicFormData.Add(key, streamProvider.FormData[key]);
+                }
+
+                //contains "ID" means update
+                if (dicFormData.ContainsKey("ID"))
+                {
+                    UpdateBanner(dicFiles, dicFormData);
+                }
+                else //create banner
+                {
+                    CreateBanner(dicFiles, dicFormData);
+                }
+                db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Request.CreateResponse(HttpStatusCode.ExpectationFailed);
+            }
+
+            return null;
+        }
+
+        private void CreateBanner(Dictionary<string, string> dicFiles, Dictionary<string, string> dicFormData)
+        {
+            //is banner on the top
+            int isTop = 0;
+            if (dicFormData.ContainsKey("IsTop"))
+            {
+                int.TryParse(dicFormData["IsTop"], out isTop);
+            }
+            DateTime? topAt = new DateTime();
+            if (isTop == 1)
+            {
+                topAt = DateTime.Now;
+            }
+            else
+            {
+                topAt = null;
+            }
+
+            db.Banners2.Add(new Banner2()
+            {
+                Header = dicFormData.ContainsKey("Header") ? dicFormData["Header"] : string.Empty,
+                Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty,
+                IsTop = isTop,
+                TopAt = topAt,
+                CreatedAt = DateTime.Now,
+                CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty,
+                Expiration = SqlDateTime.MaxValue.Value,
+                ImgUrl = dicFiles.ContainsKey("url") ? dicFiles["url"] : string.Empty
+            });
+        }
+
+        private void UpdateBanner(Dictionary<string, string> dicFiles, Dictionary<string, string> dicFormData)
+        {
+            int isTop = 0;
+            if (dicFormData.ContainsKey("IsTop"))
+            {
+                int.TryParse(dicFormData["IsTop"], out isTop);
+            }
+            DateTime? topAt = new DateTime();
+            if (isTop == 1)
+            {
+                topAt = DateTime.Now;
+            }
+            else
+            {
+                topAt = null;
+            }
+
+            Banner2 banner = null;
+            int id = 0;
+            int.TryParse(dicFormData["ID"], out id);
+            var banners = db.Banners2.Where(item => item.Id == id).ToList();
+            if (banners != null && banners.Count > 0)
+            {
+                banner = banners.FirstOrDefault();
+                banner.Header = dicFormData.ContainsKey("Header") ? dicFormData["Header"] : string.Empty;
+                banner.Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty;
+                banner.IsTop = isTop;
+                banner.TopAt = topAt;
+                banner.CreatedAt = DateTime.Now;
+                banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
+                banner.Expiration = SqlDateTime.MaxValue.Value;
+                if(dicFiles.ContainsKey("url") && !string.IsNullOrEmpty(dicFiles["url"]))
+                {
+                    banner.ImgUrl = dicFiles["url"];
+                }
+            }
+            else
+            {
+                return;
+            }
         }
     }
 }

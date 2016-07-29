@@ -15,10 +15,32 @@ namespace CFD_API.DTO
         public int id { get; set; }
         public string imgUrl { get; set; }
         public string url { get; set; }
+        public string Header { get; set; }
+
+        public string Body { get; set; }
+
+        public int? IsTop { get; set; }
+
+        public DateTime? TopAt { get; set; }
+
+        public string CreatedBy { get; set; }
+
+        public DateTime? CreatedAt { get; set; }
+
+        public string ExpiredBy { get; set; }
+
+        public DateTime? Expiration { get; set; }
     }
     public class FeedbackFormDTO
     {
         public string phone { get; set; }
         public string text { get; set; }
+    }
+    public class BannerDetailDTO
+    {
+        public string header { get; set; }
+        public string body { get; set; }
+        public string startdate { get; set; }
+        public string enddate { get; set; }
     }
 }

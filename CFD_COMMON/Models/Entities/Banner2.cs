@@ -6,8 +6,8 @@ namespace CFD_COMMON.Models.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("Banner")]
-    public partial class Banner
+    [Table("Banner2")]
+    public partial class Banner2
     {
         //[DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }

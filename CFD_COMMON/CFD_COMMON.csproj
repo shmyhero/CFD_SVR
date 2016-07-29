@@ -112,6 +112,7 @@
     <Compile Include="Models\Context\CFDHistoryEntitiesFactory.cs" />
     <Compile Include="Models\Context\CFDHistoryEntities.cs" />
     <Compile Include="Models\Entities\ApiHit.cs" />
+    <Compile Include="Models\Entities\Banner2.cs" />
     <Compile Include="Models\Entities\Banner.cs" />
     <Compile Include="Models\Entities\AyondoSecurity.cs" />
     <Compile Include="Models\Entities\Bookmark.cs" />
