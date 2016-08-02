@@ -1184,7 +1184,7 @@ namespace AyondoTrade
                 }
                 catch (DoNotSend)
                 {
-                    CFDGlobal.LogInformation("DoNotSend Caught: " + m.ToString());
+                    CFDGlobal.LogLine("DoNotSend Caught: " + m.ToString());
                 }
             }
             else
