@@ -274,5 +274,16 @@ namespace CFD_API.Controllers
                 return;
             }
         }
+
+        [Route("operation/login")]
+        [HttpPost]
+        public bool Login(OperationUserDTO userDTO)
+        {
+            int userType = 0;
+            int.TryParse(userDTO.Type, out userType);
+            OperationUser user = db.OperationUsers.FirstOrDefault(u => (u.UserName == userDTO.name) && (u.Password == userDTO.password) && (u.UserType == userType));
+
+            return user!=null;
+        }
     }
 }

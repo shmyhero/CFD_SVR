@@ -120,6 +120,7 @@
     <Compile Include="Models\Entities\Feedback.cs" />
     <Compile Include="Models\Entities\Model1.cs" />
     <Compile Include="Models\Entities\PhoneSignupHistory.cs" />
+    <Compile Include="Models\Entities\OperationUser.cs" />
     <Compile Include="Models\Entities\User.cs" />
     <Compile Include="Models\Entities\UserAyondo.cs" />
     <Compile Include="Models\Entities\VerifyCode.cs" />

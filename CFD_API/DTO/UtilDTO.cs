@@ -39,6 +39,14 @@ namespace CFD_API.DTO
 
         public DateTime? Expiration { get; set; }
     }
+
+    public class OperationUserDTO
+    {
+        public string name { get; set; }
+        public string password { get; set; }
+        public string Type { get; set; }
+    }
+
     public class FeedbackFormDTO
     {
         public string phone { get; set; }
