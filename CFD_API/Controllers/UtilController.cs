@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.IO;
 using System.Data.SqlTypes;
+using CFD_API.Azure;
 
 namespace CFD_API.Controllers
 {
@@ -196,10 +197,11 @@ namespace CFD_API.Controllers
         [HttpPost]
         public async Task<Dictionary<string, string>> PostBanner()
         {
-           Dictionary<string, string> dicFiles =  await UploadHelper.UploadImage(Request, file => new Dictionary<string, string>
-                {
-                    {"url", file == null? string.Empty : file.Location.AbsoluteUri}
-                });
+           //Tuple<string, Dictionary<string, string>> formData =  await UploadHelper.UploadImage(Request);
+            Tuple<string, Dictionary<string, string>> formData = await UploadHelper.UploadImage(Request, data => new Tuple<string, Dictionary<string, string>>
+                (
+                  data.Item1, data.Item2
+                ));
 
             Dictionary<string, string> dicFormData = new Dictionary<string, string>();
             Stream reqStream = Request.Content.ReadAsStreamAsync().Result;
@@ -209,22 +211,22 @@ namespace CFD_API.Controllers
             }
             try
             {
-                string fullPath = HttpContext.Current.Server.MapPath("~/App_Data");
-                var streamProvider = new MultipartFormDataStreamProvider(fullPath);
-                await Request.Content.ReadAsMultipartAsync(streamProvider);
-                foreach (var key in streamProvider.FormData.AllKeys)
-                {//接收FormData  
-                    dicFormData.Add(key, streamProvider.FormData[key]);
-                }
+                //string fullPath = HttpContext.Current.Server.MapPath("~/App_Data");
+                //var streamProvider = new MultipartFormDataStreamProvider(fullPath);
+                //await Request.Content.ReadAsMultipartAsync(provider);
+                //foreach (var data in formData.Item2)
+                //{//接收FormData  
+                //    dicFormData.Add(data.Key, provider.FormData[key]);
+                //}
 
                 //contains "ID" means update
                 if (dicFormData.ContainsKey("ID"))
                 {
-                    UpdateBanner(dicFiles, dicFormData);
+                    UpdateBanner(formData.Item1, formData.Item2);
                 }
                 else //create banner
                 {
-                    CreateBanner(dicFiles, dicFormData);
+                    CreateBanner(formData.Item1, formData.Item2);
                 }
                 db.SaveChanges();
             }
@@ -236,7 +238,7 @@ namespace CFD_API.Controllers
             return null;
         }
 
-        private void CreateBanner(Dictionary<string, string> dicFiles, Dictionary<string, string> dicFormData)
+        private void CreateBanner(string imgleUrl, Dictionary<string, string> dicFormData)
         {
             db.Banners2.Add(new Banner2()
             {
@@ -246,11 +248,11 @@ namespace CFD_API.Controllers
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty,
                 Expiration = SqlDateTime.MaxValue.Value,
-                ImgUrl = dicFiles.ContainsKey("url") ? dicFiles["url"] : string.Empty
+                ImgUrl = imgleUrl
             });
         }
 
-        private void UpdateBanner(Dictionary<string, string> dicFiles, Dictionary<string, string> dicFormData)
+        private void UpdateBanner(string imgleUrl, Dictionary<string, string> dicFormData)
         {
             Banner2 banner = null;
             int id = 0;
@@ -265,10 +267,7 @@ namespace CFD_API.Controllers
                 banner.CreatedAt = DateTime.UtcNow;
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
                 banner.Expiration = SqlDateTime.MaxValue.Value;
-                if(dicFiles.ContainsKey("url") && !string.IsNullOrEmpty(dicFiles["url"]))
-                {
-                    banner.ImgUrl = dicFiles["url"];
-                }
+                banner.ImgUrl = imgleUrl;
             }
             else
             {
