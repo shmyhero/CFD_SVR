@@ -214,6 +214,8 @@ namespace CFD_API.Controllers
 
         public void CreateAyondoAccount(User user)
         {
+            CFDGlobal.LogInformation("User Registration Start: "+user.Id);
+
             //Must be 5-20 alphanumeric characters (letter and numerals only).
             //Usernames cannot be purely numeric.
             var username_base = "thcn" + user.Id;
@@ -228,11 +230,20 @@ namespace CFD_API.Controllers
             {
                 var httpWebRequest = HttpWebRequest.CreateHttp(AMS_HOST + "check-username?AccountType=Demo&UserName=" + username);
                 httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
+                httpWebRequest.Proxy = null;
+
+                var dtBegin = DateTime.UtcNow;
+
                 var webResponse = httpWebRequest.GetResponse();
                 var responseStream = webResponse.GetResponseStream();
                 var sr = new StreamReader(responseStream);
 
-                var jObject = JObject.Parse(sr.ReadToEnd());
+                var str = sr.ReadToEnd();
+                var ts = DateTime.UtcNow - dtBegin;
+                CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                         httpWebRequest.RequestUri + " Response: " + str);
+
+                var jObject = JObject.Parse(str);
 
                 tryCount++;
 
@@ -261,6 +272,7 @@ namespace CFD_API.Controllers
                 httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
                 httpWebRequest.Method = "POST";
                 httpWebRequest.ContentType = "application/json; charset=UTF-8";
+                httpWebRequest.Proxy = null;
                 var requestStream = httpWebRequest.GetRequestStream();
                 var sw = new StreamWriter(requestStream);
 
@@ -291,11 +303,18 @@ namespace CFD_API.Controllers
                 sw.Flush();
                 sw.Close();
 
+                var dtBegin = DateTime.UtcNow;
+
                 var webResponse = httpWebRequest.GetResponse();
                 var responseStream = webResponse.GetResponseStream();
                 var sr = new StreamReader(responseStream);
 
-                var jObject = JObject.Parse(sr.ReadToEnd());
+                var str = sr.ReadToEnd();
+                var ts = DateTime.UtcNow - dtBegin;
+                CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                         httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+                var jObject = JObject.Parse(str);
 
                 if (jObject["Error"] != null)
                 {
