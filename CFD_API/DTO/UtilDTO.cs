@@ -10,6 +10,14 @@ namespace CFD_API.DTO
         public bool success { get; set; }
         public string message { get; set; }
     }
+
+    public class SimpleBannerDTO
+    {
+        public int id { get; set; }
+        public string imgUrl { get; set; }
+        public string url { get; set; }
+    }
+
     public class BannerDTO
     {
         public int id { get; set; }

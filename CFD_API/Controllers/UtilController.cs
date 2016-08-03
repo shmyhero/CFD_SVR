@@ -83,6 +83,44 @@ namespace CFD_API.Controllers
             return banners.Select(o => Mapper.Map<BannerDTO>(o)).ToList();
         }
 
+        [Route("banner2")]
+        [HttpGet]
+        public IList<SimpleBannerDTO> GetBanners2()
+        {
+            int max = 5;
+            //get top banner
+            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
+            
+            if (topBanners.Count < max)
+            {
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                topBanners.AddRange(nonTopBanner);
+            }
+
+            return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
+        }
+
+        [Route("nextbanner/{id}")]
+        [HttpGet]
+        public IList<SimpleBannerDTO> NextBanner(int id)
+        {
+            int max = 5;
+            var currentBanner = db.Banners2.Where(item => item.Id == id).FirstOrDefault();
+            if (currentBanner == null)
+                return null;
+
+            //get top banner
+            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.TopAt < currentBanner.TopAt).OrderByDescending(o => o.TopAt).Take(5).ToList();
+
+            if (topBanners.Count < max)
+            {
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                topBanners.AddRange(nonTopBanner);
+            }
+
+            return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
+        }
+
         [Route("feedback")]
         [HttpPost]
         public HttpResponseMessage NewFeedback(FeedbackFormDTO form)
@@ -129,7 +167,27 @@ namespace CFD_API.Controllers
             {
                 Request.CreateResponse(HttpStatusCode.OK);
             }
-            banner.Expiration = DateTime.Now;
+            banner.Expiration = DateTime.UtcNow;
+            db.SaveChanges();
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        [Route("settop")]
+        [HttpGet]
+        public HttpResponseMessage SetTop(int id)
+        {
+            Banner2 banner = null;
+            var banners = db.Banners2.Where(item => item.Id == id).ToList();
+            if (banners != null && banners.Count > 0)
+            {
+                banner = banners.FirstOrDefault();
+            }
+            else
+            {
+                Request.CreateResponse(HttpStatusCode.OK);
+            }
+            banner.IsTop = 1;
+            banner.TopAt = DateTime.UtcNow;
             db.SaveChanges();
             return Request.CreateResponse(HttpStatusCode.OK);
         }
@@ -172,7 +230,7 @@ namespace CFD_API.Controllers
             }
             catch (Exception ex)
             {
-                Request.CreateResponse(HttpStatusCode.ExpectationFailed);
+                Request.CreateResponse(HttpStatusCode.ExpectationFailed, ex.Message);
             }
 
             return null;
@@ -180,29 +238,12 @@ namespace CFD_API.Controllers
 
         private void CreateBanner(Dictionary<string, string> dicFiles, Dictionary<string, string> dicFormData)
         {
-            //is banner on the top
-            int isTop = 0;
-            if (dicFormData.ContainsKey("IsTop"))
-            {
-                int.TryParse(dicFormData["IsTop"], out isTop);
-            }
-            DateTime? topAt = new DateTime();
-            if (isTop == 1)
-            {
-                topAt = DateTime.Now;
-            }
-            else
-            {
-                topAt = null;
-            }
-
             db.Banners2.Add(new Banner2()
             {
+                Url = dicFormData.ContainsKey("Url") ? dicFormData["Url"] : string.Empty,
                 Header = dicFormData.ContainsKey("Header") ? dicFormData["Header"] : string.Empty,
                 Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty,
-                IsTop = isTop,
-                TopAt = topAt,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty,
                 Expiration = SqlDateTime.MaxValue.Value,
                 ImgUrl = dicFiles.ContainsKey("url") ? dicFiles["url"] : string.Empty
@@ -211,21 +252,6 @@ namespace CFD_API.Controllers
 
         private void UpdateBanner(Dictionary<string, string> dicFiles, Dictionary<string, string> dicFormData)
         {
-            int isTop = 0;
-            if (dicFormData.ContainsKey("IsTop"))
-            {
-                int.TryParse(dicFormData["IsTop"], out isTop);
-            }
-            DateTime? topAt = new DateTime();
-            if (isTop == 1)
-            {
-                topAt = DateTime.Now;
-            }
-            else
-            {
-                topAt = null;
-            }
-
             Banner2 banner = null;
             int id = 0;
             int.TryParse(dicFormData["ID"], out id);
@@ -233,11 +259,10 @@ namespace CFD_API.Controllers
             if (banners != null && banners.Count > 0)
             {
                 banner = banners.FirstOrDefault();
+                banner.Url = dicFormData.ContainsKey("Url") ? dicFormData["Url"] : string.Empty;
                 banner.Header = dicFormData.ContainsKey("Header") ? dicFormData["Header"] : string.Empty;
                 banner.Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty;
-                banner.IsTop = isTop;
-                banner.TopAt = topAt;
-                banner.CreatedAt = DateTime.Now;
+                banner.CreatedAt = DateTime.UtcNow;
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
                 banner.Expiration = SqlDateTime.MaxValue.Value;
                 if(dicFiles.ContainsKey("url") && !string.IsNullOrEmpty(dicFiles["url"]))
