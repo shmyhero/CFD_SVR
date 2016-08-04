@@ -25,6 +25,7 @@ namespace AyondoTrade
         private readonly string _password = CFDGlobal.GetConfigurationSetting("ayondoFixTradePassword");
         private DataDictionary _dd;
         private string _account = "138927238972";
+        private string _balanceId = "138927238972";
         private readonly IDictionary<string, DateTime> _userLastLoginTime = new Dictionary<string, DateTime>();
 
         //custom tags
@@ -348,6 +349,8 @@ namespace AyondoTrade
             var quantity = report.GetDecimal(Tags.Quantity);
             var account = report.GetString(Tags.Account);
             CFDCacheManager.Instance.SetBalance(account, quantity);
+
+            _balanceId = report.GetString(Tags.CollRptID);
 
             CFDGlobal.LogLine("OnMessage:CollateralReport: " + GetMessageString(report));
         }
@@ -794,7 +797,11 @@ namespace AyondoTrade
             
       //<field name="MDS_TransferLabel" required="N"/>
       //<field name="MDS_SourceBalanceID" required="N"/>
+
       //<field name="MDS_TargetBalanceID" required="N"/>
+            var targetBalanceId = _dd.FieldsByName["MDS_TargetBalanceID"];
+            m.SetField(new StringField(targetBalanceId.Tag) {Obj = _balanceId});
+
       //<field name="MDS_Actor" required="N"/>
       //<field name="MDS_CardType" required="N"/>
       //<field name="MDS_CardAlias" required="N"/>

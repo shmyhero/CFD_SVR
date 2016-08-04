@@ -19,6 +19,6 @@
     <AzureStorageAccountName>cfdstorage</AzureStorageAccountName>
     <AzureAppendTimestampToDeploymentLabel>True</AzureAppendTimestampToDeploymentLabel>
     <EnableRemoteDebugger>True</EnableRemoteDebugger>
-    <RemoteDebuggerConnectorCertificateThumbprint>9818BC62F9E6567362EF326929E8DFB915ABD49F</RemoteDebuggerConnectorCertificateThumbprint>
+    <RemoteDebuggerConnectorCertificateThumbprint>4A299301F4BCAA86D398EBD4B336CE723830CF12</RemoteDebuggerConnectorCertificateThumbprint>
   </PropertyGroup>
 </Project>
