@@ -232,12 +232,12 @@ namespace AyondoTrade
 
             CFDCacheManager.Instance.ClearCache();
 
-            CFDGlobal.LogInformation("OnLogout: " + sessionID + " StackTrace: " + sb.ToString());
+            CFDGlobal.LogLine("OnLogout: " + sessionID + " StackTrace: " + sb.ToString());
         }
 
         public void OnLogon(SessionID sessionID)
         {
-            CFDGlobal.LogLine("OnLogon: " + sessionID);
+            CFDGlobal.LogInformation("OnLogon: " + sessionID);
 
             Session = Session.LookupSession(sessionID);
             _dd = Session.ApplicationDataDictionary;
@@ -268,7 +268,7 @@ namespace AyondoTrade
 
         public void OnMessage(News news, SessionID sessionID)
         {
-            CFDGlobal.LogInformation("OnMessage:News: " + GetMessageString(news, true, true));
+            CFDGlobal.LogLine("OnMessage:News: " + GetMessageString(news, true, true));
 
             if (news.Headline.Obj == "Fatal Error")
             {
@@ -281,7 +281,7 @@ namespace AyondoTrade
                 {
                     var username = AccountUsernames[account];
 
-                    CFDGlobal.LogInformation("deleting user " + username + "from online list...");
+                    CFDGlobal.LogLine("deleting user " + username + " from online list...");
 
                     string value;
                     UsernameAccounts.TryRemove(username, out value);

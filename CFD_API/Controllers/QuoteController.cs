@@ -153,7 +153,7 @@ namespace CFD_API.Controllers
                 result = ticksWeek.Select(o => Mapper.Map<TickDTO>(o)).ToList();
             }
 
-            WebCache.TickWeek.AddOrUpdate(securityId, result, ((i, dtos) => dtos));
+            WebCache.TickWeek.AddOrUpdate(securityId, result, (k, v) => result);
 
             return result;
         }
@@ -220,7 +220,7 @@ namespace CFD_API.Controllers
                 result = ticksMonth.Select(o => Mapper.Map<TickDTO>(o)).ToList();
             }
 
-            WebCache.TickMonth.AddOrUpdate(securityId, result, ((i, dtos) => dtos));
+            WebCache.TickMonth.AddOrUpdate(securityId, result, (k, v) => result);
 
             return result;
         }

@@ -274,7 +274,7 @@ namespace CFD_API.Caching
                 rawTickDTOs = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromMinutes(30)).Select(o => mapper.Map<TickDTO>(o)).ToList();
             }
 
-            TickRaw.AddOrUpdate(secId, rawTickDTOs, ((i, dtos) => dtos));
+            TickRaw.AddOrUpdate(secId, rawTickDTOs, (key, value) => rawTickDTOs);
 
             return rawTickDTOs;
         }
@@ -301,7 +301,7 @@ namespace CFD_API.Caching
                 tickDTOs = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromHours(12)).Select(o => mapper.Map<TickDTO>(o)).ToList();
             }
 
-            TickToday.AddOrUpdate(secId, tickDTOs, ((i, dtos) => dtos));
+            TickToday.AddOrUpdate(secId, tickDTOs, (key, value) => tickDTOs);
 
             return tickDTOs;
         }
