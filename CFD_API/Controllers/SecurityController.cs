@@ -368,7 +368,10 @@ namespace CFD_API.Controllers
             format.VCharType = HanyuPinyinVCharType.WITH_V;
 
             var securityDtos = activeProds
-                .Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUSStocks(o.Symbol)) //US Stocks and non-stocks
+                .Where(o =>
+                    (o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUSStocks(o.Symbol))//US Stocks and non-stocks
+                    && !o.Name.EndsWith(" Outright") //exclude Outright
+                ) 
                 .Select(o => Mapper.Map<SecurityDTO>(o))
                 .Where(delegate(SecurityDTO o)
                 {
