@@ -203,7 +203,6 @@ namespace CFD_API.Controllers
                   data.Item1, data.Item2
                 ));
 
-            Dictionary<string, string> dicFormData = new Dictionary<string, string>();
             Stream reqStream = Request.Content.ReadAsStreamAsync().Result;
             if (reqStream.CanSeek)
             {
@@ -220,7 +219,7 @@ namespace CFD_API.Controllers
                 //}
 
                 //contains "ID" means update
-                if (dicFormData.ContainsKey("ID"))
+                if (formData.Item2.ContainsKey("ID"))
                 {
                     UpdateBanner(formData.Item1, formData.Item2);
                 }
@@ -277,13 +276,20 @@ namespace CFD_API.Controllers
 
         [Route("operation/login")]
         [HttpPost]
-        public bool Login(OperationUserDTO userDTO)
+        public string Login(OperationUserDTO userDTO)
         {
             int userType = 0;
             int.TryParse(userDTO.Type, out userType);
             OperationUser user = db.OperationUsers.FirstOrDefault(u => (u.UserName == userDTO.name) && (u.Password == userDTO.password) && (u.UserType == userType));
 
-            return user!=null;
+            if(user != null)
+            {
+                return "true";
+            }
+            else
+            {
+                return Newtonsoft.Json.JsonConvert.SerializeObject(userDTO);
+            }
         }
     }
 }
