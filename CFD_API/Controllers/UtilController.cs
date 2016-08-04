@@ -251,7 +251,7 @@ namespace CFD_API.Controllers
             });
         }
 
-        private void UpdateBanner(string imgleUrl, Dictionary<string, string> dicFormData)
+        private void UpdateBanner(string imageUrl, Dictionary<string, string> dicFormData)
         {
             Banner2 banner = null;
             int id = 0;
@@ -266,7 +266,10 @@ namespace CFD_API.Controllers
                 banner.CreatedAt = DateTime.UtcNow;
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
                 banner.Expiration = SqlDateTime.MaxValue.Value;
-                banner.ImgUrl = imgleUrl;
+                if(!string.IsNullOrEmpty(imageUrl))
+                {
+                    banner.ImgUrl = imageUrl;
+                }
             }
             else
             {
