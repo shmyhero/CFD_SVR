@@ -399,8 +399,7 @@ namespace CFD_API.Controllers
 
             var user = GetUser();
 
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+            CheckAyondoAccount(user);
 
             var balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
             var positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
@@ -454,8 +453,8 @@ namespace CFD_API.Controllers
         public List<PLReportDTO> GetPLReport()
         {
             var user = GetUser();
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+
+            CheckAyondoAccount(user);
 
             var clientHttp = new AyondoTradeClient();
 

@@ -39,8 +39,8 @@ namespace CFD_API.Controllers
             //throw new NullReferenceException();
 
             var user = GetUser();
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+            
+            CheckAyondoAccount(user);
 
             var wcfClient = new AyondoTradeClient();
 
@@ -125,8 +125,8 @@ namespace CFD_API.Controllers
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
             var user = GetUser();
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+
+            CheckAyondoAccount(user);
 
             var clientHttp = new AyondoTradeClient();
 
@@ -243,8 +243,8 @@ namespace CFD_API.Controllers
         public PositionDTO NewPosition(NewPositionFormDTO form)
         {
             var user = GetUser();
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+
+            CheckAyondoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
@@ -353,8 +353,8 @@ namespace CFD_API.Controllers
         public PositionDTO NetPosition(NetPositionFormDTO form)
         {
             var user = GetUser();
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+
+            CheckAyondoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
@@ -410,8 +410,8 @@ namespace CFD_API.Controllers
         public PositionDTO NewTake(NewTakeFormDTO form)
         {
             var user = GetUser();
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+
+            CheckAyondoAccount(user);
 
             var clientHttp = new AyondoTradeClient();
 
@@ -443,8 +443,8 @@ namespace CFD_API.Controllers
         public PositionDTO CancelTakeOrder(CancelTakeFormDTO form)
         {
             var user = GetUser();
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+
+            CheckAyondoAccount(user);
 
             var clientHttp = new AyondoTradeClient();
 
@@ -476,8 +476,8 @@ namespace CFD_API.Controllers
         public PositionDTO ReplaceOrder(ReplaceStopTakeFormDTO form)
         {
             var user = GetUser();
-            if (string.IsNullOrEmpty(user.AyondoUsername))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_AYONDO_ACCOUNT)));
+
+            CheckAyondoAccount(user);
 
             var clientHttp = new AyondoTradeClient();
 

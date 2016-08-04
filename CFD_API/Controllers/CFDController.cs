@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.ServiceModel;
 using System.Web;
 using System.Web.Http;
@@ -63,6 +65,17 @@ namespace CFD_API.Controllers
         public User GetUser()
         {
             return db.Users.FirstOrDefault(o => o.Id == UserId);
+        }
+
+        public void CheckAyondoAccount(User user)
+        {
+            if (string.IsNullOrEmpty(user.AyondoUsername))
+            {
+                CFDGlobal.LogWarning("No Ayondo Account. userId: " + user.Id);
+
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                    __(TransKey.NO_AYONDO_ACCOUNT)));
+            }
         }
     }
 }
