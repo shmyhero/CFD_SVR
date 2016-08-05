@@ -33,7 +33,7 @@ namespace CFD_API.Azure
                 var uniqueName = Path.GetFileName(fileData.LocalFileName);
                 Trace.WriteLine(fileData.LocalFileName);
                 // Retrieve reference to a blob
-                ICloudBlob blob = _container.GetBlockBlobReference(uniqueName);
+                ICloudBlob blob = _container.GetBlockBlobReference(uniqueName + fileData.Headers.ContentDisposition.FileName.Trim('\"'));
                 blob.Properties.ContentType = fileData.Headers.ContentType.MediaType;
                 blob.UploadFromStream(new FileStream(fileData.LocalFileName, FileMode.Open));
                 //File.Delete(fileData.LocalFileName); // The process cannot access the file 'D:\Windows\TEMP\BodyPart_a37478c4-36c7-44d4-b459-48ee67a7eba0' because it is being used by another process
