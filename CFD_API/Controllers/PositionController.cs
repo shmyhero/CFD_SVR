@@ -16,6 +16,7 @@ using CFD_API.DTO.FormDTO;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 
@@ -300,6 +301,18 @@ namespace CFD_API.Controllers
             CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
                               " | quote:" + quotePrice + " | quantity:" + quantity + " stopPx:" + stopPx + " | Qty:" + (result.LongQty ?? result.ShortQty) + " SettlePrice:" +
                               result.SettlPrice);
+            db.NewPositionHistories.Add(new NewPositionHistory()
+            {
+                Id=Convert.ToInt64(result.PosMaintRptID),
+                UserId = UserId,
+                SecurityId = Convert.ToInt32(result.SecurityID),
+                CreateTime=result.CreateTime,
+                Leverage = result.Leverage,
+                LongQty = result.LongQty,
+                ShortQty = result.ShortQty,
+                SettlePrice = result.SettlPrice,
+            });
+            db.SaveChanges();
 
             //when price changes, set stop again to prevent >100% loss
             if (quotePrice != result.SettlPrice)

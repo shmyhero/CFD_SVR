@@ -12,10 +12,25 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
+        public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.SettlePrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.LongQty)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.ShortQty)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.Leverage)
+                .HasPrecision(18, 5);
         }
     }
 }

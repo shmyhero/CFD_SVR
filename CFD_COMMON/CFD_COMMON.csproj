@@ -119,6 +119,7 @@
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Feedback.cs" />
     <Compile Include="Models\Entities\Model1.cs" />
+    <Compile Include="Models\Entities\NewPositionHistory.cs" />
     <Compile Include="Models\Entities\PhoneSignupHistory.cs" />
     <Compile Include="Models\Entities\OperationUser.cs" />
     <Compile Include="Models\Entities\User.cs" />

@@ -21,6 +21,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Bookmark> Bookmarks { get; set; }
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
+        public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
@@ -30,6 +31,22 @@ namespace CFD_COMMON.Models.Context
         {
             modelBuilder.Entity<AyondoSecurity>()
                 .Property(e => e.DisplayDecimals)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.SettlePrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.LongQty)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.ShortQty)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.Leverage)
                 .HasPrecision(18, 5);
 
             //modelBuilder.Entity<AyondoSecurity>()
