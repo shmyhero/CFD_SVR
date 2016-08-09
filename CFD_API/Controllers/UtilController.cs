@@ -333,7 +333,6 @@ namespace CFD_API.Controllers
                 var headline = headlines.FirstOrDefault();
                 headline.Header = headLineDTO.Header;
                 headline.Body = headLineDTO.Body;
-                headline.CreatedAt = DateTime.UtcNow;
             }
         }
 
@@ -361,16 +360,17 @@ namespace CFD_API.Controllers
         public IList<HeadlineDTO> GetHeadline(int id)
         {
             IList<Headline> headlines = null;
+
+            DateTime twoDaysAgo = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
+
             if (id <= 0)
             {
-                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.CreatedAt).ToList();
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= twoDaysAgo).OrderByDescending(o => o.CreatedAt).ToList();
             }
             else
             {
-                headlines = db.Headlines.Where(item => item.Id == id && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.CreatedAt).ToList();
-
+                headlines = db.Headlines.Where(item => item.Id == id && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= twoDaysAgo).OrderByDescending(o => o.CreatedAt).ToList();
             }
-
 
             return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
         }
