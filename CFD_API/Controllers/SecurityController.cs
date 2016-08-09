@@ -91,12 +91,6 @@ namespace CFD_API.Controllers
 
         private IList<ProdDef> GetActiveProds()
         {
-            //return RedisClient.As<ProdDef>().GetAll()
-            //    .Where(o => o.QuoteType != enmQuoteType.Inactive 
-            //        && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
-            //        )
-            //    .ToList();
-
             return Caching.WebCache.ProdDefs
                 .Where(o => o.QuoteType != enmQuoteType.Inactive
                             && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
@@ -568,5 +562,33 @@ namespace CFD_API.Controllers
 
             return new ResultDTO {success = true};
         }
+
+        [HttpGet]
+        [Route("byPopularity")]
+        public List<ByPopularityDTO> GetByPopularity()
+        {
+            var activeProd = GetActiveProds();
+
+            var _24hoursAgo = DateTime.UtcNow.AddDays(-1);
+            var tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= _24hoursAgo).ToList();
+
+            var result = tradeHistory.GroupBy(o=>o.SecurityId).Select(o=>
+            {
+                var secId = o.Key.Value;
+                var prodDef = activeProd.FirstOrDefault(p => p.Id == secId);
+                return new ByPopularityDTO()
+                {
+                    id = secId,
+                    longCount = o.Count(p => p.LongQty.HasValue),
+                    shortCount = o.Count(p => p.ShortQty.HasValue),
+                    traderCount = o.Select(p => p.UserId).Distinct().Count(),
+
+                    symbol= prodDef?.Symbol,
+                    name= prodDef!=null? Translator.GetCName(prodDef.Name):null,
+                };
+            }).OrderByDescending(o=>o.traderCount).ToList();
+
+            return result;
+        } 
     }
 }
