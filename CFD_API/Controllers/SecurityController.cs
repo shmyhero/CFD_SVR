@@ -581,12 +581,12 @@ namespace CFD_API.Controllers
                     id = secId,
                     longCount = o.Count(p => p.LongQty.HasValue),
                     shortCount = o.Count(p => p.ShortQty.HasValue),
-                    traderCount = o.Select(p => p.UserId).Distinct().Count(),
+                    userCount = o.Select(p => p.UserId).Distinct().Count(),
 
                     symbol= prodDef?.Symbol,
                     name= prodDef!=null? Translator.GetCName(prodDef.Name):null,
                 };
-            }).OrderByDescending(o=>o.traderCount).ToList();
+            }).OrderByDescending(o=>o.userCount).ToList();
 
             return result;
         } 
