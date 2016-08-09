@@ -294,5 +294,85 @@ namespace CFD_API.Controllers
                 return Newtonsoft.Json.JsonConvert.SerializeObject(userDTO);
             }
         }
+
+        [HttpPost]
+        [Route("headline")]
+        public HttpResponseMessage PostHeadline(HeadlineDTO headLineDTO)
+        {
+            if(headLineDTO.Id > 0) //update
+            {
+                UpdateHeadline(headLineDTO);
+            }
+            else//created
+            {
+                CreateHeadline(headLineDTO);
+            }
+            db.SaveChanges();
+
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        private void CreateHeadline(HeadlineDTO headLineDTO)
+        {
+            db.Headlines.Add(
+                new Headline()
+                {
+                    Header = headLineDTO.Header,
+                    Body = headLineDTO.Body,
+                    CreatedAt = DateTime.UtcNow,
+                    Expiration = SqlDateTime.MaxValue.Value
+                }
+            );
+        }
+
+        private void UpdateHeadline(HeadlineDTO headLineDTO)
+        {
+            var headlines = db.Headlines.Where(item => item.Id == headLineDTO.Id).ToList();
+            if(headlines != null && headlines.Count > 0)
+            {
+                var headline = headlines.FirstOrDefault();
+                headline.Header = headLineDTO.Header;
+                headline.Body = headLineDTO.Body;
+                headline.CreatedAt = DateTime.UtcNow;
+            }
+        }
+
+        [Route("headline/{id}")]
+        [HttpDelete]
+        public HttpResponseMessage DeleteHeadline(int id)
+        {
+            Headline headline = null;
+            var headlines = db.Headlines.Where(item => item.Id == id).ToList();
+            if (headlines != null && headlines.Count > 0)
+            {
+                headline = headlines.FirstOrDefault();
+            }
+            else
+            {
+                Request.CreateResponse(HttpStatusCode.OK);
+            }
+            headline.Expiration = DateTime.UtcNow;
+            db.SaveChanges();
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        [HttpGet]
+        [Route("headline/{id}")]
+        public IList<HeadlineDTO> GetHeadline(int id)
+        {
+            IList<Headline> headlines = null;
+            if (id <= 0)
+            {
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.CreatedAt).ToList();
+            }
+            else
+            {
+                headlines = db.Headlines.Where(item => item.Id == id && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.CreatedAt).ToList();
+
+            }
+
+
+            return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
+        }
     }
 }

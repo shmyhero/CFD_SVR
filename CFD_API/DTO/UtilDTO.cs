@@ -47,6 +47,13 @@ namespace CFD_API.DTO
         public string Type { get; set; }
     }
 
+    public class HeadlineDTO
+    {
+        public int Id { get; set; }
+        public string Header { get; set; }
+        public string Body { get; set; }
+    }
+
     public class FeedbackFormDTO
     {
         public string phone { get; set; }

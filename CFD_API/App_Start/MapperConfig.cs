@@ -60,6 +60,7 @@ namespace CFD_API
                 cfg.CreateMap<Banner, SimpleBannerDTO>();
                 cfg.CreateMap<Banner2, BannerDTO>();
                 cfg.CreateMap<Banner2, SimpleBannerDTO>();
+                cfg.CreateMap<Headline, HeadlineDTO>();
             });
         }
     }
