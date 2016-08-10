@@ -299,7 +299,7 @@ namespace CFD_API.Controllers
         [Route("headline")]
         public HttpResponseMessage PostHeadline(HeadlineDTO headLineDTO)
         {
-            if(headLineDTO.Id > 0) //update
+            if(headLineDTO.id > 0) //update
             {
                 UpdateHeadline(headLineDTO);
             }
@@ -317,8 +317,8 @@ namespace CFD_API.Controllers
             db.Headlines.Add(
                 new Headline()
                 {
-                    Header = headLineDTO.Header,
-                    Body = headLineDTO.Body,
+                    Header = headLineDTO.header,
+                    Body = headLineDTO.body,
                     CreatedAt = DateTime.UtcNow,
                     Expiration = SqlDateTime.MaxValue.Value
                 }
@@ -327,12 +327,12 @@ namespace CFD_API.Controllers
 
         private void UpdateHeadline(HeadlineDTO headLineDTO)
         {
-            var headlines = db.Headlines.Where(item => item.Id == headLineDTO.Id).ToList();
+            var headlines = db.Headlines.Where(item => item.Id == headLineDTO.id).ToList();
             if(headlines != null && headlines.Count > 0)
             {
                 var headline = headlines.FirstOrDefault();
-                headline.Header = headLineDTO.Header;
-                headline.Body = headLineDTO.Body;
+                headline.Header = headLineDTO.header;
+                headline.Body = headLineDTO.body;
             }
         }
 
@@ -437,17 +437,17 @@ namespace CFD_API.Controllers
 
             foreach (Headline headLine in headlines)
             {
-                HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.CreatedDay == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
+                HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.createdday == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
                 if (headlineGroupDTO != null)
                 {
-                    headlineGroupDTO.Headlines.Add(new HeadlineDTO() { Id = headLine.Id, Header = headLine.Header, Body = headLine.Body, CreatedAt = headLine.CreatedAt });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdat = headLine.CreatedAt });
                 }
                 else
                 {
                     headlineGroupDTO = new HeadlineGroupDTO();
-                    headlineGroupDTO.CreatedDay = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
-                    headlineGroupDTO.Headlines = new List<HeadlineDTO>();
-                    headlineGroupDTO.Headlines.Add(new HeadlineDTO() { Id = headLine.Id, Header = headLine.Header, Body = headLine.Body, CreatedAt = headLine.CreatedAt });
+                    headlineGroupDTO.createdday = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
+                    headlineGroupDTO.headlines = new List<HeadlineDTO>();
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdat = headLine.CreatedAt });
                     headlinesGroup.Add(headlineGroupDTO);
                 }
             }

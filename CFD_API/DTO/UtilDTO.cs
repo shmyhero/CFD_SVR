@@ -49,16 +49,16 @@ namespace CFD_API.DTO
 
     public class HeadlineDTO
     {
-        public int Id { get; set; }
-        public string Header { get; set; }
-        public string Body { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        public int id { get; set; }
+        public string header { get; set; }
+        public string body { get; set; }
+        public DateTime? createdat { get; set; }
     }
 
     public class HeadlineGroupDTO
     {
-        public string CreatedDay { get; set; }
-        public List<HeadlineDTO> Headlines { get; set; }
+        public string createdday { get; set; }
+        public List<HeadlineDTO> headlines { get; set; }
     }
 
     public class FeedbackFormDTO
