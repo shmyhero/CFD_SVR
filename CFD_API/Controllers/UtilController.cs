@@ -437,17 +437,17 @@ namespace CFD_API.Controllers
 
             foreach (Headline headLine in headlines)
             {
-                HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.createdday == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
+                HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.createdDay == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
                 if (headlineGroupDTO != null)
                 {
-                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdat = headLine.CreatedAt });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt });
                 }
                 else
                 {
                     headlineGroupDTO = new HeadlineGroupDTO();
-                    headlineGroupDTO.createdday = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
+                    headlineGroupDTO.createdDay = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
                     headlineGroupDTO.headlines = new List<HeadlineDTO>();
-                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdat = headLine.CreatedAt });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt });
                     headlinesGroup.Add(headlineGroupDTO);
                 }
             }

@@ -23,21 +23,21 @@ namespace CFD_API.DTO
         public int id { get; set; }
         public string imgUrl { get; set; }
         public string url { get; set; }
-        public string Header { get; set; }
+        public string header { get; set; }
 
-        public string Body { get; set; }
+        public string body { get; set; }
 
-        public int? IsTop { get; set; }
+        public int? isTop { get; set; }
 
-        public DateTime? TopAt { get; set; }
+        public DateTime? topAt { get; set; }
 
-        public string CreatedBy { get; set; }
+        public string createdBy { get; set; }
 
-        public DateTime? CreatedAt { get; set; }
+        public DateTime? createdAt { get; set; }
 
-        public string ExpiredBy { get; set; }
+        public string expiredBy { get; set; }
 
-        public DateTime? Expiration { get; set; }
+        public DateTime? expiration { get; set; }
     }
 
     public class OperationUserDTO
@@ -52,12 +52,12 @@ namespace CFD_API.DTO
         public int id { get; set; }
         public string header { get; set; }
         public string body { get; set; }
-        public DateTime? createdat { get; set; }
+        public DateTime? createdAt { get; set; }
     }
 
     public class HeadlineGroupDTO
     {
-        public string createdday { get; set; }
+        public string createdDay { get; set; }
         public List<HeadlineDTO> headlines { get; set; }
     }
 
