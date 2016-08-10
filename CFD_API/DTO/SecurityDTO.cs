@@ -64,7 +64,7 @@ namespace CFD_API.DTO
         public int id { get; set; }
         public string symbol { get; set; }
         public string name { get; set; }
-        public int traderCount { get; set; }
+        public int userCount { get; set; }
         public int longCount { get; set; }
         public int shortCount { get; set; }
     }
