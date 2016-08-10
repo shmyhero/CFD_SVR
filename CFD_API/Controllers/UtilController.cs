@@ -374,5 +374,37 @@ namespace CFD_API.Controllers
 
             return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
         }
+
+        [HttpGet]
+        [Route("headline/group")]
+        public IList<HeadlineGroupDTO> GetHeadlineGroup()
+        {
+            IList<Headline> headlines = null;
+
+            DateTime twoDaysAgo = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
+
+            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= twoDaysAgo).OrderByDescending(o => o.CreatedAt).ToList();
+
+            List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
+
+            foreach (Headline headLine in headlines)
+            {
+                HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.CreatedDay == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
+                if (headlineGroupDTO != null)
+                {
+                    headlineGroupDTO.Headlines.Add(new HeadlineDTO() { Id = headLine.Id, Header = headLine.Header, Body = headLine.Body, CreatedAt = headLine.CreatedAt });
+                }
+                else
+                {
+                    headlineGroupDTO = new HeadlineGroupDTO();
+                    headlineGroupDTO.CreatedDay = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
+                    headlineGroupDTO.Headlines = new List<HeadlineDTO>();
+                    headlineGroupDTO.Headlines.Add(new HeadlineDTO() { Id = headLine.Id, Header = headLine.Header, Body = headLine.Body, CreatedAt = headLine.CreatedAt });
+                    headlinesGroup.Add(headlineGroupDTO);
+                }
+            }
+
+            return headlinesGroup;
+        }
     }
 }

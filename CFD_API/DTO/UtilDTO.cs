@@ -55,6 +55,12 @@ namespace CFD_API.DTO
         public DateTime? CreatedAt { get; set; }
     }
 
+    public class HeadlineGroupDTO
+    {
+        public string CreatedDay { get; set; }
+        public List<HeadlineDTO> Headlines { get; set; }
+    }
+
     public class FeedbackFormDTO
     {
         public string phone { get; set; }
