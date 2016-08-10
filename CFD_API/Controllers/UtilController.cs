@@ -360,27 +360,24 @@ namespace CFD_API.Controllers
         public IList<HeadlineDTO> GetHeadline(int id)
         {
             IList<Headline> headlines = null;
-            int maxLines = 10;
-
             int maxCount = 14;
 
             DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
 
             if (id <= 0)//take top 10 by date
             {
-                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
 
-                while(headlines == null || headlines.Count == 0)
+                while (headlines == null || headlines.Count == 0)
                 {
                     lastDay = lastDay.AddDays(-1);
-                    headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+                    headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
 
-                    if(maxCount-- <=0)//trace back for at most 2 weeks
+                    if (maxCount-- <= 0)//trace back for at most 2 weeks
                     {
                         break;
                     }
                 }
-
             }
             else //take specific one
             {
@@ -391,21 +388,45 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("headline/Top10")]
+        public IList<HeadlineDTO> GetHeadlineTop10()
+        {
+            IList<Headline> headlines = null;
+            int maxLines = 10;
+
+            int maxCount = 14;
+
+            DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
+            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+
+            while(headlines == null || headlines.Count == 0)
+            {
+                lastDay = lastDay.AddDays(-1);
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+
+                if(maxCount-- <=0)//trace back for at most 2 weeks
+                {
+                    break;
+                }
+            }
+            return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
+        }
+
+        [HttpGet]
         [Route("headline/group")]
         public IList<HeadlineGroupDTO> GetHeadlineGroup()
         {
             IList<Headline> headlines = null;
-            int maxLines = 10;
             int maxCount = 14;
 
             DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
 
-            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
 
             while (headlines == null || headlines.Count == 0)
             {
                 lastDay = lastDay.AddDays(-1);
-                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
                 if (maxCount-- <= 0)//trace back for at most 2 weeks
                 {
                     break;
