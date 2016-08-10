@@ -360,16 +360,31 @@ namespace CFD_API.Controllers
         public IList<HeadlineDTO> GetHeadline(int id)
         {
             IList<Headline> headlines = null;
+            int maxLines = 10;
 
-            DateTime twoDaysAgo = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
+            int maxCount = 14;
 
-            if (id <= 0)
+            DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
+
+            if (id <= 0)//take top 10 by date
             {
-                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= twoDaysAgo).OrderByDescending(o => o.CreatedAt).ToList();
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+
+                while(headlines == null || headlines.Count == 0)
+                {
+                    lastDay = lastDay.AddDays(-1);
+                    headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+
+                    if(maxCount-- <=0)//trace back for at most 2 weeks
+                    {
+                        break;
+                    }
+                }
+
             }
-            else
+            else //take specific one
             {
-                headlines = db.Headlines.Where(item => item.Id == id && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= twoDaysAgo).OrderByDescending(o => o.CreatedAt).ToList();
+                headlines = db.Headlines.Where(item => item.Id == id && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
             }
 
             return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
@@ -380,10 +395,22 @@ namespace CFD_API.Controllers
         public IList<HeadlineGroupDTO> GetHeadlineGroup()
         {
             IList<Headline> headlines = null;
+            int maxLines = 10;
+            int maxCount = 14;
 
-            DateTime twoDaysAgo = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
+            DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
 
-            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= twoDaysAgo).OrderByDescending(o => o.CreatedAt).ToList();
+            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+
+            while (headlines == null || headlines.Count == 0)
+            {
+                lastDay = lastDay.AddDays(-1);
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+                if (maxCount-- <= 0)//trace back for at most 2 weeks
+                {
+                    break;
+                }
+            }
 
             List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
 

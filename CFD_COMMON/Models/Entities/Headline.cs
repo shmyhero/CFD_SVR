@@ -14,7 +14,6 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(200)]
         public string Header { get; set; }
 
-        [StringLength(200)]
         public string Body { get; set; }
 
         [StringLength(200)]
