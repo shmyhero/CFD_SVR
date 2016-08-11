@@ -110,16 +110,25 @@ namespace CFD_API.Controllers
             if (currentBanner == null)
                 return null;
 
-            //get top banner
-            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.TopAt < currentBanner.TopAt).OrderByDescending(o => o.TopAt).Take(5).ToList();
-
-            if (topBanners.Count < max)
+            List<Banner2> results = new List<Banner2>();
+            if(currentBanner.IsTop.HasValue && currentBanner.IsTop.Value == 1) //last one is top banner
             {
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.Id < id).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
-                topBanners.AddRange(nonTopBanner);
+                //get top banner
+                results = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.TopAt < currentBanner.TopAt).OrderByDescending(o => o.TopAt).Take(5).ToList();
+
+                if (results.Count < max)
+                {
+                    var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - results.Count).ToList();
+                    results.AddRange(nonTopBanner);
+                }
+                
+            }
+            else
+            {
+                results = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.Id < id).OrderByDescending(o => o.Id).Take(max - results.Count).ToList();
             }
 
-            return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
+            return results.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
         }
 
         [Route("feedback")]
