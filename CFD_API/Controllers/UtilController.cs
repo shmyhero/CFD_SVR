@@ -115,7 +115,7 @@ namespace CFD_API.Controllers
 
             if (topBanners.Count < max)
             {
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.Id > id).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.Id < id).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
                 topBanners.AddRange(nonTopBanner);
             }
 
