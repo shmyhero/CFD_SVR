@@ -35,14 +35,14 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(50)]
         public string WeChatUnionId { get; set; }
 
-
         [StringLength(50)]
         public string AyondoUsername { get; set; }
 
         [StringLength(50)]
         public string AyondoPassword { get; set; }
 
+        public long? AyondoAccountId { get; set; }
 
-        public virtual ICollection<Bookmark> Bookmarks { get; set; } 
+        public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

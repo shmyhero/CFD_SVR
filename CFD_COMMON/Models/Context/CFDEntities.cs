@@ -15,14 +15,19 @@ namespace CFD_COMMON.Models.Context
         }
 
         public virtual DbSet<AyondoSecurity> AyondoSecurities { get; set; }
+        public virtual DbSet<AyondoTradeHistory> AyondoTradeHistories { get; set; }
         public virtual DbSet<Banner> Banners { get; set; }
         public virtual DbSet<Banner2> Banners2 { get; set; }
-        public virtual DbSet<Headline> Headlines { get; set; }
-        public virtual DbSet<OperationUser> OperationUsers { get; set; }
         public virtual DbSet<Bookmark> Bookmarks { get; set; }
+        public virtual DbSet<Competition> Competitions { get; set; }
+        public virtual DbSet<CompetitionResult> CompetitionResults { get; set; }
+        public virtual DbSet<CompetitionUserPosition> CompetitionUserPositions { get; set; }
+        public virtual DbSet<CompetitionUser> CompetitionUsers { get; set; }
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
+        public virtual DbSet<Headline> Headlines { get; set; }
         public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
+        public virtual DbSet<OperationUser> OperationUsers { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
@@ -33,6 +38,46 @@ namespace CFD_COMMON.Models.Context
             modelBuilder.Entity<AyondoSecurity>()
                 .Property(e => e.DisplayDecimals)
                 .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<AyondoTradeHistory>()
+                .Property(e => e.Quantity)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoTradeHistory>()
+                .Property(e => e.TradePrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoTradeHistory>()
+                .Property(e => e.PL)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoTradeHistory>()
+                .Property(e => e.StopLoss)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoTradeHistory>()
+                .Property(e => e.TakeProfit)
+                .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<CompetitionResult>()
+               .Property(e => e.Invest)
+               .HasPrecision(18, 5);
+
+            modelBuilder.Entity<CompetitionResult>()
+                .Property(e => e.PL)
+                .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<CompetitionUserPosition>()
+                .Property(e => e.Invest)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<CompetitionUserPosition>()
+                .Property(e => e.PL)
+                .HasPrecision(18, 5);
+
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.SettlePrice)

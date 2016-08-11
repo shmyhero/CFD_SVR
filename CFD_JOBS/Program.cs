@@ -72,9 +72,15 @@ namespace CFD_JOBS
                     AyondoTradeHistory.Run();
                 }
 
-                if (args.Contains("-TickChart"))
+                if (args.Contains("-Competition"))
                 {
-                    TickChartWorker.Run();
+                    Competition.Run();
+                }
+
+                if (args.Contains("-LoadTest"))
+                {
+                    var loadTest=new LoadTest();
+                    loadTest.Run();
                 }
 
                 if (args.Contains("-RedisToDb"))
@@ -82,10 +88,9 @@ namespace CFD_JOBS
                     RedisToDbWorker.Run();
                 }
 
-                if (args.Contains("-LoadTest"))
+                if (args.Contains("-TickChart"))
                 {
-                    var loadTest=new LoadTest();
-                    loadTest.Run();
+                    TickChartWorker.Run();
                 }
 
                 return 0;

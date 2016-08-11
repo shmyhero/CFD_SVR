@@ -8,6 +8,11 @@ namespace CFD_COMMON.Utils
 {
     public class DateTimes
     {
+        public static DateTime GetChinaDateTimeNow()
+        {
+            return DateTime.UtcNow.AddHours(8);
+        }
+
         public static bool IsEqualDownToMinute(DateTime t1, DateTime t2)
         {
             return t1.Minute == t2.Minute

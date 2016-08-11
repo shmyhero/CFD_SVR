@@ -646,6 +646,9 @@ namespace AyondoTrade
             return new Model.PositionReport
             {
                 PosMaintRptID = report.PosMaintRptID.Obj,
+
+                Account = report.Account.Obj,
+
                 SecurityID = report.SecurityID.Obj,
                 SettlPrice = report.SettlPrice.Obj,
 

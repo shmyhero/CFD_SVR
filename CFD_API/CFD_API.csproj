@@ -259,6 +259,7 @@
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
     <Compile Include="DTO\Ayondo\CreateAccountRequest.cs" />
+    <Compile Include="DTO\CompetitionDTO.cs" />
     <Compile Include="DTO\FormDTO\PositionFormDTO.cs" />
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
     <Compile Include="DTO\PositionDTO.cs" />

@@ -97,8 +97,9 @@
     <Compile Include="Ayondo\AyondoFixTradeWorker.cs" />
     <Compile Include="Ayondo\AyondoOldProdCleanup.cs" />
     <Compile Include="Ayondo\AyondoTradeHistory.cs" />
-    <Compile Include="Ayondo\RedisToDbWorker.cs" />
-    <Compile Include="Ayondo\TickChartWorker.cs" />
+    <Compile Include="RedisToDbWorker.cs" />
+    <Compile Include="TickChartWorker.cs" />
+    <Compile Include="Competition.cs" />
     <Compile Include="LoadTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

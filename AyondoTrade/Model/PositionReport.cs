@@ -11,6 +11,10 @@ namespace AyondoTrade.Model
     {
         [DataMember]
         public string PosMaintRptID { get; set; }
+
+        [DataMember]
+        public string Account { get; set; }
+
         [DataMember]
         public string SecurityID { get; set; }
         [DataMember]

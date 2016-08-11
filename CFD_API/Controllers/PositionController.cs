@@ -301,6 +301,8 @@ namespace CFD_API.Controllers
             CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
                               " | quote:" + quotePrice + " | quantity:" + quantity + " stopPx:" + stopPx + " | Qty:" + (result.LongQty ?? result.ShortQty) + " SettlePrice:" +
                               result.SettlPrice);
+
+            //save new position history
             db.NewPositionHistories.Add(new NewPositionHistory()
             {
                 Id=Convert.ToInt64(result.PosMaintRptID),
@@ -312,6 +314,12 @@ namespace CFD_API.Controllers
                 ShortQty = result.ShortQty,
                 SettlePrice = result.SettlPrice,
             });
+
+            //update ayondo account id if not same
+            var accountId = Convert.ToInt64(result.Account);
+            if (user.AyondoAccountId != accountId)
+                user.AyondoAccountId = accountId;
+
             db.SaveChanges();
 
             //when price changes, set stop again to prevent >100% loss

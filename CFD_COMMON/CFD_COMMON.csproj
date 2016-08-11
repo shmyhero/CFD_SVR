@@ -112,6 +112,11 @@
     <Compile Include="Models\Context\CFDHistoryEntitiesFactory.cs" />
     <Compile Include="Models\Context\CFDHistoryEntities.cs" />
     <Compile Include="Models\Entities\ApiHit.cs" />
+    <Compile Include="Models\Entities\AyondoTradeHistory.cs" />
+    <Compile Include="Models\Entities\Competition.cs" />
+    <Compile Include="Models\Entities\CompetitionResult.cs" />
+    <Compile Include="Models\Entities\CompetitionUser.cs" />
+    <Compile Include="Models\Entities\CompetitionUserPosition.cs" />
     <Compile Include="Models\Entities\Headline.cs" />
     <Compile Include="Models\Entities\Banner2.cs" />
     <Compile Include="Models\Entities\Banner.cs" />
