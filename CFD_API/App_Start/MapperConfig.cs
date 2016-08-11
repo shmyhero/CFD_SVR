@@ -61,6 +61,10 @@ namespace CFD_API
                 cfg.CreateMap<Banner2, BannerDTO>();
                 cfg.CreateMap<Banner2, SimpleBannerDTO>();
                 cfg.CreateMap<Headline, HeadlineDTO>();
+
+
+                cfg.CreateMap<CompetitionResult, CompetitionResultDTO>();
+                cfg.CreateMap<CompetitionUserPosition, CompetitionUserPositionDTO>();
             });
         }
     }
