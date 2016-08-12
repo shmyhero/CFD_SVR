@@ -272,9 +272,7 @@ namespace CFD_API.Controllers
                 banner.Url = dicFormData.ContainsKey("Url") ? dicFormData["Url"] : string.Empty;
                 banner.Header = dicFormData.ContainsKey("Header") ? dicFormData["Header"] : string.Empty;
                 banner.Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty;
-                banner.CreatedAt = DateTime.UtcNow;
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
-                banner.Expiration = SqlDateTime.MaxValue.Value;
                 if(!string.IsNullOrEmpty(imageUrl))
                 {
                     banner.ImgUrl = imageUrl;
