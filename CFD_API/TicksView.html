@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+<!--<button id="btnGo" onclick="drawAll()">go</button>-->
+<div id="container"></div>
+<!--<div id="container" style="height: 400px; min-width: 310px"></div>-->
+
+<script src="Scripts/jquery-1.6.4.min.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $.getJSON('api/security/stock/us?perPage=999', function (result) {
+            //debugger;
+            $.each(result, function (i, sec) {
+                //debugger;
+                $('#container').append('<table style="width:100%"><tr><td id="td' + sec.id + '" style="width:200px"></td><td><div id="container' + sec.id + '" desc="' + sec.id + ' ' + sec.symbol + ' ' + sec.name + '" style="height: 100px; min-width: 310px"></div></td></tr></table>');
+            });
+        });
+
+        $.getJSON('api/security/index?perPage=999', function (result) {
+            //debugger;
+            $.each(result, function (i, sec) {
+                //debugger;
+                $('#container').append('<table style="width:100%"><tr><td id="td' + sec.id + '" style="width:200px"></td><td><div id="container' + sec.id + '" desc="' + sec.id + ' ' + sec.symbol + ' ' + sec.name + '" style="height: 100px; min-width: 310px"></div></td></tr></table>');
+            });
+        });
+
+        $.getJSON('api/security/fx?perPage=999', function(result) {
+            //debugger;
+            $.each(result, function(i, sec) {
+                //debugger;
+                $('#container').append('<table style="width:100%"><tr><td id="td' + sec.id + '" style="width:200px"></td><td><div id="container' + sec.id + '" desc="' + sec.id + ' ' + sec.symbol + ' ' + sec.name + '" style="height: 100px; min-width: 310px"></div></td></tr></table>');
+            });
+        });
+
+        $.getJSON('api/security/futures?perPage=999', function (result) {
+            //debugger;
+            $.each(result, function(i, sec) {
+                //debugger;
+                $('#container').append('<table style="width:100%"><tr><td id="td' + sec.id + '" style="width:200px"></td><td><div id="container' + sec.id + '" desc="' + sec.id + ' ' + sec.symbol + ' ' + sec.name + '" style="height: 100px; min-width: 310px"></div></td></tr></table>');
+            });
+        });
+
+        window.setTimeout(function() { drawAll() }, 1000);
+        //select[0].selectedIndex = 0;
+
+        //alert($('#select1').value);
+        //window.setTimeout(function() { draw($('#select1')[0].value); }, 1000);
+    });
+
+    function drawAll() {
+        //debugger;
+        $.each($('#container').find('div'), function(i, div) {
+            //debugger;
+            var secId = div.id.substr(9);
+
+            $('#td' + secId).text($(div).attr('desc'));
+
+            draw(secId);
+        });
+    }
+
+    function draw(secId) {
+        //var typeUrl = type == '' ? '' : '/' + type;
+
+        $.getJSON('api/quote/' + secId + '/tick/today', function(result) {
+            //debugger;
+            data = new Array();
+            $.each(result, function(i, tick) {
+                var t = new Date(tick.time);
+                //t.setSeconds(0);
+                //t.setMilliseconds(0);
+                data.push([t.getTime(), tick.p]);
+            });
+
+            //$.getJSON('https://www.highcharts.com/samples/data/jsonp.php?filename=new-intraday.json&callback=?', function (data) {
+
+            //debugger;
+
+            Highcharts.setOptions({
+                global: {
+                    //timezoneOffset: +8,
+                    useUTC: false
+                }
+            });
+
+            // create the chart
+            $('#container' + secId).highcharts('StockChart', {
+                //title: {
+                //    text: 'security id: ' + secId
+                //},
+
+                //subtitle: {
+                //    text: 'security id: ' + secId
+                //},
+
+                //xAxis: {
+                //    breaks: [{ // Nights
+                //        from: Date.UTC(2011, 9, 6, 16),
+                //        to: Date.UTC(2011, 9, 7, 8),
+                //        repeat: 24 * 36e5
+                //    }, { // Weekends
+                //        from: Date.UTC(2011, 9, 7, 16),
+                //        to: Date.UTC(2011, 9, 10, 8),
+                //        repeat: 7 * 24 * 36e5
+                //    }]
+                //},
+
+                rangeSelector: {
+                    enabled:false
+                    //buttons: [
+                    //    {
+                    //        type: 'hour',
+                    //        count: 1,
+                    //        text: '1h'
+                    //    }, {
+                    //        type: 'hour',
+                    //        count: 3,
+                    //        text: '3h'
+                    //    }, {
+                    //        type: 'day',
+                    //        count: 1,
+                    //        text: '1D'
+                    //    }, {
+                    //        type: 'day',
+                    //        count: 3,
+                    //        text: '3D'
+                    //    }, {
+                    //        type: 'day',
+                    //        count: 7,
+                    //        text: '7D'
+                    //    }, {
+                    //        type: 'all',
+                    //        count: 1,
+                    //        text: 'All'
+                    //    }
+                    //],
+                    //selected: 2,
+                    //inputEnabled: false
+                },
+
+                navigator: {
+                    enabled:false
+                },
+
+                navigation: {
+                    buttonOptions: {
+                        enabled:false
+                    }
+                },
+
+                scrollbar: {
+                    enabled: false
+                },
+
+                series: [
+                    {
+                        name: 'price',
+                        type: 'area',
+                        data: data,
+                        gapSize:  500 ,
+                        tooltip: {
+                            valueDecimals: 4
+                        },
+                        fillColor: {
+                            linearGradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 0,
+                                y2: 1
+                            },
+                            stops: [
+                                [0, Highcharts.getOptions().colors[0]],
+                                [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                            ]
+                        },
+                        threshold: null
+                    }
+                ]
+            });
+        });
+    }
+
+</script>
+</body>
+</html>
