@@ -136,7 +136,7 @@ namespace CFD_API.Controllers
                 var user = db.Users.FirstOrDefault(o => o.Id == userId);
 
                 if (user == null)
-                    Request.CreateErrorResponse(HttpStatusCode.BadRequest, "no such user");
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "no such user"));
 
                 return new CompetitionUserDTO()
                 {
