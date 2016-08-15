@@ -23,20 +23,32 @@ namespace CFD_JOBS
             {
                 var chinaNow = DateTimes.GetChinaDateTimeNow();
                 var chinaToday = chinaNow.Date;
-                var chinaYesterday = chinaNow.AddDays(-1).Date;
+
+                var endDate = chinaToday;
+                var startDate = endDate.AddDays(-1);
 
                 if (chinaToday > _lastCalculatedDate //a new chinese day, calculate yesterday's data
-                    && chinaYesterday.DayOfWeek != DayOfWeek.Saturday && chinaYesterday.DayOfWeek != DayOfWeek.Sunday
-                    //yesterday not weekend
                     )
                 {
                     try
                     {
-                        CFDGlobal.LogLine("checking db for existing competition results on " + chinaYesterday);
+                        //skip weekend
+                        if (startDate.DayOfWeek == DayOfWeek.Saturday)
+                        {
+                            startDate = startDate.AddDays(-1);
+                            endDate = endDate.AddDays(-1);
+                        }
+                        else if (startDate.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            startDate = startDate.AddDays(-2);
+                            endDate = endDate.AddDays(-2);
+                        }
+
+                        CFDGlobal.LogLine("checking db for existing competition results on " + startDate);
                         int existedResultCount = 0;
                         using (var db = CFDEntities.Create())
                         {
-                            existedResultCount = db.CompetitionResults.Count(o => o.Date == chinaYesterday);
+                            existedResultCount = db.CompetitionResults.Count(o => o.Date == startDate);
                         }
 
                         if (existedResultCount > 0)
@@ -203,6 +215,13 @@ namespace CFD_JOBS
 
                                     #endregion
 
+                                    if (string.IsNullOrEmpty(competitionUser.User.AyondoUsername))
+                                    {
+                                        CFDGlobal.LogLine("user " + competitionUser.UserId +
+                                                          " has no ayondo account, skip");
+                                        continue;
+                                    }
+
                                     var userPositions = new List<CompetitionUserPosition>();
 
                                     var clientHttp = new AyondoTradeClient();
@@ -213,7 +232,7 @@ namespace CFD_JOBS
                                     //yesterday created open positions
                                     var yesterdayOpenedPositions =
                                         openPositions.Where(
-                                            o => o.CreateTime >= chinaYesterday && o.CreateTime < chinaToday)
+                                            o => o.CreateTime >= startDate && o.CreateTime < endDate)
                                             .ToList();
 
                                     foreach (var position in yesterdayOpenedPositions)
@@ -227,7 +246,7 @@ namespace CFD_JOBS
                                         {
                                             CompetitionId = 1,
                                             PositionId = Convert.ToInt64(position.PosMaintRptID),
-                                            Date = chinaYesterday,
+                                            Date = startDate,
                                             SecurityId = secId,
                                             SecurityName = Translator.GetCName(prodDef.Name),
                                             UserId = competitionUser.UserId,
@@ -258,8 +277,8 @@ namespace CFD_JOBS
 
                                     var historyReports =
                                         clientHttp.GetPositionHistoryReport(competitionUser.User.AyondoUsername,
-                                            competitionUser.User.AyondoPassword, chinaYesterday,
-                                            chinaToday.AddMilliseconds(-1));
+                                            competitionUser.User.AyondoPassword, startDate,
+                                            endDate.AddMilliseconds(-1));
 
                                     var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
 
@@ -282,7 +301,7 @@ namespace CFD_JOBS
                                         {
                                             CompetitionId = 1,
                                             PositionId = posId,
-                                            Date = chinaYesterday,
+                                            Date = startDate,
                                             SecurityId = secId,
                                             SecurityName = Translator.GetCName(prodDef.Name),
                                             UserId = competitionUser.UserId,
@@ -307,15 +326,15 @@ namespace CFD_JOBS
 
                                     if (userPositions.Count > 0)
                                     {
-                                        CFDGlobal.LogLine("found "+userPositions.Count+" positions for user "+competitionUser.User);
+                                        CFDGlobal.LogLine("found " + userPositions.Count + " positions for user " +
+                                                          competitionUser.User.Id);
 
                                         db.CompetitionUserPositions.AddRange(userPositions);
-                                        db.SaveChanges();
 
                                         competitionResults.Add(new CompetitionResult()
                                         {
                                             CompetitionId = 1,
-                                            Date = chinaYesterday,
+                                            Date = startDate,
                                             Invest = userPositions.Sum(o => o.Invest),
                                             Nickname = competitionUser.User.Nickname,
                                             Phone = competitionUser.Phone,
@@ -346,7 +365,7 @@ namespace CFD_JOBS
                             CFDGlobal.LogLine("------------End------------");
                         }
 
-                        _lastCalculatedDate = chinaNow.Date;
+                        _lastCalculatedDate = chinaToday;
                     }
                     catch (Exception e)
                     {
