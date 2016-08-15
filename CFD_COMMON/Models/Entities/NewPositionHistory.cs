@@ -9,6 +9,7 @@ namespace CFD_COMMON.Models.Entities
     [Table("NewPositionHistory")]
     public partial class NewPositionHistory
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
 
         public int? UserId { get; set; }

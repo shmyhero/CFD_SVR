@@ -572,6 +572,15 @@ namespace CFD_API.Controllers
             var _24hoursAgo = DateTime.UtcNow.AddDays(-1);
             var tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= _24hoursAgo).ToList();
 
+            //if no data in the last 24 hours
+            if (tradeHistory.Count == 0)
+            {
+                var dtLastTrade = db.NewPositionHistories.AsNoTracking().OrderByDescending(o => o.CreateTime).Last().CreateTime;
+
+                var dtStart = dtLastTrade.Value.AddDays(-1);
+                tradeHistory= db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
+            }
+
             var result = tradeHistory.GroupBy(o=>o.SecurityId).Select(o=>
             {
                 var secId = o.Key.Value;
