@@ -45,10 +45,15 @@ namespace CFD_API.Controllers.Attributes
                 // Resolve the service you want to use.
                 var db = requestScope.GetService(typeof (CFDEntities)) as CFDEntities;
 
-                var isUserExist = db.Users.Any(o => o.Id == userId && o.Token == token);
+                var user = db.Users.FirstOrDefault(o => o.Id == userId && o.Token == token);
 
-                if (!isUserExist)
+                if (user == null) //unauthorize
                     actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized);
+                else//record last hit time
+                {
+                    user.LastHitAt = DateTime.UtcNow;
+                    db.SaveChanges();
+                }
 
                 ////var info = new BasicAuthenticationInfo(actionContext.Request);
                 //if (info.IsValid())

@@ -16,12 +16,12 @@ namespace CFD_COMMON.Models.Entities
 
         [Key]
         [Column(Order = 1)]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int UserId { get; set; }
+        public DateTime Date { get; set; }
 
         [Key]
         [Column(Order = 2)]
-        public DateTime Date { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public int UserId { get; set; }
 
         [StringLength(50)]
         public string Nickname { get; set; }
@@ -36,5 +36,7 @@ namespace CFD_COMMON.Models.Entities
         public decimal? Invest { get; set; }
 
         public decimal? PL { get; set; }
+
+        //public virtual User User { get; set; }
     }
 }

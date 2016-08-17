@@ -22,9 +22,9 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(200)]
         public string Token { get; set; }
 
-        public DateTime? TokenCreatedAt { get; set; }
+        public DateTime? LastHitAt { get; set; }
 
-        public DateTime? LastLoginAt { get; set; }
+        //public DateTime? LastLoginAt { get; set; }
 
         [StringLength(200)]
         public string PicUrl { get; set; }
