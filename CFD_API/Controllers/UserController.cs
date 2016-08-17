@@ -21,6 +21,7 @@ using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
+using System.Web;
 
 namespace CFD_API.Controllers
 {
@@ -251,6 +252,62 @@ namespace CFD_API.Controllers
 
             return new ResultDTO {success = true};
         }
+
+        [HttpPost]
+        [ActionName("photo")]
+        [BasicAuth]
+        public ResultDTO SetPhoto()
+        {
+            byte[] bytes = new byte[HttpContext.Current.Request.InputStream.Length];
+            var result = new ResultDTO();
+
+            var user = db.Users.FirstOrDefault(o => o.Id == UserId);
+
+            if (user != null)
+            {
+                var picName = Guid.NewGuid().ToString("N");
+
+                Blob.UploadFromBytes(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName, bytes);
+
+                user.PicUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + picName;
+                db.SaveChanges();
+                result.success = true;
+            }
+            else
+            {
+                result.success = false;
+                result.message = CFDGlobal.USER_NOT_EXIST;
+            }
+
+            return result;
+        }
+
+        [HttpPost]
+        [ActionName("alert/{setting}")]
+        [BasicAuth]
+        public ResultDTO SetSystemAlert(bool setting)
+        {
+            var result = new ResultDTO();
+
+            var user = db.Users.FirstOrDefault(o => o.Id == UserId);
+
+            if (user != null)
+            {
+                user.AutoCloseAlert = setting;
+                db.SaveChanges();
+
+                result.success = true;
+            }
+            else
+            {
+                result.success = false;
+                result.message = CFDGlobal.USER_NOT_EXIST;
+            }
+
+            return result;
+        }
+
+
 
         [HttpGet]
         [ActionName("balance")]

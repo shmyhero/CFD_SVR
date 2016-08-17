@@ -20,6 +20,9 @@ namespace CFD_COMMON
         public static string USER_PIC_BLOB_CONTAINER="user-picture";
         public static string USER_PIC_BLOB_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + USER_PIC_BLOB_CONTAINER+"/";
 
+        public static string BANNER_PIC_BLOB_CONTAINER = "banner-img";
+        public static string FEEDBACK_PIC_BLOC_CONTAINER = "feedback - img";
+
         public const string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
         public const string AYONDO_DATETIME_MASK = "yyyy-MM-dd HH:mm:ss.FFF";
 
@@ -27,6 +30,7 @@ namespace CFD_COMMON
         public static string ASSET_CLASS_FX = "Currencies";
         public static string ASSET_CLASS_INDEX = "Stock Indices";
         public static string ASSET_CLASS_COMMODITY = "Commodities";
+        public static string USER_NOT_EXIST = "user not exist";
 
         /// <summary>
         /// the default application-wide BasicRedisClientManager, non-pooled, created for current application

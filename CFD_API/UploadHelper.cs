@@ -2,6 +2,7 @@
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,31 +12,36 @@ namespace CFD_API
 {
     public class UploadHelper
     {
-        public static async Task<T> UploadImage<T>(HttpRequestMessage req, 
-            Func<Tuple<string, Dictionary<string, string>>, T> actionOnFormData)
+        public static async Task<T> UploadFiles<T>(HttpRequestMessage req, string containerName,
+            Func<List<string>, T> actionOnFormData)
         {
             if (!req.Content.IsMimeMultipartContent()) actionOnFormData(null);
-            // multipart form, i.e there is a profile picture to receive
             CloudBlobClient client;
             var azureProvider =
                 new AzureBlobStorageMultipartProvider(
-                    BlobHelper.GetWebApiContainer("banner-img", out client));
+                    BlobHelper.GetWebApiContainer(containerName, out client));
 
-            // Read the form data and upload to azure
             await req.Content.ReadAsMultipartAsync(azureProvider);
-            // Get the first file uploaded (we expect only one)
             var files = azureProvider.UploadedFiles;
 
             files = files.Where(f => f != null).ToList();
 
-            Dictionary<string, string> formData = new Dictionary<string, string>();
-            foreach (var key in azureProvider.FormData.AllKeys)
-            {//接收FormData  
-                formData.Add(key, azureProvider.FormData[key]);
+            List<string> imgUriList = files.Select(file => file.Location.AbsoluteUri).ToList();
+
+            return actionOnFormData(imgUriList);
+        }
+
+        public static async Task<T> GetFormData<T>(HttpRequestMessage req, Func<Dictionary<string, string>, T> actionOnFormData)
+        {
+            if (!req.Content.IsMimeMultipartContent()) actionOnFormData(null);
+            NameValueCollection formData = await req.Content.ReadAsFormDataAsync();
+            Dictionary<string, string> formDataDic = new Dictionary<string, string>();
+            foreach(string key in formData.AllKeys)
+            {
+                formDataDic.Add(key, formData[key]);
             }
 
-            string imgageUrl = files.FirstOrDefault() == null ? string.Empty : files.FirstOrDefault().Location.AbsoluteUri;
-            return actionOnFormData(new Tuple<string, Dictionary<string, string>>(imgageUrl, formData));
+            return actionOnFormData(formDataDic);
         }
     }
 }

@@ -66,11 +66,14 @@ namespace CFD_API.SignalR
 
             if (user == null) return false;
 
-            //join group
-            Groups.Add(Context.ConnectionId, Context.ConnectionId); // single-user group
+            if (user.AutoCloseAlert.HasValue && user.AutoCloseAlert.Value)
+            {
+                //join group
+                Groups.Add(Context.ConnectionId, Context.ConnectionId); // single-user group
 
-            //add subscription
-            _posRptTicker.AddSubscription(user.AyondoUsername, Context.ConnectionId);
+                //add subscription
+                _posRptTicker.AddSubscription(user.AyondoUsername, Context.ConnectionId);
+            }
 
             return true;
         }

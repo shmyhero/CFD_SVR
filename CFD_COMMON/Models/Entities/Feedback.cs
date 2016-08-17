@@ -18,5 +18,7 @@ namespace CFD_COMMON.Models.Entities
         public string Text { get; set; }
 
         public DateTime? Time { get; set; }
+
+        public string PicUrl { get; set; }
     }
 }

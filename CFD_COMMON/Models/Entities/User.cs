@@ -43,6 +43,8 @@ namespace CFD_COMMON.Models.Entities
 
         public long? AyondoAccountId { get; set; }
 
+        public bool? AutoCloseAlert { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

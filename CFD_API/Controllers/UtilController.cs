@@ -16,6 +16,8 @@ using System.Web;
 using System.IO;
 using System.Data.SqlTypes;
 using CFD_API.Azure;
+using System.Collections.Specialized;
+using System.Text;
 
 namespace CFD_API.Controllers
 {
@@ -148,6 +150,41 @@ namespace CFD_API.Controllers
             return Request.CreateResponse(HttpStatusCode.OK);
         }
 
+        /// <summary>
+        /// feedback with picture(s)
+        /// </summary>
+        /// <returns></returns>
+        [Route("feedback_pic")]
+        [HttpPost]
+        public async Task<Dictionary<string, string>> NewFeedbackPicture()
+        {
+            List<string> imgList = await UploadHelper.UploadFiles(Request, CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER, data => new List<string>(data));
+            Dictionary<string, string> formData = await UploadHelper.GetFormData(Request, data => new Dictionary<string, string>(data));
+
+            try
+            {
+                Feedback feedBack = new Feedback();
+                feedBack.Phone = formData.ContainsKey("Phone") ? formData["Phone"] : string.Empty;
+                feedBack.Text = formData.ContainsKey("Text") ? formData["Text"] : string.Empty;
+                feedBack.PicUrl = GetPicUrl(imgList);
+                db.Feedbacks.Add(feedBack);
+                db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Request.CreateResponse(HttpStatusCode.ExpectationFailed, ex.Message);
+            }
+
+            return null;
+        }
+
+        private string GetPicUrl(List<string> imgList)
+        {
+            StringBuilder sb = new StringBuilder();
+            imgList.ForEach(url => { sb.Append(url); sb.Append(";"); });
+            return sb.ToString();
+        }
+
         [Route("getbannerbyid")]
         [HttpGet]
         public BannerDTO GetBannerById(int id)
@@ -206,35 +243,19 @@ namespace CFD_API.Controllers
         [HttpPost]
         public async Task<Dictionary<string, string>> PostBanner()
         {
-           //Tuple<string, Dictionary<string, string>> formData =  await UploadHelper.UploadImage(Request);
-            Tuple<string, Dictionary<string, string>> formData = await UploadHelper.UploadImage(Request, data => new Tuple<string, Dictionary<string, string>>
-                (
-                  data.Item1, data.Item2
-                ));
+            List<string> imgList = await UploadHelper.UploadFiles(Request,CFDGlobal.BANNER_PIC_BLOB_CONTAINER , data => new List<string>(data) );
+            Dictionary<string, string> formData = await UploadHelper.GetFormData(Request, data => new Dictionary<string, string>(data));
 
-            Stream reqStream = Request.Content.ReadAsStreamAsync().Result;
-            if (reqStream.CanSeek)
-            {
-                reqStream.Position = 0;
-            }
             try
             {
-                //string fullPath = HttpContext.Current.Server.MapPath("~/App_Data");
-                //var streamProvider = new MultipartFormDataStreamProvider(fullPath);
-                //await Request.Content.ReadAsMultipartAsync(provider);
-                //foreach (var data in formData.Item2)
-                //{//接收FormData  
-                //    dicFormData.Add(data.Key, provider.FormData[key]);
-                //}
-
                 //contains "ID" means update
-                if (formData.Item2.ContainsKey("ID"))
+                if (formData.ContainsKey("ID"))
                 {
-                    UpdateBanner(formData.Item1, formData.Item2);
+                    UpdateBanner(imgList.FirstOrDefault(), formData);
                 }
                 else //create banner
                 {
-                    CreateBanner(formData.Item1, formData.Item2);
+                    CreateBanner(imgList.FirstOrDefault(), formData);
                 }
                 db.SaveChanges();
             }
