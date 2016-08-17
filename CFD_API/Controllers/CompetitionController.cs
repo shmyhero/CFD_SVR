@@ -85,7 +85,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{id}/user/{userId}/rank")]
-        public CompetitionResultDTO GetLeaderboard(int id, int userId)
+        public CompetitionResultDTO GetUserRank(int id, int userId)
         {
             var chinaNow = DateTimes.GetChinaDateTimeNow();
             var chinaYesterday = chinaNow.AddDays(-1).Date;
@@ -127,7 +127,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{id}/user/{userId}")]
-        public CompetitionUserDTO GetParticipant(int id, int userId)
+        public CompetitionUserDTO GetUser(int id, int userId)
         {
             var competitionUser = db.CompetitionUsers.FirstOrDefault(o => o.CompetitionId == id && o.UserId == userId);
 
