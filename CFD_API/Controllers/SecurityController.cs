@@ -575,10 +575,11 @@ namespace CFD_API.Controllers
             //if no data in the last 24 hours
             if (tradeHistory.Count == 0)
             {
-                var dtLastTrade = db.NewPositionHistories.AsNoTracking().OrderByDescending(o => o.CreateTime).Last().CreateTime;
+                var dtLastTrade =
+                    db.NewPositionHistories.AsNoTracking().OrderByDescending(o => o.CreateTime).Last().CreateTime;
 
                 var dtStart = dtLastTrade.Value.AddDays(-1);
-                tradeHistory= db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
+                tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
             }
 
             var result = tradeHistory.GroupBy(o=>o.SecurityId).Select(o=>
@@ -595,7 +596,10 @@ namespace CFD_API.Controllers
                     symbol= prodDef?.Symbol,
                     name= prodDef!=null? Translator.GetCName(prodDef.Name):null,
                 };
-            }).OrderByDescending(o=>o.userCount).ToList();
+            })
+            .OrderByDescending(o=>o.userCount)
+            .Take(20)
+            .ToList();
 
             return result;
         } 

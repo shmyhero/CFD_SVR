@@ -25,5 +25,7 @@ namespace CFD_COMMON.Models.Entities
         public decimal? ShortQty { get; set; }
 
         public decimal? Leverage { get; set; }
+
+        public decimal? InvestUSD { get; set; }
     }
 }

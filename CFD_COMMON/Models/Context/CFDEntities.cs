@@ -95,6 +95,10 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.Leverage)
                 .HasPrecision(18, 5);
 
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.InvestUSD)
+                .HasPrecision(18, 5);
+
             //modelBuilder.Entity<AyondoSecurity>()
             //    .Property(e => e.Bid)
             //    .HasPrecision(18, 5);
