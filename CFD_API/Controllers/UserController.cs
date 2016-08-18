@@ -283,7 +283,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpPost]
-        [ActionName("alert/{setting}")]
+        [Route("alert/{setting}")]
         [BasicAuth]
         public ResultDTO SetSystemAlert(bool setting)
         {
