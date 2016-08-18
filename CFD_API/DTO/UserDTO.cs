@@ -15,7 +15,7 @@
         public string nickname { get; set; }
         public string picUrl { get; set; }
         public string phone { get; set; }
-        public bool SystemAlert { get; set; }
+        public bool autoCloseAlert { get; set; }
     }
 
     public class BalanceDTO

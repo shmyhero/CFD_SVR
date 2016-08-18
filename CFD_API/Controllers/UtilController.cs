@@ -158,15 +158,25 @@ namespace CFD_API.Controllers
         [HttpPost]
         public async Task<Dictionary<string, string>> NewFeedbackPicture()
         {
-            List<string> imgList = await UploadHelper.UploadFiles(Request, CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER, data => new List<string>(data));
-            Dictionary<string, string> formData = await UploadHelper.GetFormData(Request, data => new Dictionary<string, string>(data));
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                Request.CreateResponse(HttpStatusCode.ExpectationFailed);
+                return null;
+            }
+
+            var provider = new MultipartFormDataStreamProvider(Path.GetTempPath());
+            await Request.Content.ReadAsMultipartAsync(provider);
+
+            List<string> imgList = UploadHelper.UploadFiles(provider, CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER);
+            Dictionary<string, string> formData = UploadHelper.GetFormData(provider);
 
             try
             {
                 Feedback feedBack = new Feedback();
-                feedBack.Phone = formData.ContainsKey("Phone") ? formData["Phone"] : string.Empty;
-                feedBack.Text = formData.ContainsKey("Text") ? formData["Text"] : string.Empty;
+                feedBack.Phone = formData.ContainsKey("phone") ? formData["phone"] : string.Empty;
+                feedBack.Text = formData.ContainsKey("text") ? formData["text"] : string.Empty;
                 feedBack.PicUrl = GetPicUrl(imgList);
+                feedBack.Time = DateTime.UtcNow;
                 db.Feedbacks.Add(feedBack);
                 db.SaveChanges();
             }
@@ -243,8 +253,17 @@ namespace CFD_API.Controllers
         [HttpPost]
         public async Task<Dictionary<string, string>> PostBanner()
         {
-            List<string> imgList = await UploadHelper.UploadFiles(Request,CFDGlobal.BANNER_PIC_BLOB_CONTAINER , data => new List<string>(data) );
-            Dictionary<string, string> formData = await UploadHelper.GetFormData(Request, data => new Dictionary<string, string>(data));
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                Request.CreateResponse(HttpStatusCode.ExpectationFailed);
+                return null;
+            }
+
+            var provider = new MultipartFormDataStreamProvider(Path.GetTempPath());
+            await Request.Content.ReadAsMultipartAsync(provider);
+
+            List<string> imgList = UploadHelper.UploadFiles(provider, CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER);
+            Dictionary<string, string> formData = UploadHelper.GetFormData(provider);
 
             try
             {

@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -12,36 +13,43 @@ namespace CFD_API
 {
     public class UploadHelper
     {
-        public static async Task<T> UploadFiles<T>(HttpRequestMessage req, string containerName,
-            Func<List<string>, T> actionOnFormData)
+        public static List<string> UploadFiles(MultipartFormDataStreamProvider provider, string containerName)
         {
-            if (!req.Content.IsMimeMultipartContent()) actionOnFormData(null);
             CloudBlobClient client;
-            var azureProvider =
-                new AzureBlobStorageMultipartProvider(
-                    BlobHelper.GetWebApiContainer(containerName, out client));
-
-            await req.Content.ReadAsMultipartAsync(azureProvider);
-            var files = azureProvider.UploadedFiles;
-
-            files = files.Where(f => f != null).ToList();
-
-            List<string> imgUriList = files.Select(file => file.Location.AbsoluteUri).ToList();
-
-            return actionOnFormData(imgUriList);
-        }
-
-        public static async Task<T> GetFormData<T>(HttpRequestMessage req, Func<Dictionary<string, string>, T> actionOnFormData)
-        {
-            if (!req.Content.IsMimeMultipartContent()) actionOnFormData(null);
-            NameValueCollection formData = await req.Content.ReadAsFormDataAsync();
-            Dictionary<string, string> formDataDic = new Dictionary<string, string>();
-            foreach(string key in formData.AllKeys)
+            var container = BlobHelper.GetWebApiContainer(containerName, out client);
+            var UploadedFiles = new List<AzureFileDetails>();
+            foreach (var fileData in provider.FileData)
             {
-                formDataDic.Add(key, formData[key]);
+                var uniqueName = Path.GetFileName(fileData.LocalFileName);
+                ICloudBlob blob = container.GetBlockBlobReference(uniqueName + fileData.Headers.ContentDisposition.FileName.Trim('\"'));
+                blob.Properties.ContentType = fileData.Headers.ContentType.MediaType;
+                blob.UploadFromStream(new FileStream(fileData.LocalFileName, FileMode.Open));
+                //File.Delete(fileData.LocalFileName); // The process cannot access the file 'D:\Windows\TEMP\BodyPart_a37478c4-36c7-44d4-b459-48ee67a7eba0' because it is being used by another process
+                UploadedFiles.Add(new AzureFileDetails
+                {
+                    ContentType = blob.Properties.ContentType,
+                    Name = blob.Name,
+                    Size = blob.Properties.Length,
+                    Location = blob.Uri
+                });
             }
 
-            return actionOnFormData(formDataDic);
+            UploadedFiles = UploadedFiles.Where(f => f != null).ToList();
+
+            List<string> imgUriList = UploadedFiles.Select(file => file.Location.AbsoluteUri).ToList();
+
+            return imgUriList;
+        }
+
+        public static Dictionary<string, string> GetFormData(MultipartFormDataStreamProvider provider)
+        {
+            Dictionary<string, string> formDataDic = new Dictionary<string, string>();
+            foreach(string key in provider.FormData.AllKeys)
+            {
+                formDataDic.Add(key, provider.FormData[key]);
+            }
+
+            return formDataDic;
         }
     }
 }
