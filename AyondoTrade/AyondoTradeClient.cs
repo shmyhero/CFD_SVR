@@ -66,7 +66,7 @@ namespace AyondoTrade
 
         public IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache = false)
         {
-            return base.Channel.GetPositionHistoryReport(username, password, startTime, endTime);
+            return base.Channel.GetPositionHistoryReport(username, password, startTime, endTime, ignoreCache);
         }
 
         public IDictionary<string, IList<PositionReport>> PopAutoClosedPositionReports(IList<string> usernames)

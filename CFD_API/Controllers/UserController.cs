@@ -53,10 +53,6 @@ namespace CFD_API.Controllers
                 return result;
             }
 
-            //add login history
-            db.PhoneSignupHistories.Add(new PhoneSignupHistory() { CreateAt = DateTime.UtcNow, Phone = form.phone });
-            db.SaveChanges();
-
             //verify this login
             var dtValidSince = DateTime.UtcNow.AddMinutes(-60);
             var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
@@ -119,6 +115,10 @@ namespace CFD_API.Controllers
             }
             else
             {
+                //add login history ONLY WHEN AUTH FAILED
+                db.PhoneSignupHistories.Add(new PhoneSignupHistory() { CreateAt = DateTime.UtcNow, Phone = form.phone });
+                db.SaveChanges();
+
                 result.success = false;
                 result.message = __(TransKey.INVALID_VERIFY_CODE);
             }

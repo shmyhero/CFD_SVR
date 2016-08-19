@@ -16,6 +16,7 @@
         public string picUrl { get; set; }
         public string phone { get; set; }
         public bool autoCloseAlert { get; set; }
+        public string weChatOpenId { get; set; }
     }
 
     public class BalanceDTO

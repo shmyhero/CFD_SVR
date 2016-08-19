@@ -45,6 +45,8 @@
                 return "该仓位正在被系统自动关闭中";
             if (ayondoText == "No Position")
                 return "仓位不存在";
+            if (ayondoText == "Server detected error: Not shortable")
+                return "该商品无法做空";
 
             if (ayondoText == "No such order: StopLoss level within minimum stop distance")
                 return "止损价与当前价间距过小";

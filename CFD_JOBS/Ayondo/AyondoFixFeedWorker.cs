@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Transactions;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
+using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
+using EntityFramework.BulkInsert.Extensions;
 using QuickFix;
 using QuickFix.Transport;
 
@@ -71,6 +75,7 @@ namespace CFD_JOBS.Ayondo
 
                         var dtBeginSave = DateTime.Now;
                         var count = 0;
+                        var entitiesToSaveToDB=new List<QuoteHistory>();
 
                         using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
                         {
@@ -98,6 +103,15 @@ namespace CFD_JOBS.Ayondo
                                 list.Add(tick);
                                 count++;
 
+                                //add to list to save to db later
+                                entitiesToSaveToDB.Add(new QuoteHistory
+                                {
+                                    SecurityId = quote.Id,
+                                    Time = quote.Time,
+                                    Bid = quote.Bid,
+                                    Ask = quote.Offer,
+                                });
+
                                 //clear history/prevent data increasing for good
                                 var clearWhenSize = Ticks.GetClearWhenSize(TickSize.Raw);
                                 var clearToSize = Ticks.GetClearToSize(TickSize.Raw);
@@ -112,7 +126,29 @@ namespace CFD_JOBS.Ayondo
                             }
                         }
 
-                        CFDGlobal.LogLine("\t\tSaved " + count + "/" + distinctQuotes.Count + " ticks " + (DateTime.Now - dtBeginSave).TotalMilliseconds);
+                        CFDGlobal.LogLine("\t\tSaved " + count + "/" + distinctQuotes.Count + "/" + quotes.Count + " ticks to Redis " + (DateTime.Now - dtBeginSave).TotalMilliseconds);
+
+                        if (entitiesToSaveToDB.Count > 0)
+                        {
+                            dtBeginSave = DateTime.Now;
+                            using (var db = CFDEntities.Create())
+                            {
+                                //using (var transactionScope = new TransactionScope())
+                                //{
+                                    db.BulkInsert(distinctQuotes.Select(o => new QuoteHistory
+                                    {
+                                        SecurityId = o.Id,
+                                        Time = o.Time,
+                                        Bid = o.Bid,
+                                        Ask = o.Offer,
+                                    }));
+                                    db.SaveChanges();
+                                //    transactionScope.Complete();
+                                //}
+                            }
+
+                            CFDGlobal.LogLine("\t\tSaved " + entitiesToSaveToDB.Count + " ticks to DB " + (DateTime.Now - dtBeginSave).TotalMilliseconds);
+                        }
                     }
                 }
                 catch (Exception e)

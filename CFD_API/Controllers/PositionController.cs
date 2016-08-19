@@ -313,6 +313,7 @@ namespace CFD_API.Controllers
                 LongQty = result.LongQty,
                 ShortQty = result.ShortQty,
                 SettlePrice = result.SettlPrice,
+                InvestUSD = form.invest,
             });
 
             //update ayondo account id if not same

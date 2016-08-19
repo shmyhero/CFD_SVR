@@ -17,6 +17,12 @@ namespace CFD_COMMON.Models.Entities
 
         public long? AccountId { get; set; }
 
+        [StringLength(50)]
+        public string FirstName { get; set; }
+
+        [StringLength(50)]
+        public string LastName { get; set; }
+
         public DateTime? TradeTime { get; set; }
 
         public int? SecurityId { get; set; }
