@@ -29,6 +29,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
         public virtual DbSet<OperationUser> OperationUsers { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
+        public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
         //public virtual DbSet<UserAyondo> UserAyondos { get; set; }
@@ -97,6 +98,15 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.InvestUSD)
+                .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<QuoteHistory>()
+                .Property(e => e.Bid)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<QuoteHistory>()
+                .Property(e => e.Ask)
                 .HasPrecision(18, 5);
 
             //modelBuilder.Entity<AyondoSecurity>()

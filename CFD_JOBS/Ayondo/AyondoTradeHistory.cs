@@ -138,6 +138,7 @@ namespace CFD_JOBS.Ayondo
                         }
                     }
 
+                    CFDGlobal.LogLine("");
                     _lastEndTime = dtEnd;
                 }
                 catch (Exception e)
