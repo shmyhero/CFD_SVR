@@ -278,7 +278,7 @@ namespace CFD_JOBS
                                     var historyReports =
                                         clientHttp.GetPositionHistoryReport(competitionUser.User.AyondoUsername,
                                             competitionUser.User.AyondoPassword, startDate,
-                                            endDate.AddMilliseconds(-1));
+                                            endDate.AddMilliseconds(-1), true);
 
                                     var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
 
