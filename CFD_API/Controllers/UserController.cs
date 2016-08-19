@@ -334,6 +334,9 @@ namespace CFD_API.Controllers
             }
             else
             {
+                db.PhoneSignupHistories.Add(new PhoneSignupHistory() { CreateAt = DateTime.UtcNow, Phone = form.phone });
+                db.SaveChanges();
+
                 result.success = false;
                 result.message = __(TransKey.INVALID_VERIFY_CODE);
             }
