@@ -105,7 +105,7 @@ namespace CFD_JOBS.Ayondo
                                     AccountId = accountId,
                                     FirstName = firstName,
                                     LastName = lastName,
-                                    TradeTime = time,
+                                    TradeTime = time,//data time
                                     SecurityId = secIdD,
                                     SecurityName = secName,
                                     Direction = direction,
@@ -115,12 +115,12 @@ namespace CFD_JOBS.Ayondo
                                     GUID = guid,
                                     StopLoss = stopLoss,
                                     TakeProfit = takeProfit,
-                                    CreateTime = createTime,
+                                    CreateTime = createTime,//position created time
                                     UpdateType = updateType,
                                     DeviceType = deviceType,
                                 };
 
-                                if (tradeHistory.CreateTime <= dbMaxCreateTime)
+                                if (tradeHistory.TradeTime <= dbMaxCreateTime)
                                     continue; //skip old data
 
                                 entities.Add(tradeHistory);
