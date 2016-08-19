@@ -15,5 +15,6 @@ namespace CFD_COMMON.Localization
         NO_AYONDO_ACCOUNT,
         EXCEPTION,
         PHONE_SIGNUP_FORBIDDEN,
+        USER_NOT_EXIST
     }
 }

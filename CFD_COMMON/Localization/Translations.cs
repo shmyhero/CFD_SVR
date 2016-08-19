@@ -13,6 +13,7 @@ namespace CFD_COMMON.Localization
             {TransKey.NO_AYONDO_ACCOUNT, "交易功能未开通"},
             {TransKey.EXCEPTION, "服务器繁忙，请稍后再试"},
             {TransKey.PHONE_SIGNUP_FORBIDDEN, "手机验证过于频繁，请稍后再试"},
+            {TransKey.USER_NOT_EXIST, "用户不存在"},
         };
 
         public static Dictionary<string, string> ProdCNames = new Dictionary<string, string>

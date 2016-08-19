@@ -19,4 +19,10 @@
         public int userId { get; set; }
         public string token { get; set; }
     }
+
+    public class BindPhoneDTO
+    {
+        public string phone { get; set; }
+        public string verifyCode { get; set; }
+    }
 }

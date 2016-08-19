@@ -307,7 +307,64 @@ namespace CFD_API.Controllers
             return result;
         }
 
+        [HttpPost]
+        [ActionName("bindphone")]
+        [BasicAuth]
+        public ResultDTO BindPhone(BindPhoneDTO form)
+        {
+            ResultDTO result = new ResultDTO();
+            var dtValidSince = DateTime.UtcNow.AddMinutes(-60);
+            var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
 
+            if (verifyCodes.Any())
+            {
+                var user = db.Users.FirstOrDefault(o => o.Id == UserId);
+
+                if (user != null) 
+                {
+                    user.Phone = form.phone;
+                    db.SaveChanges();
+                    result.success = true;
+                }
+                else 
+                {
+                    result.success = false;
+                    result.message = __(TransKey.USER_NOT_EXIST);
+                }
+            }
+            else
+            {
+                result.success = false;
+                result.message = __(TransKey.INVALID_VERIFY_CODE);
+            }
+
+            return result;
+        }
+
+        [HttpPost]
+        [ActionName("bindwechat")]
+        [BasicAuth]
+        public ResultDTO BindWechat(string openId)
+        {
+            ResultDTO result = new ResultDTO();
+
+            var user = db.Users.FirstOrDefault(o => o.Id == UserId);
+
+            if (user != null)
+            {
+                user.WeChatOpenId = openId;
+                db.SaveChanges();
+                result.success = true;
+            }
+            else
+            {
+                result.success = false;
+                result.message = __(TransKey.USER_NOT_EXIST);
+            }
+           
+
+            return result;
+        }
 
         [HttpGet]
         [ActionName("balance")]
