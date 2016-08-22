@@ -32,6 +32,8 @@ namespace CFD_API.Controllers
         {
         }
 
+        private static readonly TimeSpan VERIFY_CODE_PERIOD = TimeSpan.FromHours(1);
+
         [HttpPost]
         //[RequireHttps]
         //[RestrictByIp]
@@ -40,13 +42,7 @@ namespace CFD_API.Controllers
         {
             var result = new SignupResultDTO();
 
-            //check login history
-            var oneDayAgo = DateTime.UtcNow.AddDays(-1);
-            var phoneList = db.PhoneSignupHistories.Where(item => item.CreateAt >= oneDayAgo && item.Phone == form.phone).ToList();
-
-            if (phoneList.Count(item => (DateTime.UtcNow - item.CreateAt) <= TimeSpan.FromMinutes(1)) >= 3
-                || phoneList.Count(item => (DateTime.UtcNow - item.CreateAt) <= TimeSpan.FromHours(1)) >= 10
-                || phoneList.Count >= 20)
+            if (IsLoginBlocked(form.phone))
             {
                 result.success = false;
                 result.message = __(TransKey.PHONE_SIGNUP_FORBIDDEN);
@@ -54,7 +50,7 @@ namespace CFD_API.Controllers
             }
 
             //verify this login
-            var dtValidSince = DateTime.UtcNow.AddMinutes(-60);
+            var dtValidSince = DateTime.UtcNow - VERIFY_CODE_PERIOD;
             var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
 
             //auth success
@@ -259,27 +255,16 @@ namespace CFD_API.Controllers
         public ResultDTO SetPhoto()
         {
             byte[] bytes = new byte[HttpContext.Current.Request.InputStream.Length];
-            var result = new ResultDTO();
 
-            var user = db.Users.FirstOrDefault(o => o.Id == UserId);
+            var user = GetUser();
 
-            if (user != null)
-            {
-                var picName = Guid.NewGuid().ToString("N");
+            var picName = Guid.NewGuid().ToString("N");
+            Blob.UploadFromBytes(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName, bytes);
 
-                Blob.UploadFromBytes(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName, bytes);
+            user.PicUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + picName;
+            db.SaveChanges();
 
-                user.PicUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + picName;
-                db.SaveChanges();
-                result.success = true;
-            }
-            else
-            {
-                result.success = false;
-                result.message = CFDGlobal.USER_NOT_EXIST;
-            }
-
-            return result;
+            return new ResultDTO { success = true };
         }
 
         [HttpPost]
@@ -287,24 +272,12 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO SetSystemAlert(bool setting)
         {
-            var result = new ResultDTO();
+            var user = GetUser();
 
-            var user = db.Users.FirstOrDefault(o => o.Id == UserId);
+            user.AutoCloseAlert = setting;
+            db.SaveChanges();
 
-            if (user != null)
-            {
-                user.AutoCloseAlert = setting;
-                db.SaveChanges();
-
-                result.success = true;
-            }
-            else
-            {
-                result.success = false;
-                result.message = CFDGlobal.USER_NOT_EXIST;
-            }
-
-            return result;
+            return new ResultDTO { success = true };
         }
 
         [HttpPost]
@@ -313,28 +286,29 @@ namespace CFD_API.Controllers
         public ResultDTO BindPhone(BindPhoneDTO form)
         {
             ResultDTO result = new ResultDTO();
-            var dtValidSince = DateTime.UtcNow.AddMinutes(-60);
+
+            if (IsLoginBlocked(form.phone))
+            {
+                result.success = false;
+                result.message = __(TransKey.PHONE_SIGNUP_FORBIDDEN);
+                return result;
+            }
+
+            var dtValidSince = DateTime.UtcNow - VERIFY_CODE_PERIOD;
             var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
 
             if (verifyCodes.Any())
             {
-                var user = db.Users.FirstOrDefault(o => o.Id == UserId);
+                var user = GetUser();
 
-                if (user != null) 
-                {
-                    user.Phone = form.phone;
-                    db.SaveChanges();
-                    result.success = true;
-                }
-                else 
-                {
-                    result.success = false;
-                    result.message = __(TransKey.USER_NOT_EXIST);
-                }
+                user.Phone = form.phone;
+                db.SaveChanges();
+
+                result.success = true;
             }
             else
             {
-                db.PhoneSignupHistories.Add(new PhoneSignupHistory() { CreateAt = DateTime.UtcNow, Phone = form.phone });
+                db.PhoneSignupHistories.Add(new PhoneSignupHistory() {CreateAt = DateTime.UtcNow, Phone = form.phone});
                 db.SaveChanges();
 
                 result.success = false;
@@ -349,24 +323,12 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO BindWechat(string openId)
         {
-            ResultDTO result = new ResultDTO();
+            var user = GetUser();
 
-            var user = db.Users.FirstOrDefault(o => o.Id == UserId);
+            user.WeChatOpenId = openId;
+            db.SaveChanges();
 
-            if (user != null)
-            {
-                user.WeChatOpenId = openId;
-                db.SaveChanges();
-                result.success = true;
-            }
-            else
-            {
-                result.success = false;
-                result.message = __(TransKey.USER_NOT_EXIST);
-            }
-           
-
-            return result;
+            return new ResultDTO { success = true };
         }
 
         [HttpGet]
@@ -572,6 +534,24 @@ namespace CFD_API.Controllers
             var result = new List<PLReportDTO> {stockUSPL, indexPL, fxPL, commodityPL};
 
             return result;
+        }
+
+        private bool IsLoginBlocked(string phone)
+        {
+            var oneDayAgo = DateTime.UtcNow.AddDays(-1);
+            var phoneList = db.PhoneSignupHistories.Where(item => item.CreateAt >= oneDayAgo && item.Phone == phone).ToList();
+
+            //3 in 1 minute
+            //10 in 1 hour
+            //20 in 1 day
+            if (phoneList.Count(item => (DateTime.UtcNow - item.CreateAt) <= TimeSpan.FromMinutes(1)) >= 3
+                || phoneList.Count(item => (DateTime.UtcNow - item.CreateAt) <= TimeSpan.FromHours(1)) >= 10
+                || phoneList.Count >= 20)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

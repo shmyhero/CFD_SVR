@@ -569,16 +569,22 @@ namespace CFD_API.Controllers
         {
             var activeProd = GetActiveProds();
 
-            var _24hoursAgo = DateTime.UtcNow.AddDays(-1);
-            var tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= _24hoursAgo).ToList();
+            var period = TimeSpan.FromDays(1);
 
-            //if no data in the last 24 hours
+            var dtStart = DateTime.UtcNow-period;
+            var tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
+
+            //if no data in the latest period
             if (tradeHistory.Count == 0)
             {
-                var dtLastTrade =
-                    db.NewPositionHistories.AsNoTracking().OrderByDescending(o => o.CreateTime).Last().CreateTime;
+                var lastTrade =
+                    db.NewPositionHistories.AsNoTracking().OrderByDescending(o => o.CreateTime).FirstOrDefault();
 
-                var dtStart = dtLastTrade.Value.AddDays(-1);
+                if(lastTrade==null)
+                    return new List<ByPopularityDTO>();
+
+                dtStart = lastTrade.CreateTime.Value-period;
+
                 tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
             }
 
