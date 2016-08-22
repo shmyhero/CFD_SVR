@@ -30,7 +30,6 @@ namespace CFD_COMMON
         public static string ASSET_CLASS_FX = "Currencies";
         public static string ASSET_CLASS_INDEX = "Stock Indices";
         public static string ASSET_CLASS_COMMODITY = "Commodities";
-        public static string USER_NOT_EXIST = "user not exist";
 
         /// <summary>
         /// the default application-wide BasicRedisClientManager, non-pooled, created for current application

@@ -9,11 +9,13 @@ namespace CFD_COMMON.Localization
             {TransKey.INVALID_PHONE_NUMBER, "无效的手机号码"},
             {TransKey.INVALID_VERIFY_CODE, "验证码错误"},
             {TransKey.NICKNAME_EXISTS, "昵称已存在"},
+            {TransKey.PHONE_SIGNUP_FORBIDDEN, "手机验证过于频繁，请稍后再试"},
+
             {TransKey.ORDER_REJECTED, "下单失败"},
             {TransKey.NO_AYONDO_ACCOUNT, "交易功能未开通"},
             {TransKey.EXCEPTION, "服务器繁忙，请稍后再试"},
-            {TransKey.PHONE_SIGNUP_FORBIDDEN, "手机验证过于频繁，请稍后再试"},
-            {TransKey.USER_NOT_EXIST, "用户不存在"},
+
+            //{TransKey.USER_NOT_EXIST, "用户不存在"},
         };
 
         public static Dictionary<string, string> ProdCNames = new Dictionary<string, string>
