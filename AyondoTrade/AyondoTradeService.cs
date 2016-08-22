@@ -249,7 +249,7 @@ namespace AyondoTrade
             return positionReports;
         }
 
-        public IList<Model.PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache = false)
+        public IList<Model.PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache = false, bool updateCache = true)
         {
             string account = GetAccount(username, password);
 
@@ -275,7 +275,8 @@ namespace AyondoTrade
                     result = SendPositionHistoryRequestAndWait(account, startTime, endTime);
                 }
 
-                CFDCacheManager.Instance.SetClosedPositions(account, result);
+                if (updateCache)
+                    CFDCacheManager.Instance.SetClosedPositions(account, result);
             }
 
             //mapping FIX message model --> WCF model

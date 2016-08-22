@@ -23,7 +23,7 @@ namespace AyondoTrade
         IList<PositionReport> GetPositionReport(string username, string password, bool ignoreCache = false);
 
         [OperationContract]
-        IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache = false);
+        IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache, bool updateCache);
 
         [OperationContract]
         IDictionary<string,IList<PositionReport>> PopAutoClosedPositionReports(IList<string> usernames);
