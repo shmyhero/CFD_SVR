@@ -18,6 +18,7 @@ using System.Data.SqlTypes;
 using CFD_API.Azure;
 using System.Collections.Specialized;
 using System.Text;
+using CFD_COMMON.Azure;
 
 namespace CFD_API.Controllers
 {
@@ -156,26 +157,21 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [Route("feedback_pic")]
         [HttpPost]
-        public async Task<Dictionary<string, string>> NewFeedbackPicture()
+        public HttpResponseMessage NewFeedbackPicture(FeedBackFormDTO_Pic feedBackDTO)
         {
-            if (!Request.Content.IsMimeMultipartContent())
+            List<string> picList = new List<string>();
+            foreach (string picture in feedBackDTO.photos)
             {
-                Request.CreateResponse(HttpStatusCode.ExpectationFailed);
-                return null;
+                string picName = Guid.NewGuid().ToString("N");
+                Blob.UploadFromBytes(CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER, picName, Convert.FromBase64String(picture));
+                picList.Add(picName);
             }
-
-            var provider = new MultipartFormDataStreamProvider(Path.GetTempPath());
-            await Request.Content.ReadAsMultipartAsync(provider);
-
-            List<string> imgList = UploadHelper.UploadFiles(provider, CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER);
-            Dictionary<string, string> formData = UploadHelper.GetFormData(provider);
-
             try
             {
                 Feedback feedBack = new Feedback();
-                feedBack.Phone = formData.ContainsKey("phone") ? formData["phone"] : string.Empty;
-                feedBack.Text = formData.ContainsKey("text") ? formData["text"] : string.Empty;
-                feedBack.PicUrl = GetPicUrl(imgList);
+                feedBack.Phone = feedBackDTO.phone;
+                feedBack.Text = feedBackDTO.text;
+                feedBack.PicUrl = GetPicUrl(picList);
                 feedBack.Time = DateTime.UtcNow;
                 db.Feedbacks.Add(feedBack);
                 db.SaveChanges();
@@ -185,8 +181,40 @@ namespace CFD_API.Controllers
                 Request.CreateResponse(HttpStatusCode.ExpectationFailed, ex.Message);
             }
 
-            return null;
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
+
+        //public async Task<Dictionary<string, string>> NewFeedbackPicture()
+        //{
+        //    if (!Request.Content.IsMimeMultipartContent())
+        //    {
+        //        Request.CreateResponse(HttpStatusCode.ExpectationFailed);
+        //        return null;
+        //    }
+
+        //    var provider = new MultipartFormDataStreamProvider(Path.GetTempPath());
+        //    await Request.Content.ReadAsMultipartAsync(provider);
+
+        //    List<string> imgList = UploadHelper.UploadFiles(provider, CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER);
+        //    Dictionary<string, string> formData = UploadHelper.GetFormData(provider);
+
+        //    try
+        //    {
+        //        Feedback feedBack = new Feedback();
+        //        feedBack.Phone = formData.ContainsKey("phone") ? formData["phone"] : string.Empty;
+        //        feedBack.Text = formData.ContainsKey("text") ? formData["text"] : string.Empty;
+        //        feedBack.PicUrl = GetPicUrl(imgList);
+        //        feedBack.Time = DateTime.UtcNow;
+        //        db.Feedbacks.Add(feedBack);
+        //        db.SaveChanges();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Request.CreateResponse(HttpStatusCode.ExpectationFailed, ex.Message);
+        //    }
+
+        //    return null;
+        //}
 
         private string GetPicUrl(List<string> imgList)
         {

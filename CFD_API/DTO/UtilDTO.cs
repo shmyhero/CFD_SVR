@@ -66,6 +66,15 @@ namespace CFD_API.DTO
         public string phone { get; set; }
         public string text { get; set; }
     }
+
+    public class FeedBackFormDTO_Pic
+    {
+        public string phone { get; set; }
+        public string text { get; set; }
+
+        public List<string> photos { get; set; }
+    }
+
     public class BannerDetailDTO
     {
         public string header { get; set; }
