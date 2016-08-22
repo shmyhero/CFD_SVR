@@ -157,8 +157,9 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [Route("feedback_pic")]
         [HttpPost]
-        public HttpResponseMessage NewFeedbackPicture(FeedBackFormDTO_Pic feedBackDTO)
+        public ResultDTO NewFeedbackPicture(FeedBackFormDTO_Pic feedBackDTO)
         {
+            ResultDTO result = new ResultDTO();
             List<string> picList = new List<string>();
             foreach (string picture in feedBackDTO.photos)
             {
@@ -178,10 +179,12 @@ namespace CFD_API.Controllers
             }
             catch (Exception ex)
             {
-                Request.CreateResponse(HttpStatusCode.ExpectationFailed, ex.Message);
+                result.success = false;
+                result.message = __(TransKey.EXCEPTION);
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK);
+            result.success = true;
+            return result;
         }
 
         //public async Task<Dictionary<string, string>> NewFeedbackPicture()
