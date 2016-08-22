@@ -63,10 +63,38 @@ namespace CFD_API
 
         void ErrorLog_Filtering(object sender, ExceptionFilterEventArgs e)
         {
-            // perform filtering here   
-            if(e.Exception is HttpException && e.Exception.Message.Contains("was not found or does not implement IController"))
-                e.Dismiss();
+            Filter(e);
         }
 
+        private static DateTime _lastElmahMailTime = DateTime.MinValue;
+        private static string _lastElmahMessage = string.Empty;
+
+        void ErrorMail_Filtering(object sender, ExceptionFilterEventArgs e)
+        {
+            Filter(e);
+
+            if (!e.Dismissed)
+            {
+                if (DateTime.UtcNow - _lastElmahMailTime < TimeSpan.FromMinutes(10))//last within 10 min
+                {
+                    e.Dismiss();
+                }
+                else if (e.Exception.Message.Substring(0, 10) == _lastElmahMessage)//same message as last
+                {
+                    e.Dismiss();
+                }
+                else
+                {
+                    _lastElmahMailTime = DateTime.UtcNow;
+                    _lastElmahMessage = e.Exception.Message.Substring(0, 10);
+                }
+            }
+        }
+
+        void Filter(ExceptionFilterEventArgs e)
+        {
+            if (e.Exception is HttpException && e.Exception.Message.Contains("was not found or does not implement IController"))
+                e.Dismiss();
+        }
     }
 }
