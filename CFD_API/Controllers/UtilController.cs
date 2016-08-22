@@ -293,7 +293,7 @@ namespace CFD_API.Controllers
             var provider = new MultipartFormDataStreamProvider(Path.GetTempPath());
             await Request.Content.ReadAsMultipartAsync(provider);
 
-            List<string> imgList = UploadHelper.UploadFiles(provider, CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER);
+            List<string> imgList = UploadHelper.UploadFiles(provider, CFDGlobal.BANNER_PIC_BLOB_CONTAINER);
             Dictionary<string, string> formData = UploadHelper.GetFormData(provider);
 
             try
