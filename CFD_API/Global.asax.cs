@@ -63,10 +63,18 @@ namespace CFD_API
 
         void ErrorLog_Filtering(object sender, ExceptionFilterEventArgs e)
         {
-            // perform filtering here   
-            if(e.Exception is HttpException && e.Exception.Message.Contains("was not found or does not implement IController"))
-                e.Dismiss();
+            Filter(e);
         }
 
+        void ErrorMail_Filtering(object sender, ExceptionFilterEventArgs e)
+        {
+            Filter(e);
+        }
+
+        void Filter(ExceptionFilterEventArgs e)
+        {
+            if (e.Exception is HttpException && e.Exception.Message.Contains("was not found or does not implement IController"))
+                e.Dismiss();
+        }
     }
 }
