@@ -75,11 +75,18 @@ namespace CFD_API
 
             if (!e.Dismissed)
             {
-                if (DateTime.UtcNow - _lastElmahMailTime < TimeSpan.FromMinutes(10))//last within 10 min
+                var ts = DateTime.UtcNow - _lastElmahMailTime;
+
+                if (ts < TimeSpan.FromMinutes(10)) //within 10 min
                 {
                     e.Dismiss();
                 }
-                else if (e.Exception.Message.Substring(0, 10) == _lastElmahMessage)//same message as last
+                else if (e.Exception.Message.Substring(0, 10) == _lastElmahMessage && ts < TimeSpan.FromHours(1)) //same message && within 1 hour
+                {
+                    e.Dismiss();
+                }
+                else if (ts < TimeSpan.FromHours(12) &&
+                         (_lastElmahMailTime.AddHours(8).Hour >= 23 || _lastElmahMailTime.AddHours(8).Hour < 7)) //only 1 at night
                 {
                     e.Dismiss();
                 }
