@@ -255,37 +255,11 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO SetPhoto()
         {
-            Stream stream = HttpContext.Current.Request.InputStream;
-            byte[] bytes = new byte[stream.Length];
-            stream.Read(bytes, 0, (int)stream.Length);
-
-            string requestStr = System.Text.Encoding.UTF8.GetString(bytes);
-            //bytes = System.Text.Encoding.UTF8.GetBytes(requestStr);
-
-            bytes = Convert.FromBase64String(requestStr);
-
-            MemoryStream memoryStream = new MemoryStream(bytes, 0, bytes.Length);
-            memoryStream.Write(bytes, 0, bytes.Length);
-            //转成图片  
-            Image image = Image.FromStream(memoryStream);
-
-            using (MemoryStream mostream = new MemoryStream())
-            {
-                Bitmap bmp = new Bitmap(image);
-
-                bmp.Save(mostream, System.Drawing.Imaging.ImageFormat.Jpeg);//将图像以指定的格式存入缓存内存流
-
-                bytes = new byte[mostream.Length];
-
-                mostream.Position = 0;//设置留的初始位置
-
-                mostream.Read(bytes, 0, Convert.ToInt32(bytes.Length));
-
-            }
+            var requestString = Request.Content.ReadAsStringAsync().Result;
+            var bytes = Convert.FromBase64String(requestString);
 
             var user = GetUser();
-
-            var picName = Guid.NewGuid().ToString("N");
+            var picName = string.IsNullOrEmpty(user.PicUrl)? Guid.NewGuid().ToString("N") : user.PicUrl.Split('/').Last();
             Blob.UploadFromBytes(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName, bytes);
 
             user.PicUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + picName;
