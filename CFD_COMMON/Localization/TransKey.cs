@@ -16,5 +16,10 @@ namespace CFD_COMMON.Localization
         EXCEPTION,
         PHONE_SIGNUP_FORBIDDEN,
         //USER_NOT_EXIST
+
+        WECHAT_ALREADY_BOUND,
+        WECHAT_OPENID_EXISTS,
+        PHONE_ALREADY_BOUND,
+        PHONE_EXISTS,
     }
 }

@@ -67,5 +67,41 @@ namespace CFD_COMMON.Service
                 }
             }
         }
+
+        public void BindWechat(int userId, string wechatOpenId)
+        {
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+            {
+                using (var dbIsolated = CFDEntities.Create())
+                {
+                    var userIsolated = dbIsolated.Users.FirstOrDefault(o => o.Id == userId);
+                    if (userIsolated != null && userIsolated.WeChatOpenId == null
+                        && !dbIsolated.Users.Any(o => o.WeChatOpenId == wechatOpenId))
+                    {
+                        userIsolated.WeChatOpenId = wechatOpenId;
+                        dbIsolated.SaveChanges();
+                        scope.Complete();
+                    }
+                }
+            }
+        }
+
+        public void BindPhone(int userId, string phone)
+        {
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+            {
+                using (var dbIsolated = CFDEntities.Create())
+                {
+                    var userIsolated = dbIsolated.Users.FirstOrDefault(o => o.Id == userId);
+                    if (userIsolated != null && userIsolated.Phone == null
+                        && !dbIsolated.Users.Any(o => o.Phone == phone))
+                    {
+                        userIsolated.Phone = phone;
+                        dbIsolated.SaveChanges();
+                        scope.Complete();
+                    }
+                }
+            }
+        }
     }
 }

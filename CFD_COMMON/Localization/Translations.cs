@@ -11,6 +11,11 @@ namespace CFD_COMMON.Localization
             {TransKey.NICKNAME_EXISTS, "昵称已存在"},
             {TransKey.PHONE_SIGNUP_FORBIDDEN, "手机验证过于频繁，请稍后再试"},
 
+            {TransKey.WECHAT_ALREADY_BOUND, "已绑定过微信号" },
+            {TransKey.WECHAT_OPENID_EXISTS, "微信号已被使用"},
+            {TransKey.PHONE_ALREADY_BOUND, "已绑定过手机" },
+            {TransKey.PHONE_EXISTS, "手机号已被使用"},
+
             {TransKey.ORDER_REJECTED, "下单失败"},
             {TransKey.NO_AYONDO_ACCOUNT, "交易功能未开通"},
             {TransKey.EXCEPTION, "服务器繁忙，请稍后再试"},

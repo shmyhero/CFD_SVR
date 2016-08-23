@@ -286,8 +286,25 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO BindPhone(BindPhoneDTO form)
         {
+            if(!Phone.IsValidPhoneNumber(form.phone))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,__(TransKey.INVALID_PHONE_NUMBER)));
+
+            var user = GetUser();
+
+            if (user.Phone != null)
+            {
+                if (user.Phone == form.phone)
+                    return new ResultDTO { success = true };
+                else
+                    return new ResultDTO { success = false, message = __(TransKey.WECHAT_ALREADY_BOUND) };
+            }
+
+            if (db.Users.Any(o => o.Phone == form.phone))
+                return new ResultDTO {success = false, message = __(TransKey.PHONE_EXISTS)};
+
             ResultDTO result = new ResultDTO();
 
+            //check verify block
             if (IsLoginBlocked(form.phone))
             {
                 result.success = false;
@@ -297,17 +314,15 @@ namespace CFD_API.Controllers
 
             var dtValidSince = DateTime.UtcNow - VERIFY_CODE_PERIOD;
             var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
-
-            if (verifyCodes.Any())
+            
+            if (verifyCodes.Any())//verifiy succeed
             {
-                var user = GetUser();
-
-                user.Phone = form.phone;
-                db.SaveChanges();
+                var userService=new UserService(db);
+                userService.BindPhone(UserId,form.phone);
 
                 result.success = true;
             }
-            else
+            else//verify failed
             {
                 db.PhoneSignupHistories.Add(new PhoneSignupHistory() {CreateAt = DateTime.UtcNow, Phone = form.phone});
                 db.SaveChanges();
@@ -326,10 +341,21 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            user.WeChatOpenId = openId;
-            db.SaveChanges();
+            if (user.WeChatOpenId != null)
+            {
+                if (user.WeChatOpenId == openId)
+                    return new ResultDTO {success = true};
+                else
+                    return new ResultDTO {success = false, message = __(TransKey.WECHAT_ALREADY_BOUND)};
+            }
 
-            return new ResultDTO { success = true };
+            if (db.Users.Any(o => o.WeChatOpenId == openId))
+                return new ResultDTO {success = false, message = __(TransKey.WECHAT_OPENID_EXISTS)};
+
+            var userService = new UserService(db);
+            userService.BindWechat(UserId, openId);
+
+            return new ResultDTO {success = true};
         }
 
         [HttpGet]
