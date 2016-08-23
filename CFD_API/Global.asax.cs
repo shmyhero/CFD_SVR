@@ -15,6 +15,7 @@ using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Utils;
 using Elmah;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
@@ -76,6 +77,7 @@ namespace CFD_API
             if (!e.Dismissed)
             {
                 var ts = DateTime.UtcNow - _lastElmahMailTime;
+                var chinaNow = DateTimes.GetChinaDateTimeNow();
 
                 if (ts < TimeSpan.FromMinutes(10)) //within 10 min
                 {
@@ -86,7 +88,8 @@ namespace CFD_API
                     e.Dismiss();
                 }
                 else if (ts < TimeSpan.FromHours(12) &&
-                         (_lastElmahMailTime.AddHours(8).Hour >= 23 || _lastElmahMailTime.AddHours(8).Hour < 7)) //only 1 at night
+                         (_lastElmahMailTime.AddHours(8).Hour >= 23 || _lastElmahMailTime.AddHours(8).Hour < 7) &&
+                         (chinaNow.Hour >= 23 || chinaNow.Hour < 7)) //only 1 at night
                 {
                     e.Dismiss();
                 }
