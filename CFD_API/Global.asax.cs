@@ -74,6 +74,11 @@ namespace CFD_API
         {
             Filter(e);
 
+            //no email for localhost
+            var host = ((HttpContext) e.Context).Request.Url.Host;
+            if (host.ToLower().StartsWith("localhost"))
+                e.Dismiss();
+
             if (!e.Dismissed)
             {
                 var ts = DateTime.UtcNow - _lastElmahMailTime;
@@ -83,7 +88,8 @@ namespace CFD_API
                 {
                     e.Dismiss();
                 }
-                else if (e.Exception.Message.Substring(0, 10) == _lastElmahMessage && ts < TimeSpan.FromHours(1)) //same message && within 1 hour
+                else if (e.Exception.Message.Substring(0, 10) == _lastElmahMessage && ts < TimeSpan.FromHours(1))
+                    //same message && within 1 hour
                 {
                     e.Dismiss();
                 }
