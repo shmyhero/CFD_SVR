@@ -238,6 +238,9 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO SetNickname(string nickname)
         {
+            if (nickname.Length > NICKNAME_MAX_LENGTH)
+                return new ResultDTO() {success = false, message = __(TransKey.INVALID_PHONE_NUMBER)};
+
             if (db.Users.Any(o => o.Id != UserId && o.Nickname == nickname))
                 return new ResultDTO
                 {

@@ -9,6 +9,7 @@ namespace CFD_COMMON.Localization
             {TransKey.INVALID_PHONE_NUMBER, "无效的手机号码"},
             {TransKey.INVALID_VERIFY_CODE, "验证码错误"},
             {TransKey.NICKNAME_EXISTS, "昵称已存在"},
+            {TransKey.NICKNAME_TOO_LONG, "昵称过长" },
             {TransKey.PHONE_SIGNUP_FORBIDDEN, "手机验证过于频繁，请稍后再试"},
 
             {TransKey.WECHAT_ALREADY_BOUND, "已绑定过微信号" },
