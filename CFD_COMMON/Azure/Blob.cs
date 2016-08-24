@@ -46,5 +46,23 @@ namespace CFD_COMMON.Azure
 
             blockBlob.UploadFromByteArray(bytes, 0, bytes.Length);
         }
+
+        public static void DeleteBlob(string containerName, string blobName)
+        {
+            var storageConStr = CFDGlobal.GetConfigurationSetting("StorageConnectionString");
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConStr);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+
+            // Retrieve a reference to a container.
+            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+
+            CloudBlockBlob blockBlob = container.GetBlockBlobReference(blobName);
+
+            if(blockBlob.Exists())
+            {
+                blockBlob.Delete();
+            }
+            
+        }
     }
 }
