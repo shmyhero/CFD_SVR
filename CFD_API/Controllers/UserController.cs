@@ -23,6 +23,7 @@ using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
 using System.Web;
 using System.Drawing;
+using CFD_COMMON.Utils.Extensions;
 
 namespace CFD_API.Controllers
 {
@@ -34,6 +35,7 @@ namespace CFD_API.Controllers
         }
 
         private static readonly TimeSpan VERIFY_CODE_PERIOD = TimeSpan.FromHours(1);
+        private const int NICKNAME_MAX_LENGTH=8;
 
         [HttpPost]
         //[RequireHttps]
@@ -67,14 +69,14 @@ namespace CFD_API.Controllers
                     //refetch
                     user = db.Users.FirstOrDefault(o => o.Phone == form.phone);
 
-                    var nickname = "u" + user.Id.ToString("00000000");
+                    var nickname = "u" + user.Id.ToString("000000");
                     user.Nickname = nickname;
 
                     //check duplicate nickname and generate random suffix
                     int tryCount = 0;
                     while (db.Users.Any(o => o.Id != user.Id && o.Nickname == user.Nickname))
                     {
-                        user.Nickname = nickname + (new Random().Next(10000));
+                        user.Nickname = nickname.TruncateMax(4) + Randoms.GetRandomAlphabeticString(4);
 
                         tryCount++;
 
@@ -140,13 +142,13 @@ namespace CFD_API.Controllers
                 //refetch
                 user = db.Users.FirstOrDefault(o => o.WeChatOpenId == form.openid);
 
-                user.Nickname = form.nickname.Trim();
+                user.Nickname = form.nickname.Trim().TruncateMax(NICKNAME_MAX_LENGTH);
 
                 //check duplicate nickname and generate random suffix
                 int tryCount = 0;
                 while (db.Users.Any(o => o.Id != user.Id && o.Nickname == user.Nickname))
                 {
-                    user.Nickname = form.nickname + (new Random().Next(10000));
+                    user.Nickname = form.nickname.TruncateMax(4) + Randoms.GetRandomAlphanumericString(4);
 
                     tryCount++;
 
