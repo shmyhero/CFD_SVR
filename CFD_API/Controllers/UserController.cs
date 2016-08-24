@@ -259,7 +259,15 @@ namespace CFD_API.Controllers
             var bytes = Convert.FromBase64String(requestString);
 
             var user = GetUser();
-            var picName = string.IsNullOrEmpty(user.PicUrl)? Guid.NewGuid().ToString("N") : user.PicUrl.Split('/').Last();
+
+            string picName = string.Empty;
+            if(!string.IsNullOrEmpty(user.PicUrl)) //delete existing blob before upload
+            {
+                picName = user.PicUrl.Split('/').Last();
+                Blob.DeleteBlob(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName);
+            }
+           
+            picName = Guid.NewGuid().ToString("N"); //upload photo with a new name, b/c client will not refresh with same name.
             Blob.UploadFromBytes(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName, bytes);
 
             user.PicUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + picName;
