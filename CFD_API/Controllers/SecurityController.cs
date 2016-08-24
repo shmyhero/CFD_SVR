@@ -463,15 +463,15 @@ namespace CFD_API.Controllers
 
             decimal minLong = perPriceCcy2*quote.Offer*prodDef.MinSizeLong;
             decimal minShort = perPriceCcy2*quote.Bid*prodDef.MinSizeShort;
-            decimal maxLong = perPriceCcy2 * quote.Offer * maxLongSize;
-            decimal maxShort = perPriceCcy2 * quote.Bid * maxShortSize;
+            decimal maxLong = perPriceCcy2*quote.Offer*maxLongSize;
+            decimal maxShort = perPriceCcy2*quote.Bid*maxShortSize;
 
             var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-            result.minValueLong = minLong*perSizeValueUSD;
-            result.minValueShort = minShort*perSizeValueUSD;
-            result.maxValueLong = maxLong*perSizeValueUSD;
-            result.maxValueShort = maxShort*perSizeValueUSD;
+            result.minValueLong = Math.Ceiling(minLong*perSizeValueUSD);
+            result.minValueShort = Math.Ceiling(minShort*perSizeValueUSD);
+            result.maxValueLong = Math.Floor(maxLong*perSizeValueUSD);
+            result.maxValueShort = Math.Floor(maxShort*perSizeValueUSD);
 
             //demo data
             Random r = new Random();
