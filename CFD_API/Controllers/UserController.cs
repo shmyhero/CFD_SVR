@@ -306,7 +306,7 @@ namespace CFD_API.Controllers
                 if (user.Phone == form.phone)
                     return new ResultDTO { success = true };
                 else
-                    return new ResultDTO { success = false, message = __(TransKey.WECHAT_ALREADY_BOUND) };
+                    return new ResultDTO { success = false, message = __(TransKey.PHONE_ALREADY_BOUND) };
             }
 
             if (db.Users.Any(o => o.Phone == form.phone))
