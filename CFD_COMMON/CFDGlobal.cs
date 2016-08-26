@@ -58,7 +58,8 @@ namespace CFD_COMMON
         public static IRedisClientsManager GetNewPooledRedisClientManager()
         {
             var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString");
-            return new PooledRedisClientManager(redisConStr);
+
+            return new PooledRedisClientManager(1000, 2, redisConStr);
         }
 
         /// <summary>
