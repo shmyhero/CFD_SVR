@@ -767,6 +767,8 @@ namespace AyondoTrade
                         TestNewOrder();
                     else if (action == 'a')
                         QueryMDS3();
+                    else if (action == 'l')
+                        TestLatency();
                 }
                 catch (System.Exception e)
                 {
@@ -775,6 +777,23 @@ namespace AyondoTrade
                 }
             }
             Console.WriteLine("Program shutdown.");
+        }
+
+        private void TestLatency()
+        {
+            /*var guid = Guid.NewGuid().ToString()*/;
+
+            var m = new UserRequest();
+            //m.PosReqID = new PosReqID(guid);
+
+            //m.PosReqType = new PosReqType(PosReqType.POSITIONS);
+            //m.ClearingBusinessDate = new ClearingBusinessDate("0-0-0");
+            //m.TransactTime = new TransactTime(DateTime.UtcNow);
+            //m.Account = new Account(account);
+            //m.AccountType = new AccountType(AccountType.ACCOUNT_IS_CARRIED_ON_CUSTOMER_SIDE_OF_BOOKS);
+            SendMessage(m);
+
+            //return guid;
         }
 
         private void QueryMDS3()
@@ -856,7 +875,7 @@ namespace AyondoTrade
 
         private char QueryAction()
         {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a".Split(','));
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a,l".Split(','));
 
             string cmd = Console.ReadLine().Trim();
             if (cmd.Length != 1 || validActions.Contains(cmd) == false)
