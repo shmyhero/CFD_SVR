@@ -16,6 +16,10 @@ namespace CFD_COMMON.Models.Entities
 
         public string Body { get; set; }
 
+        public string ImgUrl { get; set; }
+
+        public int? Color { get; set; }
+
         [StringLength(200)]
         public string CreatedBy { get; set; }
 

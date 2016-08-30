@@ -52,6 +52,12 @@ namespace CFD_API.DTO
         public int id { get; set; }
         public string header { get; set; }
         public string body { get; set; }
+        /// <summary>
+        /// for request, it is base64 of image
+        /// for response, it is url 
+        /// </summary>
+        public string image { get; set; }
+        public int color { get; set; }
         public DateTime? createdAt { get; set; }
     }
 

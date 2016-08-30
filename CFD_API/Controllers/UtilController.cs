@@ -392,15 +392,26 @@ namespace CFD_API.Controllers
 
         private void CreateHeadline(HeadlineDTO headLineDTO)
         {
-            db.Headlines.Add(
-                new Headline()
-                {
-                    Header = headLineDTO.header,
-                    Body = headLineDTO.body,
-                    CreatedAt = DateTime.UtcNow,
-                    Expiration = SqlDateTime.MaxValue.Value
-                }
-            );
+            Headline headline = new Headline()
+            {
+                Header = headLineDTO.header,
+                Body = headLineDTO.body,
+                Color = headLineDTO.color,
+                CreatedAt = DateTime.UtcNow,
+                Expiration = SqlDateTime.MaxValue.Value
+            };
+
+            if(!string.IsNullOrEmpty(headLineDTO.image))
+            {
+                string picName = Guid.NewGuid().ToString("N");
+                Byte[] bytes = Convert.FromBase64String(headLineDTO.image);
+                Blob.UploadFromBytes(CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER, picName, bytes);
+
+                headline.ImgUrl = CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER_URL + picName;
+            }
+
+
+            db.Headlines.Add(headline);
         }
 
         private void UpdateHeadline(HeadlineDTO headLineDTO)
@@ -409,6 +420,20 @@ namespace CFD_API.Controllers
             if(headlines != null && headlines.Count > 0)
             {
                 var headline = headlines.FirstOrDefault();
+
+                if(!string.IsNullOrEmpty(headLineDTO.image))
+                {
+                    string picName = string.Empty;
+                    if (!string.IsNullOrEmpty(headline.ImgUrl)) //delete existing blob before upload
+                    {
+                        picName = headline.ImgUrl.Split('/').Last();
+                        Blob.DeleteBlob(CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER, picName);
+                    }
+
+                    Byte[] bytes = Convert.FromBase64String(headLineDTO.image);
+                    Blob.UploadFromBytes(CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER, picName, bytes);
+                }
+
                 headline.Header = headLineDTO.header;
                 headline.Body = headLineDTO.body;
             }
