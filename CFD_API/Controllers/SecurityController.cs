@@ -597,7 +597,7 @@ namespace CFD_API.Controllers
                     id = secId,
                     longCount = o.Count(p => p.LongQty.HasValue),
                     shortCount = o.Count(p => p.ShortQty.HasValue),
-                    userCount = o.Select(p => p.UserId).Distinct().Count(),
+                    userCount = o.Select(p => p.UserId).Distinct().Count()*30,
 
                     symbol= prodDef?.Symbol,
                     name= prodDef!=null? Translator.GetCName(prodDef.Name):null,
