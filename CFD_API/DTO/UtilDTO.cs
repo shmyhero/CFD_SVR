@@ -16,6 +16,8 @@ namespace CFD_API.DTO
         public int id { get; set; }
         public string imgUrl { get; set; }
         public string url { get; set; }
+        public string header { get; set; }
+        public string digest { get; set; }
     }
 
     public class BannerDTO
@@ -26,6 +28,8 @@ namespace CFD_API.DTO
         public string header { get; set; }
 
         public string body { get; set; }
+
+        public string digest { get; set; }
 
         public int? isTop { get; set; }
 

@@ -324,6 +324,7 @@ namespace CFD_API.Controllers
                 Url = dicFormData.ContainsKey("Url") ? dicFormData["Url"] : string.Empty,
                 Header = dicFormData.ContainsKey("Header") ? dicFormData["Header"] : string.Empty,
                 Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty,
+                Digest = dicFormData.ContainsKey("Digest") ? dicFormData["Digest"] : string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty,
                 Expiration = SqlDateTime.MaxValue.Value,
@@ -343,6 +344,7 @@ namespace CFD_API.Controllers
                 banner.Url = dicFormData.ContainsKey("Url") ? dicFormData["Url"] : string.Empty;
                 banner.Header = dicFormData.ContainsKey("Header") ? dicFormData["Header"] : string.Empty;
                 banner.Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty;
+                banner.Digest = dicFormData.ContainsKey("Digest") ? dicFormData["Digest"] : string.Empty;
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
                 if(!string.IsNullOrEmpty(imageUrl))
                 {

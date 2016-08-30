@@ -24,6 +24,9 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(int.MaxValue)]
         public string Body { get; set; }
 
+        [StringLength(100)]
+        public string Digest { get; set; }
+
         public int? IsTop { get; set; }
 
         public DateTime? TopAt { get; set; }
