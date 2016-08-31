@@ -130,6 +130,7 @@
     <Compile Include="Models\Entities\OperationUser.cs" />
     <Compile Include="Models\Entities\QuoteHistory.cs" />
     <Compile Include="Models\Entities\User.cs" />
+    <Compile Include="Models\Entities\UserAlert.cs" />
     <Compile Include="Models\Entities\UserAyondo.cs" />
     <Compile Include="Models\Entities\VerifyCode.cs" />
     <Compile Include="Models\Cached\ProdDef.cs" />

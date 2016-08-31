@@ -12,16 +12,16 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
+        public virtual DbSet<UserAlert> UserAlerts { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<QuoteHistory>()
-                .Property(e => e.Bid)
+            modelBuilder.Entity<UserAlert>()
+                .Property(e => e.HighPrice)
                 .HasPrecision(18, 5);
 
-            modelBuilder.Entity<QuoteHistory>()
-                .Property(e => e.Ask)
+            modelBuilder.Entity<UserAlert>()
+                .Property(e => e.LowPrice)
                 .HasPrecision(18, 5);
         }
     }

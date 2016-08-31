@@ -27,6 +27,7 @@ using CFD_COMMON.Utils.Extensions;
 
 namespace CFD_API.Controllers
 {
+    [RoutePrefix("api/user")]
     public class UserController : CFDController
     {
         public UserController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
@@ -574,6 +575,60 @@ namespace CFD_API.Controllers
             var result = new List<PLReportDTO> {stockUSPL, indexPL, fxPL, commodityPL};
 
             return result;
+        }
+
+        [HttpGet]
+        [Route("stockAlert")]
+        [BasicAuth]
+        public List<StockAlertDTO> GetStockAlerts()
+        {
+            var alerts = db.UserAlerts.Where(o => o.UserId == UserId && (o.HighEnabled.Value || o.LowEnabled.Value)).ToList();
+            return alerts.Select(o => Mapper.Map<StockAlertDTO>(o)).ToList();
+        }
+
+        [HttpGet]
+        [Route("stockAlert/all")]
+        [BasicAuth]
+        public List<StockAlertDTO> GetAllStockAlerts()
+        {
+            var alerts = db.UserAlerts.Where(o => o.UserId == UserId).ToList();
+            return alerts.Select(o => Mapper.Map<StockAlertDTO>(o)).ToList();
+        }
+
+        [HttpPut]
+        [Route("stockAlert")]
+        [BasicAuth]
+        public ResultDTO SetStockAlert(StockAlertDTO form)
+        {
+            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.SecurityId);
+
+            if (prodDef == null || prodDef.Name.EndsWith(" Outright"))
+                return new ResultDTO() {success = false};
+
+            var alert = db.UserAlerts.FirstOrDefault(o => o.UserId == UserId && o.SecurityId == form.SecurityId);
+
+            if (alert == null)
+            {
+                db.UserAlerts.Add(new UserAlert()
+                {
+                    UserId = UserId,
+                    SecurityId = form.SecurityId,
+                    HighPrice = form.HighPrice,
+                    HighEnabled = form.HighEnabled,
+                    LowPrice = form.LowPrice,
+                    LowEnabled = form.LowEnabled
+                });
+            }
+            else
+            {
+                alert.HighPrice = form.HighPrice;
+                alert.HighEnabled = form.HighEnabled;
+                alert.LowPrice = form.LowPrice;
+                alert.LowEnabled = form.LowEnabled;
+            }
+
+            db.SaveChanges();
+            return new ResultDTO() {success = true};
         }
 
         private bool IsLoginBlocked(string phone)
