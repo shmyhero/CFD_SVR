@@ -497,7 +497,15 @@ namespace CFD_API.Controllers
                 headlines = db.Headlines.Where(item => item.Id == id && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
             }
 
-            return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
+            //return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
+            return headlines.Select(o => new HeadlineDTO() {
+                id = o.Id,
+                header = o.Header,
+                body = o.Body,
+                image = o.ImgUrl,
+                color = o.Color.HasValue ? o.Color.Value : 0,
+                createdAt = o.CreatedAt
+            }).ToList();
         }
 
         [HttpGet]
