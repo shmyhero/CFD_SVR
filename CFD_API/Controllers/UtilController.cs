@@ -530,7 +530,16 @@ namespace CFD_API.Controllers
                     break;
                 }
             }
-            return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
+            //return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
+            return headlines.Select(o => new HeadlineDTO()
+            {
+                id = o.Id,
+                header = o.Header,
+                body = o.Body,
+                image = o.ImgUrl,
+                color = o.Color.HasValue ? o.Color.Value : 0,
+                createdAt = o.CreatedAt
+            }).ToList();
         }
 
         [HttpGet]
@@ -561,14 +570,14 @@ namespace CFD_API.Controllers
                 HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.createdDay == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
                 if (headlineGroupDTO != null)
                 {
-                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue? headLine.Color.Value : 0, image = headLine.ImgUrl });
                 }
                 else
                 {
                     headlineGroupDTO = new HeadlineGroupDTO();
                     headlineGroupDTO.createdDay = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
                     headlineGroupDTO.headlines = new List<HeadlineDTO>();
-                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl });
                     headlinesGroup.Add(headlineGroupDTO);
                 }
             }
