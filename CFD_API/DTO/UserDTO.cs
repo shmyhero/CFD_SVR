@@ -45,4 +45,13 @@
         public decimal invest { get; set; }
         public decimal pl { get; set; }
     }
+
+    public class StockAlertDTO
+    {
+        public int SecurityId { get; set; }
+        public decimal HighPrice { get; set; }
+        public bool HighEnabled { get; set; }
+        public decimal LowPrice { get; set; }
+        public bool LowEnabled { get; set; }
+    }
 }

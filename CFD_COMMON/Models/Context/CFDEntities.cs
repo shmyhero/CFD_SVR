@@ -31,6 +31,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<UserAlert> UserAlerts { get; set; }
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
         //public virtual DbSet<UserAyondo> UserAyondos { get; set; }
 
@@ -107,6 +108,15 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<QuoteHistory>()
                 .Property(e => e.Ask)
+                .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<UserAlert>()
+                .Property(e => e.HighPrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserAlert>()
+                .Property(e => e.LowPrice)
                 .HasPrecision(18, 5);
 
             //modelBuilder.Entity<AyondoSecurity>()
