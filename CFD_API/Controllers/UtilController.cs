@@ -432,12 +432,20 @@ namespace CFD_API.Controllers
                         Blob.DeleteBlob(CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER, picName);
                     }
 
+                    if(string.IsNullOrEmpty(picName))
+                    {
+                        picName = Guid.NewGuid().ToString("N");
+                    }
+
                     Byte[] bytes = Convert.FromBase64String(headLineDTO.image);
                     Blob.UploadFromBytes(CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER, picName, bytes);
+
+                    headline.ImgUrl = CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER_URL + picName;
                 }
 
                 headline.Header = headLineDTO.header;
                 headline.Body = headLineDTO.body;
+                headline.Color = headLineDTO.color;
             }
         }
 
