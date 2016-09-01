@@ -45,6 +45,10 @@ namespace CFD_COMMON.Models.Entities
 
         public bool? AutoCloseAlert { get; set; }
 
+        public string DeviceToken { get; set; }
+
+        public int? DeviceType { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

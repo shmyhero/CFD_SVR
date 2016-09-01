@@ -54,4 +54,10 @@
         public decimal LowPrice { get; set; }
         public bool LowEnabled { get; set; }
     }
+
+    public class PushDTO
+    {
+        public string deviceToken;
+        public int deviceType;
+    }
 }

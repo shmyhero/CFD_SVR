@@ -10,5 +10,10 @@ namespace CFD_COMMON.Models.Entities
     public partial class Device
     {
         public int Id { get; set; }
+        public int? userId { get; set; }
+        public string deviceToken { get; set; }
+        public int deviceType { get; set; }
+
+        public virtual User User { get; set; }
     }
 }

@@ -24,6 +24,19 @@ namespace CFD_TEST
     [TestClass]
     public class UnitTest1
     {
+        /// <summary>
+        /// Push test on android
+        /// </summary>
+        [TestMethod]
+        public void PushTest()
+        {
+            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+            list.Add(new KeyValuePair<string, string>("4d6fe5ac3ade3565adfe659aa34be9a7", "android推送测试"));
+            list.Add(new KeyValuePair<string, string>("de31686704da71e0b9ebfc2a7b50b30ad51aa3f2520130eb20c5195cdc5d00f4", "ios推送测试"));
+            var push = new GeTui();
+            var response = push.PushBatch(list);
+        }
+
         [TestMethod]
         public void ServiceStackJsonConfig()
         {
