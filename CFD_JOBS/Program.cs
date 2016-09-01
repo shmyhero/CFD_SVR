@@ -88,6 +88,11 @@ namespace CFD_JOBS
                     RedisToDbWorker.Run();
                 }
 
+                if (args.Contains("-StockAlert"))
+                {
+                    StockAlert.Run();
+                }
+
                 if (args.Contains("-TickChart"))
                 {
                     TickChartWorker.Run();
