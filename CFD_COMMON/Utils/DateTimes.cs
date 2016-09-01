@@ -10,7 +10,9 @@ namespace CFD_COMMON.Utils
     {
         public static DateTime GetChinaDateTimeNow()
         {
-            return DateTime.UtcNow.AddHours(8);
+            var dt = DateTime.UtcNow.AddHours(8);
+            DateTime.SpecifyKind(dt, DateTimeKind.Local);//change kind from UTC to local
+            return dt;
         }
 
         public static bool IsEqualDownToMinute(DateTime t1, DateTime t2)
