@@ -187,6 +187,72 @@ namespace CFD_API.Controllers
             return result;
         }
 
+        [HttpGet]
+        [Route("feedback")]
+        public List<FeedBackFormDTO_Pic> GetAllFeedBacks()
+        {
+            List<Feedback> feedbacks = db.Feedbacks.OrderByDescending(o => o.Id).Take(20).ToList();
+
+            List<FeedBackFormDTO_Pic> feedBackDTO = new List<FeedBackFormDTO_Pic>();
+            feedbacks.ForEach(
+                    o =>
+                    {
+                        List<string> photos = new List<string>();
+                        if(!string.IsNullOrEmpty(o.PicUrl))
+                        {
+                            photos.AddRange(o.PicUrl.Split(';').ToList().Where(url => !string.IsNullOrEmpty(url)));
+                            for (int x = 0; x < photos.Count; x++)
+                            {
+                                photos[x] = CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER_URL + photos[x];
+                            }
+                        }
+
+                        feedBackDTO.Add(new FeedBackFormDTO_Pic()
+                        {
+                            id = o.Id,
+                            phone = o.Phone,
+                            text = o.Text,
+                            photos = photos
+                        });
+                    }
+                );
+
+            return feedBackDTO;
+        }
+
+        [HttpGet]
+        [Route("nextfeedback/{id}")]
+        public List<FeedBackFormDTO_Pic> NextFeedBack(int id)
+        {
+            List<Feedback> feedbacks = db.Feedbacks.Where(o=>o.Id < id).OrderByDescending(o => o.Time).Take(20).ToList();
+
+            List<FeedBackFormDTO_Pic> feedBackDTO = new List<FeedBackFormDTO_Pic>();
+            feedbacks.ForEach(
+                    o =>
+                    {
+                        List<string> photos = new List<string>();
+                        if (!string.IsNullOrEmpty(o.PicUrl))
+                        {
+                            photos.AddRange(o.PicUrl.Split(';').ToList().Where(url => !string.IsNullOrEmpty(url)));
+                            for (int x = 0; x < photos.Count; x++)
+                            {
+                                photos[x] = CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER_URL + photos[x];
+                            }
+                        }
+
+                        feedBackDTO.Add(new FeedBackFormDTO_Pic()
+                        {
+                            id = o.Id,
+                            phone = o.Phone,
+                            text = o.Text,
+                            photos = photos
+                        });
+                    }
+                );
+
+            return feedBackDTO;
+        }
+
         //public async Task<Dictionary<string, string>> NewFeedbackPicture()
         //{
         //    if (!Request.Content.IsMimeMultipartContent())

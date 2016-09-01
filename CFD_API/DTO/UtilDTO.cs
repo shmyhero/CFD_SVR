@@ -79,6 +79,7 @@ namespace CFD_API.DTO
 
     public class FeedBackFormDTO_Pic
     {
+        public int id { get; set; }
         public string phone { get; set; }
         public string text { get; set; }
 
