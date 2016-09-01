@@ -179,7 +179,9 @@ namespace CFD_TEST
         [TestMethod]
         public void YunPianSMS()
         {
-            var sendSms = YunPianMessenger.SendSms("【MyHero运营】运营监控，本条为测试短信123！@#，回T退订", "13764349804");
+            var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。"+
+                "券号：G1608150944636277 密码：EQ7BKNQA8H72" +
+                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "18301933810");
             CFDGlobal.LogLine(sendSms);
         }
 
