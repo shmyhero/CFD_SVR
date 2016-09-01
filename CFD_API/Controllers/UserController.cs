@@ -631,6 +631,66 @@ namespace CFD_API.Controllers
             return new ResultDTO() {success = true};
         }
 
+        /// <summary>
+        /// for login user
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("pushtokenauth")]
+        [BasicAuth]
+        public ResultDTO SetPushTokenAuth(PushDTO form)
+        {
+            ResultDTO result = new ResultDTO() { success = true };
+           
+            User user = db.Users.FirstOrDefault( o => o.Id == UserId);
+           
+            Device device = db.Devices.FirstOrDefault(o => o.deviceToken == form.deviceToken && o.deviceType == o.deviceType);
+            if (device == null) //device token does not exist.
+            {
+                device = new Device();
+                device.deviceToken = form.deviceToken;
+                device.deviceType = form.deviceType;
+                db.Devices.Add(device);
+            }
+            else//if device token exists, update userid
+            { 
+                device.userId = user.Id;
+            }
+
+            db.SaveChanges();
+
+            return result;
+        }
+
+        /// <summary>
+        /// for guest user
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("pushtoken")]
+        public ResultDTO SetPushToken(PushDTO form)
+        {
+            ResultDTO result = new ResultDTO() { success = true };
+
+            Device device = db.Devices.FirstOrDefault(o => o.deviceToken == form.deviceToken && o.deviceType == o.deviceType);
+            if (device == null) //device token does not exist.
+            {
+                device = new Device();
+                device.deviceToken = form.deviceToken;
+                device.deviceType = form.deviceType;
+                db.Devices.Add(device);
+            }
+            else
+            { 
+                device.userId = null;
+            }
+
+            db.SaveChanges();
+            return result;
+        }
+        
         private bool IsLoginBlocked(string phone)
         {
             var oneDayAgo = DateTime.UtcNow.AddDays(-1);
