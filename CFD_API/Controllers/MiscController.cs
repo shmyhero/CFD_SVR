@@ -60,9 +60,12 @@ namespace CFD_API.Controllers
         [ActionName("wcf")]
         public HttpResponseMessage TestWCF()
         {
-            var ayondoTradeClient = new AyondoTradeClient();
-            var testSleep = ayondoTradeClient.TestSleep(TimeSpan.FromSeconds(3));
-            return Request.CreateResponse(HttpStatusCode.OK, testSleep);
+            string result;
+            using (var ayondoTradeClient = new AyondoTradeClient())
+            {
+                result = ayondoTradeClient.TestSleep(TimeSpan.FromSeconds(3));
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
         [HttpGet]

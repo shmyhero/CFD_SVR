@@ -23,6 +23,7 @@ using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
 using System.Web;
 using System.Drawing;
+using AyondoTrade.Model;
 using CFD_COMMON.Utils.Extensions;
 
 namespace CFD_API.Controllers
@@ -377,14 +378,17 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public BalanceDTO GetBalance(bool ignoreCache = false)
         {
-            var clientHttp = new AyondoTradeClient();
-
             var user = GetUser();
 
             CheckAyondoAccount(user);
 
-            var balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
-            var positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+            decimal balance;
+            IList<PositionReport> positionReports;
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
+                positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+            }
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
@@ -438,14 +442,16 @@ namespace CFD_API.Controllers
 
             CheckAyondoAccount(user);
 
-            var clientHttp = new AyondoTradeClient();
-
             var endTime = DateTime.UtcNow;
             var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
 
-            var positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
-            var positionHistoryReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
-            var groupByPositions = positionHistoryReports.GroupBy(o => o.PosMaintRptID);
+            IList<PositionReport> positionOpenReports;
+            IList<PositionReport> positionHistoryReports;
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+                positionHistoryReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
+            }
 
             //var secIds = positionOpenReports.Select(o => o.SecurityID).Concat(positionHistoryReports.Select(o => o.SecurityID)).Distinct().Select(o => Convert.ToInt32(o)).ToList();
             //var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
@@ -513,6 +519,8 @@ namespace CFD_API.Controllers
                     stockUSPL.pl += uplUSD;
                 }
             }
+
+            var groupByPositions = positionHistoryReports.GroupBy(o => o.PosMaintRptID);
 
             //closed positions
             foreach (var positionGroup in groupByPositions)

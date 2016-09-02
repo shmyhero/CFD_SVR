@@ -43,9 +43,11 @@ namespace CFD_API.Controllers
             
             CheckAyondoAccount(user);
 
-            var wcfClient = new AyondoTradeClient();
-
-            var result = wcfClient.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+            IList<PositionReport> result;
+            using (var wcfClient = new AyondoTradeClient())
+            {
+                result = wcfClient.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+            }
 
             if (result.Count == 0)
                 return new List<PositionDTO>();
@@ -129,11 +131,13 @@ namespace CFD_API.Controllers
 
             CheckAyondoAccount(user);
 
-            var clientHttp = new AyondoTradeClient();
-
-            var endTime = DateTime.UtcNow;
-            var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
-            var historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, ignoreCache);
+            IList<PositionReport> historyReports;
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                var endTime = DateTime.UtcNow;
+                var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
+                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, ignoreCache);
+            }
 
             var result = new List<PositionHistoryDTO>();
 
@@ -280,66 +284,76 @@ namespace CFD_API.Controllers
             if (stopPx == 0)
                 stopPx = _minStopPx;
 
-            var clientHttp = new AyondoTradeClient();
-
             PositionReport result;
-            try
+            using (var clientHttp = new AyondoTradeClient())
             {
-                result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.isLong,
-                    //form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value
-                    quantity,
-                    leverage: form.leverage,
-                    stopPx: stopPx
-                    );
-            }
-            catch (FaultException<OrderRejectedFault> e)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
-                    __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
-            }
-
-            CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong + " invest:" + form.invest + " leverage:" + form.leverage +
-                              " | quote:" + quotePrice + " | quantity:" + quantity + " stopPx:" + stopPx + " | Qty:" + (result.LongQty ?? result.ShortQty) + " SettlePrice:" +
-                              result.SettlPrice);
-
-            //save new position history
-            db.NewPositionHistories.Add(new NewPositionHistory()
-            {
-                Id=Convert.ToInt64(result.PosMaintRptID),
-                UserId = UserId,
-                SecurityId = Convert.ToInt32(result.SecurityID),
-                CreateTime=result.CreateTime,
-                Leverage = result.Leverage,
-                LongQty = result.LongQty,
-                ShortQty = result.ShortQty,
-                SettlePrice = result.SettlPrice,
-                InvestUSD = form.invest,
-            });
-
-            //update ayondo account id if not same
-            var accountId = Convert.ToInt64(result.Account);
-            if (user.AyondoAccountId != accountId)
-                user.AyondoAccountId = accountId;
-
-            db.SaveChanges();
-
-            //when price changes, set stop again to prevent >100% loss
-            if (quotePrice != result.SettlPrice)
-            {
-                decimal newStopPx = result.LongQty.HasValue ? result.SettlPrice*(1 - 1/result.Leverage.Value) : result.SettlPrice*(1 + 1/result.Leverage.Value);
-                newStopPx = result.LongQty.HasValue ? Maths.Ceiling(newStopPx, prodDef.Prec) : Maths.Floor(newStopPx, prodDef.Prec);
-
-                if (result.LongQty.HasValue && newStopPx > stopPx || result.ShortQty.HasValue && newStopPx < stopPx)
+                try
                 {
-                    CFDGlobal.LogLine("ReSet StopPx: quote:" + quotePrice + " settlePrice:" + result.SettlPrice + " | oldStop:" + stopPx + " newStop:" + newStopPx);
-                    try
+                    result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.isLong,
+                        //form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value
+                        quantity,
+                        leverage: form.leverage,
+                        stopPx: stopPx
+                        );
+                }
+                catch (FaultException<OrderRejectedFault> e)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                        __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                }
+
+                CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong +
+                                  " invest:" + form.invest + " leverage:" + form.leverage +
+                                  " | quote:" + quotePrice + " | quantity:" + quantity + " stopPx:" + stopPx + " | Qty:" +
+                                  (result.LongQty ?? result.ShortQty) + " SettlePrice:" +
+                                  result.SettlPrice);
+
+                //save new position history
+                db.NewPositionHistories.Add(new NewPositionHistory()
+                {
+                    Id = Convert.ToInt64(result.PosMaintRptID),
+                    UserId = UserId,
+                    SecurityId = Convert.ToInt32(result.SecurityID),
+                    CreateTime = result.CreateTime,
+                    Leverage = result.Leverage,
+                    LongQty = result.LongQty,
+                    ShortQty = result.ShortQty,
+                    SettlePrice = result.SettlPrice,
+                    InvestUSD = form.invest,
+                });
+
+                //update ayondo account id if not same
+                var accountId = Convert.ToInt64(result.Account);
+                if (user.AyondoAccountId != accountId)
+                    user.AyondoAccountId = accountId;
+
+                db.SaveChanges();
+
+                //when price changes, set stop again to prevent >100% loss
+                if (quotePrice != result.SettlPrice)
+                {
+                    decimal newStopPx = result.LongQty.HasValue
+                        ? result.SettlPrice*(1 - 1/result.Leverage.Value)
+                        : result.SettlPrice*(1 + 1/result.Leverage.Value);
+                    newStopPx = result.LongQty.HasValue
+                        ? Maths.Ceiling(newStopPx, prodDef.Prec)
+                        : Maths.Floor(newStopPx, prodDef.Prec);
+
+                    if (result.LongQty.HasValue && newStopPx > stopPx || result.ShortQty.HasValue && newStopPx < stopPx)
                     {
-                        var positionReport = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, Convert.ToInt32(result.SecurityID), result.StopOID, newStopPx,
-                            result.PosMaintRptID);
-                    }
-                    catch (FaultException<OrderRejectedFault> e)
-                    {
-                        CFDGlobal.LogWarning("Error while ReSetting StopPx: " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text));
+                        CFDGlobal.LogLine("ReSet StopPx: quote:" + quotePrice + " settlePrice:" + result.SettlPrice +
+                                          " | oldStop:" + stopPx + " newStop:" + newStopPx);
+                        try
+                        {
+                            var positionReport = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword,
+                                Convert.ToInt32(result.SecurityID), result.StopOID, newStopPx,
+                                result.PosMaintRptID);
+                        }
+                        catch (FaultException<OrderRejectedFault> e)
+                        {
+                            CFDGlobal.LogWarning("Error while ReSetting StopPx: " +
+                                                 Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text));
+                        }
                     }
                 }
             }
@@ -386,16 +400,18 @@ namespace CFD_API.Controllers
             //var redisQuoteClient = RedisClient.As<Quote>();
             //var quote = redisQuoteClient.GetById(form.securityId);
 
-            var clientHttp = new AyondoTradeClient();
-
             PositionReport result;
-            try
+            using (var clientHttp = new AyondoTradeClient())
             {
-                result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, !form.isPosLong, form.posQty, nettingPositionId: form.posId);
-            }
-            catch (FaultException<OrderRejectedFault> e)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                try
+                {
+                    result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, !form.isPosLong, form.posQty, nettingPositionId: form.posId);
+                }
+                catch (FaultException<OrderRejectedFault> e)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                        Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                }
             }
 
             //var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == form.securityId);
@@ -435,16 +451,17 @@ namespace CFD_API.Controllers
 
             CheckAyondoAccount(user);
 
-            var clientHttp = new AyondoTradeClient();
-
             PositionReport report;
-            try
+            using (var clientHttp = new AyondoTradeClient())
             {
-                report = clientHttp.NewTakeOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.price, form.posId);
-            }
-            catch (FaultException<OrderRejectedFault> e)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                try
+                {
+                    report = clientHttp.NewTakeOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.price, form.posId);
+                }
+                catch (FaultException<OrderRejectedFault> e)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                }
             }
 
             var posDTO = MapPositionReportToPositionDTO(report);
@@ -468,16 +485,17 @@ namespace CFD_API.Controllers
 
             CheckAyondoAccount(user);
 
-            var clientHttp = new AyondoTradeClient();
-
             PositionReport report;
-            try
+            using (var clientHttp = new AyondoTradeClient())
             {
-                report = clientHttp.CancelOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.orderId, form.posId);
-            }
-            catch (FaultException<OrderRejectedFault> e)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                try
+                {
+                    report = clientHttp.CancelOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.orderId, form.posId);
+                }
+                catch (FaultException<OrderRejectedFault> e)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                }
             }
 
             var posDTO = MapPositionReportToPositionDTO(report);
@@ -501,16 +519,17 @@ namespace CFD_API.Controllers
 
             CheckAyondoAccount(user);
 
-            var clientHttp = new AyondoTradeClient();
-
             PositionReport report;
-            try
-            {
-                report = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.orderId, form.price, form.posId);
-            }
-            catch (FaultException<OrderRejectedFault> e)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+            using (var clientHttp = new AyondoTradeClient())
+            { 
+                try
+                {
+                    report = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.orderId, form.price, form.posId);
+                }
+                catch (FaultException<OrderRejectedFault> e)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                }
             }
 
             var posDTO = MapPositionReportToPositionDTO(report);
@@ -529,9 +548,11 @@ namespace CFD_API.Controllers
         [Route("printcache")]
         public string PrintCache(string username = "")
         {
-            var clientHttp = new AyondoTradeClient();
-
-            var result = clientHttp.PrintCache(username);
+            string result;
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                result = clientHttp.PrintCache(username);
+            }
             return result;
         }
 
@@ -539,16 +560,20 @@ namespace CFD_API.Controllers
         [Route("switchcache")]
         public void SwitchCache(string mode = "")
         {
-            var clientHttp = new AyondoTradeClient();
-            clientHttp.SwitchCache(mode);
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                clientHttp.SwitchCache(mode);
+            }
         }
 
         [HttpGet]
         [Route("clearcache")]
         public void ClearCache(string username = "")
         {
-            var clientHttp = new AyondoTradeClient();
-            clientHttp.ClearCache(username);
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                clientHttp.ClearCache(username);
+            }
         }
 
         private static PositionDTO MapPositionReportToPositionDTO(PositionReport report)

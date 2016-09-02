@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading;
 using AyondoTrade;
+using AyondoTrade.Model;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
@@ -229,10 +230,17 @@ namespace CFD_JOBS
 
                                     var userPositions = new List<CompetitionUserPosition>();
 
-                                    var clientHttp = new AyondoTradeClient();
-                                    var openPositions = clientHttp.GetPositionReport(
-                                        competitionUser.User.AyondoUsername,
-                                        competitionUser.User.AyondoPassword);
+                                    IList<PositionReport> openPositions;
+                                    IList<PositionReport> historyReports;
+                                    using (var clientHttp = new AyondoTradeClient())
+                                    {
+                                        openPositions = clientHttp.GetPositionReport(
+                                            competitionUser.User.AyondoUsername, competitionUser.User.AyondoPassword);
+                                        historyReports =
+                                            clientHttp.GetPositionHistoryReport(competitionUser.User.AyondoUsername,
+                                                competitionUser.User.AyondoPassword, startDateUtc,
+                                                endDateUtc.AddMilliseconds(-1), true, false);
+                                    }
 
                                     //yesterday created open positions
                                     var yesterdayOpenedPositions =
@@ -279,11 +287,6 @@ namespace CFD_JOBS
 
                                         userPositions.Add(competitionUserPosition);
                                     }
-
-                                    var historyReports =
-                                        clientHttp.GetPositionHistoryReport(competitionUser.User.AyondoUsername,
-                                            competitionUser.User.AyondoPassword, startDateUtc,
-                                            endDateUtc.AddMilliseconds(-1), true, false);
 
                                     var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
 
