@@ -7,12 +7,15 @@ using System.Threading;
 using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using ServiceStack.Text;
+using System.Threading.Tasks;
+using CFD_COMMON.Utils;
+using CFD_COMMON.Utils.Extensions;
 
 namespace CFD_JOBS.Ayondo
 {
     public class AyondoTradeHistory
     {
-        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
         private static DateTime? _lastEndTime = null;
 
         public static void Run()
@@ -60,12 +63,10 @@ namespace CFD_JOBS.Ayondo
                     }
                     else
                     {
+                        var entities = new List<CFD_COMMON.Models.Entities.AyondoTradeHistory>();
                         using (var db = CFDEntities.Create())
                         {
                             var dbMaxCreateTime = db.AyondoTradeHistories.Max(o => o.CreateTime);
-
-                            var entities = new List<CFD_COMMON.Models.Entities.AyondoTradeHistory>();
-
                             //PositionID,TradeID,AccountID,FirstName,LastName,
                             //TradeTime,ProductID,ProductName,Direction,Trade Size,
                             //Trade Price,Realized P&L,GUID,StopLoss,TakeProfit,
@@ -136,6 +137,10 @@ namespace CFD_JOBS.Ayondo
                                 db.SaveChanges();
                             }
                         }
+
+                        Task.Factory.StartNew(() => {
+                            Push(entities);
+                        });
                     }
 
                     CFDGlobal.LogLine("");
@@ -147,6 +152,46 @@ namespace CFD_JOBS.Ayondo
                 }
 
                 Thread.Sleep(Interval);
+            }
+        }
+
+        /// <summary>
+        /// push auto-close notification
+        /// </summary>
+        /// <param name="systemCloseHistory"></param>
+        private static void Push(List<CFD_COMMON.Models.Entities.AyondoTradeHistory> systemCloseHistorys)
+        {
+            string msgTemplate = "您有一笔[{0}]的平仓记录，请查看。";
+
+            List<KeyValuePair<string, string>> getuiPushList = new List<KeyValuePair<string, string>>();
+            List<long> ayondoAccountIds = systemCloseHistorys.Where(o => o.AccountId.HasValue).Select(o => o.AccountId.Value).ToList();
+            using (var db = CFDEntities.Create())
+            {
+                var query = from d in db.Devices
+                               join u in db.Users on d.userId equals u.Id
+                               where ayondoAccountIds.Contains(u.AyondoAccountId.Value)
+                               select new {d.deviceToken, d.userId, u.AyondoAccountId   };
+                //var device = pushList.FirstOrDefault();
+
+                var result = query.ToList();
+
+                foreach(var h in systemCloseHistorys)
+                {
+                    foreach (var item in result)
+                    {
+                        if(item.AyondoAccountId == h.AccountId)
+                        {
+                            getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, h.SecurityName)));
+                        }
+                    }
+                }
+            }
+
+            var splitedPushList = getuiPushList.SplitInChuncks(1000);
+            var push = new GeTui();
+            foreach(var pushList in splitedPushList)
+            {
+                var response = push.PushBatch(pushList);
             }
         }
     }
