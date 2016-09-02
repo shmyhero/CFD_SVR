@@ -123,6 +123,7 @@ namespace AyondoTrade
             CFDGlobal.LogLine("Balances:" + countOld + " -> " + countNew);
 
             CFDGlobal.LogLine("BusinessMessageRejects:" + FixApp.BusinessMessageRejects.Count);
+            CFDGlobal.LogLine("SuccessUserResponses:" + FixApp.SuccessUserResponses.Count);
             CFDGlobal.LogLine("FailedUserResponses:" + FixApp.FailedUserResponses.Count);
 
             //OrderPositionReports

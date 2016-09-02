@@ -609,14 +609,37 @@ namespace AyondoTrade
             do
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
-                if (Global.FixApp.UsernameAccounts.ContainsKey(username))
+
+                //if (Global.FixApp.UsernameAccounts.ContainsKey(username))
+                //{
+                //    account = Global.FixApp.UsernameAccounts[username];
+                //    break;
+                //}
+
+                if (Global.FixApp.SuccessUserResponses.ContainsKey(guid))
                 {
-                    account = Global.FixApp.UsernameAccounts[username];
-                    break;
+                    KeyValuePair<DateTime, UserResponse> msg = new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, null);
+                    var tryGetValue = Global.FixApp.SuccessUserResponses.TryGetValue(guid, out msg);
+
+                    if (tryGetValue)
+                    {
+                        account = msg.Value.GetString(Tags.Account);
+                        break;
+                    }
                 }
 
                 CheckFailedUserResponse(guid);
             } while (DateTime.UtcNow - dtLogon <= TIMEOUT); // timeout
+
+            //if no success user response: 1. login failed   2. donotresend caught
+            //try to get account from UsernameAccounts then
+            if (string.IsNullOrEmpty(account))
+            {
+                if (Global.FixApp.UsernameAccounts.ContainsKey(username))
+                {
+                    account = Global.FixApp.UsernameAccounts[username];
+                }
+            }
 
             if (string.IsNullOrEmpty(account))
                 throw new Exception("fix log on time out " + guid);
