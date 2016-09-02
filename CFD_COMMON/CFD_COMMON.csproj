@@ -44,7 +44,7 @@
     </Reference>
     <Reference Include="GetuiServerApiSDK, Version=4.0.0.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\TH_SVR-development\TH_SVR-development\Libraries\GeTui\GetuiServerApiSDK.dll</HintPath>
+      <HintPath>Library\GeTui\GetuiServerApiSDK.dll</HintPath>
     </Reference>
     <Reference Include="Google.ProtocolBuffers, Version=2.4.1.473, Culture=neutral, PublicKeyToken=55f7125234beb589, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
