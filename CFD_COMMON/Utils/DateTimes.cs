@@ -11,7 +11,7 @@ namespace CFD_COMMON.Utils
         public static DateTime GetChinaDateTimeNow()
         {
             var dt = DateTime.UtcNow.AddHours(8);
-            DateTime.SpecifyKind(dt, DateTimeKind.Local);//change kind from UTC to local
+            //dt = DateTime.SpecifyKind(dt, DateTimeKind.Local);//change kind from UTC to local
             return dt;
         }
 
