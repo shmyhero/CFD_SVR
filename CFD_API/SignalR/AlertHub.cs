@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 
@@ -61,8 +62,11 @@ namespace CFD_API.SignalR
 
             if (userId == -1 || token == null) return false;
 
-            var db = CFDEntities.Create();
-            var user = db.Users.FirstOrDefault(o => o.Id == userId && o.Token == token);
+            User user;
+            using (var db = CFDEntities.Create())
+            {
+                user = db.Users.AsNoTracking().FirstOrDefault(o => o.Id == userId && o.Token == token);
+            }
 
             if (user == null) return false;
 

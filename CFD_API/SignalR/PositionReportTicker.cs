@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using AyondoTrade;
+using AyondoTrade.Model;
 using CFD_API.Caching;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
@@ -59,9 +61,11 @@ namespace CFD_API.SignalR
 
                     try
                     {
-                        var clientHttp = new AyondoTradeClient();
-
-                        var dicUserPositionReports = clientHttp.PopAutoClosedPositionReports(ayondoUsernames);
+                        IDictionary<string, IList<PositionReport>> dicUserPositionReports;
+                        using (var clientHttp = new AyondoTradeClient())
+                        {
+                            dicUserPositionReports = clientHttp.PopAutoClosedPositionReports(ayondoUsernames);
+                        }
 
                         if (dicUserPositionReports.Count > 0)
                         {
