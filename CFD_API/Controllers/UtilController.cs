@@ -19,6 +19,7 @@ using CFD_API.Azure;
 using System.Collections.Specialized;
 using System.Text;
 using CFD_COMMON.Azure;
+using System.Text.RegularExpressions;
 
 namespace CFD_API.Controllers
 {
@@ -649,6 +650,40 @@ namespace CFD_API.Controllers
             }
 
             return headlinesGroup;
+        }
+
+        private const string SMS_Auth = "7AF1CCCC-DDB8-460A-A526-B204C91D316E";
+        [HttpPost]
+        [Route("SMS")]
+        public ResultDTO SendSMS(SMSDTO form)
+        {
+            ResultDTO result = new ResultDTO() { success = true };
+
+            if (Request.Headers.Authorization == null || Request.Headers.Authorization.Parameter != SMS_Auth)
+            {
+                result.success = false;
+                result.message = "not authorized.";
+                return result;
+            }
+
+            if (form == null || string.IsNullOrEmpty(form.mobile) || string.IsNullOrEmpty(form.message))
+            {
+                result.success = false;
+                result.message = "missing necessary parameter.";
+                return result;
+            }
+
+            string pattern = "[1][358]\\d{9}";
+            if(!Regex.IsMatch(form.mobile, pattern))
+            {
+                result.success = false;
+                result.message = "invalid mobile number.";
+                return result;
+            }
+
+            YunPianMessenger.SendSms(form.message, form.mobile);
+
+            return result;
         }
     }
 }

@@ -93,4 +93,11 @@ namespace CFD_API.DTO
         public string startdate { get; set; }
         public string enddate { get; set; }
     }
+
+    public class SMSDTO
+    {
+        public string message { get; set; }
+        public string mobile { get; set; }
+
+    }
 }
