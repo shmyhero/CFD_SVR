@@ -139,7 +139,7 @@ namespace CFD_JOBS.Ayondo
                         }
 
                         Task.Factory.StartNew(() => {
-                            Push(entities);
+                            //Push(entities);
                         });
                     }
 
@@ -161,6 +161,9 @@ namespace CFD_JOBS.Ayondo
         /// <param name="systemCloseHistory"></param>
         private static void Push(List<CFD_COMMON.Models.Entities.AyondoTradeHistory> systemCloseHistorys)
         {
+            if (systemCloseHistorys == null || systemCloseHistorys.Count == 0)
+                return;
+
             string msgTemplate = "您有一笔[{0}]的平仓记录，请查看。";
 
             List<KeyValuePair<string, string>> getuiPushList = new List<KeyValuePair<string, string>>();
@@ -171,7 +174,6 @@ namespace CFD_JOBS.Ayondo
                                join u in db.Users on d.userId equals u.Id
                                where ayondoAccountIds.Contains(u.AyondoAccountId.Value)
                                select new {d.deviceToken, d.userId, u.AyondoAccountId   };
-                //var device = pushList.FirstOrDefault();
 
                 var result = query.ToList();
 
