@@ -10,6 +10,7 @@ using ServiceStack.Text;
 using System.Threading.Tasks;
 using CFD_COMMON.Utils;
 using CFD_COMMON.Utils.Extensions;
+using CFD_COMMON.Localization;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -139,7 +140,8 @@ namespace CFD_JOBS.Ayondo
                         }
 
                         Task.Factory.StartNew(() => {
-                            //Push(entities);
+                            List<CFD_COMMON.Models.Entities.AyondoTradeHistory> systemClosedPositions = entities.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
+                            Push(systemClosedPositions);
                         });
                     }
 
@@ -164,7 +166,8 @@ namespace CFD_JOBS.Ayondo
             if (systemCloseHistorys == null || systemCloseHistorys.Count == 0)
                 return;
 
-            string msgTemplate = "您有一笔[{0}]的平仓记录，请查看。";
+            //
+            string msgTemplate = "{0}于{1}平仓，价格为{2}美元,已{3}美元";
 
             List<KeyValuePair<string, string>> getuiPushList = new List<KeyValuePair<string, string>>();
             List<long> ayondoAccountIds = systemCloseHistorys.Where(o => o.AccountId.HasValue).Select(o => o.AccountId.Value).ToList();
@@ -183,7 +186,20 @@ namespace CFD_JOBS.Ayondo
                     {
                         if(item.AyondoAccountId == h.AccountId)
                         {
-                            getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, h.SecurityName)));
+                            string msgPart4 = string.Empty;
+                            if(h.PL.HasValue)
+                            {
+                                if(h.PL.Value < 0)
+                                {
+                                    msgPart4 = "亏损" + Math.Abs(Math.Round(h.PL.Value)).ToString();
+                                }
+                                else
+                                {
+                                    msgPart4 = "盈利" + Math.Abs(Math.Round(h.PL.Value)).ToString();
+                                }
+                            }
+                            string message = string.Format(msgTemplate, Translator.GetCName(h.SecurityName), h.TradeTime, Math.Round(h.TradePrice.Value,2), msgPart4);
+                            getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, message));
                         }
                     }
                 }
