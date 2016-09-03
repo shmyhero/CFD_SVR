@@ -80,6 +80,12 @@ namespace AyondoTrade
         /// <summary>
         /// guid as key
         /// </summary>
+        public ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>> SuccessUserResponses =
+            new ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>>();
+
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>> FailedUserResponses =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>>();
 
@@ -304,6 +310,10 @@ namespace AyondoTrade
 
                 if (response.UserStatus.Obj == UserStatus.LOGGED_IN)
                 {
+                    //save UserResponse
+                    var guid = response.UserRequestID.Obj;
+                    SuccessUserResponses.TryAdd(guid, new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, response));
+
                     //for console test
                     _account = account;
 
