@@ -31,8 +31,10 @@ namespace CFD_TEST
         public void PushTest()
         {
             List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-            list.Add(new KeyValuePair<string, string>("4d6fe5ac3ade3565adfe659aa34be9a7", "android推送测试"));
-            list.Add(new KeyValuePair<string, string>("de31686704da71e0b9ebfc2a7b50b30ad51aa3f2520130eb20c5195cdc5d00f4", "ios推送测试"));
+            list.Add(new KeyValuePair<string, string>("1bb776721e45b84757e7724fa0d1b9a0", "ios推送测试"));
+            list.Add(new KeyValuePair<string, string>("3e79eb1fd1f6017a055aa707497e56ca", "ios推送测试"));
+            list.Add(new KeyValuePair<string, string>("7bfd75c1ee703c1435c48f89835ae2e7", "ios推送测试"));
+            list.Add(new KeyValuePair<string, string>("f2166f4dc5bceb9977ffbeaf318f1f4e", "ios推送测试"));
             var push = new GeTui();
             var response = push.PushBatch(list);
         }

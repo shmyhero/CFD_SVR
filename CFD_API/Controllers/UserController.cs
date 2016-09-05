@@ -682,6 +682,13 @@ namespace CFD_API.Controllers
         {
             ResultDTO result = new ResultDTO() { success = true };
 
+            if(string.IsNullOrEmpty(form.deviceToken))
+            {
+                result.success = false;
+                result.message = "Empty DeviceToken";
+                return result;
+            }
+
             Device device = db.Devices.FirstOrDefault(o => o.deviceToken == form.deviceToken && o.deviceType == o.deviceType);
             if (device == null) //device token does not exist.
             {

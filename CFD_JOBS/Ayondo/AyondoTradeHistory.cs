@@ -166,16 +166,18 @@ namespace CFD_JOBS.Ayondo
             if (systemCloseHistorys == null || systemCloseHistorys.Count == 0)
                 return;
 
-            //
-            string msgTemplate = "{0}于{1}平仓，价格为{2}美元,已{3}美元";
+            string msgTemplate = "{{\"type\":\"1\", \"title\":\"盈交易\", \"message\":{0}}}";
+
+            //me
+            string msgContentTemplate = "{0}于{1}平仓，价格为{2}美元,已{3}美元";
 
             List<KeyValuePair<string, string>> getuiPushList = new List<KeyValuePair<string, string>>();
-            List<long> ayondoAccountIds = systemCloseHistorys.Where(o => o.AccountId.HasValue).Select(o => o.AccountId.Value).ToList();
+            List<long> ayondoAccountIds = systemCloseHistorys.Where(o => o.AccountId.HasValue).Select(o => o.AccountId.Value).Distinct().ToList();
             using (var db = CFDEntities.Create())
             {
                 var query = from d in db.Devices
                                join u in db.Users on d.userId equals u.Id
-                               where ayondoAccountIds.Contains(u.AyondoAccountId.Value)
+                               where ayondoAccountIds.Contains(u.AyondoAccountId.Value) && u.AutoCloseAlert.HasValue && u.AutoCloseAlert.Value
                                select new {d.deviceToken, d.userId, u.AyondoAccountId   };
 
                 var result = query.ToList();
@@ -198,8 +200,8 @@ namespace CFD_JOBS.Ayondo
                                     msgPart4 = "盈利" + Math.Abs(Math.Round(h.PL.Value)).ToString();
                                 }
                             }
-                            string message = string.Format(msgTemplate, Translator.GetCName(h.SecurityName), h.TradeTime, Math.Round(h.TradePrice.Value,2), msgPart4);
-                            getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, message));
+                            string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), h.TradeTime, Math.Round(h.TradePrice.Value,2), msgPart4);
+                            getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message)));
                         }
                     }
                 }
