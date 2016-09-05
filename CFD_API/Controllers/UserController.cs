@@ -651,7 +651,7 @@ namespace CFD_API.Controllers
         {
             ResultDTO result = new ResultDTO() { success = true };
            
-            User user = db.Users.FirstOrDefault( o => o.Id == UserId);
+            //User user = db.Users.FirstOrDefault( o => o.Id == UserId);
            
             Device device = db.Devices.FirstOrDefault(o => o.deviceToken == form.deviceToken && o.deviceType == o.deviceType);
             if (device == null) //device token does not exist.
@@ -663,7 +663,7 @@ namespace CFD_API.Controllers
             }
             else//if device token exists, update userid
             { 
-                device.userId = user.Id;
+                device.userId = UserId;
             }
 
             db.SaveChanges();
