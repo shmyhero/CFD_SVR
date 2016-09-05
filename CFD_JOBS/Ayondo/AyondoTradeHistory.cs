@@ -205,7 +205,7 @@ namespace CFD_JOBS.Ayondo
                 }
             }
 
-            var splitedPushList = getuiPushList.SplitInChuncks(1000);
+            var splitedPushList = getuiPushList.SplitInChunks(1000);
             var push = new GeTui();
             foreach(var pushList in splitedPushList)
             {
