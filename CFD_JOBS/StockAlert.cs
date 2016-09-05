@@ -75,17 +75,19 @@ namespace CFD_JOBS.Ayondo
                                 {
                                     if (alert.HighEnabled.Value && quote.Bid >= alert.HighPrice)
                                     {
-                                        alert.HighEnabled = false;
-                                        alert.HighPrice = null;
                                         newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
                                             $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格达到{quote.Bid}，高于您设置的{Math.Round(alert.HighPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}"));
+
+                                        alert.HighEnabled = false;
+                                        alert.HighPrice = null;
                                     }
                                     if (alert.LowEnabled.Value && quote.Offer <= alert.LowPrice)
                                     {
-                                        alert.LowEnabled = false;
-                                        alert.LowPrice = null;
                                         newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
                                             $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格跌到{quote.Offer}，低于您设置的{Math.Round(alert.LowPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}"));
+
+                                        alert.LowEnabled = false;
+                                        alert.LowPrice = null;
                                     }
                                 }
                             }
