@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using CFD_COMMON;
+using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Utils;
+using CFD_COMMON.Utils.Extensions;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -37,11 +41,13 @@ namespace CFD_JOBS.Ayondo
 
                             var groups = userAlerts.GroupBy(o => o.SecurityId).ToList();
 
+                            var newAlertList = new List<KeyValuePair<int, string>>();
+
                             foreach (var group in groups)
                             {
                                 var secId = group.Key;
 
-                                CFDGlobal.LogLine("sec: " + secId + " alert_count: " + group.Count());
+                                //CFDGlobal.LogLine("sec: " + secId + " alert_count: " + group.Count());
 
                                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
                                 var quote = quotes.FirstOrDefault(o => o.Id == secId);
@@ -69,17 +75,59 @@ namespace CFD_JOBS.Ayondo
                                 {
                                     if (alert.HighEnabled.Value && quote.Bid >= alert.HighPrice)
                                     {
+                                        newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
+                                            $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格达到{quote.Bid}，高于您设置的{Math.Round(alert.HighPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}"));
+
                                         alert.HighEnabled = false;
+                                        alert.HighPrice = null;
                                     }
                                     if (alert.LowEnabled.Value && quote.Offer <= alert.LowPrice)
                                     {
+                                        newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
+                                            $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格跌到{quote.Offer}，低于您设置的{Math.Round(alert.LowPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}"));
+
                                         alert.LowEnabled = false;
+                                        alert.LowPrice = null;
                                     }
                                 }
                             }
 
-                            db.SaveChanges();
+                            if (newAlertList.Count > 0)
+                            {
+                                //disable triggered alert
+                                db.SaveChanges();
 
+                                CFDGlobal.LogLine(newAlertList.Count + " alerts to send...");
+
+                                CFDGlobal.LogLine("pushing to GeTui...");
+                                var geTuiList = new List<KeyValuePair<string, string>>();
+
+                                var userIds = newAlertList.Select(o => o.Key).Distinct().ToList();
+                                var devices =
+                                    db.Devices.Where(o => o.userId.HasValue && userIds.Contains(o.userId.Value))
+                                        .ToList();
+
+                                foreach (var pair in newAlertList)
+                                {
+                                    var userDevices = devices.Where(o => o.userId == pair.Key).ToList();
+
+                                    foreach (var userDevice in userDevices)
+                                    {
+                                        geTuiList.Add(new KeyValuePair<string, string>(userDevice.deviceToken,
+                                            pair.Value));
+                                    }
+                                }
+
+                                if (geTuiList.Count > 0)
+                                {
+                                    var push = new GeTui();
+                                    var chuncks = geTuiList.SplitInChunks(1000);
+                                    foreach (var chunck in chuncks)
+                                    {
+                                        push.PushBatch(chunck);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -88,7 +136,8 @@ namespace CFD_JOBS.Ayondo
                     CFDGlobal.LogException(e);
                 }
 
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                CFDGlobal.LogLine("");
+                Thread.Sleep(_sleepInterval);
             }
         }
     }

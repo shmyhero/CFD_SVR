@@ -8,7 +8,7 @@ namespace CFD_COMMON.Utils.Extensions
 {
     public static class CollectionExtensions
     {
-        public static IEnumerable<IEnumerable<T>> SplitInChuncks<T>(this IEnumerable<T> enumerable, int chunkSize)
+        public static IEnumerable<IEnumerable<T>> SplitInChunks<T>(this IEnumerable<T> enumerable, int chunkSize)
         {
             if (chunkSize <= 0)
             {
