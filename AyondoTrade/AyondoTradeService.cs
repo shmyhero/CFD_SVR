@@ -27,12 +27,12 @@ namespace AyondoTrade
             }
             catch (Exception)
             {
-                throw new Exception("authentication failed. no token in message header");
+                throw new FaultException("authentication failed. no token in message header");
             }
 
             if (token != Global.WCF_MSG_HEADER_TOKEN_VALUE)
             {
-                throw new Exception("authentication failed. wrong token");
+                throw new FaultException("authentication failed. wrong token");
             }
         }
 
@@ -325,13 +325,13 @@ namespace AyondoTrade
 
             if (ack.Value == null || ack.Value.TotalNumPosReports.Obj != 0 && reports == null)
             {
-                throw new Exception("fail getting position report. guid:" + reqId);
+                throw new FaultException("fail getting position report. guid:" + reqId);
                 //return new List<PositionReport>();
             }
 
             if (reports.Count != 0 && reports.Count != reports[0].Value.TotalNumPosReports.Obj)
             {
-                throw new Exception("timeout getting position report. guid:" + reqId + " " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
+                throw new FaultException("timeout getting position report. guid:" + reqId + " " + reports.Count + "/" + reports[0].Value.TotalNumPosReports.Obj);
                 //return reports.Select(o => o.Value).ToList();
             }
 
@@ -435,7 +435,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
-                throw new Exception("fail getting order result " + reqId);
+                throw new FaultException("fail getting order result " + reqId);
 
             return report;
         }
@@ -478,7 +478,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
-                throw new Exception("fail getting new take order result (position report)");
+                throw new FaultException("fail getting new take order result (position report)");
 
             return report;
         }
@@ -523,7 +523,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
-                throw new Exception("fail getting replace order result (position report)");
+                throw new FaultException("fail getting replace order result (position report)");
 
             return report;
         }
@@ -567,7 +567,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
             if (report == null)
-                throw new Exception("fail getting cancel order result (position report)");
+                throw new FaultException("fail getting cancel order result (position report)");
 
             return report;
         }
@@ -594,7 +594,7 @@ namespace AyondoTrade
             } while (DateTime.UtcNow - dt <= TIMEOUT); // timeout
 
             if (balanceWithTime.Value == -1)
-                throw new Exception("fail getting balance");
+                throw new FaultException("fail getting balance");
 
             return balanceWithTime.Value;
         }
@@ -642,7 +642,7 @@ namespace AyondoTrade
             }
 
             if (string.IsNullOrEmpty(account))
-                throw new Exception("fix log on time out " + guid);
+                throw new FaultException("fix log on time out " + guid);
 
             return account;
         }
@@ -702,7 +702,7 @@ namespace AyondoTrade
 
                 if (tryGetValue)
                 {
-                    throw new Exception(msg.Value.UserStatusText.Obj);
+                    throw new FaultException(msg.Value.UserStatusText.Obj);
                 }
             }
         }
@@ -722,7 +722,7 @@ namespace AyondoTrade
                     else if (msg.Value.Text.Obj == "No Data Available")
                         throw new NoDataAvailableException();
                     else
-                        throw new Exception("BusinessMessageReject: " + msg.Value.Text.Obj);
+                        throw new FaultException("BusinessMessageReject: " + msg.Value.Text.Obj);
                 }
             }
         }
@@ -786,11 +786,11 @@ namespace AyondoTrade
     //    }
     //}
 
-    internal class UserNotLoggedInException : Exception
+    internal class UserNotLoggedInException : FaultException
     {
     }
 
-    internal class NoDataAvailableException : Exception
+    internal class NoDataAvailableException : FaultException
     {
     }
 }
