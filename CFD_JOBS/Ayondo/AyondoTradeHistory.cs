@@ -202,6 +202,8 @@ namespace CFD_JOBS.Ayondo
                             }
                             string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), h.TradeTime, Math.Round(h.TradePrice.Value,2), msgPart4);
                             getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message,h.SecurityId, Translator.GetCName(h.SecurityName))));
+
+                            CFDGlobal.LogLine("Auto close notification push:" + string.Format(msgTemplate, message, h.SecurityId, Translator.GetCName(h.SecurityName)));
                         }
                     }
                 }
@@ -212,6 +214,7 @@ namespace CFD_JOBS.Ayondo
             foreach(var pushList in splitedPushList)
             {
                 var response = push.PushBatch(pushList);
+                CFDGlobal.LogLine("Auto close notification push response:" + response);
             }
         }
     }
