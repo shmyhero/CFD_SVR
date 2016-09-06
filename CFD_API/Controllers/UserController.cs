@@ -705,7 +705,67 @@ namespace CFD_API.Controllers
             db.SaveChanges();
             return result;
         }
-        
+
+        [HttpGet]
+        [Route("dailysign")]
+        [BasicAuth]
+        public ResultDTO DailySign()
+        {
+            ResultDTO result = new ResultDTO() { success = true };
+            DailySign lastDailySign = db.DailySigns.Where(d => d.UserId == this.UserId).OrderByDescending(d => d.SignAt).FirstOrDefault();
+
+            DailySign todayDailySign = new DailySign();
+            todayDailySign.UserId = this.UserId;
+            todayDailySign.SignAt = DateTime.UtcNow.AddHours(8);
+
+            if (lastDailySign == null) //first time sign in
+            {
+                todayDailySign.Continuity = 1;
+            }
+            else //signed in before
+            {
+                if(!lastDailySign.SignAt.HasValue)//should not happen. if happened, continue from day 1
+                {
+                    todayDailySign.Continuity = 1;
+                }
+                else
+                {
+                    if (lastDailySign.SignAt.Value.Date == DateTime.UtcNow.AddHours(8).Date)//already signed in today
+                    {
+                        result = new ResultDTO() { success = false, message="Already sign in today." };
+                        return result;
+                    }
+                    else
+                    {
+                        todayDailySign.Continuity = lastDailySign.Continuity + 1;
+                    }
+                }
+            }
+
+            db.DailySigns.Add(todayDailySign);
+            db.SaveChanges();
+
+            return result;
+        }
+
+        [HttpGet]
+        [Route("dailysign/month/{month}")]
+        [BasicAuth]
+        public List<DailySignDTO> GetMonthSign(int month)
+        {
+            List<DailySignDTO> dayList = new List<DailySignDTO>();
+            DateTime startDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            DateTime endDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month + 1, 1);
+            List<DailySign> dailySignList = db.DailySigns.Where(d => d.UserId == this.UserId && d.SignAt >= startDate && d.SignAt <= endDate).OrderBy(d => d.SignAt).ToList();
+
+            dayList.AddRange(dailySignList.Select(o => {
+                return new DailySignDTO() { Day = o.SignAt.HasValue ? o.SignAt.Value.Day : 0 };
+            }));
+
+            return dayList;
+        }
+
+
         private bool IsLoginBlocked(string phone)
         {
             var oneDayAgo = DateTime.UtcNow.AddDays(-1);

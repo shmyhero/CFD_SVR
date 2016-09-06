@@ -166,7 +166,7 @@ namespace CFD_JOBS.Ayondo
             if (systemCloseHistorys == null || systemCloseHistorys.Count == 0)
                 return;
 
-            string msgTemplate = "{{\"type\":\"1\", \"title\":\"盈交易\", \"message\":{0}}}";
+            string msgTemplate = "{{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":{1}, \"CName\":\"{2}\", \"message\":\"{0}\"}}";
 
             //me
             string msgContentTemplate = "{0}于{1}平仓，价格为{2}美元,已{3}美元";
@@ -201,7 +201,7 @@ namespace CFD_JOBS.Ayondo
                                 }
                             }
                             string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), h.TradeTime, Math.Round(h.TradePrice.Value,2), msgPart4);
-                            getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message)));
+                            getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message,h.SecurityId,h.SecurityName)));
                         }
                     }
                 }

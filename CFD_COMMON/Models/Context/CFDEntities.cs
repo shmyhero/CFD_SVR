@@ -23,6 +23,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<CompetitionResult> CompetitionResults { get; set; }
         public virtual DbSet<CompetitionUserPosition> CompetitionUserPositions { get; set; }
         public virtual DbSet<CompetitionUser> CompetitionUsers { get; set; }
+        public virtual DbSet<DailySign> DailySigns { get; set; }
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Headline> Headlines { get; set; }

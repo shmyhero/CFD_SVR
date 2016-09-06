@@ -60,4 +60,9 @@
         public string deviceToken;
         public int deviceType;
     }
+
+    public class DailySignDTO
+    {
+        public int Day { get; set; }
+    }
 }
