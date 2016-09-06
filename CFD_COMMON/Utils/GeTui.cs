@@ -82,7 +82,8 @@ namespace CFD_COMMON.Utils
             {
                 AppId = GETUI_APPID,
                 AppKey = GETUI_APPKEY,
-                TransmissionType = "1",
+                //应用启动类型，1：强制应用启动 2：等待应用启动
+                TransmissionType = "2",
                 TransmissionContent = text
             };
 
