@@ -329,6 +329,8 @@ namespace CFD_API.Controllers
 
                 db.SaveChanges();
 
+                RewardDailyDemoTransaction();
+
                 //when price changes, set stop again to prevent >100% loss
                 if (quotePrice != result.SettlPrice)
                 {
@@ -381,6 +383,29 @@ namespace CFD_API.Controllers
             posDTO.security = new SecurityDetailDTO() {id = prodDef.Id, ccy = prodDef.Ccy2};
 
             return posDTO;
+        }
+
+        /// <summary>
+        /// daily demo trasaction reward
+        /// </summary>
+        /// <param name="userId"></param>
+        private void RewardDailyDemoTransaction()
+        {
+            DateTime today = DateTime.UtcNow.AddHours(8).Date;
+            DailyTransaction todayTrasaction = db.DailyTransactions.Where(item => item.UserId == UserId && item.Date == today).FirstOrDefault();
+            if(todayTrasaction == null)
+            {
+                todayTrasaction = new DailyTransaction();
+                todayTrasaction.Date = DateTime.UtcNow.AddHours(8).Date;
+                todayTrasaction.Amount = 0.5M;
+                todayTrasaction.DealAt = DateTime.UtcNow.AddHours(8);
+                todayTrasaction.UserId = UserId;
+                todayTrasaction.IsPaid = false;
+                db.DailyTransactions.Add(todayTrasaction);
+                db.SaveChanges();
+            }
+
+            return;
         }
 
         [HttpPost]

@@ -706,31 +706,48 @@ namespace CFD_API.Controllers
             return result;
         }
 
+        /// <summary>
+        /// continuous daily sign reward (Day 1 - Day 5)
+        /// </summary>
+        private const decimal rewardDay1to5 = 0.5M;
+        /// <summary>
+        /// continuous daily sign reward (Day 6 - Day 10)
+        /// </summary>
+        private const decimal rewardDay6to10 = 0.6M;
+        /// <summary>
+        /// continuous daily sign reward (From Day 11)
+        /// </summary>
+        private const decimal rewardDayFrom11 = 0.8M;
+
         [HttpGet]
         [Route("dailysign")]
         [BasicAuth]
         public ResultDTO DailySign()
         {
             ResultDTO result = new ResultDTO() { success = true };
-            DailySign lastDailySign = db.DailySigns.Where(d => d.UserId == this.UserId).OrderByDescending(d => d.SignAt).FirstOrDefault();
+            DailySign lastDailySign = db.DailySigns.Where(d => d.UserId == this.UserId).OrderByDescending(d => d.Date).FirstOrDefault();
 
             DailySign todayDailySign = new DailySign();
             todayDailySign.UserId = this.UserId;
             todayDailySign.SignAt = DateTime.UtcNow.AddHours(8);
+            todayDailySign.Date = DateTime.UtcNow.AddHours(8).Date;
+            todayDailySign.IsPaid = false;
 
             if (lastDailySign == null) //first time sign in
             {
                 todayDailySign.Continuity = 1;
+                todayDailySign.Amount = rewardDay1to5;
             }
             else //signed in before
             {
                 if(!lastDailySign.SignAt.HasValue)//should not happen. if happened, continue from day 1
                 {
                     todayDailySign.Continuity = 1;
+                    todayDailySign.Amount = rewardDay1to5;
                 }
                 else
                 {
-                    if (lastDailySign.SignAt.Value.Date == DateTime.UtcNow.AddHours(8).Date)//already signed in today
+                    if (lastDailySign.Date.HasValue && lastDailySign.Date.Value.Date == DateTime.UtcNow.AddHours(8).Date)//already signed in today
                     {
                         result = new ResultDTO() { success = false, message="Already sign in today." };
                         return result;
@@ -738,6 +755,18 @@ namespace CFD_API.Controllers
                     else
                     {
                         todayDailySign.Continuity = lastDailySign.Continuity + 1;
+                        if(todayDailySign.Continuity <= 5)
+                        {
+                            todayDailySign.Amount = rewardDay1to5;
+                        }
+                        else if(todayDailySign.Continuity <=10)
+                        {
+                            todayDailySign.Amount = rewardDay6to10;
+                        }
+                        else
+                        {
+                            todayDailySign.Amount = rewardDayFrom11;
+                        }
                     }
                 }
             }
@@ -756,7 +785,7 @@ namespace CFD_API.Controllers
             List<DailySignDTO> dayList = new List<DailySignDTO>();
             DateTime startDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
             DateTime endDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month + 1, 1);
-            List<DailySign> dailySignList = db.DailySigns.Where(d => d.UserId == this.UserId && d.SignAt >= startDate && d.SignAt <= endDate).OrderBy(d => d.SignAt).ToList();
+            List<DailySign> dailySignList = db.DailySigns.Where(d => d.UserId == this.UserId && d.Date >= startDate && d.Date < endDate).OrderBy(d => d.Date).ToList();
 
             dayList.AddRange(dailySignList.Select(o => {
                 return new DailySignDTO() { Day = o.SignAt.HasValue ? o.SignAt.Value.Day : 0 };
@@ -765,6 +794,20 @@ namespace CFD_API.Controllers
             return dayList;
         }
 
+        [HttpGet]
+        [Route("reward/unpaid")]
+        [BasicAuth]
+        public decimal GetTotalUnpaidReword()
+        {
+            //reward for daily sign
+            decimal totalDailySignReward = db.DailySigns.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value ).Sum(item => item.Amount);
+            //reward for daily demo trasaction
+            decimal totalDemoTransactionReward = db.DailyTransactions.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value).Sum(item => item.Amount);
+
+            decimal demoRegisterReward = 20M;
+
+            return totalDailySignReward + totalDemoTransactionReward + demoRegisterReward;
+        }
 
         private bool IsLoginBlocked(string phone)
         {

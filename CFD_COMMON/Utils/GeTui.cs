@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using com.igetui.api.openservice;
 using com.igetui.api.openservice.igetui;
 using com.igetui.api.openservice.igetui.template;
+using com.igetui.api.openservice.payload;
+using Newtonsoft.Json.Linq;
 
 namespace CFD_COMMON.Utils
 {
@@ -39,6 +41,11 @@ namespace CFD_COMMON.Utils
             return response;
         }
 
+        /// <summary>
+        /// All json text must include token "message"
+        /// </summary>
+        /// <param name="lstTokenAndText"></param>
+        /// <returns></returns>
         public string PushBatch(IEnumerable<KeyValuePair<string, string>> lstTokenAndText)
         {
             var batch = gtPush.getBatch();
@@ -86,6 +93,14 @@ namespace CFD_COMMON.Utils
                 TransmissionType = "2",
                 TransmissionContent = text
             };
+
+            string alertMsg = JObject.Parse(text)["message"].Value<string>();
+            //IOS
+            APNPayload apnpayload = new APNPayload();
+            var msg = new SimpleAlertMsg(alertMsg);
+            apnpayload.AlertMsg = msg;
+
+            template.setAPNInfo(apnpayload);
 
             var message = new SingleMessage
             {

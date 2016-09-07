@@ -7,19 +7,14 @@ using System.Threading.Tasks;
 
 namespace CFD_COMMON.Models.Entities
 {
-    [Table("DailySign")]
-    public class DailySign
+    [Table("DailyTransaction")]
+    public class DailyTransaction
     {
-        public int Id { get; set; }
+        public int id { get; set; }
         public int UserId { get; set; }
-        public DateTime? SignAt { get; set; }
-
-        public DateTime? Date { get; set; }
-
-        public int Continuity { get; set; }
-
+        public DateTime? Date { get; set; } 
+        public DateTime? DealAt { get; set; }
         public decimal Amount { get; set; }
-
         public bool? IsPaid { get; set; }
     }
 }
