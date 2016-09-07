@@ -100,6 +100,7 @@
       <field name="Account" required="N"/>
       <field name="MDS_SendColRep" required="N"/>
       <field name="MDS_SendNoPos" required="N"/>
+      <field name="MDS_OAUTH" required="N"/>
       <field name="NewPassword" required="N"/>
       <field name="RawDataLength" required="N"/>
       <field name="RawData" required="N"/>
@@ -4629,6 +4630,7 @@
     <field number="7948" name="MDS_SMD" type="FLOAT"/>
     <field number="7949" name="MDS_GSMD" type="FLOAT"/>
     <field number="7950" name="MDS_GSMS" type="FLOAT"/>
+    <field number="7951" name="MDS_OAUTH" type="STRING"/>
 
     <field number="8000" name="AuxTime" type="UTCTIMESTAMP" />
     <field number="100" name="ExDestination" type="EXCHANGE"/>
