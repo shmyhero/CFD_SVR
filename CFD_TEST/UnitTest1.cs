@@ -344,7 +344,7 @@ namespace CFD_TEST
                 pos = XiaDan_SheZhiYing(user, 34820, false);
             }
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 1; i++)
             {
                 user = db.Users.FirstOrDefault(o => o.Id == 3281);
                 pos = XiaDan_SheZhiYing(user, 34864, true);
