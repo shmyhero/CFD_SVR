@@ -16,6 +16,9 @@ namespace CFD_JOBS.Ayondo
         private static readonly TimeSpan _sleepInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan _tolerance = TimeSpan.FromMinutes(5);
 
+        private static string PUSH_TEMP =
+            @"{{""type"":""2"", ""title"":""盈交易"", ""StockID"":{0}, ""CName"":""{1}"", ""message"":""{2}""}}"; //{{ as {
+
         public static void Run()
         {
             CFDGlobal.LogLine("Starting...");
@@ -75,16 +78,20 @@ namespace CFD_JOBS.Ayondo
                                 {
                                     if (alert.HighEnabled.Value && quote.Bid >= alert.HighPrice)
                                     {
+                                        var text =
+                                            $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格达到{quote.Bid}，高于您设置的{Math.Round(alert.HighPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}";
                                         newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
-                                            $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格达到{quote.Bid}，高于您设置的{Math.Round(alert.HighPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}"));
+                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text)));
 
                                         alert.HighEnabled = false;
                                         alert.HighPrice = null;
                                     }
                                     if (alert.LowEnabled.Value && quote.Offer <= alert.LowPrice)
                                     {
+                                        var text =
+                                            $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格跌到{quote.Offer}，低于您设置的{Math.Round(alert.LowPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}";
                                         newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
-                                            $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格跌到{quote.Offer}，低于您设置的{Math.Round(alert.LowPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}"));
+                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text)));
 
                                         alert.LowEnabled = false;
                                         alert.LowPrice = null;
@@ -124,7 +131,7 @@ namespace CFD_JOBS.Ayondo
                                     var chuncks = geTuiList.SplitInChunks(1000);
                                     foreach (var chunck in chuncks)
                                     {
-                                        push.PushBatch(chunck);
+                                        var pushBatch = push.PushBatch(chunck);
                                     }
                                 }
                             }
