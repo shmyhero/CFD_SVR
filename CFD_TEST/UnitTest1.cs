@@ -31,8 +31,7 @@ namespace CFD_TEST
         public void PushTest()
         {
             List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-            list.Add(new KeyValuePair<string, string>("4d6fe5ac3ade3565adfe659aa34be9a7", "android推送测试"));
-            list.Add(new KeyValuePair<string, string>("de31686704da71e0b9ebfc2a7b50b30ad51aa3f2520130eb20c5195cdc5d00f4", "ios推送测试"));
+            list.Add(new KeyValuePair<string, string>("f60c5d5a898b1c19cb6e5d58520c8906", "{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":34847, \"CName\":\"白银\", \"message\":\"白银于2016/09/06 10:19平仓，价格为200.00美元,已亏损100美元\"}"));
             var push = new GeTui();
             var response = push.PushBatch(list);
         }

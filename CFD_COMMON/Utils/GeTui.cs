@@ -61,19 +61,30 @@ namespace CFD_COMMON.Utils
 
         private SingleMessage CreateMessage(string text)
         {
-            var template = new NotificationTemplate
+            //推送通知
+            //var template = new NotificationTemplate
+            //{
+            //    AppId = GETUI_APPID,
+            //    AppKey = GETUI_APPKEY,
+            //    Title = "盈交易",
+            //    Text = text,
+            //    Logo = "",
+            //    LogoURL = "https://cfdstorage.blob.core.chinacloudapi.cn/pushlogo/pushlogo.png",
+            //    TransmissionType = "1",
+            //    TransmissionContent = "",
+            //    IsRing = true,
+            //    IsVibrate = true,
+            //    IsClearable = true
+            //};
+
+            //透传消息
+            var template = new TransmissionTemplate()
             {
                 AppId = GETUI_APPID,
                 AppKey = GETUI_APPKEY,
-                Title = "盈交易",
-                Text = text,
-                Logo = "",
-                LogoURL = "",
-                TransmissionType = "1",
-                TransmissionContent = "",
-                IsRing = true,
-                IsVibrate = true,
-                IsClearable = true
+                //应用启动类型，1：强制应用启动 2：等待应用启动
+                TransmissionType = "2",
+                TransmissionContent = text
             };
 
             var message = new SingleMessage
