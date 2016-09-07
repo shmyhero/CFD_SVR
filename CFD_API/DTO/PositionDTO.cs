@@ -25,6 +25,8 @@ namespace CFD_API.DTO
         public string stopOID { get; set; }
         public decimal? takePx { get; set; }
         public string takeOID { get; set; }
+
+        public SecurityDetailDTO fxOutright { get; set; }
     }
 
     public class PositionHistoryDTO

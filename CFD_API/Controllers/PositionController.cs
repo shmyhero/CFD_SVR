@@ -91,6 +91,37 @@ namespace CFD_API.Controllers
                 var posDTO = MapPositionReportToPositionDTO(report);
                 posDTO.security = security;
 
+                //default fx rate for client calculation
+                if (prodDef.Ccy2 != "USD")
+                {
+                    var fxProdDef =
+                        WebCache.ProdDefs.FirstOrDefault(
+                            o => o.Symbol == prodDef.Ccy2 + "USD" && o.Name.EndsWith(" Outright"));
+
+                    if (fxProdDef == null)
+                    {
+                        fxProdDef =
+                            WebCache.ProdDefs.FirstOrDefault(
+                                o => o.Symbol == "USD" + prodDef.Ccy2 && o.Name.EndsWith(" Outright"));
+                    }
+
+                    if (fxProdDef != null)
+                    {
+                        var fx =new SecurityDetailDTO();
+                        fx.id = fxProdDef.Id;
+                        fx.symbol = fxProdDef.Symbol;
+                        
+                        var fxQuote = WebCache.Quotes.FirstOrDefault(o => o.Id == fx.id);
+                        if (fxQuote != null)
+                        {
+                            fx.ask = fxQuote.Offer;
+                            fx.bid = fxQuote.Bid;
+                        }
+
+                        posDTO.fxOutright = fx;
+                    }
+                }
+
                 //if (prodDef.Prec != null)
                 posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(prodDef.Prec));
 
