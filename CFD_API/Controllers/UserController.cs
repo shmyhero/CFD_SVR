@@ -837,7 +837,13 @@ namespace CFD_API.Controllers
             //reward for daily sign
             decimal totalDailySignReward = db.DailySigns.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value ).Sum(item => item.Amount);
             //reward for daily demo trasaction
-            decimal totalDemoTransactionReward = db.DailyTransactions.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value).Sum(item => item.Amount);
+            decimal totalDemoTransactionReward = 0;
+            List<DailyTransaction> dailyTransactionsList = db.DailyTransactions.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value).ToList();
+            if(dailyTransactionsList != null && dailyTransactionsList.Count > 0)
+            {
+                totalDemoTransactionReward = dailyTransactionsList.Sum(item => item.Amount);
+            }
+
             //reward for demo register
             decimal demoRegisterReward = 20M;
             if(db.DemoRegisterRewards.Where(item => item.UserId == this.UserId).Count() != 0)
