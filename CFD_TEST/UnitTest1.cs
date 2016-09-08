@@ -200,8 +200,8 @@ namespace CFD_TEST
         public void YunPianSMS()
         {
             var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。"+
-                "券号：G1608150944636277 密码：EQ7BKNQA8H72" +
-                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "18301933810");
+                "券号：G1608150944636295 密码：DNXCAUU6PKBF" +
+                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "13818076317");
             CFDGlobal.LogLine(sendSms);
         }
 
@@ -338,20 +338,30 @@ namespace CFD_TEST
             User user;
             PositionDTO pos;
 
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 11; i++)
             {
                 user = db.Users.FirstOrDefault(o => o.Id == 1);
-                pos = XiaDan_SheZhiYing(user, 34820, true);
+                pos = XiaDan_SheZhiYing(user, 34820, true,100);
                 user = db.Users.FirstOrDefault(o => o.Id == 3277);
-                pos = XiaDan_SheZhiYing(user, 34820, false);
+                pos = XiaDan_SheZhiYing(user, 34820, false,100);
             }
 
+            ////华尔街
+            //for (int i = 0; i < 1; i++)
+            //{
+            //    user = db.Users.FirstOrDefault(o => o.Id == 3281);
+            //    pos = XiaDan_SheZhiYing(user, 34864, true);
+            //    user = db.Users.FirstOrDefault(o => o.Id == 3218);
+            //    pos = XiaDan_SheZhiYing(user, 34864, false);
+            //}
+
+            //欧元对英镑
             for (int i = 0; i < 1; i++)
             {
                 user = db.Users.FirstOrDefault(o => o.Id == 3281);
-                pos = XiaDan_SheZhiYing(user, 34864, true);
+                pos = XiaDan_SheZhiYing(user, 34803, true,125);
                 user = db.Users.FirstOrDefault(o => o.Id == 3218);
-                pos = XiaDan_SheZhiYing(user, 34864, false);
+                pos = XiaDan_SheZhiYing(user, 34803, false,125);
             }
         }
 
@@ -375,9 +385,9 @@ namespace CFD_TEST
             return dto;
         }
 
-        private static PositionDTO XiaDan_SheZhiYing(User user,int secId,bool isLong)
+        private static PositionDTO XiaDan_SheZhiYing(User user,int secId,bool isLong,int leverage)
         {
-            string jsonData = "{\"securityId\":" + secId + ",\"isLong\":"+ isLong.ToString().ToLower()+",\"invest\":100,\"leverage\":100}";
+            string jsonData = "{\"securityId\":" + secId + ",\"isLong\":"+ isLong.ToString().ToLower()+",\"invest\":100,\"leverage\":"+leverage+"}";
             var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position");
             request.Headers["Authorization"] = string.Format("Basic {0}_{1}", user.Id, user.Token);
             request.Method = "post";
