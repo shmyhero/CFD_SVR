@@ -12,6 +12,7 @@ using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
+using EntityFramework.Extensions;
 using Pinyin4net;
 using Pinyin4net.Format;
 using ServiceStack.Redis;
@@ -559,6 +560,8 @@ namespace CFD_API.Controllers
 
             var securityService = new SecurityService(db);
             securityService.DeleteBookmarks(UserId, ids);
+
+            db.UserAlerts.Where(o => o.UserId == UserId && ids.Contains(o.SecurityId)).Delete();
 
             return new ResultDTO {success = true};
         }

@@ -200,8 +200,8 @@ namespace CFD_TEST
         public void YunPianSMS()
         {
             var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。"+
-                "券号：G1608150944636277 密码：EQ7BKNQA8H72" +
-                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "18301933810");
+                "券号：G1608150944636295 密码：DNXCAUU6PKBF" +
+                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "13818076317");
             CFDGlobal.LogLine(sendSms);
         }
 
