@@ -65,4 +65,15 @@
     {
         public int Day { get; set; }
     }
+
+    /// <summary>
+    /// 每日签到页面的信息集合，包括：累计交易金(未支付的)、累计签到天数、当天是否已经签到过、当天签到的奖励金额
+    /// </summary>
+    public class DailySignInfoDTO
+    {
+        public decimal TotalUnpaidAmount { get; set; }
+        public int TotalSignDays { get; set; }
+        public bool IsSignedToday { get; set; }
+        public decimal AmountToday { get; set; }
+    }
 }
