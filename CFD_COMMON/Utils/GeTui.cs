@@ -99,6 +99,8 @@ namespace CFD_COMMON.Utils
             APNPayload apnpayload = new APNPayload();
             var msg = new SimpleAlertMsg(alertMsg);
             apnpayload.AlertMsg = msg;
+            //for ios, used as unique symbol
+            apnpayload.addCustomMsg("payload", text);
 
             template.setAPNInfo(apnpayload);
 
