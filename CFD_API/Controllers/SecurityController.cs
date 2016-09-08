@@ -548,6 +548,9 @@ namespace CFD_API.Controllers
             securityService.DeleteBookmarks(UserId);
             securityService.AddBookmarks(UserId, ids);
 
+            //delete stock alerts NOT IN id list
+            db.UserAlerts.Where(o => o.UserId == UserId && !ids.Contains(o.SecurityId)).Delete();
+
             return new ResultDTO {success = true};
         }
 
@@ -561,6 +564,7 @@ namespace CFD_API.Controllers
             var securityService = new SecurityService(db);
             securityService.DeleteBookmarks(UserId, ids);
 
+            //delete stock alerts IN id list
             db.UserAlerts.Where(o => o.UserId == UserId && ids.Contains(o.SecurityId)).Delete();
 
             return new ResultDTO {success = true};
