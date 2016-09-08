@@ -132,6 +132,9 @@ namespace CFD_API.Controllers
         [ActionName("signupByWeChat")]
         public SignupResultDTO SignupByWeChat(SignupByWeChatFormDTO form)
         {
+            if (string.IsNullOrEmpty(form.openid) || string.IsNullOrEmpty(form.unionid))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ""));
+
             var result = new SignupResultDTO();
 
             var user = db.Users.FirstOrDefault(o => o.WeChatOpenId == form.openid);
@@ -649,6 +652,9 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO SetPushTokenAuth(PushDTO form)
         {
+            if (string.IsNullOrEmpty(form.deviceToken))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ""));
+
             ResultDTO result = new ResultDTO() { success = true };
            
             //User user = db.Users.FirstOrDefault( o => o.Id == UserId);
@@ -680,6 +686,9 @@ namespace CFD_API.Controllers
         [Route("pushtoken")]
         public ResultDTO SetPushToken(PushDTO form)
         {
+            if (string.IsNullOrEmpty(form.deviceToken))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ""));
+
             ResultDTO result = new ResultDTO() { success = true };
 
             if(string.IsNullOrEmpty(form.deviceToken))

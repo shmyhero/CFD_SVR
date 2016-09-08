@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.ServiceModel;
@@ -18,6 +19,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using ServiceStack.Redis.Generic;
 using System.ServiceModel.Channels;
+using System.Text;
+using CFD_API.DTO;
+using CFD_JOBS;
+using Newtonsoft.Json.Linq;
 
 namespace CFD_TEST
 {
@@ -323,6 +328,72 @@ namespace CFD_TEST
             var webResponse = request.GetResponse();
 
             CFDGlobal.LogLine("end " + Thread.CurrentThread.ManagedThreadId);
+        }
+
+        [TestMethod]
+        public void DianYingPiao()
+        {
+            var db = CFDEntities.Create();
+
+            User user;
+            PositionDTO pos;
+
+            for (int i = 0; i < 6; i++)
+            {
+                user = db.Users.FirstOrDefault(o => o.Id == 1);
+                pos = XiaDan_SheZhiYing(user, 34820, true);
+                user = db.Users.FirstOrDefault(o => o.Id == 3277);
+                pos = XiaDan_SheZhiYing(user, 34820, false);
+            }
+
+            for (int i = 0; i < 1; i++)
+            {
+                user = db.Users.FirstOrDefault(o => o.Id == 3281);
+                pos = XiaDan_SheZhiYing(user, 34864, true);
+                user = db.Users.FirstOrDefault(o => o.Id == 3218);
+                pos = XiaDan_SheZhiYing(user, 34864, false);
+            }
+        }
+
+        private static PositionDTO SheZhiYing(User user, PositionDTO pos)
+        {
+            var takePx = pos.isLong ? pos.settlePrice * 1.008m : pos.settlePrice * 0.992m;
+
+            string jsonData = "{\"posId\":" + pos.id + ",\"securityId\":" + pos.security.id + ",\"price\":"+ takePx+"}";
+            var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/order/take");
+            request.Headers["Authorization"] = string.Format("Basic {0}_{1}", user.Id, user.Token);
+            request.Method = "post";
+            request.ContentType = "application/json";
+            byte[] datas = Encoding.UTF8.GetBytes(jsonData);
+            request.ContentLength = datas.Length;
+            Stream requestStream = request.GetRequestStream();
+            requestStream.Write(datas, 0, datas.Length);
+
+            var responseStream = request.GetResponse().GetResponseStream();
+            var readToEnd = new StreamReader(responseStream).ReadToEnd();
+            var dto = JsonConvert.DeserializeObject<PositionDTO>(readToEnd);
+            return dto;
+        }
+
+        private static PositionDTO XiaDan_SheZhiYing(User user,int secId,bool isLong)
+        {
+            string jsonData = "{\"securityId\":" + secId + ",\"isLong\":"+ isLong.ToString().ToLower()+",\"invest\":100,\"leverage\":100}";
+            var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position");
+            request.Headers["Authorization"] = string.Format("Basic {0}_{1}", user.Id, user.Token);
+            request.Method = "post";
+            request.ContentType = "application/json";
+            byte[] datas = Encoding.UTF8.GetBytes(jsonData);
+            request.ContentLength = datas.Length;
+            Stream requestStream = request.GetRequestStream();
+            requestStream.Write(datas, 0, datas.Length);
+
+            var responseStream = request.GetResponse().GetResponseStream();
+            var readToEnd = new StreamReader(responseStream).ReadToEnd();
+            var dto = JsonConvert.DeserializeObject<PositionDTO>(readToEnd);
+
+            var dto2 = SheZhiYing(user, dto);
+
+            return dto2;
         }
     }
 }

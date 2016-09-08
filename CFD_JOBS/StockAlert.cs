@@ -16,6 +16,8 @@ namespace CFD_JOBS.Ayondo
         private static readonly TimeSpan _sleepInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan _tolerance = TimeSpan.FromMinutes(5);
 
+        private static Dictionary<int,DateTime> _lastFetchTill=new Dictionary<int, DateTime>(); 
+
         private static string PUSH_TEMP =
             @"{{""type"":""2"", ""title"":""盈交易"", ""StockID"":{0}, ""CName"":""{1}"", ""message"":""{2}""}}"; //{{ as {
 
@@ -31,6 +33,7 @@ namespace CFD_JOBS.Ayondo
                     {
                         var redisProdDefClient = redisClient.As<ProdDef>();
                         var redisQuoteClient = redisClient.As<Quote>();
+                        var redisTickClient = redisClient.As<Tick>();
 
                         var prodDefs = redisProdDefClient.GetAll();
                         var quotes = redisQuoteClient.GetAll();
@@ -74,6 +77,18 @@ namespace CFD_JOBS.Ayondo
                                     continue;
                                 }
 
+                                ////get historical highest and lowest price
+                                //decimal highestBid;
+                                //decimal lowestAsk;
+
+                                //var ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.Raw) + prodDef.Id].GetAll();
+                                //var dtUtcNow = DateTime.UtcNow;
+                                //if (!_lastFetchTill.ContainsKey(prodDef.Id))
+                                //{s
+                                //    var historyTicks = ticks.Select(o => o.Time > dtUtcNow - _tolerance).ToList();
+
+                                //}
+
                                 foreach (var alert in group)
                                 {
                                     if (alert.HighEnabled.Value && quote.Bid >= alert.HighPrice)
@@ -86,6 +101,7 @@ namespace CFD_JOBS.Ayondo
                                         alert.HighEnabled = false;
                                         alert.HighPrice = null;
                                     }
+
                                     if (alert.LowEnabled.Value && quote.Offer <= alert.LowPrice)
                                     {
                                         var text =
