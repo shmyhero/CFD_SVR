@@ -239,16 +239,12 @@ namespace CFD_API.Controllers
 
             if(reward == null)
             {
-                userDto.IsOpenRewarded = false;
+                userDto.rewardAmount = 20;
                 reward = new DemoRegisterReward() { Amount = 20, ClaimedAt = null, UserId = this.UserId };
                 db.DemoRegisterRewards.Add(reward);
                 db.SaveChanges();
             }
-            else
-            {
-                userDto.IsOpenRewarded = true;
-            }
-
+          
             return userDto;
         }
 

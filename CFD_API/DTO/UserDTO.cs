@@ -17,7 +17,7 @@
         public string phone { get; set; }
         public bool autoCloseAlert { get; set; }
         public string weChatOpenId { get; set; }
-        public bool IsOpenRewarded { get; set; }
+        public decimal? rewardAmount { get; set; }
     }
 
     public class BalanceDTO
