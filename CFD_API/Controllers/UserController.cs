@@ -850,7 +850,13 @@ namespace CFD_API.Controllers
         public RewardDTO GetTotalUnpaidReward()
         {
             //reward for daily sign
-            decimal totalDailySignReward = db.DailySigns.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value ).Sum(item => item.Amount);
+            decimal totalDailySignReward = 0;
+            List <DailySign> dailySignList = db.DailySigns.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value).ToList();
+            if(dailySignList != null && dailySignList.Count > 0)
+            {
+                totalDailySignReward = dailySignList.Sum(item => item.Amount);
+            }
+            
             //reward for daily demo trasaction
             decimal totalDemoTransactionReward = 0;
             List<DailyTransaction> dailyTransactionsList = db.DailyTransactions.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value).ToList();
