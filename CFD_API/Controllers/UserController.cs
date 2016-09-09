@@ -25,6 +25,7 @@ using System.Web;
 using System.Drawing;
 using AyondoTrade.Model;
 using CFD_COMMON.Utils.Extensions;
+using System.Threading.Tasks;
 
 namespace CFD_API.Controllers
 {
@@ -233,6 +234,20 @@ namespace CFD_API.Controllers
             var user = GetUser();
 
             var userDto = Mapper.Map<UserDTO>(user);
+
+            DemoRegisterReward reward = db.DemoRegisterRewards.Where(item => item.UserId == this.UserId).FirstOrDefault();
+
+            if(reward == null)
+            {
+                userDto.IsOpenRewarded = false;
+                reward = new DemoRegisterReward() { Amount = 20, ClaimedAt = null, UserId = this.UserId };
+                db.DemoRegisterRewards.Add(reward);
+                db.SaveChanges();
+            }
+            else
+            {
+                userDto.IsOpenRewarded = true;
+            }
 
             return userDto;
         }
@@ -832,7 +847,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("reward/unpaid")]
         [BasicAuth]
-        public decimal GetTotalUnpaidReward()
+        public RewardDTO GetTotalUnpaidReward()
         {
             //reward for daily sign
             decimal totalDailySignReward = db.DailySigns.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value ).Sum(item => item.Amount);
@@ -851,7 +866,7 @@ namespace CFD_API.Controllers
                 demoRegisterReward = 0;
             }
 
-            return totalDailySignReward + totalDemoTransactionReward + demoRegisterReward;
+            return new RewardDTO() { demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalDemoTransaction = totalDemoTransactionReward }; //totalDailySignReward + totalDemoTransactionReward + demoRegisterReward;
         }
 
         [HttpGet]
@@ -861,7 +876,8 @@ namespace CFD_API.Controllers
         {
             DailySignInfoDTO info = new DailySignInfoDTO();
 
-            info.TotalUnpaidAmount = GetTotalUnpaidReward();
+            RewardDTO reward = GetTotalUnpaidReward();
+            info.TotalUnpaidAmount = reward.demoRegister + reward.totalDailySign + reward.totalDemoTransaction;
 
             info.TotalSignDays = db.DailySigns.Where(item => item.UserId == this.UserId).Count();
 

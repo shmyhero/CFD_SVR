@@ -17,6 +17,7 @@
         public string phone { get; set; }
         public bool autoCloseAlert { get; set; }
         public string weChatOpenId { get; set; }
+        public bool IsOpenRewarded { get; set; }
     }
 
     public class BalanceDTO
@@ -75,5 +76,21 @@
         public int TotalSignDays { get; set; }
         public bool IsSignedToday { get; set; }
         public decimal AmountToday { get; set; }
+    }
+
+    public class RewardDTO
+    {
+        /// <summary>
+        /// 每日签到奖励汇总
+        /// </summary>
+        public decimal totalDailySign { get; set; }
+        /// <summary>
+        /// 模拟交易奖励汇总
+        /// </summary>
+        public decimal totalDemoTransaction { get; set; }
+        /// <summary>
+        /// 模拟盘注册奖励（20元）
+        /// </summary>
+        public decimal demoRegister { get; set; }
     }
 }
