@@ -43,9 +43,8 @@ namespace CFD_API.SignalR
 
             //_redisClient = CFDGlobal.BasicRedisClientManager.GetClient().As<ProdDef>();
 
-            CFDGlobal.LogLine("Starting QuoteFeedTicker...");
-            //Start();
-            _timer = new Timer(Start, null, _updateInterval, TimeSpan.FromMilliseconds(-1));
+            //CFDGlobal.LogLine("Starting QuoteFeedTicker...");
+            //_timer = new Timer(Start, null, _updateInterval, TimeSpan.FromMilliseconds(-1));
         }
 
         private void Start(object state)
