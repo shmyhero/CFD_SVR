@@ -784,5 +784,20 @@ namespace CFD_API.Controllers
 
             return result;
         }
+
+        [HttpGet]
+        [Route("demo/oauth")]
+        public void AyondoDemoOAuth()
+        {
+            var queryNameValuePairs = Request.GetQueryNameValuePairs();
+            //CFDGlobal.LogInformation(oauth_token+" "+state+" "+expires_in);
+
+            if (queryNameValuePairs.Any())
+            {
+                string log = queryNameValuePairs.Aggregate("OAuth: ",
+                    (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
+                CFDGlobal.LogLine(log);
+            }
+        }
     }
 }
