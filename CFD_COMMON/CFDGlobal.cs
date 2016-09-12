@@ -36,6 +36,13 @@ namespace CFD_COMMON
         public static string ASSET_CLASS_INDEX = "Stock Indices";
         public static string ASSET_CLASS_COMMODITY = "Commodities";
 
+        //continuous daily check-in reward (Day 1 - Day 5)
+        public const decimal REWARD_DAY_1_TO_5 = 0.5M;
+        public const decimal REWARD_DAY_6_TO_10 = 0.6M;
+        public const decimal REWARD_DAY_11_TO_X = 0.8M;
+        public const decimal REWARD_DEMO_REG = 20m;
+        public const decimal REWARD_DEMO_TRADE = 0.5m;
+
         /// <summary>
         /// the default application-wide BasicRedisClientManager, non-pooled, created for current application
         /// </summary>

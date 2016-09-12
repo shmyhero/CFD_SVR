@@ -428,7 +428,7 @@ namespace CFD_API.Controllers
             {
                 todayTrasaction = new DailyTransaction();
                 todayTrasaction.Date = DateTime.UtcNow.AddHours(8).Date;
-                todayTrasaction.Amount = 0.5M;
+                todayTrasaction.Amount = CFDGlobal.REWARD_DEMO_TRADE;
                 todayTrasaction.DealAt = DateTime.UtcNow.AddHours(8);
                 todayTrasaction.UserId = UserId;
                 todayTrasaction.IsPaid = false;

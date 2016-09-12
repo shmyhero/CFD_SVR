@@ -1,4 +1,6 @@
-﻿namespace CFD_API.DTO
+﻿using System.Collections.Generic;
+
+namespace CFD_API.DTO
 {
     public class SignupResultDTO : ResultDTO
     {
@@ -62,9 +64,24 @@
         public int deviceType;
     }
 
+    public class MonthDailyCheckInDTO
+    {
+        public int month { get; set; }
+        public int monthDayCount { get; set; }
+        public List<DailySignDTO> days { get; set; }
+    }
+
+    public class RewardIntroDTO
+    {
+        public string url { get; set; }
+        public string imgUrl { get; set; }
+        public string title { get; set; }
+        public string text { get; set; }
+    }
+
     public class DailySignDTO
     {
-        public int Day { get; set; }
+        public int day { get; set; }
     }
 
     /// <summary>
