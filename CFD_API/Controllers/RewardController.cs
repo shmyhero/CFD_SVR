@@ -233,11 +233,11 @@ namespace CFD_API.Controllers
                     }
                     else if (lastDailySign.Continuity <= 9)
                     {
-                        lastDailySign.Amount = CFDGlobal.REWARD_DAY_6_TO_10;
+                        info.AmountToday = CFDGlobal.REWARD_DAY_6_TO_10;
                     }
                     else
                     {
-                        lastDailySign.Amount = CFDGlobal.REWARD_DAY_11_TO_X;
+                        info.AmountToday = CFDGlobal.REWARD_DAY_11_TO_X;
                     }
                 }
                 else //break before
