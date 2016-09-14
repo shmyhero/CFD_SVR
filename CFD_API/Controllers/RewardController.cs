@@ -55,7 +55,7 @@ namespace CFD_API.Controllers
             ResultDTO result = new ResultDTO() { success = true };
             DailySign lastDailySign = db.DailySigns.Where(d => d.UserId == this.UserId).OrderByDescending(d => d.Date).FirstOrDefault();
 
-            var chinaNow = DateTimes.GetChinaDateTimeNow();
+            var chinaNow = DateTimes.GetChinaNow();
 
             DailySign todayDailySign = new DailySign();
             todayDailySign.UserId = this.UserId;
@@ -137,7 +137,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public MonthDailyCheckInDTO GetCurrentMonthSign()
         {
-            var chinaNow = DateTimes.GetChinaDateTimeNow();
+            var chinaNow = DateTimes.GetChinaNow();
 
             //List<DailySignDTO> dayList = new List<DailySignDTO>();
             DateTime startDate = new DateTime(chinaNow.Year, chinaNow.Month, 1);
@@ -209,7 +209,7 @@ namespace CFD_API.Controllers
                 .OrderByDescending(d => d.Date)
                 .FirstOrDefault();
 
-            var chinaToday = DateTimes.GetChinaDateTimeNow().Date;
+            var chinaToday = DateTimes.GetChinaNow().Date;
 
             if (lastDailySign == null)
             {

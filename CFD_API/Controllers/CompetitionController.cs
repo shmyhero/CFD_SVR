@@ -63,17 +63,10 @@ namespace CFD_API.Controllers
         [Route("{id}/leaderboard")]
         public List<CompetitionResultDTO> GetLeaderboard(int id)
         {
-            var chinaNow = DateTimes.GetChinaDateTimeNow();
-            var chinaYesterday = chinaNow.AddDays(-1).Date;
-
-            if (chinaYesterday.DayOfWeek == DayOfWeek.Sunday)
-                chinaYesterday = chinaYesterday.AddDays(-2);
-
-            if (chinaYesterday.DayOfWeek == DayOfWeek.Saturday)
-                chinaYesterday = chinaYesterday.AddDays(-1);
+            var date = DateTimes.GetLastFinishedChinaWorkday();
 
             var competitionResults =
-                db.CompetitionResults.Where(o => o.CompetitionId == id && o.Date == chinaYesterday)
+                db.CompetitionResults.Where(o => o.CompetitionId == id && o.Date == date)
                     .OrderBy(o => o.Rank)
                     .Take(10)
                     .ToList()
@@ -87,18 +80,11 @@ namespace CFD_API.Controllers
         [Route("{id}/user/{userId}/rank")]
         public CompetitionResultDTO GetUserRank(int id, int userId)
         {
-            var chinaNow = DateTimes.GetChinaDateTimeNow();
-            var chinaYesterday = chinaNow.AddDays(-1).Date;
-
-            if (chinaYesterday.DayOfWeek == DayOfWeek.Sunday)
-                chinaYesterday = chinaYesterday.AddDays(-2);
-
-            if (chinaYesterday.DayOfWeek == DayOfWeek.Saturday)
-                chinaYesterday = chinaYesterday.AddDays(-1);
+            var date = DateTimes.GetLastFinishedChinaWorkday();
 
             var competitionResult =
                 db.CompetitionResults.FirstOrDefault(
-                    o => o.CompetitionId == id && o.Date == chinaYesterday && o.UserId == userId);
+                    o => o.CompetitionId == id && o.Date == date && o.UserId == userId);
 
             if (competitionResult == null)
                 return new CompetitionResultDTO() {};
@@ -110,17 +96,10 @@ namespace CFD_API.Controllers
         [Route("{id}/user/{userId}/position")]
         public List<CompetitionUserPositionDTO> GetUserPositions(int id, int userId)
         {
-            var chinaNow = DateTimes.GetChinaDateTimeNow();
-            var chinaYesterday = chinaNow.AddDays(-1).Date;
-
-            if (chinaYesterday.DayOfWeek == DayOfWeek.Sunday)
-                chinaYesterday = chinaYesterday.AddDays(-2);
-
-            if (chinaYesterday.DayOfWeek == DayOfWeek.Saturday)
-                chinaYesterday = chinaYesterday.AddDays(-1);
+            var date = DateTimes.GetLastFinishedChinaWorkday();
 
             var positions =
-                db.CompetitionUserPositions.Where(o => o.CompetitionId == id && o.Date == chinaYesterday && o.UserId == userId).ToList();
+                db.CompetitionUserPositions.Where(o => o.CompetitionId == id && o.Date == date && o.UserId == userId).ToList();
 
             return positions.Select(o => Mapper.Map<CompetitionUserPositionDTO>(o)).ToList();
         }
