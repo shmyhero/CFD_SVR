@@ -8,6 +8,7 @@ using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 
@@ -30,7 +31,7 @@ namespace CFD_API.Controllers
                 url = "http://cn.tradehero.mobi/TH_CFD_WEB/checkinRule.php",
                 imgUrl = "http://cn.tradehero.mobi/TH_CFD_WEB/images/ShareLogo.png",
                 title = "签到赚取实盘资金",
-                text = "模拟注册可赚取" + CFDGlobal.REWARD_DEMO_REG + "元；每日签到可赚取" + CFDGlobal.REWARD_DAY_1_TO_5 + "元；每日模拟交易可赚取" + CFDGlobal.REWARD_DEMO_TRADE + "元。",
+                text = "模拟注册可赚取" + RewardService.REWARD_DEMO_REG + "元；每日签到可赚取" + RewardService.CHECK_IN_DAY_1_TO_5 + "元；每日模拟交易可赚取" + RewardService.REWARD_DEMO_TRADE + "元。",
             };
         }
 
@@ -42,8 +43,8 @@ namespace CFD_API.Controllers
             {
                 url = "http://cn.tradehero.mobi/TH_CFD_WEB/checkinRule.php",
                 imgUrl = "http://cn.tradehero.mobi/TH_CFD_WEB/images/ShareLogo.png",
-                title = "模拟注册获得"+CFDGlobal.REWARD_DEMO_REG+"元交易金",
-                text = "模拟注册可赚取" + CFDGlobal.REWARD_DEMO_REG + "元；每日签到可赚取" + CFDGlobal.REWARD_DAY_1_TO_5 + "元；每日模拟交易可赚取" + CFDGlobal.REWARD_DEMO_TRADE + "元。",
+                title = "模拟注册获得"+RewardService.REWARD_DEMO_REG+"元交易金",
+                text = "模拟注册可赚取" + RewardService.REWARD_DEMO_REG + "元；每日签到可赚取" + RewardService.CHECK_IN_DAY_1_TO_5 + "元；每日模拟交易可赚取" + RewardService.REWARD_DEMO_TRADE + "元。",
             };
         }
 
@@ -52,64 +53,69 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO DailySign()
         {
-            ResultDTO result = new ResultDTO() { success = true };
-            DailySign lastDailySign = db.DailySigns.Where(d => d.UserId == this.UserId).OrderByDescending(d => d.Date).FirstOrDefault();
+            //ResultDTO result = new ResultDTO() { success = true };
 
-            var chinaNow = DateTimes.GetChinaNow();
+            var rewardService=new RewardService(db);
+            var isOK = rewardService.CheckIn(UserId);
+            return new ResultDTO() {success = isOK};
 
-            DailySign todayDailySign = new DailySign();
-            todayDailySign.UserId = this.UserId;
-            todayDailySign.SignAt = chinaNow;
-            todayDailySign.Date = chinaNow.Date;
-            todayDailySign.IsPaid = false;
+            //DailySign lastDailySign = db.DailySigns.Where(d => d.UserId == this.UserId).OrderByDescending(d => d.Date).FirstOrDefault();
 
-            if (lastDailySign == null) //first time sign in
-            {
-                todayDailySign.Continuity = 1;
-                todayDailySign.Amount = CFDGlobal.REWARD_DAY_1_TO_5;
-            }
-            else //signed in before
-            {
-                if (!lastDailySign.Date.HasValue)//should not happen. if happened, continue from day 1
-                {
-                    todayDailySign.Continuity = 1;
-                    todayDailySign.Amount = CFDGlobal.REWARD_DAY_1_TO_5;
-                }
-                else
-                {
-                    if (lastDailySign.Date.Value == chinaNow.Date)//already signed in today
-                    {
-                        result = new ResultDTO() { success = false, message = "Already sign in today." };
-                        return result;
-                    }
-                    else if (lastDailySign.Date.Value.AddDays(1) == chinaNow.Date) //continuous sign 
-                    {
-                        todayDailySign.Continuity = lastDailySign.Continuity + 1;
-                        if (todayDailySign.Continuity <= 5)
-                        {
-                            todayDailySign.Amount = CFDGlobal.REWARD_DAY_1_TO_5;
-                        }
-                        else if (todayDailySign.Continuity <= 10)
-                        {
-                            todayDailySign.Amount = CFDGlobal.REWARD_DAY_6_TO_10;
-                        }
-                        else
-                        {
-                            todayDailySign.Amount = CFDGlobal.REWARD_DAY_11_TO_X;
-                        }
-                    }
-                    else //break before
-                    {
-                        todayDailySign.Continuity = 1;
-                        todayDailySign.Amount = CFDGlobal.REWARD_DAY_1_TO_5;
-                    }
-                }
-            }
+            //var chinaNow = DateTimes.GetChinaNow();
 
-            db.DailySigns.Add(todayDailySign);
-            db.SaveChanges();
+            //DailySign todayDailySign = new DailySign();
+            //todayDailySign.UserId = this.UserId;
+            //todayDailySign.SignAt = chinaNow;
+            //todayDailySign.Date = chinaNow.Date;
+            //todayDailySign.IsPaid = false;
 
-            return result;
+            //if (lastDailySign == null) //first time sign in
+            //{
+            //    todayDailySign.Continuity = 1;
+            //    todayDailySign.Amount = RewardService.CHECK_IN_DAY_1_TO_5;
+            //}
+            //else //signed in before
+            //{
+            //    if (!lastDailySign.Date.HasValue)//should not happen. if happened, continue from day 1
+            //    {
+            //        todayDailySign.Continuity = 1;
+            //        todayDailySign.Amount = RewardService.CHECK_IN_DAY_1_TO_5;
+            //    }
+            //    else
+            //    {
+            //        if (lastDailySign.Date.Value == chinaNow.Date)//already signed in today
+            //        {
+            //            result = new ResultDTO() { success = false, message = "Already sign in today." };
+            //            return result;
+            //        }
+            //        else if (lastDailySign.Date.Value.AddDays(1) == chinaNow.Date) //continuous sign 
+            //        {
+            //            todayDailySign.Continuity = lastDailySign.Continuity + 1;
+            //            if (todayDailySign.Continuity <= 5)
+            //            {
+            //                todayDailySign.Amount = RewardService.CHECK_IN_DAY_1_TO_5;
+            //            }
+            //            else if (todayDailySign.Continuity <= 10)
+            //            {
+            //                todayDailySign.Amount = RewardService.CHECK_IN_DAY_6_TO_10;
+            //            }
+            //            else
+            //            {
+            //                todayDailySign.Amount = RewardService.CHECK_IN_DAY_11_TO_X;
+            //            }
+            //        }
+            //        else //break before
+            //        {
+            //            todayDailySign.Continuity = 1;
+            //            todayDailySign.Amount = RewardService.CHECK_IN_DAY_1_TO_5;
+            //        }
+            //    }
+            //}
+
+            //db.DailySigns.Add(todayDailySign);
+            //db.SaveChanges();
+
+            //return result;
         }
 
         //[HttpGet]
@@ -213,11 +219,11 @@ namespace CFD_API.Controllers
 
             if (lastDailySign == null)
             {
-                info.AmountToday = CFDGlobal.REWARD_DAY_1_TO_5;
+                info.AmountToday = RewardService.CHECK_IN_DAY_1_TO_5;
             }
             else if (!lastDailySign.Date.HasValue) //should not happen
             {
-                info.AmountToday = CFDGlobal.REWARD_DAY_1_TO_5;
+                info.AmountToday = RewardService.CHECK_IN_DAY_1_TO_5;
             }
             else
             {
@@ -227,22 +233,11 @@ namespace CFD_API.Controllers
                 }
                 else if (lastDailySign.Date.Value.AddDays(1) == chinaToday) //continuous sign 
                 {
-                    if (lastDailySign.Continuity <= 4)
-                    {
-                        info.AmountToday = CFDGlobal.REWARD_DAY_1_TO_5;
-                    }
-                    else if (lastDailySign.Continuity <= 9)
-                    {
-                        info.AmountToday = CFDGlobal.REWARD_DAY_6_TO_10;
-                    }
-                    else
-                    {
-                        info.AmountToday = CFDGlobal.REWARD_DAY_11_TO_X;
-                    }
+                    info.AmountToday = RewardService.GetRewardAmount(lastDailySign.Continuity + 1);
                 }
                 else //break before
                 {
-                    info.AmountToday = CFDGlobal.REWARD_DAY_1_TO_5;
+                    info.AmountToday = RewardService.CHECK_IN_DAY_1_TO_5;
                 }
             }
 

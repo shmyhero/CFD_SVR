@@ -17,6 +17,7 @@ using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 
@@ -422,21 +423,24 @@ namespace CFD_API.Controllers
         /// <param name="userId"></param>
         private void RewardDailyDemoTransaction()
         {
-            DateTime today = DateTime.UtcNow.AddHours(8).Date;
-            DailyTransaction todayTrasaction = db.DailyTransactions.Where(item => item.UserId == UserId && item.Date == today).FirstOrDefault();
-            if(todayTrasaction == null)
-            {
-                todayTrasaction = new DailyTransaction();
-                todayTrasaction.Date = DateTime.UtcNow.AddHours(8).Date;
-                todayTrasaction.Amount = CFDGlobal.REWARD_DEMO_TRADE;
-                todayTrasaction.DealAt = DateTime.UtcNow.AddHours(8);
-                todayTrasaction.UserId = UserId;
-                todayTrasaction.IsPaid = false;
-                db.DailyTransactions.Add(todayTrasaction);
-                db.SaveChanges();
-            }
+            var rewardService=new RewardService(db);
+            var success = rewardService.TradeReward(UserId);
 
-            return;
+            //DateTime today = DateTime.UtcNow.AddHours(8).Date;
+            //DailyTransaction todayTrasaction = db.DailyTransactions.Where(item => item.UserId == UserId && item.Date == today).FirstOrDefault();
+            //if(todayTrasaction == null)
+            //{
+            //    todayTrasaction = new DailyTransaction();
+            //    todayTrasaction.Date = DateTime.UtcNow.AddHours(8).Date;
+            //    todayTrasaction.Amount = RewardService.REWARD_DEMO_TRADE;
+            //    todayTrasaction.DealAt = DateTime.UtcNow.AddHours(8);
+            //    todayTrasaction.UserId = UserId;
+            //    todayTrasaction.IsPaid = false;
+            //    db.DailyTransactions.Add(todayTrasaction);
+            //    db.SaveChanges();
+            //}
+
+            //return;
         }
 
         [HttpPost]

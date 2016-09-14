@@ -240,7 +240,7 @@ namespace CFD_API.Controllers
             {
                 var reward = new DemoRegisterReward()
                 {
-                    Amount = CFDGlobal.REWARD_DEMO_REG,
+                    Amount = RewardService.REWARD_DEMO_REG,
                     ClaimedAt = null,
                     UserId = UserId,
                 };

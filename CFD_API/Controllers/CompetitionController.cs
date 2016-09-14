@@ -63,7 +63,8 @@ namespace CFD_API.Controllers
         [Route("{id}/leaderboard")]
         public List<CompetitionResultDTO> GetLeaderboard(int id)
         {
-            var date = DateTimes.GetLastFinishedChinaWorkday();
+            //var date = DateTimes.GetLastFinishedChinaWorkday();
+            var date = db.CompetitionResults.OrderByDescending(o => o.Date).Select(o => o.Date).FirstOrDefault();
 
             var competitionResults =
                 db.CompetitionResults.Where(o => o.CompetitionId == id && o.Date == date)
@@ -80,7 +81,8 @@ namespace CFD_API.Controllers
         [Route("{id}/user/{userId}/rank")]
         public CompetitionResultDTO GetUserRank(int id, int userId)
         {
-            var date = DateTimes.GetLastFinishedChinaWorkday();
+            //var date = DateTimes.GetLastFinishedChinaWorkday();
+            var date = db.CompetitionResults.OrderByDescending(o => o.Date).Select(o => o.Date).FirstOrDefault();
 
             var competitionResult =
                 db.CompetitionResults.FirstOrDefault(
@@ -96,7 +98,8 @@ namespace CFD_API.Controllers
         [Route("{id}/user/{userId}/position")]
         public List<CompetitionUserPositionDTO> GetUserPositions(int id, int userId)
         {
-            var date = DateTimes.GetLastFinishedChinaWorkday();
+            //var date = DateTimes.GetLastFinishedChinaWorkday();
+            var date = db.CompetitionResults.OrderByDescending(o => o.Date).Select(o => o.Date).FirstOrDefault();
 
             var positions =
                 db.CompetitionUserPositions.Where(o => o.CompetitionId == id && o.Date == date && o.UserId == userId).ToList();
