@@ -341,10 +341,15 @@ namespace CFD_TEST
             for (int i = 0; i < 3; i++)
             {
                 user = db.Users.FirstOrDefault(o => o.Id == 1);
-                pos = XiaDan_SheZhiYing(user, 34820, true,100);
+                pos = XiaDan_SheZhiYing(user, 34820, true, 100);
                 user = db.Users.FirstOrDefault(o => o.Id == 3277);
-                pos = XiaDan_SheZhiYing(user, 34820, false,100);
+                pos = XiaDan_SheZhiYing(user, 34820, false, 100);
             }
+
+            user = db.Users.FirstOrDefault(o => o.Id == 3219);
+            pos = XiaDan_SheZhiYing(user, 34864, true, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 3220);
+            pos = XiaDan_SheZhiYing(user, 34864, false, 100);
 
             ////华尔街
             //for (int i = 0; i < 1; i++)
@@ -359,9 +364,9 @@ namespace CFD_TEST
             for (int i = 0; i < 1; i++)
             {
                 user = db.Users.FirstOrDefault(o => o.Id == 3281);
-                pos = XiaDan_SheZhiYing(user, 34803, true,125);
+                pos = XiaDan_SheZhiYing(user, 34803, true, 125);
                 user = db.Users.FirstOrDefault(o => o.Id == 3218);
-                pos = XiaDan_SheZhiYing(user, 34803, false,125);
+                pos = XiaDan_SheZhiYing(user, 34803, false, 125);
             }
         }
 
