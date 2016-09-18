@@ -35,6 +35,11 @@ namespace CFD_COMMON.Utils
                 return date;
         }
 
+        public static DateTime UtcToChinaTime(DateTime dt)
+        {
+            return dt.AddHours(8);
+        }
+
         //public static bool IsChinaWeekend(DateTime date)
         //{
         //    return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
