@@ -200,7 +200,7 @@ namespace CFD_JOBS.Ayondo
                                     msgPart4 = "盈利" + Math.Abs(Math.Round(h.PL.Value)).ToString();
                                 }
                             }
-                            string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), h.TradeTime, Math.Round(h.TradePrice.Value,2), msgPart4);
+                            string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), DateTimes.UtcToChinaTime(h.TradeTime.Value).ToString(CFDGlobal.DATETIME_MASK_SECOND), Math.Round(h.TradePrice.Value,2), msgPart4);
                             getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message,h.SecurityId, Translator.GetCName(h.SecurityName))));
 
                             CFDGlobal.LogLine("Auto close notification push:" + string.Format(msgTemplate, message, h.SecurityId, Translator.GetCName(h.SecurityName)));

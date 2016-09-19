@@ -29,6 +29,8 @@ namespace CFD_COMMON
         public static string FEEDBACK_PIC_BLOC_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + FEEDBACK_PIC_BLOC_CONTAINER + "/";
 
         public const string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
+        public const string DATETIME_MASK_SECOND = "yyyy-MM-dd HH:mm:ss";
+
         public const string AYONDO_DATETIME_MASK = "yyyy-MM-dd HH:mm:ss.FFF";
 
         public static string ASSET_CLASS_STOCK = "Single Stocks";

@@ -797,7 +797,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("demo/oauth")]
-        public void AyondoDemoOAuth()
+        public string AyondoDemoOAuth()
         {
             var queryNameValuePairs = Request.GetQueryNameValuePairs();
             //CFDGlobal.LogInformation(oauth_token+" "+state+" "+expires_in);
@@ -808,6 +808,8 @@ namespace CFD_API.Controllers
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
                 CFDGlobal.LogLine(log);
             }
+
+            return "OK";
         }
     }
 }

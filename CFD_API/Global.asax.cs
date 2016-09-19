@@ -82,7 +82,7 @@ namespace CFD_API
             if (!e.Dismissed)
             {
                 var ts = DateTime.UtcNow - _lastElmahMailTime;
-                var chinaNow = DateTimes.GetChinaDateTimeNow();
+                var chinaNow = DateTimes.GetChinaNow();
 
                 if (ts < TimeSpan.FromMinutes(10)) //within 10 min
                 {

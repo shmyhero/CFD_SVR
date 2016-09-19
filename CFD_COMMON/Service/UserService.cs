@@ -37,15 +37,15 @@ namespace CFD_COMMON.Service
                         dbIsolated.Users.Add(userIsolated);
 
                         dbIsolated.SaveChanges();
-                        scope.Complete();
                     }
                 }
+                scope.Complete();
             }
         }
 
         public void CreateUserByWeChat(string openid, string unionid)
         {
-            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions {IsolationLevel = IsolationLevel.Serializable}))
             {
                 using (var dbIsolated = CFDEntities.Create())
                 {
@@ -62,9 +62,9 @@ namespace CFD_COMMON.Service
                         dbIsolated.Users.Add(userIsolated);
 
                         dbIsolated.SaveChanges();
-                        scope.Complete();
                     }
                 }
+                scope.Complete();
             }
         }
 
@@ -80,9 +80,9 @@ namespace CFD_COMMON.Service
                     {
                         userIsolated.WeChatOpenId = wechatOpenId;
                         dbIsolated.SaveChanges();
-                        scope.Complete();
                     }
                 }
+                scope.Complete();
             }
         }
 
@@ -98,9 +98,9 @@ namespace CFD_COMMON.Service
                     {
                         userIsolated.Phone = phone;
                         dbIsolated.SaveChanges();
-                        scope.Complete();
                     }
                 }
+                scope.Complete();
             }
         }
     }

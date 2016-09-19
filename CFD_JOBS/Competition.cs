@@ -22,7 +22,7 @@ namespace CFD_JOBS
         {
             while (true)
             {
-                var chinaNow = DateTimes.GetChinaDateTimeNow();
+                var chinaNow = DateTimes.GetChinaNow();
                 var chinaToday = chinaNow.Date;
 
                 if (chinaToday > _lastCalculatedDate //a new chinese day, calculate yesterday's data

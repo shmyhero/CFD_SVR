@@ -367,7 +367,12 @@ namespace CFD_API.Controllers
                     (o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUSStocks(o.Symbol))//US Stocks and non-stocks
                     && !o.Name.EndsWith(" Outright") //exclude Outright
                 ) 
-                .Select(o => Mapper.Map<SecurityDTO>(o))
+                .Select(delegate(ProdDef o)
+                {
+                    var result= Mapper.Map<SecurityDTO>(o);
+                    result.eName = o.Name;
+                    return result;
+                })
                 .Where(delegate(SecurityDTO o)
                 {
                     //for example 雅培制药
@@ -388,6 +393,7 @@ namespace CFD_API.Controllers
                     }
 
                     return (o.name.ToLower().Contains(keyword)
+                            || o.eName.ToLower().Contains(keyword)
                             || o.symbol.ToLower().Contains(keyword)
                             || pinyinMatch
                             );
