@@ -712,24 +712,34 @@ namespace CFD_API.Controllers
         [Route("headline/group")]
         public IList<HeadlineGroupDTO> GetHeadlineGroup()
         {
-            IList<Headline> headlines = null;
-            int maxCount = 14;
+            List<Headline> headlines = null;
+            //find past 7 days which has headlines
+            int maxDays = 7;
 
             DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
 
-            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
-
-            while (headlines == null || headlines.Count == 0)
-            {
-                lastDay = lastDay.AddDays(-1);
-                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
-                if (maxCount-- <= 0)//trace back for at most 2 weeks
-                {
-                    break;
-                }
-            }
-
             List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
+
+            while(maxDays > 0)
+            {
+                DateTime dayBeforeLastDay = lastDay.AddDays(-1);
+                var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= dayBeforeLastDay && item.CreatedAt <= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
+                lastDay = lastDay.AddDays(-1);
+
+                if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 7 days)
+                {
+                    maxDays--;
+                    if (headlines != null)
+                    {
+                        headlines.AddRange(tempHeadlines);
+                    }
+                    else
+                    {
+                        headlines = tempHeadlines;
+                    }
+                }
+               
+            }
 
             foreach (Headline headLine in headlines)
             {
