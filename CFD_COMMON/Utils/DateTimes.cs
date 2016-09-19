@@ -54,6 +54,15 @@ namespace CFD_COMMON.Utils
                    && t1.Year == t2.Year;
         }
 
+        public static bool IsEqualDownTo5Minute(DateTime t1, DateTime t2)
+        {
+            return t1.Minute / 5 == t2.Minute / 5
+                    && t1.Hour == t2.Hour
+                    && t1.Day == t2.Day
+                    && t1.Month == t2.Month
+                    && t1.Year == t2.Year;
+        }
+
         public static bool IsEqualDownTo10Minute(DateTime t1, DateTime t2)
         {
             return t1.Minute/10 == t2.Minute/10
@@ -69,6 +78,11 @@ namespace CFD_COMMON.Utils
                    && t1.Day == t2.Day
                    && t1.Month == t2.Month
                    && t1.Year == t2.Year;
+        }
+
+        public static DateTime GetStartTimeEvery5Minutes(DateTime dt)
+        {
+            return new DateTime(dt.Year,dt.Month,dt.Day,dt.Hour,dt.Minute/5*5,0,dt.Kind);
         }
 
         public static DateTime GetHistoryQueryStartTime(DateTime endTime)

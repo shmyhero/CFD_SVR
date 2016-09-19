@@ -351,6 +351,8 @@ namespace CFD_API.Controllers
         [Route("search")]
         public List<SecurityDTO> SearchSecurity(string keyword, int page = 1, int perPage = 20)
         {
+            if(string.IsNullOrWhiteSpace(keyword)) return new List<SecurityDTO>();
+
             keyword = keyword.ToLower();
 
             var activeProds = GetActiveProds();
