@@ -777,6 +777,8 @@ namespace AyondoTrade
                         TestNewOrder();
                     else if (action == 'a')
                         QueryMDS3();
+                    else if (action == 'b')
+                        TestOAuth();
                     else if (action == 'l')
                         TestLatency();
                 }
@@ -787,6 +789,35 @@ namespace AyondoTrade
                 }
             }
             Console.WriteLine("Program shutdown.");
+        }
+
+        private void ShowInfo()
+        {
+            // Commands 'g' and 'x' are intentionally hidden.
+            Console.Write("\n"
+                          + "1) Enter Order\n"
+                          + "2) Replace Order\n"
+                          + "3) Position Report\n"
+                          + "4) Balance\n"
+                          + "5) Order Mass Status\n"
+                          + "6) Log In\n"
+                          + "7) Log Out\n"
+                          + "8) Cancel Order\n"
+                          + "9) Position History\n"
+                          + "Q) Quit\n"
+                          + "Action: "
+                );
+        }
+
+        private char QueryAction()
+        {
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a,b,l".Split(','));
+
+            string cmd = Console.ReadLine().Trim();
+            if (cmd.Length != 1 || validActions.Contains(cmd) == false)
+                return (char) 0;
+
+              return cmd.ToCharArray()[0];
         }
 
         private void TestLatency()
@@ -804,6 +835,30 @@ namespace AyondoTrade
             SendMessage(m);
 
             //return guid;
+        }
+
+        private string TestOAuth()
+        {
+            //
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new UserRequest();
+            m.UserRequestID = new UserRequestID(guid);
+
+            m.UserRequestType = new UserRequestType(UserRequestType.LOGONUSER);
+            m.Username = new Username("thcn1NeoC");
+            //m.Password = new Password(password);
+            m.SetField(new StringField(_dd.FieldsByName["MDS_OAUTH"].Tag)
+            {
+                Obj =
+                    "bCr+6nkT7Ihupf0DTPXLSP6QU3yBCxDjVNpicK6Q6oMZPEbUf/W/2Tt5Wgr20wxGD3ohXOnZa5pSJsQNQYjuZ3rzCfOVat88pXRnyY4WDykJcmkEyADRg7ZZcTM3Gf5Xqkl4GnOdmRWYoE776JO3N1KUbghNcjKLb5qhfCkCYlVE1zS6oROM55MQkGGj+GFRp+EEwMFypTDUgQRRn/sQ5ncOFLmLfBHeUTxc7oGbLufeJpW0iTQRRmkNZsh0QeoYlTVbSfEREvXAFcFh9KV6URXxHB8ph0nR7IC2x1GQgYTXDp5UVpz4QvwF9mwaFunGLSTo2Ygp68uYZnzmZ8g3Sg=="
+            });
+            m.SetField(new StringField(TAG_MDS_SendColRep) { Obj = "N" });
+            m.SetField(new StringField(TAG_MDS_SendNoPos) { Obj = "0" });
+
+            SendMessage(m);
+
+            return guid;
         }
 
         private void QueryMDS3()
@@ -881,35 +936,6 @@ namespace AyondoTrade
                 if (users.All(u => UsernameAccounts.ContainsKey(u.AyondoUsername)))
                     break;
             } while (DateTime.UtcNow - dtLogon <= TimeSpan.FromSeconds(60)); // timeout
-        }
-
-        private char QueryAction()
-        {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a,l".Split(','));
-
-            string cmd = Console.ReadLine().Trim();
-            if (cmd.Length != 1 || validActions.Contains(cmd) == false)
-                return (char) 0;
-
-              return cmd.ToCharArray()[0];
-        }
-
-        private void ShowInfo()
-        {
-            // Commands 'g' and 'x' are intentionally hidden.
-            Console.Write("\n"
-                          + "1) Enter Order\n"
-                          + "2) Replace Order\n"
-                          + "3) Position Report\n"
-                          + "4) Balance\n"
-                          + "5) Order Mass Status\n"
-                          + "6) Log In\n"
-                          + "7) Log Out\n"
-                          + "8) Cancel Order\n"
-                          + "9) Position History\n"
-                          + "Q) Quit\n"
-                          + "Action: "
-                );
         }
 
         private void QueryLogIn()
