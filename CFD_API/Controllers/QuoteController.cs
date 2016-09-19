@@ -248,6 +248,19 @@ namespace CFD_API.Controllers
             return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
 
+        [HttpGet]
+        [Route("{securityId}/kline/5m")]
+        public List<KLine> Get5mKLine(int securityId)
+        {
+            var redisKLineClient = RedisClient.As<KLine>();
+            var redisProdDefClient = RedisClient.As<ProdDef>();
+            var klines = redisKLineClient.Lists["kline5m:" + securityId];
+
+            var result = klines.Where(o => o.Time > DateTime.UtcNow.AddHours(8).Date);
+
+            return result.ToList();
+        }
+
         /// <summary>
         /// for test use only
         /// </summary>
