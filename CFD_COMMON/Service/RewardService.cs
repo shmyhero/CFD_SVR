@@ -82,43 +82,51 @@ namespace CFD_COMMON.Service
             return result;
         }
 
-        public bool TradeReward(int userId)
+        private static object locker = new object();
+
+        public void TradeReward(int userId)
         {
-            bool result;
-
-            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
-            {
-                using (var dbIsol = CFDEntities.Create())
+            Task.Factory.StartNew(() => {
+                lock(locker)
                 {
-                    var chinaNow = DateTimes.GetChinaNow();
-                    var chinaToday = chinaNow.Date;
+                    bool result;
 
-                    var any = dbIsol.DailyTransactions.Any(o => o.UserId == userId && o.Date == chinaToday);
-
-                    if (!any)
+                    using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
                     {
-                        var newTrade = new DailyTransaction()
+                        using (var dbIsol = CFDEntities.Create())
                         {
-                            Date = chinaToday,
-                            Amount = REWARD_DEMO_TRADE,
-                            DealAt = chinaNow,
-                            UserId = userId,
-                            IsPaid = false,
-                        };
+                            var chinaNow = DateTimes.GetChinaNow();
+                            var chinaToday = chinaNow.Date;
 
-                        dbIsol.DailyTransactions.Add(newTrade);
-                        dbIsol.SaveChanges();
+                            var any = dbIsol.DailyTransactions.Any(o => o.UserId == userId && o.Date == chinaToday);
 
-                        result = true;
+                            if (!any)
+                            {
+                                var newTrade = new DailyTransaction()
+                                {
+                                    Date = chinaToday,
+                                    Amount = REWARD_DEMO_TRADE,
+                                    DealAt = chinaNow,
+                                    UserId = userId,
+                                    IsPaid = false,
+                                };
+
+                                dbIsol.DailyTransactions.Add(newTrade);
+                                dbIsol.SaveChanges();
+
+                                result = true;
+                            }
+                            else
+                                result = false;
+                        }
+
+                        scope.Complete();
                     }
-                    else
-                        result = false;
+
+                    return result;
                 }
-
-                scope.Complete();
-            }
-
-            return result;
+            });
+            
         }
 
         public static decimal GetRewardAmount(int continuity)

@@ -424,7 +424,7 @@ namespace CFD_API.Controllers
         private void RewardDailyDemoTransaction()
         {
             var rewardService=new RewardService(db);
-            var success = rewardService.TradeReward(UserId);
+            rewardService.TradeReward(UserId);
 
             //DateTime today = DateTime.UtcNow.AddHours(8).Date;
             //DailyTransaction todayTrasaction = db.DailyTransactions.Where(item => item.UserId == UserId && item.Date == today).FirstOrDefault();
