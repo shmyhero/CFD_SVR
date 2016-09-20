@@ -250,7 +250,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/kline/5m")]
-        public List<KLine> Get5mKLine(int securityId)
+        public List<KLineDTO> Get5mKLine(int securityId)
         {
             var redisKLineClient = RedisClient.As<KLine>();
             var redisProdDefClient = RedisClient.As<ProdDef>();
@@ -258,7 +258,14 @@ namespace CFD_API.Controllers
 
             var result = klines.Where(o => o.Time > DateTime.UtcNow.AddHours(8).Date);
 
-            return result.ToList();
+            return result.Select(o => new KLineDTO()
+            {
+                close = o.Close,
+                high = o.Open,
+                low = o.Low,
+                open = o.Open,
+                time = o.Time
+            }).ToList();
         }
 
         /// <summary>
