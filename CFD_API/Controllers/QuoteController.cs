@@ -254,9 +254,14 @@ namespace CFD_API.Controllers
         {
             var redisKLineClient = RedisClient.As<KLine>();
             var redisProdDefClient = RedisClient.As<ProdDef>();
-            var klines = redisKLineClient.Lists["kline5m:" + securityId];
+            var klines = redisKLineClient.Lists["kline5m:" + securityId].GetAll();
+            
+            if (klines.Count == 0)
+                return new List<KLineDTO>();
 
-            var result = klines.Where(o => o.Time > DateTime.UtcNow.AddHours(8).Date);
+            var lastKLineTime = klines.Last().Time;
+
+            var result = klines.Where(o => lastKLineTime - o.Time <= TimeSpan.FromHours(12));
 
             return result.Select(o => new KLineDTO()
             {
