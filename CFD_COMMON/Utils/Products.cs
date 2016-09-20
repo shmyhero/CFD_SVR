@@ -31,6 +31,11 @@
             return null;
         }
 
+        //public static int GetTimeZoneOffset(string symbol)
+        //{
+        //    return 0;
+        //}
+
         public static bool IsUSStocks(string symbol)
         {
             return symbol.EndsWith(" UW") || symbol.EndsWith(" UN");

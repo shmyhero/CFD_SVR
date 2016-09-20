@@ -11,6 +11,7 @@ using CFD_COMMON.Utils;
 using EntityFramework.BulkInsert.Extensions;
 using QuickFix;
 using QuickFix.Transport;
+using ServiceStack.Redis.Generic;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -99,142 +100,12 @@ namespace CFD_JOBS.Ayondo
                             if (prodDef.QuoteType == enmQuoteType.Closed) //recently closed
                                 quotes = quotes.Where(o => o.Time <= prodDef.LastClose.Value).ToList();
 
-                            if (quotes.Count == 0) //no quotes received
-                            {
-                                var list = redisKLineClient.Lists["kline5m:" + prodDef.Id];
-
-                                if (list.Count != 0)
-                                {
-                                    var last = list[list.Count - 1];
-
-                                    var klineTime = klineAyondoNow;
-
-                                    if (prodDef.QuoteType == enmQuoteType.Closed)
-                                        klineTime = DateTimes.GetStartTimeEvery5Minutes(prodDef.LastClose.Value);
-
-                                    if (klineTime > last.Time)
-                                    {
-                                        list.Add(new KLine()
-                                        {
-                                            Time = klineTime,
-                                            Open = last.Close,
-                                            Close = last.Close,
-                                            High = last.Close,
-                                            Low = last.Close,
-                                        });
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                var orderedQuotes = quotes.OrderBy(o => o.Time).ToList();
-
-                                var firstQuote = orderedQuotes.First();
-                                var lastQuote = orderedQuotes.Last();
-
-                                var klineTime1 = DateTimes.GetStartTimeEvery5Minutes(firstQuote.Time);
-                                var klineTime2 = DateTimes.GetStartTimeEvery5Minutes(lastQuote.Time);
-
-                                var list = redisKLineClient.Lists["kline5m:" + prodDef.Id];
-
-                                if (klineTime1 != klineTime2)
-                                {
-                                    var list1 = orderedQuotes.Where(o => o.Time < klineTime2).ToList();
-                                    var list2 = orderedQuotes.Where(o => o.Time >= klineTime2).ToList();
-
-                                    var k1 = new KLine()
-                                    {
-                                        Time = klineTime1,
-                                        Open = Quotes.GetLastPrice(list1.First()),
-                                        Close = Quotes.GetLastPrice(list1.Last()),
-                                        High = list1.Max(o => Quotes.GetLastPrice(o)),
-                                        Low = list1.Min(o => Quotes.GetLastPrice(o)),
-                                    };
-                                    var k2 = new KLine()
-                                    {
-                                        Time = klineTime2,
-                                        Open = Quotes.GetLastPrice(list2.First()),
-                                        Close = Quotes.GetLastPrice(list2.Last()),
-                                        High = list2.Max(o => Quotes.GetLastPrice(o)),
-                                        Low = list2.Min(o => Quotes.GetLastPrice(o)),
-                                    };
-
-                                    if (list.Count == 0)
-                                    {
-                                        list.Add(k1);
-                                        list.Add(k2);
-                                    }
-                                    else
-                                    {
-                                        var last = list[list.Count - 1];
-
-                                        if (last.Time < klineTime1)
-                                        {
-                                            list.Add(k1);
-                                            list.Add(k2);
-                                        }
-                                        else if (last.Time == klineTime1)
-                                        {
-                                            list[list.Count - 1] = new KLine()
-                                            {
-                                                Time = last.Time,
-                                                Open = last.Open,
-                                                Close = k1.Close,
-                                                High = Math.Max(last.High, k1.High),
-                                                Low = Math.Min(last.Low, k1.Low),
-                                            };
-
-                                            list.Add(k2);
-                                        }
-                                        else
-                                        {
-                                            //should not be here
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    var k = new KLine()
-                                    {
-                                        Time = klineTime1,
-                                        Open = Quotes.GetLastPrice(firstQuote),
-                                        Close = Quotes.GetLastPrice(lastQuote),
-                                        High = orderedQuotes.Max(o => Quotes.GetLastPrice(o)),
-                                        Low = orderedQuotes.Min(o => Quotes.GetLastPrice(o)),
-                                    };
-
-                                    if (list.Count == 0)
-                                    {
-                                        list.Add(k);
-                                    }
-                                    else
-                                    {
-                                        var last = list[list.Count - 1];
-
-                                        if (last.Time < k.Time)
-                                        {
-                                            list.Add(k);
-                                        }
-                                        else if (last.Time == k.Time)
-                                        {
-                                            list[list.Count - 1] = new KLine()
-                                            {
-                                                Time = last.Time,
-                                                Open = last.Open,
-                                                Close = k.Close,
-                                                High = Math.Max(last.High, k.High),
-                                                Low = Math.Min(last.Low, k.Low),
-                                            };
-                                        }
-                                        else
-                                        {
-                                            //should not be here
-                                        }
-                                    }
-                                }
-                            }
+                            UpdateKLine(quotes, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FiveMinutes);
+                            UpdateKLine(quotes, redisKLineClient, prodDef, klineAyondoNow, KLineSize.Day);
                         }
                     }
+
+                    CFDGlobal.LogLine("\t\t\t\tkline updated");
                 }
                 catch (Exception e)
                 {
@@ -242,6 +113,166 @@ namespace CFD_JOBS.Ayondo
                 }
 
                 Thread.Sleep(_intervalKLine);
+            }
+        }
+
+        private static void UpdateKLine(List<Quote> quotes, IRedisTypedClient<KLine> redisKLineClient, ProdDef prodDef, DateTime klineAyondoNow, KLineSize kLineSize)
+        {
+            var list = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(kLineSize) + prodDef.Id];
+
+            if (quotes.Count == 0) //no quotes received, then should just fill the non-changing quotes
+            {
+                if (kLineSize != KLineSize.Day) //no need to fill the non-changing quotes for day kline)
+                {
+                    //var list = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(kLineSize) + prodDef.Id];
+
+                    if (list.Count != 0)
+                    {
+                        var last = list[list.Count - 1];
+
+                        var klineTime = klineAyondoNow;
+
+                        if (prodDef.QuoteType == enmQuoteType.Closed)
+                            klineTime = KLines.GetKLineTime(prodDef.LastClose.Value, kLineSize);
+
+                        if (klineTime > last.Time)
+                        {
+                            //fill the non-changing quotes
+                            list.Add(new KLine()
+                            {
+                                Time = klineTime,
+                                Open = last.Close,
+                                Close = last.Close,
+                                High = last.Close,
+                                Low = last.Close,
+                            });
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var orderedQuotes = quotes.OrderBy(o => o.Time).ToList();
+
+                var firstQuote = orderedQuotes.First();
+                var lastQuote = orderedQuotes.Last();
+
+                var klineTime1 = KLines.GetKLineTime(firstQuote.Time, kLineSize);
+                var klineTime2 = KLines.GetKLineTime(lastQuote.Time, kLineSize);
+
+                //var list = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(kLineSize) + prodDef.Id];
+
+                if (klineTime1 != klineTime2 && kLineSize != KLineSize.Day)
+                {
+                    var list1 = orderedQuotes.Where(o => o.Time < klineTime2).ToList();
+                    var list2 = orderedQuotes.Where(o => o.Time >= klineTime2).ToList();
+
+                    var k1 = new KLine()
+                    {
+                        Time = klineTime1,
+                        Open = Quotes.GetLastPrice(list1.First()),
+                        Close = Quotes.GetLastPrice(list1.Last()),
+                        High = list1.Max(o => Quotes.GetLastPrice(o)),
+                        Low = list1.Min(o => Quotes.GetLastPrice(o)),
+                    };
+                    var k2 = new KLine()
+                    {
+                        Time = klineTime2,
+                        Open = Quotes.GetLastPrice(list2.First()),
+                        Close = Quotes.GetLastPrice(list2.Last()),
+                        High = list2.Max(o => Quotes.GetLastPrice(o)),
+                        Low = list2.Min(o => Quotes.GetLastPrice(o)),
+                    };
+
+                    if (list.Count == 0)
+                    {
+                        list.Add(k1);
+                        list.Add(k2);
+                    }
+                    else
+                    {
+                        var last = list[list.Count - 1];
+
+                        if (last.Time < klineTime1)
+                        {
+                            list.Add(k1);
+                            list.Add(k2);
+                        }
+                        else if (last.Time == klineTime1)
+                        {
+                            list[list.Count - 1] = new KLine()
+                            {
+                                Time = last.Time,
+                                Open = last.Open,
+                                Close = k1.Close,
+                                High = Math.Max(last.High, k1.High),
+                                Low = Math.Min(last.Low, k1.Low),
+                            };
+
+                            list.Add(k2);
+                        }
+                        else
+                        {
+                            //should not be here
+                        }
+                    }
+                }
+                else
+                {
+                    //for day kline, quote's kline time should be the date of the LastOpen time
+                    if (kLineSize == KLineSize.Day)
+                        klineTime1 = prodDef.LastOpen.Value.Date;
+
+                    var k = new KLine()
+                    {
+                        Time = klineTime1,
+                        Open = Quotes.GetLastPrice(firstQuote),
+                        Close = Quotes.GetLastPrice(lastQuote),
+                        High = orderedQuotes.Max(o => Quotes.GetLastPrice(o)),
+                        Low = orderedQuotes.Min(o => Quotes.GetLastPrice(o)),
+                    };
+
+                    if (list.Count == 0)
+                    {
+                        list.Add(k);
+                    }
+                    else
+                    {
+                        var last = list[list.Count - 1];
+
+                        if (last.Time < k.Time)
+                        {
+                            list.Add(k);
+                        }
+                        else if (last.Time == k.Time)
+                        {
+                            list[list.Count - 1] = new KLine()
+                            {
+                                Time = last.Time,
+                                Open = last.Open,
+                                Close = k.Close,
+                                High = Math.Max(last.High, k.High),
+                                Low = Math.Min(last.Low, k.Low),
+                            };
+                        }
+                        else
+                        {
+                            //should not be here
+                        }
+                    }
+                }
+            }
+
+            //clear history/prevent data increasing for good
+            var clearWhenSize = KLines.GetClearWhenSize(kLineSize);
+            var clearToSize = KLines.GetClearToSize(kLineSize);
+            if (list.Count > clearWhenSize) //data count at most possible size (in x days )
+            {
+                CFDGlobal.LogLine("KLine " + kLineSize + " " + prodDef.Id + " Clearing data from " + list.Count + " to " + clearToSize);
+                var klines = list.GetAll();
+                var newKLines = klines.Skip(klines.Count - clearToSize);
+                list.RemoveAll();
+                list.AddRange(newKLines);
             }
         }
 
