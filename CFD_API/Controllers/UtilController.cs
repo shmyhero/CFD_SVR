@@ -716,15 +716,14 @@ namespace CFD_API.Controllers
             //find past 7 days which has headlines
             int maxDays = 7;
 
-            DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
-
+            DateTime chinaToday = DateTime.UtcNow.AddHours(8);
             List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
 
             while(maxDays > 0)
             {
-                DateTime dayBeforeLastDay = lastDay.AddDays(-1);
-                var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= dayBeforeLastDay && item.CreatedAt <= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
-                lastDay = lastDay.AddDays(-1);
+                DateTime chinaLastDay = chinaToday.AddDays(-1);
+                var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).ToList();
+                chinaToday = chinaToday.AddDays(-1);
 
                 if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 7 days)
                 {
