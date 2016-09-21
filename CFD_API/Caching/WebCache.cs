@@ -35,9 +35,6 @@ namespace CFD_API.Caching
 
         static WebCache()
         {
-            if (ProdDefs != null) //prevent multi-thread access
-                return;
-
             //initialize
             ProdDefs = new List<ProdDef>();
             Quotes = new List<Quote>();
