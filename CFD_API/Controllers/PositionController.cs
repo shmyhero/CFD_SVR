@@ -26,8 +26,8 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/position")]
     public class PositionController : CFDController
     {
-        public PositionController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-            : base(db, mapper, redisClient)
+        public PositionController(CFDEntities db, IMapper mapper)
+            : base(db, mapper)
         {
         }
 
