@@ -221,7 +221,7 @@ namespace CFD_JOBS.Ayondo
                 {
                     //for day kline, quote's kline time should be the date of the LastOpen time
                     if (kLineSize == KLineSize.Day)
-                        klineTime1 = prodDef.LastOpen.Value.Date;
+                        klineTime1 = DateTimes.UtcToChinaTime(prodDef.LastOpen.Value).Date;
 
                     var k = new KLine()
                     {
