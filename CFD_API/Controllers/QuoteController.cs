@@ -280,7 +280,6 @@ namespace CFD_API.Controllers
             var redisKLineClient = RedisClient.As<KLine>();
             var redisProdDefClient = RedisClient.As<ProdDef>();
             var klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(KLineSize.Day) + securityId];
-
             if (klines.Count == 0)
                 return new List<KLineDTO>();
 
@@ -289,11 +288,12 @@ namespace CFD_API.Controllers
             return result.Select(o => new KLineDTO()
             {
                 close = o.Close,
-                high = o.Open,
+                high = o.High,
                 low = o.Low,
                 open = o.Open,
                 time = o.Time
             }).ToList();
+
         }
 
         /// <summary>
