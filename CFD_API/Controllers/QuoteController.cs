@@ -266,11 +266,11 @@ namespace CFD_API.Controllers
             return result.Select(o => new KLineDTO()
             {
                 close = o.Close,
-                high = o.Open,
+                high = o.High,
                 low = o.Low,
                 open = o.Open,
                 time = o.Time
-            }).ToList();
+            }).OrderBy(o => o.time).ToList();
         }
 
         [HttpGet]
@@ -292,7 +292,7 @@ namespace CFD_API.Controllers
                 low = o.Low,
                 open = o.Open,
                 time = o.Time
-            }).ToList();
+            }).OrderBy(o => o.time).ToList();
 
         }
 
