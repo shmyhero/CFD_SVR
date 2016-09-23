@@ -96,6 +96,7 @@ namespace CFD_API.Controllers
                 .Where(o => o.QuoteType != enmQuoteType.Inactive
                             && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
                             && o.Bid.HasValue && o.Offer.HasValue
+                            && Products.IsShowing(o.Id)
                 )
                 .ToList();
         }

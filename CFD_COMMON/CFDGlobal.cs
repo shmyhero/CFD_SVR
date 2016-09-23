@@ -49,7 +49,7 @@ namespace CFD_COMMON
         public static IRedisClientsManager PooledRedisClientsManager;
 
         public static string AYONDO_TRADE_SVC_URL = CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl");
-        public static TimeSpan PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS = TimeSpan.FromDays(5);
+        public static TimeSpan PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS = TimeSpan.FromDays(14);
 
         static CFDGlobal()
         {
