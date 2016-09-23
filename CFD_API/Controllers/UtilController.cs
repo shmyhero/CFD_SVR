@@ -17,9 +17,14 @@ using System.IO;
 using System.Data.SqlTypes;
 using CFD_API.Azure;
 using System.Collections.Specialized;
+using System.Security.Cryptography;
 using System.Text;
 using CFD_COMMON.Azure;
 using System.Text.RegularExpressions;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Encodings;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.OpenSsl;
 
 namespace CFD_API.Controllers
 {
@@ -806,6 +811,28 @@ namespace CFD_API.Controllers
                 string log = queryNameValuePairs.Aggregate("OAuth: ",
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
                 CFDGlobal.LogLine(log);
+            }
+
+            var oauth_token = queryNameValuePairs.FirstOrDefault(o => o.Key == "oauth_token").Value;
+
+            if (string.IsNullOrWhiteSpace(oauth_token))
+            {
+                var bytes = Convert.FromBase64String(oauth_token);
+
+                var decryptEngine = new Pkcs1Encoding(new RsaEngine());
+                using (var txtreader = new StringReader(CFDGlobal.OAUTH_TOKEN_PUBLIC_KEY))
+                {
+                    var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
+                    decryptEngine.Init(false, keyParameter);
+                }
+
+                var decrypted = Encoding.UTF8.GetString(decryptEngine.ProcessBlock(bytes, 0, bytes.Length));
+
+                var split = decrypted.Split(':');
+                var username1 = split[0];
+                var username2 = split[1];
+                var expiry = split[2];
+                var checksum = split[3];
             }
 
             return "OK";

@@ -38,6 +38,16 @@ namespace CFD_COMMON
         public static string ASSET_CLASS_INDEX = "Stock Indices";
         public static string ASSET_CLASS_COMMODITY = "Commodities";
 
+        public static string OAUTH_TOKEN_PUBLIC_KEY = @"-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlkG4r0XGWG8DO2043seO
+aQnoA426WXTliwAUf9dG7idMyTEcR5jrAY4a2nZtFRj1cstDbxZuSP3Gm2TenDxq
+wwPep2eHBsK/7CaS97j1bVu5M0vf1Iu+0qlDWF0SWANcmnAidSQpJsT7qq8XKzcc
+wauSosChreJoHdASaeuHN3J3wU9gFCGE08xclorgaKrtbpqS4FkFUQ7UEwjoM1YU
+yKPwdieuvwEyfXGCbmbD9uZymiBIIcIxeUasWf667uck6vQMgQTmYNuqi+qkLZIG
+hqZlC7NyvDf4xQuKFer4LvZrg6XdakHtLezu7W+ZEx9Vu8UDqQBRUjO3lcCrTfim
+BwIDAQAB
+-----END PUBLIC KEY-----";
+
         /// <summary>
         /// the default application-wide BasicRedisClientManager, non-pooled, created for current application
         /// </summary>
