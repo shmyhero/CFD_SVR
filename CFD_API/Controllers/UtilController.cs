@@ -21,6 +21,7 @@ using System.Security.Cryptography;
 using System.Text;
 using CFD_COMMON.Azure;
 using System.Text.RegularExpressions;
+using AyondoTrade;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
@@ -806,16 +807,18 @@ namespace CFD_API.Controllers
             var queryNameValuePairs = Request.GetQueryNameValuePairs();
             //CFDGlobal.LogInformation(oauth_token+" "+state+" "+expires_in);
 
-            if (queryNameValuePairs.Any())
+            var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
+
+            if (!string.IsNullOrWhiteSpace(error))
             {
-                string log = queryNameValuePairs.Aggregate("OAuth: ",
+                string log = queryNameValuePairs.Aggregate("OAuth error: ",
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
                 CFDGlobal.LogLine(log);
             }
 
             var oauth_token = queryNameValuePairs.FirstOrDefault(o => o.Key == "oauth_token").Value;
 
-            if (string.IsNullOrWhiteSpace(oauth_token))
+            if (!string.IsNullOrWhiteSpace(oauth_token))
             {
                 var bytes = Convert.FromBase64String(oauth_token);
 
@@ -833,6 +836,11 @@ namespace CFD_API.Controllers
                 var username2 = split[1];
                 var expiry = split[2];
                 var checksum = split[3];
+
+                var client=new AyondoTradeClient();
+                var account = client.LoginOAuth(username2, oauth_token);
+
+                CFDGlobal.LogLine("OAuth login: " + username2 + " " + account);
             }
 
             return "OK";

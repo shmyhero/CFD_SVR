@@ -96,5 +96,13 @@ namespace CFD_API.Controllers
 
             return Request.CreateResponse(HttpStatusCode.OK);
         }
+
+        [HttpGet]
+        [ActionName("fixTrade")]
+        public bool GetFixTradeStatus()
+        {
+           var client=new AyondoTradeClient();
+            return client.IsFixLoggingIn();
+        }
     }
 }

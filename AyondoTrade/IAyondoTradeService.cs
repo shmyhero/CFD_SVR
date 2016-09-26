@@ -17,6 +17,9 @@ namespace AyondoTrade
         string TestSleep(TimeSpan ts);
 
         [OperationContract]
+        bool IsFixLoggingIn();
+
+        [OperationContract]
         IList<PositionReport> DataTest(int count);
 
         [OperationContract]
@@ -56,5 +59,8 @@ namespace AyondoTrade
 
         [OperationContract]
         void ClearCache(string username);
+
+        [OperationContract]
+        string LoginOAuth(string username, string oauthToken);
     }
 }
