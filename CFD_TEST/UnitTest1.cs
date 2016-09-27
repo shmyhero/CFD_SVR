@@ -29,6 +29,86 @@ namespace CFD_TEST
     [TestClass]
     public class UnitTest1
     {
+        
+        [TestMethod]
+        public void Import()
+        {
+            var prodDefClient = CFDGlobal.GetNewBasicRedisClientManager().GetClient().As<ProdDef>();
+            var klineClient = CFDGlobal.GetNewBasicRedisClientManager().GetClient().As<KLine>();
+            var listProd =  prodDefClient.GetAll();
+            var db = CFDEntities.Create();
+
+            foreach( var prod in listProd)
+            {
+                if(prod.Name.IndexOf(" Outright") > -1 || prod.QuoteType == enmQuoteType.Inactive)
+                {
+                    continue;
+                } 
+
+                if(!prod.LastOpen.HasValue || !prod.LastClose.HasValue)
+                {
+                    continue;
+                }
+
+                var openTime = prod.LastOpen.Value;
+                var closeTime = prod.LastClose.Value;
+
+                if (openTime > closeTime)//opening
+                    //openTime = openTime.AddDays(-1);
+                    closeTime = closeTime.AddDays(1);
+
+                //TimeSpan openPeriod; //开始时常
+                //if(openTime > closeTime) //获取开市时常
+                //{
+                //    openPeriod = (closeTime - openTime).Add(new TimeSpan(24,0,0));
+                //}
+                //else
+                //{
+                //    openPeriod = closeTime - openTime;
+                //}
+
+                List <KLine> lines = new List<KLine>();
+                for (int x = 0; x<35; x++) //到今天总共35天
+                {
+                    DateTime lastOpenTime = openTime.AddDays(-x);
+                    DateTime lastCloseTime = closeTime.AddDays(-x);
+                   var quoteList = db.QuoteHistories.Where(o => o.SecurityId == prod.Id 
+                   //&& o.Time < prod.LastClose.Value.Subtract(TimeSpan.FromDays(x)) 
+                   //&& o.Time > prod.LastClose.Value.Subtract(TimeSpan.FromDays(x)).Subtract(openPeriod)
+                   && o.Time> lastOpenTime
+                   && o.Time< lastCloseTime
+                   ).OrderBy(o => o.Time).ToList();
+
+                    if(quoteList == null || quoteList.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    KLine line = new KLine();
+                    line.Open = GetLastPrice(quoteList[0].Ask.Value, quoteList[0].Bid.Value);
+                    line.Close = GetLastPrice(quoteList[quoteList.Count - 1].Ask.Value, quoteList[quoteList.Count - 1].Bid.Value);
+                    line.High = quoteList.Max(o => GetLastPrice(o.Ask.Value, o.Bid.Value));
+                    line.Low = quoteList.Min(o => GetLastPrice(o.Ask.Value, o.Bid.Value));
+
+                    line.Time = openTime.AddDays(-x).AddHours(8).Date;
+
+                    lines.Add(line);
+                }
+
+                var list = klineClient.Lists["kline1d:" + prod.Id];
+                list.RemoveAll();
+                list.AddRange(lines.OrderBy(o => o.Time));
+            }
+        }
+
+        private decimal GetLastPrice(decimal offer, decimal bid)
+        {
+            int c1 = BitConverter.GetBytes(decimal.GetBits(offer)[3])[2];
+            int c2 = BitConverter.GetBytes(decimal.GetBits(bid)[3])[2];
+            int decimalCount = Math.Max(c1, c2);
+
+            return Math.Round((offer + bid) / 2, decimalCount, MidpointRounding.AwayFromZero);
+        }
         /// <summary>
         /// Push test on android
         /// </summary>
