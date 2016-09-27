@@ -48,6 +48,11 @@ namespace AyondoTrade
             return "OK";
         }
 
+        public bool IsFixLoggingIn()
+        {
+            return Global.FixApp.IsLoggingIn;
+        }
+
         public IList<Model.PositionReport> DataTest(int count)
         {
             var result = new List<Model.PositionReport>();
@@ -601,6 +606,11 @@ namespace AyondoTrade
 
         private static string SendLoginRequestAndWait(string username, string password)
         {
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new FaultException<OAuthLoginRequiredFault>(new OAuthLoginRequiredFault());
+            }
+
             string account = null;
 
             var guid = Global.FixApp.LogOn(username, password);
@@ -776,6 +786,44 @@ namespace AyondoTrade
             {
                 CFDCacheManager.Instance.ClearCache(Global.FixApp.UsernameAccounts[username]);
             }
+        }
+
+        public string LoginOAuth(string username, string oauthToken)
+        {
+            string account = null;
+
+            var guid = Global.FixApp.LogOnOAuth(username, oauthToken);
+
+            var dtLogon = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+
+                //if (Global.FixApp.UsernameAccounts.ContainsKey(username))
+                //{
+                //    account = Global.FixApp.UsernameAccounts[username];
+                //    break;
+                //}
+
+                if (Global.FixApp.SuccessUserResponses.ContainsKey(guid))
+                {
+                    KeyValuePair<DateTime, UserResponse> msg = new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, null);
+                    var tryGetValue = Global.FixApp.SuccessUserResponses.TryGetValue(guid, out msg);
+
+                    if (tryGetValue)
+                    {
+                        account = msg.Value.GetString(Tags.Account);
+                        break;
+                    }
+                }
+
+                CheckFailedUserResponse(guid);
+            } while (DateTime.UtcNow - dtLogon <= TIMEOUT); // timeout
+
+            if (string.IsNullOrEmpty(account))
+                throw new FaultException("fix oauth login time out " + guid);
+
+            return account;
         }
     }
 

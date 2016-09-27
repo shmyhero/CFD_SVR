@@ -54,6 +54,11 @@ namespace AyondoTrade
             return base.Channel.TestSleep(ts);
         }
 
+        public bool IsFixLoggingIn()
+        {
+            return base.Channel.IsFixLoggingIn();
+        }
+
         public IList<PositionReport> DataTest(int count)
         {
             return base.Channel.DataTest(count);
@@ -114,6 +119,11 @@ namespace AyondoTrade
         public void ClearCache(string username)
         {
             base.Channel.ClearCache(username);
+        }
+
+        public string LoginOAuth(string username, string oauthToken)
+        {
+            return base.Channel.LoginOAuth(username, oauthToken);
         }
     }
 }

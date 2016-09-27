@@ -77,15 +77,16 @@ namespace CFD_JOBS.Ayondo
                     {
                         var redisProdDefClient = redisClient.As<ProdDef>();
                         var redisKLineClient = redisClient.As<KLine>();
-                        //var redisQuoteClient = redisClient.As<Quote>();
+                        var redisQuoteClient = redisClient.As<Quote>();
 
                         var prodDefs = redisProdDefClient.GetAll();
+                        var allQuotes = redisQuoteClient.GetAll();
+
+                        var dtAyondoNow = allQuotes.Max(o => o.Time);//the time of the last message received from Ayondo
+                        var klineAyondoNow = DateTimes.GetStartTimeEvery5Minutes(dtAyondoNow);
 
                         var dtNow = DateTime.UtcNow;
                         var oneMinuteAgo = dtNow.AddMinutes(-1);
-
-                        var dtAyondoNow = newQuotes.Max(o => o.Time);
-                        var klineAyondoNow = DateTimes.GetStartTimeEvery5Minutes(dtAyondoNow);
 
                         var openOrRecentlyClosedProdDefs = prodDefs.Where(o =>
                             (o.QuoteType == enmQuoteType.Open || o.QuoteType == enmQuoteType.PhoneOnly) //is open
@@ -95,13 +96,13 @@ namespace CFD_JOBS.Ayondo
 
                         foreach (var prodDef in openOrRecentlyClosedProdDefs)
                         {
-                            var quotes = newQuotes.Where(o => o.Id == prodDef.Id).ToList();
+                            var quotesByProd = newQuotes.Where(o => o.Id == prodDef.Id).ToList();
 
                             if (prodDef.QuoteType == enmQuoteType.Closed) //recently closed
-                                quotes = quotes.Where(o => o.Time <= prodDef.LastClose.Value).ToList();
+                                quotesByProd = quotesByProd.Where(o => o.Time <= prodDef.LastClose.Value).ToList();
 
-                            UpdateKLine(quotes, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FiveMinutes);
-                            UpdateKLine(quotes, redisKLineClient, prodDef, klineAyondoNow, KLineSize.Day);
+                            UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FiveMinutes);
+                            UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.Day);
                         }
                     }
 

@@ -24,7 +24,7 @@
             if (Translations.ProdCNames.ContainsKey(str))
                 return Translations.ProdCNames[str];
             else
-                return name;
+                return str;
         }
 
         public static string AyondoOrderRejectMessageTranslate(string ayondoText)

@@ -21,6 +21,8 @@ namespace CFD_COMMON.Localization
             {TransKey.NO_AYONDO_ACCOUNT, "交易功能未开通"},
             {TransKey.EXCEPTION, "服务器繁忙，请稍后再试"},
 
+            { TransKey.OAUTH_LOGIN_REQUIRED, "需要OAuth授权" },
+
             //{TransKey.USER_NOT_EXIST, "用户不存在"},
         };
 
@@ -28,6 +30,7 @@ namespace CFD_COMMON.Localization
         {
             {"Gold", "黄金"},
             {"Silver", "白银"},
+
             {"CAD/JPY", "加元/日元"},
             {"EUR/CAD", "欧元/加元"},
             {"EUR/GBP", "欧元/英镑"},
@@ -38,7 +41,9 @@ namespace CFD_COMMON.Localization
             {"GBP/USD", "英镑/美元"},
             {"USD/CAD", "美元/加元"},
             {"USD/JPY", "美元/日元"},
+
             {"3M Co", "3M"},
+            {"58.com Inc ADR", "58同城"},
             {"Aareal Bank AG", "地金银行"},
             {"Abbott Laboratories", "雅培制药"},
             {"Accenture Plc", "埃森哲"},
@@ -51,6 +56,7 @@ namespace CFD_COMMON.Localization
             {"Airbus Group NV", "空客"},
             {"Akamai Technologies Inc", "阿卡迈技术"},
             {"Alcatel-Lucent", "阿尔卡特朗讯"},
+            {"Alibaba Group Holding Ltd", "阿里巴巴"},
             {"Allstate Corp", "好事达保险"},
             {"Alphabet Inc A Shares", "Alphabet(谷歌)"},
             {"Alstom SA", "阿尔斯通"},
@@ -81,6 +87,7 @@ namespace CFD_COMMON.Localization
             {"Coca-Cola Co", "可口可乐"},
             {"Continental AG", "大陆集团"},
             {"Costco Wholesale Corp", "好市多"},
+            {"Ctrip.Com International", "携程"},
             {"CVS Caremark Corp", "CVS"},
             {"Daimler AG", "戴姆勒"},
             {"Delta Air Lines Inc", "达美航空"},
@@ -104,6 +111,7 @@ namespace CFD_COMMON.Localization
             {"HSBC Holdings Plc", "汇丰银行"},
             {"Hugo Boss", "胡戈波士"},
             {"Intel Corp", "英特尔"},
+            {"JD.com Inc", "京东"},
             {"JPMorgan Chase & Co", "摩根大通"},
             {"Lenovo Group Ltd", "联想"},
             {"Macy's Inc", "梅西百货"},
@@ -123,6 +131,8 @@ namespace CFD_COMMON.Localization
             {"SanDisk Corp", "闪迪"},
             {"SAP AG", "思爱普"},
             {"Siemens AG", "西门子"},
+            {"Sina Corporation", "新浪"},
+            {"SouFun Holdings Ltd ADR", "搜房网"},
             {"Starbucks Corp", "星巴克"},
             {"Tesco Plc", "乐购"},
             {"Texas Instruments Inc", "德州仪器"},
@@ -133,11 +143,14 @@ namespace CFD_COMMON.Localization
             {"United Technologies Corp", "联合科技"},
             {"Verizon Communications Inc", "威瑞森电信"},
             {"Verizon Communicaitons Inc", "威瑞森电信"}, //Ayondo has a typo
+            {"Vipshop Holdings Ltd ADR", "唯品会"},
             {"Visa Inc", "维萨"},
             {"Volvo AB", "沃尔沃"},
             {"Wal-Mart Stores Inc", "沃尔玛"},
             {"Walt Disney Co", "迪斯尼"},
             {"Yahoo! Inc", "雅虎"},
+            {"YY Inc", "欢聚时代"},
+
             {"EU 50 Rolling", "欧洲50"},
             {"France 40 Rolling", "法国40"},
             {"Germany 30 Rolling (1 EUR Contract)", "德国30"},

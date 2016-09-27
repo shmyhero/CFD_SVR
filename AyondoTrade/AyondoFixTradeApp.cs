@@ -20,6 +20,7 @@ namespace AyondoTrade
     public class AyondoFixTradeApp : MessageCracker, IApplication
     {
         public Session Session { get; set; }
+        public bool IsLoggingIn { get; set; }
 
         private readonly string _username = CFDGlobal.GetConfigurationSetting("ayondoFixTradeUsername");
         private readonly string _password = CFDGlobal.GetConfigurationSetting("ayondoFixTradePassword");
@@ -43,6 +44,7 @@ namespace AyondoTrade
         public int TAG_MDS_EndTime;
         public int TAG_MDS_SetSize;
         public int TAG_MDS_SetIndex;
+        public int TAG_MDS_OAUTH;
 
         public ConcurrentDictionary<string, string> UsernameAccounts = new ConcurrentDictionary<string, string>();
         public IDictionary<string, string> AccountUsernames = new Dictionary<string, string>();
@@ -223,6 +225,8 @@ namespace AyondoTrade
 
         public void OnLogout(SessionID sessionID)
         {
+            IsLoggingIn = false;
+
             var sb = new StringBuilder();
 
             var st = new StackTrace();
@@ -244,6 +248,8 @@ namespace AyondoTrade
 
         public void OnLogon(SessionID sessionID)
         {
+            IsLoggingIn = true;
+
             CFDGlobal.LogInformation("OnLogon: " + sessionID);
 
             Session = Session.LookupSession(sessionID);
@@ -263,6 +269,7 @@ namespace AyondoTrade
             TAG_MDS_EndTime = _dd.FieldsByName["MDS_EndTime"].Tag;
             TAG_MDS_SetSize = _dd.FieldsByName["MDS_SetSize"].Tag;
             TAG_MDS_SetIndex = _dd.FieldsByName["MDS_SetIndex"].Tag;
+            TAG_MDS_OAUTH = _dd.FieldsByName["MDS_OAUTH"].Tag;
 
             ////testing
             //LogOn("thcn1", "3IcFhY");
@@ -566,6 +573,25 @@ namespace AyondoTrade
             m.Password = new Password(password);
             m.SetField(new StringField(TAG_MDS_SendColRep) {Obj = "N"});
             m.SetField(new StringField(TAG_MDS_SendNoPos) {Obj = "0"});
+
+            SendMessage(m);
+
+            return guid;
+        }
+
+        public string LogOnOAuth(string username, string token)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new UserRequest();
+            m.UserRequestID = new UserRequestID(guid);
+
+            m.UserRequestType = new UserRequestType(UserRequestType.LOGONUSER);
+            m.Username = new Username(username);
+            //m.Password = new Password(password);
+            m.SetField(new StringField(TAG_MDS_OAUTH) {Obj = token});
+            m.SetField(new StringField(TAG_MDS_SendColRep) { Obj = "N" });
+            m.SetField(new StringField(TAG_MDS_SendNoPos) { Obj = "0" });
 
             SendMessage(m);
 
