@@ -47,15 +47,15 @@ namespace CFD_API.Controllers
             IList<PositionReport> result = null;
             using (var wcfClient = new AyondoTradeClient())
             {
-                //try
-                //{
+                try
+                {
                     result = wcfClient.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
-                //}
-                //catch (FaultException<OAuthLoginRequiredFault>)
-                //{
-                //    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
-                //        __(TransKey.OAUTH_LOGIN_REQUIRED)));
-                //}
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)//when oauth is required
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                        __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
             }
 
             if (result == null || result.Count == 0)

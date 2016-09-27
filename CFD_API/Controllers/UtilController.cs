@@ -814,6 +814,8 @@ namespace CFD_API.Controllers
                 string log = queryNameValuePairs.Aggregate("OAuth error: ",
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
                 CFDGlobal.LogLine(log);
+
+                return "ERROR";
             }
 
             var oauth_token = queryNameValuePairs.FirstOrDefault(o => o.Key == "oauth_token").Value;
@@ -825,7 +827,7 @@ namespace CFD_API.Controllers
                 var decryptEngine = new Pkcs1Encoding(new RsaEngine());
                 using (var txtreader = new StringReader(CFDGlobal.OAUTH_TOKEN_PUBLIC_KEY))
                 {
-                    var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
+                    var keyParameter = (AsymmetricKeyParameter) new PemReader(txtreader).ReadObject();
                     decryptEngine.Init(false, keyParameter);
                 }
 
@@ -837,13 +839,17 @@ namespace CFD_API.Controllers
                 var expiry = split[2];
                 var checksum = split[3];
 
-                var client=new AyondoTradeClient();
-                var account = client.LoginOAuth(username2, oauth_token);
+                using (var client = new AyondoTradeClient())
+                {
+                    var account = client.LoginOAuth(username2, oauth_token);
 
-                CFDGlobal.LogLine("OAuth login: " + username2 + " " + account);
+                    CFDGlobal.LogLine("OAuth login: " + username2 + " " + account);
+                }
+
+                return "OK";
             }
 
-            return "OK";
+            return "";
         }
     }
 }
