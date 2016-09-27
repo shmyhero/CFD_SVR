@@ -21,6 +21,8 @@ namespace CFD_COMMON.Localization
             {TransKey.NO_AYONDO_ACCOUNT, "交易功能未开通"},
             {TransKey.EXCEPTION, "服务器繁忙，请稍后再试"},
 
+            { TransKey.OAUTH_LOGIN_REQUIRED, "需要OAuth授权" },
+
             //{TransKey.USER_NOT_EXIST, "用户不存在"},
         };
 

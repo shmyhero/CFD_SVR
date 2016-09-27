@@ -606,6 +606,11 @@ namespace AyondoTrade
 
         private static string SendLoginRequestAndWait(string username, string password)
         {
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new FaultException<OAuthLoginRequiredFault>(new OAuthLoginRequiredFault());
+            }
+
             string account = null;
 
             var guid = Global.FixApp.LogOn(username, password);
