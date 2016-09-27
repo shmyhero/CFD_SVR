@@ -8,6 +8,7 @@ using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using CFD_COMMON.Utils.Extensions;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -48,6 +49,7 @@ namespace CFD_JOBS.Ayondo
                             var groups = userAlerts.GroupBy(o => o.SecurityId).ToList();
 
                             var newAlertList = new List<KeyValuePair<int, string>>();
+                            List<Message> messages = new List<Message>();
 
                             foreach (var group in groups)
                             {
@@ -100,6 +102,14 @@ namespace CFD_JOBS.Ayondo
 
                                         alert.HighEnabled = false;
                                         alert.HighPrice = null;
+
+                                        messages.Add(new Message() {
+                                            UserId = alert.UserId,
+                                            Title = "价格消息",
+                                            Body = text,
+                                            IsReaded = false,
+                                            CreatedAt = DateTime.UtcNow
+                                        });
                                     }
 
                                     if (alert.LowEnabled.Value && quote.Offer <= alert.LowPrice)
@@ -111,8 +121,23 @@ namespace CFD_JOBS.Ayondo
 
                                         alert.LowEnabled = false;
                                         alert.LowPrice = null;
+
+                                        messages.Add(new Message()
+                                        {
+                                            UserId = alert.UserId,
+                                            Title = "价格消息",
+                                            Body = text,
+                                            IsReaded = false,
+                                            CreatedAt = DateTime.UtcNow
+                                        });
                                     }
                                 }
+                            }
+
+                            if(messages.Count > 0)
+                            {
+                                db.Messages.AddRange(messages);
+                                db.SaveChanges();
                             }
 
                             if (newAlertList.Count > 0)

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CFD_COMMON.Utils;
 using CFD_COMMON.Utils.Extensions;
 using CFD_COMMON.Localization;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -27,14 +28,32 @@ namespace CFD_JOBS.Ayondo
                 {
                     DateTime dtStart;
                     DateTime dtEnd = DateTime.UtcNow;
+                    bool needSave = false;
+                    using (var db = CFDEntities.Create())
+                    {
+                        var lastTradeHistory = db.AyondoTradeHistories.OrderByDescending(o => o.Id).Take(1).FirstOrDefault();
+                        //如果上次同步时间超过24小时，则每次最多只取24小时
+                        if ((DateTime.UtcNow - lastTradeHistory.TradeTime).Value.Hours > 24)
+                        {
+                            dtEnd = lastTradeHistory.TradeTime.Value.AddHours(24);
+                        }
 
-                    if (_lastEndTime == null)
-                    {
-                        dtStart = dtEnd - Interval; //fetch interval length of period
-                    }
-                    else
-                    {
-                        dtStart = _lastEndTime.Value; //fetch data since last fetch
+                        //最后一次结束时间为空，意味着服务重新开启，此时需要获取数据库中最后一条TradeHistory作为开始时间
+                        if (_lastEndTime == null)
+                        {
+                            if(lastTradeHistory != null)
+                            {
+                                dtStart = lastTradeHistory.TradeTime.Value.AddMilliseconds(1);
+                            }
+                            else
+                            {
+                                dtStart = dtEnd - Interval; //fetch interval length of period
+                            }
+                        }
+                        else
+                        {
+                            dtStart = _lastEndTime.Value.AddMilliseconds(1); //fetch data since last fetch
+                        }
                     }
 
                     var tsStart = dtStart.ToUnixTimeMs();
@@ -126,6 +145,17 @@ namespace CFD_JOBS.Ayondo
                                     continue; //skip old data
 
                                 entities.Add(tradeHistory);
+
+                                if(tradeHistory.UpdateType == "DELETE")
+                                {
+                                    var newPositionHistory = db.NewPositionHistories.Where(h => h.Id == tradeHistory.PositionId).FirstOrDefault();
+                                    if(newPositionHistory != null)
+                                    {
+                                        newPositionHistory.ClosedAt = tradeHistory.TradeTime;
+                                        newPositionHistory.PL = tradeHistory.PL;
+                                        needSave = true;
+                                    }
+                                }
                             }
 
                             CFDGlobal.LogLine("maxCreateTime: " + dbMaxCreateTime + " data:" + lineArrays.Count +
@@ -135,6 +165,11 @@ namespace CFD_JOBS.Ayondo
                             {
                                 CFDGlobal.LogLine("saving to db...");
                                 db.AyondoTradeHistories.AddRange(entities);
+                                needSave = true;
+                            }
+
+                            if(needSave)
+                            {
                                 db.SaveChanges();
                             }
                         }
@@ -182,6 +217,8 @@ namespace CFD_JOBS.Ayondo
 
                 var result = query.ToList();
 
+                List<Message> messages = new List<Message>();
+
                 foreach(var h in systemCloseHistorys)
                 {
                     foreach (var item in result)
@@ -204,9 +241,21 @@ namespace CFD_JOBS.Ayondo
                             getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message,h.SecurityId, Translator.GetCName(h.SecurityName))));
 
                             CFDGlobal.LogLine("Auto close notification push:" + string.Format(msgTemplate, message, h.SecurityId, Translator.GetCName(h.SecurityName)));
+
+                            //save to Message
+                            string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
+                            Message msg = new Message();
+                            msg.UserId = item.userId.HasValue ? item.userId.Value : 0;
+                            msg.Title = "平仓消息";
+                            string pl = h.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(h.PL.Value,2)).ToString();
+                            msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元") ;
+                            msg.CreatedAt = DateTime.UtcNow;
+                            msg.IsReaded = false;
+                            messages.Add(msg);
                         }
                     }
                 }
+                db.Messages.AddRange(messages);
             }
 
             var splitedPushList = getuiPushList.SplitInChunks(1000);
@@ -216,6 +265,8 @@ namespace CFD_JOBS.Ayondo
                 var response = push.PushBatch(pushList);
                 CFDGlobal.LogLine("Auto close notification push response:" + response);
             }
+
+           
         }
     }
 }

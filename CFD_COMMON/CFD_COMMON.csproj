@@ -140,6 +140,7 @@
     <Compile Include="Models\Entities\Bookmark.cs" />
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Feedback.cs" />
+    <Compile Include="Models\Entities\Message.cs" />
     <Compile Include="Models\Entities\Model1.cs" />
     <Compile Include="Models\Entities\NewPositionHistory.cs" />
     <Compile Include="Models\Entities\PhoneSignupHistory.cs" />

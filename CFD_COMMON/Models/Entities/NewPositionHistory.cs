@@ -27,5 +27,9 @@ namespace CFD_COMMON.Models.Entities
         public decimal? Leverage { get; set; }
 
         public decimal? InvestUSD { get; set; }
+
+        public DateTime? ClosedAt { get; set; }
+
+        public decimal? PL { get; set; }
     }
 }

@@ -29,6 +29,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Headline> Headlines { get; set; }
+        public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
         public virtual DbSet<OperationUser> OperationUsers { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }

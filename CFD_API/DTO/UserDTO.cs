@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace CFD_API.DTO
 {
@@ -109,5 +110,19 @@ namespace CFD_API.DTO
         /// 模拟盘注册奖励（20元）
         /// </summary>
         public decimal demoRegister { get; set; }
+    }
+
+    public class MessageDTO {
+        public int id { get; set; }
+
+        public int userId { get; set; }
+
+        public string title { get; set; }
+
+        public string body { get; set; }
+
+        public DateTime createdAt { get; set; }
+
+        public bool isReaded { get; set; }
     }
 }
