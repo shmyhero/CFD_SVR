@@ -453,7 +453,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [ActionName("plReport")]
+        [ActionName("plReport_obsolete")]
         [BasicAuth]
         public List<PLReportDTO> GetPLReport()
         {
@@ -605,7 +605,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [ActionName("plReport2")]
+        [ActionName("plReport")]
         [BasicAuth]
         public List<PLReportDTO> GetPLReport2()
         {
@@ -617,11 +617,15 @@ namespace CFD_API.Controllers
             var startTime = endTime.AddDays(-30);
 
             //closed position
-            var positionHistoryReports = db.NewPositionHistories.Where(o => o.CreateTime > startTime && o.ClosedAt.HasValue).ToList();
-            
+            var positionHistoryReports = db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList();
+
             //open position
-            var positionOpenReports = db.NewPositionHistories.Where(o => o.CreateTime > startTime && !o.ClosedAt.HasValue).ToList();
-            
+            IList<PositionReport> positionOpenReports;
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+            }
+
             var indexPL = new PLReportDTO() { name = "指数" };
             var fxPL = new PLReportDTO() { name = "外汇" };
             var commodityPL = new PLReportDTO() { name = "商品" };
@@ -634,7 +638,7 @@ namespace CFD_API.Controllers
                 if (prodDef == null) continue;
 
                 var invest = closedReport.InvestUSD.Value;
-                var pl = closedReport.InvestUSD.Value;
+                var pl = closedReport.PL.Value;
 
                 if (prodDef.AssetClass == "Stock Indices")
                 {
@@ -660,28 +664,34 @@ namespace CFD_API.Controllers
             #endregion
 
             #region open position
-            foreach (var openReport in positionOpenReports)
+            foreach (var report in positionOpenReports)
             {
-                var secId = Convert.ToInt32(openReport.SecurityId);
+                var secId = Convert.ToInt32(report.SecurityID);
 
                 var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                 if (prodDef == null) continue;
 
-                var tradeValue = openReport.SettlePrice * prodDef.LotSize / prodDef.PLUnits * (openReport.LongQty ?? openReport.ShortQty);
-                var invest = openReport.InvestUSD.Value;
+                //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
+
+                //************************************************************************
+                //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                //************************************************************************
+                var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
+
+                var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes) / report.Leverage.Value;
 
                 //calculate UPL
                 decimal uplUSD = 0;
-                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(openReport.SecurityId));
+                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 if (quote != null)
                 {
-                    var upl = openReport.LongQty.HasValue ? tradeValue.Value * (quote.Bid / openReport.SettlePrice.Value - 1) : tradeValue.Value * (1 - quote.Offer / openReport.SettlePrice);
-                    uplUSD = FX.ConvertPlByOutright(upl.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                    var upl = report.LongQty.HasValue ? tradeValue.Value * (quote.Bid / report.SettlPrice - 1) : tradeValue.Value * (1 - quote.Offer / report.SettlPrice);
+                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
                 }
                 else
                 {
-                    CFDGlobal.LogWarning("cannot find quote:" + openReport.SecurityId + " when calculating UPL for PLReport");
+                    CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID + " when calculating UPL for PLReport");
                 }
 
                 if (prodDef.AssetClass == "Stock Indices")
@@ -708,84 +718,7 @@ namespace CFD_API.Controllers
             #endregion
             var result = new List<PLReportDTO> { stockUSPL, indexPL, fxPL, commodityPL };
 
-            return result;
-
-            //IList<PositionReport> positionOpenReports;
-            //IList<PositionReport> positionHistoryReports;
-            //using (var clientHttp = new AyondoTradeClient())
-            //{
-            //    positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
-            //    positionHistoryReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
-            //}
-
-            ////var secIds = positionOpenReports.Select(o => o.SecurityID).Concat(positionHistoryReports.Select(o => o.SecurityID)).Distinct().Select(o => Convert.ToInt32(o)).ToList();
-            ////var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
-
-            ////var redisProdDefClient = RedisClient.As<ProdDef>();
-            ////var redisQuoteClient = RedisClient.As<Quote>();
-
-            ////var prodDefs = redisProdDefClient.GetAll();
-            ////var quotes = redisQuoteClient.GetAll();
-
-            //var indexPL = new PLReportDTO() { name = "指数" };
-            //var fxPL = new PLReportDTO() { name = "外汇" };
-            //var commodityPL = new PLReportDTO() { name = "商品" };
-            //var stockUSPL = new PLReportDTO() { name = "美股" };
-
-            ////open positions
-            //foreach (var report in positionOpenReports)
-            //{
-            //    var secId = Convert.ToInt32(report.SecurityID);
-
-            //    var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
-
-            //    if (prodDef == null) continue;
-
-            //    //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == secId);
-
-            //    //************************************************************************
-            //    //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
-            //    //************************************************************************
-            //    var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
-
-            //    var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes) / report.Leverage.Value;
-
-            //    //calculate UPL
-            //    decimal uplUSD = 0;
-            //    var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
-            //    if (quote != null)
-            //    {
-            //        var upl = report.LongQty.HasValue ? tradeValue.Value * (quote.Bid / report.SettlPrice - 1) : tradeValue.Value * (1 - quote.Offer / report.SettlPrice);
-            //        uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
-            //    }
-            //    else
-            //    {
-            //        CFDGlobal.LogWarning("cannot find quote:" + report.SecurityID + " when calculating UPL for PLReport");
-            //    }
-
-            //    if (prodDef.AssetClass == "Stock Indices")
-            //    {
-            //        indexPL.invest += invest;
-            //        indexPL.pl += uplUSD;
-            //    }
-            //    else if (prodDef.AssetClass == "Currencies")
-            //    {
-            //        fxPL.invest += invest;
-            //        fxPL.pl += uplUSD;
-            //    }
-            //    else if (prodDef.AssetClass == "Commodities")
-            //    {
-            //        commodityPL.invest += invest;
-            //        commodityPL.pl += uplUSD;
-            //    }
-            //    else if (prodDef.AssetClass == "Single Stocks" && Products.IsUSStocks(prodDef.Symbol))
-            //    {
-            //        stockUSPL.invest += invest;
-            //        stockUSPL.pl += uplUSD;
-            //    }
-            //}
-
-            //var groupByPositions = positionHistoryReports.GroupBy(o => o.PosMaintRptID);    
+            return result; 
         }
 
 
