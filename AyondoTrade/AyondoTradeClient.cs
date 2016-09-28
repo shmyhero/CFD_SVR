@@ -125,5 +125,10 @@ namespace AyondoTrade
         {
             return base.Channel.LoginOAuth(username, oauthToken);
         }
+
+        public string NewDeposit(string username, string password, decimal amount)
+        {
+            return base.Channel.NewDeposit(username, password, amount);
+        }
     }
 }

@@ -721,7 +721,6 @@ namespace CFD_API.Controllers
             return result; 
         }
 
-
         [HttpGet]
         [Route("stockAlert")]
         [BasicAuth]
@@ -885,6 +884,24 @@ namespace CFD_API.Controllers
             }
 
             return result;
+        }
+
+        [HttpGet]
+        [Route("deposit/id")]
+        [BasicAuth]
+        public string GetDepositTransferId(decimal amount)
+        {
+            var user = GetUser();
+
+            CheckAyondoAccount(user);
+
+            string transferId;
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                transferId = clientHttp.NewDeposit(user.AyondoUsername, user.AyondoPassword, amount);
+            }
+
+            return transferId;
         }
 
         private bool IsLoginBlocked(string phone)

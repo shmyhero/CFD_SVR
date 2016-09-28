@@ -69,5 +69,8 @@ namespace AyondoTrade
 
         [OperationContract]
         string LoginOAuth(string username, string oauthToken);
+
+        [OperationContract]
+        string NewDeposit(string username, string password, decimal amount);
     }
 }

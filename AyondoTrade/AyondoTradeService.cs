@@ -825,6 +825,70 @@ namespace AyondoTrade
 
             return account;
         }
+
+        public string NewDeposit(string username, string password, decimal amount)
+        {
+            string account = GetAccount(username, password);
+
+            string transferId = null;
+            try
+            {
+                transferId = SendTransferRequestAndWait(account, amount);
+            }
+            catch (UserNotLoggedInException)
+            {
+                //user is not logged in, try to login ONCE
+                account = SendLoginRequestAndWait(username, password);
+
+                //get data again
+                transferId = SendTransferRequestAndWait(account, amount);
+            }
+            
+            return transferId;
+        }
+
+        private string SendTransferRequestAndWait(string account, decimal amount)
+        {
+            string balanceId=null;
+           Global.FixApp.AccountBalanceIDs.TryGetValue(account, out balanceId);
+            if (balanceId == null)
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+                Global.FixApp.AccountBalanceIDs.TryGetValue(account, out balanceId);
+            }
+
+            if (balanceId == null)
+                throw new FaultException("cannot find balance id for account " + account);
+
+            //send message
+            var reqId = Global.FixApp.MDS3TransferRequest(account, balanceId, amount);
+
+            //wait/get response message(s)
+            string transferId = null;
+            var dt = DateTime.UtcNow;
+            do
+            {
+                Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+
+                //check position report
+                if (Global.FixApp.CreatedTransferIDs.ContainsKey(reqId))
+                {
+                    var tryGetValue = Global.FixApp.CreatedTransferIDs.TryGetValue(reqId, out transferId);
+
+                    if (!tryGetValue) continue;
+
+                    if (transferId != null)
+                        break;
+                }
+
+                CheckBusinessMessageReject(reqId);
+            } while (DateTime.UtcNow - dt <= TIMEOUT);
+
+            if (transferId == null)
+                throw new FaultException("fail getting new deposit transfer id " + reqId);
+
+            return transferId;
+        }
     }
 
     //internal class BusinessMessageRejectException : Exception
