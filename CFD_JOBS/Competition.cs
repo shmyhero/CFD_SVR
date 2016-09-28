@@ -25,8 +25,7 @@ namespace CFD_JOBS
                 var chinaNow = DateTimes.GetChinaNow();
                 var chinaToday = chinaNow.Date;
 
-                if (chinaToday > _lastCalculatedDate //a new chinese day, calculate yesterday's data
-                    )
+                if (chinaToday > _lastCalculatedDate) //a new chinese day, calculate yesterday's data
                 {
                     try
                     {
@@ -380,10 +379,8 @@ namespace CFD_JOBS
                         CFDGlobal.LogException(e);
                     }
                 }
-                else //sleep
-                {
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
-                }
+
+                Thread.Sleep(TimeSpan.FromSeconds(1));
             }
         }
     }
