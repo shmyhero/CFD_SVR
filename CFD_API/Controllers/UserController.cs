@@ -637,8 +637,8 @@ namespace CFD_API.Controllers
                 var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == closedReport.SecurityId);
                 if (prodDef == null) continue;
 
-                var invest = closedReport.InvestUSD.Value;
-                var pl = closedReport.PL.Value;
+                var invest = closedReport.InvestUSD.HasValue? closedReport.InvestUSD.Value : 0;
+                var pl = closedReport.PL.HasValue? closedReport.PL.Value : 0;
 
                 if (prodDef.AssetClass == "Stock Indices")
                 {
@@ -880,7 +880,7 @@ namespace CFD_API.Controllers
             var message = db.Messages.FirstOrDefault(o => o.UserId == UserId && o.Id == id);
             if(message != null)
             {
-                message.IsReaded = false;
+                message.IsReaded = true;
                 db.SaveChanges();
             }
 

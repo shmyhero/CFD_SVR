@@ -201,7 +201,7 @@ namespace CFD_JOBS.Ayondo
             if (systemCloseHistorys == null || systemCloseHistorys.Count == 0)
                 return;
 
-            string msgTemplate = "{{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":{1}, \"CName\":\"{2}\", \"message\":\"{0}\"}}";
+            string msgTemplate = "{{\"id\":{3}, \"type\":\"1\", \"title\":\"盈交易\", \"StockID\":{1}, \"CName\":\"{2}\", \"message\":\"{0}\"}}";
 
             //me
             string msgContentTemplate = "{0}于{1}平仓，价格为{2}美元,已{3}美元";
@@ -210,14 +210,14 @@ namespace CFD_JOBS.Ayondo
             List<long> ayondoAccountIds = systemCloseHistorys.Where(o => o.AccountId.HasValue).Select(o => o.AccountId.Value).Distinct().ToList();
             using (var db = CFDEntities.Create())
             {
-                var query = from d in db.Devices
-                               join u in db.Users on d.userId equals u.Id
-                               where ayondoAccountIds.Contains(u.AyondoAccountId.Value) && u.AutoCloseAlert.HasValue && u.AutoCloseAlert.Value
-                               select new {d.deviceToken, d.userId, u.AyondoAccountId   };
+                //原先是只获取开启了自动提醒的用户。现在为了消息中心，改为获取全部用户，在后面的循环里面再判断是否要发推送（消息中心一定要保存的）。
+                var query = from u in db.Users
+                            join d in db.Devices on u.Id equals d.userId
+                            into x from y in x.DefaultIfEmpty()
+                            where ayondoAccountIds.Contains(u.AyondoAccountId.Value) //&& u.AutoCloseAlert.HasValue && u.AutoCloseAlert.Value
+                               select new {y.deviceToken, u.Id, u.AyondoAccountId, u.AutoCloseAlert   };
 
                 var result = query.ToList();
-
-                List<Message> messages = new List<Message>();
 
                 foreach(var h in systemCloseHistorys)
                 {
@@ -225,37 +225,45 @@ namespace CFD_JOBS.Ayondo
                     {
                         if(item.AyondoAccountId == h.AccountId)
                         {
-                            string msgPart4 = string.Empty;
-                            if(h.PL.HasValue)
-                            {
-                                if(h.PL.Value < 0)
-                                {
-                                    msgPart4 = "亏损" + Math.Abs(Math.Round(h.PL.Value)).ToString();
-                                }
-                                else
-                                {
-                                    msgPart4 = "盈利" + Math.Abs(Math.Round(h.PL.Value)).ToString();
-                                }
-                            }
-                            string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), DateTimes.UtcToChinaTime(h.TradeTime.Value).ToString(CFDGlobal.DATETIME_MASK_SECOND), Math.Round(h.TradePrice.Value,2), msgPart4);
-                            getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message,h.SecurityId, Translator.GetCName(h.SecurityName))));
-
-                            CFDGlobal.LogLine("Auto close notification push:" + string.Format(msgTemplate, message, h.SecurityId, Translator.GetCName(h.SecurityName)));
-
-                            //save to Message
+                            #region save Message
                             string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
                             Message msg = new Message();
-                            msg.UserId = item.userId.HasValue ? item.userId.Value : 0;
+                            msg.UserId = item.Id;
                             msg.Title = "平仓消息";
-                            string pl = h.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(h.PL.Value,2)).ToString();
-                            msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元") ;
+                            string pl = h.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
+                            msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
                             msg.CreatedAt = DateTime.UtcNow;
                             msg.IsReaded = false;
-                            messages.Add(msg);
+                            db.Messages.Add(msg);
+                            db.SaveChanges();
+                            int msgId = msg.Id;
+                            #endregion
+
+                            #region Push notification
+                            if(item.AutoCloseAlert.HasValue && item.AutoCloseAlert.Value && !string.IsNullOrEmpty(item.deviceToken))
+                            {
+                                string msgPart4 = string.Empty;
+                                if (h.PL.HasValue)
+                                {
+                                    if (h.PL.Value < 0)
+                                    {
+                                        msgPart4 = "亏损" + Math.Abs(Math.Round(h.PL.Value)).ToString();
+                                    }
+                                    else
+                                    {
+                                        msgPart4 = "盈利" + Math.Abs(Math.Round(h.PL.Value)).ToString();
+                                    }
+                                }
+
+                                string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), DateTimes.UtcToChinaTime(h.TradeTime.Value).ToString(CFDGlobal.DATETIME_MASK_SECOND), Math.Round(h.TradePrice.Value, 2), msgPart4);
+                                getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message, h.SecurityId, Translator.GetCName(h.SecurityName), msgId)));
+                            }
+                            #endregion
+
                         }
                     }
                 }
-                db.Messages.AddRange(messages);
+                
             }
 
             var splitedPushList = getuiPushList.SplitInChunks(1000);

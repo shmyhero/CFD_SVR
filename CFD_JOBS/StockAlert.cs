@@ -20,7 +20,7 @@ namespace CFD_JOBS.Ayondo
         private static Dictionary<int,DateTime> _lastFetchTill=new Dictionary<int, DateTime>(); 
 
         private static string PUSH_TEMP =
-            @"{{""type"":""2"", ""title"":""盈交易"", ""StockID"":{0}, ""CName"":""{1}"", ""message"":""{2}""}}"; //{{ as {
+            @"{{""id"":{3},  ""type"":""2"", ""title"":""盈交易"", ""StockID"":{0}, ""CName"":""{1}"", ""message"":""{2}""}}"; //{{ as {
 
         public static void Run()
         {
@@ -49,7 +49,6 @@ namespace CFD_JOBS.Ayondo
                             var groups = userAlerts.GroupBy(o => o.SecurityId).ToList();
 
                             var newAlertList = new List<KeyValuePair<int, string>>();
-                            List<Message> messages = new List<Message>();
 
                             foreach (var group in groups)
                             {
@@ -97,47 +96,53 @@ namespace CFD_JOBS.Ayondo
                                     {
                                         var text =
                                             $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格达到{quote.Bid}，高于您设置的{Math.Round(alert.HighPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}";
-                                        newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
-                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text)));
 
-                                        alert.HighEnabled = false;
-                                        alert.HighPrice = null;
-
-                                        messages.Add(new Message() {
-                                            UserId = alert.UserId,
-                                            Title = "价格消息",
-                                            Body = text,
-                                            IsReaded = false,
-                                            CreatedAt = DateTime.UtcNow
-                                        });
-                                    }
-
-                                    if (alert.LowEnabled.Value && quote.Offer <= alert.LowPrice)
-                                    {
-                                        var text =
-                                            $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格跌到{quote.Offer}，低于您设置的{Math.Round(alert.LowPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}";
-                                        newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
-                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text)));
-
-                                        alert.LowEnabled = false;
-                                        alert.LowPrice = null;
-
-                                        messages.Add(new Message()
+                                        Message msg = new Message()
                                         {
                                             UserId = alert.UserId,
                                             Title = "价格消息",
                                             Body = text,
                                             IsReaded = false,
                                             CreatedAt = DateTime.UtcNow
-                                        });
+                                        };
+                                        db.Messages.Add(msg);
+                                        db.SaveChanges();
+                                        int msgId = msg.Id;
+
+                                        newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
+                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text, msgId)));
+
+                                        alert.HighEnabled = false;
+                                        alert.HighPrice = null;
+
+                                         
+                                    }
+
+                                    if (alert.LowEnabled.Value && quote.Offer <= alert.LowPrice)
+                                    {
+                                        var text =
+                                            $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格跌到{quote.Offer}，低于您设置的{Math.Round(alert.LowPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}";
+
+                                        Message msg = new Message()
+                                        {
+                                            UserId = alert.UserId,
+                                            Title = "价格消息",
+                                            Body = text,
+                                            IsReaded = false,
+                                            CreatedAt = DateTime.UtcNow
+                                        };
+                                        db.Messages.Add(msg);
+                                        db.SaveChanges();
+                                        int msgId = msg.Id;
+
+                                        newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
+                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text, msgId)));
+
+                                        alert.LowEnabled = false;
+                                        alert.LowPrice = null;
+                                        
                                     }
                                 }
-                            }
-
-                            if(messages.Count > 0)
-                            {
-                                db.Messages.AddRange(messages);
-                                db.SaveChanges();
                             }
 
                             if (newAlertList.Count > 0)

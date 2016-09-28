@@ -121,7 +121,7 @@ namespace CFD_API.DTO
 
         public string body { get; set; }
 
-        public DateTime createdAt { get; set; }
+        public DateTime? createdAt { get; set; }
 
         public bool isReaded { get; set; }
     }
