@@ -887,6 +887,16 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("message/unread")]
+        [BasicAuth]
+        public int GetUnreadMessage()
+        {
+            int unread = db.Messages.Count(o => o.UserId == UserId && !o.IsReaded);
+            return unread;
+        }
+
+
+        [HttpGet]
         [Route("deposit/id")]
         [BasicAuth]
         public string GetDepositTransferId(decimal amount)

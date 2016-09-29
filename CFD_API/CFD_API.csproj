@@ -259,6 +259,7 @@
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\CompetitionController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
+    <Compile Include="Controllers\OperationController.cs" />
     <Compile Include="Controllers\PositionController.cs" />
     <Compile Include="Controllers\QuoteController.cs" />
     <Compile Include="Controllers\RewardController.cs" />
@@ -300,6 +301,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Operation\" />
     <Folder Include="Views\Reward\" />
   </ItemGroup>
   <ItemGroup>
