@@ -218,29 +218,39 @@ namespace CFD_JOBS.Ayondo
                                select new {y.deviceToken, u.Id, u.AyondoAccountId, u.AutoCloseAlert   };
 
                 var result = query.ToList();
-
+                //因为一个用户可能有多台设备，所以要在循环的时候判断一下，是否一条Position的平仓消息已经被记录过
+                //Key - Position Id
+                //Value - 生成的Message Id
+                Dictionary<long, int> messageSaved = new Dictionary<long, int>();
                 foreach(var h in systemCloseHistorys)
                 {
+                    if (!h.PositionId.HasValue)
+                        continue;
+                  
                     foreach (var item in result)
                     {
                         if(item.AyondoAccountId == h.AccountId)
                         {
                             #region save Message
-                            string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
-                            Message msg = new Message();
-                            msg.UserId = item.Id;
-                            msg.Title = "平仓消息";
-                            string pl = h.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
-                            msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
-                            msg.CreatedAt = DateTime.UtcNow;
-                            msg.IsReaded = false;
-                            db.Messages.Add(msg);
-                            db.SaveChanges();
-                            int msgId = msg.Id;
+                            //针对每一个position id，只保存一次message
+                            if (!messageSaved.ContainsKey(h.PositionId.Value))
+                            {
+                                string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
+                                Message msg = new Message();
+                                msg.UserId = item.Id;
+                                msg.Title = "平仓消息";
+                                string pl = h.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
+                                msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
+                                msg.CreatedAt = DateTime.UtcNow;
+                                msg.IsReaded = false;
+                                db.Messages.Add(msg);
+                                db.SaveChanges();
+                                messageSaved.Add(h.PositionId.Value, msg.Id);
+                            }
                             #endregion
 
                             #region Push notification
-                            if(item.AutoCloseAlert.HasValue && item.AutoCloseAlert.Value && !string.IsNullOrEmpty(item.deviceToken))
+                            if (item.AutoCloseAlert.HasValue && item.AutoCloseAlert.Value && !string.IsNullOrEmpty(item.deviceToken))
                             {
                                 string msgPart4 = string.Empty;
                                 if (h.PL.HasValue)
@@ -256,7 +266,7 @@ namespace CFD_JOBS.Ayondo
                                 }
 
                                 string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), DateTimes.UtcToChinaTime(h.TradeTime.Value).ToString(CFDGlobal.DATETIME_MASK_SECOND), Math.Round(h.TradePrice.Value, 2), msgPart4);
-                                getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message, h.SecurityId, Translator.GetCName(h.SecurityName), msgId)));
+                                getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message, h.SecurityId, Translator.GetCName(h.SecurityName), messageSaved[h.PositionId.Value])));
                             }
                             #endregion
 
@@ -273,8 +283,6 @@ namespace CFD_JOBS.Ayondo
                 var response = push.PushBatch(pushList);
                 CFDGlobal.LogLine("Auto close notification push response:" + response);
             }
-
-           
         }
     }
 }
