@@ -12,6 +12,8 @@ using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using CFD_COMMON.Models.Cached;
 
 namespace CFD_JOBS
 {
@@ -55,7 +57,7 @@ namespace CFD_JOBS
                     //tasks.Add(task);
                 }
             }
-
+           
             //CFDGlobal.LogLine("Thread count: " + tasks.Count + " user count: " + users.Count);
             CFDGlobal.LogLine("Thread count: " + threads.Count + " user count: " + users.Count);
             CFDGlobal.LogLine("");
@@ -359,12 +361,11 @@ namespace CFD_JOBS
                 {
                     string posID = position["id"].Value<string>();
                     decimal qty = position["quantity"].Value<decimal>();
-                    ClosePosition(posID, "34820", qty, user.Id, user.Token);
+                    string securityId = position["security"]["id"].Value<string>();
+                    ClosePosition(posID, securityId, qty, user.Id, user.Token);
                 }
                
             });
-            
-
         }
 
         private string TestWCF()
@@ -402,8 +403,23 @@ namespace CFD_JOBS
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
+                Stream ReceiveStream = (ex.InnerException as WebException).Response.GetResponseStream();
+                Encoding encode = Encoding.GetEncoding("utf-8");
+
+                StreamReader readStream = new StreamReader(ReceiveStream, encode);
+                Char[] read = new Char[256];
+
+                // Read 256 charcters at a time.    
+                int count = readStream.Read(read, 0, 256);
+                while (count > 0)
+                {
+                    // Dump the 256 characters on a string and display the string onto the console.
+                    String str = new String(read, 0, count);
+                    Console.Write("异常信息:" + str);
+                    count = readStream.Read(read, 0, 256);
+                }
                 isSuccess = false;
             }
 
@@ -435,7 +451,7 @@ namespace CFD_JOBS
         private TimeSpan GetRandomIdleTime()
         {
             var r = new Random();
-            return TimeSpan.FromSeconds(r.Next(1, 6)); //1~x second
+            return TimeSpan.FromSeconds(r.Next(1, 5)); //1~x second
         }
 
         private JToken GetRandomElement(JArray arr)
@@ -452,9 +468,10 @@ namespace CFD_JOBS
         /// <param name="leverage"></param>
         private JObject OpenPosition(string securityId, int amount, int leverage, int userId, string userToken)
         {
-            //德国DAX30
             string jsonData = "{\"securityId\":" + securityId + ",\"isLong\":false,\"invest\":" + amount + ",\"leverage\":" + leverage + "}";
             var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position");
+            //var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position");
+            //var request = HttpWebRequest.Create("http://localhost:11033/api/position");
             request.Headers["Authorization"] = string.Format("Basic {0}_{1}", userId, userToken);
             request.Method = "post";
             request.ContentType = "application/json";
