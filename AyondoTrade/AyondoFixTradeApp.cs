@@ -513,8 +513,8 @@ namespace AyondoTrade
                             //    }
                             //}
 
-                            CFDGlobal.LogInformation("AutoCloseMsg: username:" + username + " posId:" + report.PosMaintRptID.Obj + " secId:" + report.SecurityID.Obj + " text:" +
-                                                     report.Text.Obj + " price:" + report.SettlPrice.Obj + " pl:" + report.GetDecimal(TAG_MDS_PL));
+                            //CFDGlobal.LogInformation("AutoCloseMsg: username:" + username + " posId:" + report.PosMaintRptID.Obj + " secId:" + report.SecurityID.Obj + " text:" +
+                            //                         report.Text.Obj + " price:" + report.SettlPrice.Obj + " pl:" + report.GetDecimal(TAG_MDS_PL));
 
                             if (AutoClosedPositionReports.ContainsKey(username))
                                 AutoClosedPositionReports[username].Add(new KeyValuePair<DateTime, PositionReport>(DateTime.UtcNow, report));
