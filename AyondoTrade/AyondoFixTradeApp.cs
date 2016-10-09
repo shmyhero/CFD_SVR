@@ -49,11 +49,13 @@ namespace AyondoTrade
         public int TAG_MDS_TransferAmount;
         public int TAG_MDS_TransferCurrency;
         public int TAG_MDS_TargetBalanceID;
+        public int TAG_MDS_SourceBalanceID;
         public int TAG_MDS_TransferID;
         public int TAG_MDS_StatusCode;
 
         //custim fields' enums
         public string ENUM_MDS_TransferType_CUP_DEPOSIT;
+        public string ENUM_MDS_TransferType_MANUAL_WITHDRAWAL;
         public string ENUM_MDS_StatusCode_CREATED;
 
         public ConcurrentDictionary<string, string> UsernameAccounts = new ConcurrentDictionary<string, string>();
@@ -303,12 +305,14 @@ namespace AyondoTrade
             TAG_MDS_TransferAmount = _dd.FieldsByName["MDS_TransferAmount"].Tag;
             TAG_MDS_TransferCurrency = _dd.FieldsByName["MDS_TransferCurrency"].Tag;
             TAG_MDS_TargetBalanceID = _dd.FieldsByName["MDS_TargetBalanceID"].Tag;
+            TAG_MDS_SourceBalanceID = _dd.FieldsByName["MDS_SourceBalanceID"].Tag;
             TAG_MDS_TransferID = _dd.FieldsByName["MDS_TransferID"].Tag;
 
             var MDS_StatusCode = _dd.FieldsByName["MDS_StatusCode"];
             TAG_MDS_StatusCode = MDS_StatusCode.Tag;
 
             ENUM_MDS_TransferType_CUP_DEPOSIT = MDS_TransferType.EnumDict.First(o => o.Value == "CUP_DEPOSIT").Key;
+            ENUM_MDS_TransferType_MANUAL_WITHDRAWAL = MDS_TransferType.EnumDict.First(o => o.Value == "MANUAL_WITHDRAWAL").Key;
             ENUM_MDS_StatusCode_CREATED = MDS_StatusCode.EnumDict.First(o => o.Value == "CREATED").Key;
 
             ////testing
@@ -871,9 +875,11 @@ namespace AyondoTrade
                     else if (action == 'd')
                         TestNewOrder();
                     else if (action == 'a')
-                        QueryMDS3();
+                        QueryMDS3Deposit();
                     else if (action == 'b')
                         TestOAuth();
+                    else if (action == 'e')
+                        QueryMDS3Withdraw();
                     else if (action == 'l')
                         TestLatency();
                 }
@@ -906,7 +912,7 @@ namespace AyondoTrade
 
         private char QueryAction()
         {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a,b,l".Split(','));
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a,b,e,l".Split(','));
 
             string cmd = Console.ReadLine().Trim();
             if (cmd.Length != 1 || validActions.Contains(cmd) == false)
@@ -956,7 +962,7 @@ namespace AyondoTrade
             return guid;
         }
 
-        private void QueryMDS3()
+        private void QueryMDS3Deposit()
         {
             var guid = Guid.NewGuid().ToString();
 
@@ -980,6 +986,37 @@ namespace AyondoTrade
       //<field name="MDS_Actor" required="N"/>
       //<field name="MDS_CardType" required="N"/>
       //<field name="MDS_CardAlias" required="N"/>
+
+            SendMessage(m);
+
+            //return guid;
+        }
+
+        private void QueryMDS3Withdraw()
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new Message();
+            m.Header.SetField(new MsgType("MDS3"));
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+            m.SetField(new Account(_account));
+
+            m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(ENUM_MDS_TransferType_MANUAL_WITHDRAWAL) });
+
+            m.SetField(new DecimalField(TAG_MDS_TransferAmount) { Obj = 1.23m });
+
+            m.SetField(new StringField(TAG_MDS_TransferCurrency) { Obj = "USD" });
+
+            //<field name="MDS_TransferLabel" required="N"/>
+            //<field name="MDS_SourceBalanceID" required="N"/>
+            m.SetField(new StringField(TAG_MDS_SourceBalanceID) { Obj = _balanceId });
+
+            //<field name="MDS_TargetBalanceID" required="N"/>
+            //m.SetField(new StringField(TAG_MDS_TargetBalanceID) { Obj = _balanceId });
+
+            //<field name="MDS_Actor" required="N"/>
+            //<field name="MDS_CardType" required="N"/>
+            //<field name="MDS_CardAlias" required="N"/>
 
             SendMessage(m);
 
