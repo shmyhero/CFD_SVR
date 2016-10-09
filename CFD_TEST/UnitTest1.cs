@@ -29,6 +29,23 @@ namespace CFD_TEST
     [TestClass]
     public class UnitTest1
     {
+        [TestMethod]
+        public void Test1()
+        {
+            using (var db = CFDEntities.Create())
+            {
+                CFD_COMMON.Models.Entities.Message msg = new CFD_COMMON.Models.Entities.Message();
+                msg.Title = "测试";
+                msg.Body = "测试内容";
+                msg.CreatedAt = DateTime.UtcNow;
+                msg.IsReaded = false;
+
+                db.Messages.Add(msg);
+                db.SaveChanges();
+                int id = msg.Id;
+            } 
+        }
+
         
         [TestMethod]
         public void Import()
@@ -116,9 +133,9 @@ namespace CFD_TEST
         public void PushTest()
         {
             List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-            list.Add(new KeyValuePair<string, string>("3e79eb1fd1f6017a055aa707497e56ca", "{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":34847, \"CName\":\"白银\", \"message\":\"白银于2016/09/06 10:19平仓，价格为200.00美元,已亏损100美元\"}"));
-            list.Add(new KeyValuePair<string, string>("6a67a54402ca0a4c755ebda7b754ab32", "{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":34847, \"CName\":\"白银\", \"message\":\"白银于2016/09/06 10:19平仓，价格为200.00美元,已亏损100美元\"}"));
-            list.Add(new KeyValuePair<string, string>("749f7136cf13c8669ef97222557ba982", "{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":34847, \"CName\":\"白银\", \"message\":\"白银于2016/09/06 10:19平仓，价格为200.00美元,已亏损100美元\"}"));
+            list.Add(new KeyValuePair<string, string>("f60c5d5a898b1c19cb6e5d58520c8906", "{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":34847, \"CName\":\"白银\", \"message\":\"cfd://page/1\"}"));
+            //list.Add(new KeyValuePair<string, string>("6a67a54402ca0a4c755ebda7b754ab32", "{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":34847, \"CName\":\"白银\", \"message\":\"白银于2016/09/06 10:19平仓，价格为200.00美元,已亏损100美元\"}"));
+            //list.Add(new KeyValuePair<string, string>("749f7136cf13c8669ef97222557ba982", "{\"type\":\"1\", \"title\":\"盈交易\", \"StockID\":34847, \"CName\":\"白银\", \"message\":\"白银于2016/09/06 10:19平仓，价格为200.00美元,已亏损100美元\"}"));
 
             var push = new GeTui();
             var response = push.PushBatch(list);
