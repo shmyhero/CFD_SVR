@@ -235,14 +235,37 @@ namespace CFD_JOBS.Ayondo
                             //针对每一个position id，只保存一次message
                             if (!messageSaved.ContainsKey(h.PositionId.Value))
                             {
-                                string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
                                 Message msg = new Message();
                                 msg.UserId = item.Id;
-                                msg.Title = "平仓消息";
-                                string pl = h.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
-                                msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
-                                msg.CreatedAt = DateTime.UtcNow;
-                                msg.IsReaded = false;
+                                //如果PL大于零，则为止盈消息（因为系统自动平仓没有止盈，只有止损）
+                                if (h.PL > 0)
+                                {
+                                    string msgFormat = "{0}已达到您设置的止盈价格:{1},盈利+{2}";
+                                    msg.Title = "止盈消息";
+                                    string pl = Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
+                                    msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
+                                    msg.CreatedAt = DateTime.UtcNow;
+                                    msg.IsReaded = false;
+                                }
+                                else if(!isAutoClose(h, db))//如果是设置的止损
+                                {
+                                    string msgFormat = "{0}已达到您设置的止损价格:{1},亏损-{2}";
+                                    msg.Title = "止损消息";
+                                    string pl = Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
+                                    msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
+                                    msg.CreatedAt = DateTime.UtcNow;
+                                    msg.IsReaded = false;
+                                }
+                                else//系统自动平仓
+                                {
+                                    string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
+                                    msg.Title = "平仓消息";
+                                    string pl = h.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
+                                    msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
+                                    msg.CreatedAt = DateTime.UtcNow;
+                                    msg.IsReaded = false;
+                                }
+                                
                                 db.Messages.Add(msg);
                                 db.SaveChanges();
                                 messageSaved.Add(h.PositionId.Value, msg.Id);
@@ -283,6 +306,36 @@ namespace CFD_JOBS.Ayondo
                 var response = push.PushBatch(pushList);
                 CFDGlobal.LogLine("Auto close notification push response:" + response);
             }
+        }
+
+        /// <summary>
+        /// 判断某条平仓记录是系统自动平仓，还是设置止损后的平仓
+        /// </summary>
+        /// <param name="closedHistory"></param>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        private static bool isAutoClose(CFD_COMMON.Models.Entities.AyondoTradeHistory closedHistory, CFDEntities db)
+        {
+            //用平仓记录的PositionID去找到开仓记录
+            var openHistory = db.AyondoTradeHistories.FirstOrDefault(o => o.PositionId == closedHistory.PositionId && o.UpdateType == "CREATE");
+            if (openHistory == null) //如果没有找到开仓记录（原则上不会发生），就认为是系统自动平仓
+            {
+                return true;
+            }
+
+            if(!openHistory.Quantity.HasValue || !openHistory.TradePrice.HasValue)//如果开仓记录没有价格或数量，就认为是系统自动平仓
+            {
+                return true;
+            }
+
+            decimal investment = openHistory.Quantity.Value * openHistory.TradePrice.Value;
+            //如果亏损/投资比，大于0.9就认为是系统自动平仓
+            if(0.9M < Math.Abs((closedHistory.PL / investment).Value))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
