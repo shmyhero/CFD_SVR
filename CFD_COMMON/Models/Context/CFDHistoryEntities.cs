@@ -15,6 +15,7 @@ namespace CFD_COMMON.Models.Context
         }
 
         public virtual DbSet<ApiHit> ApiHits { get; set; }
+        public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
