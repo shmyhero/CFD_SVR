@@ -71,7 +71,7 @@ namespace CFD_API.Controllers
             return db.Users.FirstOrDefault(o => o.Id == UserId);
         }
 
-        public void CheckAyondoAccount(User user)
+        public void CheckAndCreateAyondoAccount(User user)
         {
             if (string.IsNullOrEmpty(user.AyondoUsername))
             {
