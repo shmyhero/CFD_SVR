@@ -100,4 +100,21 @@ namespace CFD_API.DTO
         public string mobile { get; set; }
 
     }
+
+
+
+    //ayondo callback API
+
+    public class LifecycleCallbackFormDTO
+    {
+        public string Guid { get; set; }
+        public string Status { get; set; }
+    }
+
+    public class LifecycleCallbackDTO
+    {
+        public string Message { get; set; }
+        public string DeveloperMessage { get; set; }
+        public string ErrorCode { get; set; }
+    }
 }

@@ -851,5 +851,27 @@ namespace CFD_API.Controllers
 
             return "";
         }
+
+        private const string LIFECYCLE_CALLBACK_AUTH_TOKEN = "Tj3Id8N7mG6Dyi9Pl1Se4b7dNMik9N0sz1V5sM8cT3we8x9PoqcW3N7dV61cD5J2Ur3Qjf8yTd3EG0UX3";
+
+        [HttpPut]
+        [Route("live/lifecycle")]
+        public LifecycleCallbackDTO AyondoLiveAccountLifecycleCallback(LifecycleCallbackFormDTO form)
+        {
+            var authorization = Request.Headers.Authorization;
+
+            if (authorization != null)
+                CFDGlobal.LogWarning("Lifecycle Callback header: " + authorization.Scheme + " " +
+                                     authorization.Parameter);
+
+            if (authorization.Parameter != LIFECYCLE_CALLBACK_AUTH_TOKEN)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized,
+                    "invalid auth token"));
+
+            if (form != null)
+                CFDGlobal.LogWarning("Lifecycle Callback form: " + (form.Guid ?? "") + (form.Status ?? ""));
+
+            return new LifecycleCallbackDTO();
+        }
     }
 }
