@@ -860,15 +860,14 @@ namespace CFD_API.Controllers
         {
             var authorization = Request.Headers.Authorization;
 
-            if (authorization != null)
-                CFDGlobal.LogWarning("Lifecycle Callback header: " + authorization.Scheme + " " +
-                                     authorization.Parameter);
+            //if (authorization != null)
+            //    CFDGlobal.LogWarning("Lifecycle Callback header: " + authorization.Scheme + " " + authorization.Parameter);
 
-            if (authorization.Parameter == null || authorization.Parameter != LIFECYCLE_CALLBACK_AUTH_TOKEN)
+            if (authorization==null || authorization.Parameter == null || authorization.Parameter != LIFECYCLE_CALLBACK_AUTH_TOKEN)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "invalid auth token"));
 
             if (form != null)
-                CFDGlobal.LogWarning("Lifecycle Callback form: " + (form.Guid ?? "") + (form.Status ?? ""));
+                CFDGlobal.LogWarning("Lifecycle Callback form: " + (form.Guid ?? "") + " " + (form.Status ?? ""));
 
             return new LifecycleCallbackDTO();
         }
