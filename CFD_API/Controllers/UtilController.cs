@@ -864,9 +864,8 @@ namespace CFD_API.Controllers
                 CFDGlobal.LogWarning("Lifecycle Callback header: " + authorization.Scheme + " " +
                                      authorization.Parameter);
 
-            if (authorization.Parameter != LIFECYCLE_CALLBACK_AUTH_TOKEN)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized,
-                    "invalid auth token"));
+            if (authorization.Parameter == null || authorization.Parameter != LIFECYCLE_CALLBACK_AUTH_TOKEN)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "invalid auth token"));
 
             if (form != null)
                 CFDGlobal.LogWarning("Lifecycle Callback form: " + (form.Guid ?? "") + (form.Status ?? ""));
