@@ -28,6 +28,8 @@ namespace CFD_COMMON.Models.Entities
 
         public decimal? InvestUSD { get; set; }
 
+        public decimal? ClosedPrice { get; set; }
+
         public DateTime? ClosedAt { get; set; }
 
         public decimal? PL { get; set; }
