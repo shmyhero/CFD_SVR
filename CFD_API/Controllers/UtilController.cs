@@ -867,7 +867,19 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "invalid auth token"));
 
             if (form != null)
+            {
                 CFDGlobal.LogWarning("Lifecycle Callback form: " + (form.Guid ?? "") + " " + (form.Status ?? ""));
+
+                if (!string.IsNullOrWhiteSpace(form.Guid) && !string.IsNullOrWhiteSpace(form.Status))
+                {
+                    var user = db.Users.FirstOrDefault(o => o.AyLiveAccountGuid == form.Guid);
+                    if (user != null)
+                    {
+                        user.AyLiveAccountStatus = form.Status;
+                        db.SaveChanges();
+                    }
+                }
+            }
 
             return new LifecycleCallbackDTO();
         }
