@@ -353,18 +353,18 @@ namespace CFD_JOBS.Ayondo
                         if (entitiesToSaveToDB.Count > 0)
                         {
                             dtBeginSave = DateTime.Now;
-                            using (var db = CFDEntities.Create())
+                            using (var dbHistory = CFDHistoryEntities.Create())
                             {
                                 //using (var transactionScope = new TransactionScope())
                                 //{
-                                    db.BulkInsert(distinctQuotes.Select(o => new QuoteHistory
+                                    dbHistory.BulkInsert(distinctQuotes.Select(o => new QuoteHistory
                                     {
                                         SecurityId = o.Id,
                                         Time = o.Time,
                                         Bid = o.Bid,
                                         Ask = o.Offer,
                                     }));
-                                    db.SaveChanges();
+                                    dbHistory.SaveChanges();
                                 //    transactionScope.Complete();
                                 //}
                             }

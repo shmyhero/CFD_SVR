@@ -42,7 +42,7 @@ namespace CFD_API.Controllers
 
             var user = GetUser();
             
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             IList<PositionReport> result = null;
             using (var wcfClient = new AyondoTradeClient())
@@ -169,7 +169,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             IList<PositionReport> historyReports;
             using (var clientHttp = new AyondoTradeClient())
@@ -353,7 +353,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
@@ -522,7 +522,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
@@ -581,7 +581,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             PositionReport report;
             using (var clientHttp = new AyondoTradeClient())
@@ -615,7 +615,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             PositionReport report;
             using (var clientHttp = new AyondoTradeClient())
@@ -649,7 +649,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             PositionReport report;
             using (var clientHttp = new AyondoTradeClient())

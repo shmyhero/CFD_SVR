@@ -49,6 +49,21 @@ namespace CFD_COMMON.Models.Entities
 
         public int? DeviceType { get; set; }
 
+        [StringLength(50)]
+        public string AyLiveUsername { get; set; }
+
+        [StringLength(50)]
+        public string AyLivePassword { get; set; }
+
+        [StringLength(50)]
+        public string AyLiveAccountId { get; set; }
+
+        [StringLength(50)]
+        public string AyLiveAccountGuid { get; set; }
+
+        [StringLength(50)]
+        public string AyLiveAccountStatus { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

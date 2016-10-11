@@ -399,7 +399,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             decimal balance;
             IList<PositionReport> positionReports;
@@ -459,7 +459,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             var endTime = DateTime.UtcNow;
             var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
@@ -611,7 +611,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             var endTime = DateTime.UtcNow;
             var startTime = endTime.AddDays(-30);
@@ -903,7 +903,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAyondoAccount(user);
+            CheckAndCreateAyondoAccount(user);
 
             string transferId;
             using (var clientHttp = new AyondoTradeClient())

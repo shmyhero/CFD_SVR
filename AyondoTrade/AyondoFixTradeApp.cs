@@ -828,6 +828,26 @@ namespace AyondoTrade
             return guid;
         }
 
+        public string MDS3WithdrawalRequest(string account, string balanceId, decimal amount)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new Message();
+            m.Header.SetField(new MsgType("MDS3"));
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+
+            m.SetField(new Account(account));
+            m.SetField(new StringField(TAG_MDS_SourceBalanceID) { Obj = balanceId });
+
+            m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(ENUM_MDS_TransferType_MANUAL_WITHDRAWAL) });
+            m.SetField(new DecimalField(TAG_MDS_TransferAmount) { Obj = amount });
+            m.SetField(new StringField(TAG_MDS_TransferCurrency) { Obj = "USD" });
+
+            SendMessage(m);
+
+            return guid;
+        }
+
         #region console test method
 
         public void Run()
