@@ -811,7 +811,7 @@ namespace CFD_API.Controllers
 
             if (!string.IsNullOrWhiteSpace(error))
             {
-                string log = queryNameValuePairs.Aggregate("OAuth error: ",
+                string log = queryNameValuePairs.Aggregate("Demo OAuth error: ",
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
                 CFDGlobal.LogLine(log);
 
@@ -843,8 +843,60 @@ namespace CFD_API.Controllers
                 {
                     var account = client.LoginOAuth(username2, oauth_token);
 
-                    CFDGlobal.LogLine("OAuth login: " + username2 + " " + account);
+                    CFDGlobal.LogLine("Demo OAuth logged in: " + username2 + " " + account);
                 }
+
+                return "OK";
+            }
+
+            return "";
+        }
+
+        [HttpGet]
+        [Route("live/oauth")]
+        public string AyondoLiveOAuth()
+        {
+            var queryNameValuePairs = Request.GetQueryNameValuePairs();
+            //CFDGlobal.LogInformation(oauth_token+" "+state+" "+expires_in);
+
+            var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                string log = queryNameValuePairs.Aggregate("Live OAuth error: ",
+                    (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
+                CFDGlobal.LogLine(log);
+
+                return "ERROR";
+            }
+
+            var oauth_token = queryNameValuePairs.FirstOrDefault(o => o.Key == "oauth_token").Value;
+
+            if (!string.IsNullOrWhiteSpace(oauth_token))
+            {
+                var bytes = Convert.FromBase64String(oauth_token);
+
+                var decryptEngine = new Pkcs1Encoding(new RsaEngine());
+                using (var txtreader = new StringReader(CFDGlobal.OAUTH_TOKEN_PUBLIC_KEY))
+                {
+                    var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
+                    decryptEngine.Init(false, keyParameter);
+                }
+
+                var decrypted = Encoding.UTF8.GetString(decryptEngine.ProcessBlock(bytes, 0, bytes.Length));
+
+                var split = decrypted.Split(':');
+                var username1 = split[0];
+                var username2 = split[1];
+                var expiry = split[2];
+                var checksum = split[3];
+
+                //using (var client = new AyondoTradeClient())
+                //{
+                //    var account = client.LoginOAuth(username2, oauth_token);
+
+                //    CFDGlobal.LogLine("OAuth login: " + username2 + " " + account);
+                //}
 
                 return "OK";
             }
