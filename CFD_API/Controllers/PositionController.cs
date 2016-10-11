@@ -291,7 +291,7 @@ namespace CFD_API.Controllers
             var startTime = endTime.AddDays(-30);
 
             //get closed position reports
-            var positionHistoryReports = db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedPrice.HasValue && o.PL.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).OrderByDescending(o => o.CreateTime).ToList();
+            var positionHistoryReports = db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedPrice.HasValue && o.PL.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).OrderByDescending(o => o.ClosedAt).ToList();
             var results = new List<PositionHistoryDTO>();
             foreach (var closedReport in positionHistoryReports)
             {
