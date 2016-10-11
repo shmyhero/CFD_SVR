@@ -151,6 +151,7 @@ namespace CFD_JOBS.Ayondo
                                     var newPositionHistory = db.NewPositionHistories.Where(h => h.Id == tradeHistory.PositionId).FirstOrDefault();
                                     if(newPositionHistory != null)
                                     {
+                                        newPositionHistory.ClosedPrice = tradeHistory.TradePrice;
                                         newPositionHistory.ClosedAt = tradeHistory.TradeTime;
                                         newPositionHistory.PL = tradeHistory.PL;
                                         needSave = true;
