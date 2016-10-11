@@ -163,7 +163,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed")]
+        [Route("closed_obsolete")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
@@ -280,6 +280,70 @@ namespace CFD_API.Controllers
             }
 
             return result.OrderByDescending(o => o.closeAt).ToList();
+        }
+
+        [HttpGet]
+        [Route("closed")]
+        [BasicAuth]
+        public List<PositionHistoryDTO> GetPositionHistory()
+        {
+            var endTime = DateTime.UtcNow;
+            var startTime = endTime.AddDays(-30);
+
+            //get closed position reports
+            var positionHistoryReports = db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedPrice.HasValue && o.PL.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList();
+            var results = new List<PositionHistoryDTO>();
+            foreach (var closedReport in positionHistoryReports)
+            {
+                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == closedReport.SecurityId);
+                if (prodDef == null) continue;
+
+                var invest = closedReport.InvestUSD.HasValue ? closedReport.InvestUSD.Value : 0;
+                var pl = closedReport.PL.HasValue ? closedReport.PL.Value : 0;
+
+                var dto = new PositionHistoryDTO();
+                dto.id = closedReport.Id.ToString();
+
+                dto.openPrice = Math.Round(closedReport.SettlePrice.Value, prodDef.Prec);
+                dto.openAt = closedReport.CreateTime.Value;
+
+                dto.closePrice = Math.Round(closedReport.ClosedPrice.Value, prodDef.Prec);
+                dto.closeAt = closedReport.ClosedAt.Value;
+
+                dto.leverage = closedReport.Leverage;
+                dto.pl = closedReport.PL.Value;
+
+                dto.isLong = closedReport.LongQty.HasValue;
+
+                //************************************************************************
+                //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                //************************************************************************
+                var tradeValue = closedReport.SettlePrice.Value * prodDef.LotSize / prodDef.PLUnits * (closedReport.LongQty ?? closedReport.ShortQty);
+                //var tradeValueUSD = tradeValue;
+                //if (prodDef.Ccy2 != "USD")
+                //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+
+                dto.invest = tradeValue / dto.leverage;
+
+                var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                security.bid = null;
+                security.ask = null;
+                security.lastOpen = null;
+                security.lastClose = null;
+                security.maxLeverage = null;
+                security.smd = null;
+                security.gsmd = null;
+                security.preClose = null;
+                security.open = null;
+                security.last = null;
+                security.isOpen = null;
+
+                dto.security = security;
+
+                results.Add(dto);
+            }
+
+            return results;
         }
 
         [HttpPost]

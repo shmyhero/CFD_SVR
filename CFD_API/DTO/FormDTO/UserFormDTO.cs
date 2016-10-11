@@ -30,5 +30,6 @@
     {
         public string phone { get; set; }
         public string message { get; set; }
+        public string deepLink { get; set; }
     }
 }
