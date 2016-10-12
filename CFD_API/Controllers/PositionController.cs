@@ -168,14 +168,14 @@ namespace CFD_API.Controllers
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
             var user = GetUser();
-
             CheckAndCreateAyondoAccount(user);
-
+            
             IList<PositionReport> historyReports;
             using (var clientHttp = new AyondoTradeClient())
             {
                 var endTime = DateTime.UtcNow;
                 var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
+
                 historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, ignoreCache);
             }
 
@@ -233,12 +233,12 @@ namespace CFD_API.Controllers
                         //************************************************************************
                         //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
                         //************************************************************************
-                        var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
+                        var tradeValue = openReport.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (openReport.LongQty ?? openReport.ShortQty);
                         //var tradeValueUSD = tradeValue;
                         //if (prodDef.Ccy2 != "USD")
                         //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
-                        dto.invest = tradeValue/dto.leverage;
+                        dto.invest = tradeValue / dto.leverage;
 
                         var security = Mapper.Map<SecurityDetailDTO>(prodDef);
                         security.bid = null;
@@ -287,63 +287,117 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory()
         {
-            var endTime = DateTime.UtcNow;
-            var startTime = endTime.AddDays(-30);
+            var user = GetUser();
+            CheckAndCreateAyondoAccount(user);
 
-            //get closed position reports
-            var positionHistoryReports = db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedPrice.HasValue && o.PL.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).OrderByDescending(o => o.ClosedAt).ToList();
-            var results = new List<PositionHistoryDTO>();
-            foreach (var closedReport in positionHistoryReports)
+            IList<PositionReport> historyReports;
+            var endTimeAyondo = DateTime.UtcNow;
+            var startTimeAyondo = endTimeAyondo.AddDays(-1);
+
+            var endTimeDB = startTimeAyondo.AddSeconds(-1);
+            var startTimeDB = endTimeDB.AddDays(-29);
+
+            using (var clientHttp = new AyondoTradeClient())
             {
-                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == closedReport.SecurityId);
-                if (prodDef == null) continue;
+                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTimeAyondo, endTimeAyondo).ToList();
 
-                var invest = closedReport.InvestUSD.HasValue ? closedReport.InvestUSD.Value : 0;
-                var pl = closedReport.PL.HasValue ? closedReport.PL.Value : 0;
+                var positionReportsDB = from h in db.AyondoTradeHistories
+                                        join n in db.NewPositionHistories on h.PositionId equals n.Id
+                                        into x
+                                        from y in x.DefaultIfEmpty()
+                                        where h.TradeTime.HasValue && h.TradeTime.Value >= startTimeDB && h.TradeTime.Value <= endTimeDB && h.AccountId == user.AyondoAccountId
+                                        select new { h.PositionId, h.AccountId, h.SecurityId, h.TradePrice, h.CreateTime, y.LongQty, y.ShortQty, y.PL, y.Leverage };
 
-                var dto = new PositionHistoryDTO();
-                dto.id = closedReport.Id.ToString();
-
-                dto.openPrice = Math.Round(closedReport.SettlePrice.Value, prodDef.Prec);
-                dto.openAt = closedReport.CreateTime.Value;
-
-                dto.closePrice = Math.Round(closedReport.ClosedPrice.Value, prodDef.Prec);
-                dto.closeAt = closedReport.ClosedAt.Value;
-
-                dto.leverage = closedReport.Leverage;
-                dto.pl = closedReport.PL.Value;
-
-                dto.isLong = closedReport.LongQty.HasValue;
-
-                //************************************************************************
-                //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
-                //************************************************************************
-                var tradeValue = closedReport.SettlePrice.Value * prodDef.LotSize / prodDef.PLUnits * (closedReport.LongQty ?? closedReport.ShortQty);
-                //var tradeValueUSD = tradeValue;
-                //if (prodDef.Ccy2 != "USD")
-                //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
-
-                dto.invest = tradeValue / dto.leverage;
-
-                var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                security.bid = null;
-                security.ask = null;
-                security.lastOpen = null;
-                security.lastClose = null;
-                security.maxLeverage = null;
-                security.smd = null;
-                security.gsmd = null;
-                security.preClose = null;
-                security.open = null;
-                security.last = null;
-                security.isOpen = null;
-
-                dto.security = security;
-
-                results.Add(dto);
+                foreach (var item in positionReportsDB)
+                {
+                    historyReports.Add(new PositionReport()
+                    {
+                        Account = item.AccountId.HasValue ? item.AccountId.Value.ToString() : string.Empty,
+                        CreateTime = item.CreateTime.HasValue ? item.CreateTime.Value : DateTime.MinValue,
+                        Leverage = item.Leverage,
+                        LongQty = item.LongQty,
+                        PL = item.PL,
+                        PosMaintRptID = item.PositionId.HasValue ? item.PositionId.Value.ToString() : string.Empty,
+                        SecurityID = item.SecurityId.HasValue ? item.SecurityId.Value.ToString() : string.Empty,
+                        SettlPrice = item.TradePrice.HasValue ? item.TradePrice.Value : 0,
+                        ShortQty = item.ShortQty,
+                    });
+                }
             }
 
-            return results;
+            var result = new List<PositionHistoryDTO>();
+
+            if (historyReports.Count == 0)
+                return result;
+
+            var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
+
+            foreach (var positionGroup in groupByPositions) //for every position group
+            {
+                var dto = new PositionHistoryDTO();
+                dto.id = positionGroup.Key;
+
+                var positionReportsAyondo = positionGroup.ToList();
+                
+
+                if (positionReportsAyondo.Count >= 2)
+                {
+                    var openReport = positionReportsAyondo.OrderBy(o => o.CreateTime).First();
+                    var closeReport = positionReportsAyondo.OrderBy(o => o.CreateTime).Last();
+
+                    if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
+                    {
+                        var secId = Convert.ToInt32(openReport.SecurityID);
+                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+
+                        if (prodDef == null)
+                        {
+                            CFDGlobal.LogLine("cannot find product definition for sec id: " + secId + " in history position reports of user id: " + UserId);
+                            continue;
+                        }
+
+                        dto.openPrice = Math.Round(openReport.SettlPrice, prodDef.Prec);
+                        dto.openAt = openReport.CreateTime;
+
+                        dto.closePrice = Math.Round(closeReport.SettlPrice, prodDef.Prec);
+                        dto.closeAt = closeReport.CreateTime;
+
+                        dto.leverage = closeReport.Leverage;
+                        dto.pl = closeReport.PL.Value;
+
+                        dto.isLong = openReport.LongQty != null;
+
+                        //************************************************************************
+                        //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                        //************************************************************************
+                        var tradeValue = openReport.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (openReport.LongQty ?? openReport.ShortQty);
+                        //var tradeValueUSD = tradeValue;
+                        //if (prodDef.Ccy2 != "USD")
+                        //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+
+                        dto.invest = tradeValue / dto.leverage;
+
+                        var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                        security.bid = null;
+                        security.ask = null;
+                        security.lastOpen = null;
+                        security.lastClose = null;
+                        security.maxLeverage = null;
+                        security.smd = null;
+                        security.gsmd = null;
+                        security.preClose = null;
+                        security.open = null;
+                        security.last = null;
+                        security.isOpen = null;
+
+                        dto.security = security;
+
+                        result.Add(dto);
+                    }
+                }
+            }
+
+            return result.OrderByDescending(o => o.closeAt).ToList();
         }
 
         [HttpPost]
