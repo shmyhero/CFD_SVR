@@ -894,8 +894,7 @@ namespace CFD_API.Controllers
             int unread = db.Messages.Count(o => o.UserId == UserId && !o.IsReaded);
             return unread;
         }
-
-
+        
         [HttpGet]
         [Route("deposit/id")]
         [BasicAuth]
@@ -912,6 +911,84 @@ namespace CFD_API.Controllers
             }
 
             return transferId;
+        }
+
+        [HttpPut]
+        [Route("ocrResult")]
+        [BasicAuth]
+        public ResultDTO SubmitGZTOrcResult(GZTOrcResultFormDTO form)
+        {
+            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+            if (userInfo == null)
+            {
+                var newInfo = new UserInfo()
+                {
+                    UserId = UserId,
+                    OcrAddr = form.addr,
+                    OcrEthnic = form.ethnic,
+                    OcrFaceImg = form.photo,
+                    OcrGender = CFDGlobal.GenderChineseToBool(form.gender),
+                    OcrIdCode = form.idCode,
+                    OcrIssueAuth = form.issueAuth,
+                    OcrRealName = form.realName,
+                    OcrTransId = form.transId,
+                    OcrValidPeriod = form.validPeriod,
+                };
+                db.UserInfos.Add(newInfo);
+                db.SaveChanges();
+            }
+            else
+            {
+                userInfo.OcrAddr = form.addr;
+                userInfo.OcrEthnic = form.ethnic;
+                userInfo.OcrFaceImg = form.photo;
+                userInfo.OcrGender = CFDGlobal.GenderChineseToBool(form.gender);
+                userInfo.OcrIdCode = form.idCode;
+                userInfo.OcrIssueAuth = form.issueAuth;
+                userInfo.OcrRealName = form.realName;
+                userInfo.OcrTransId = form.transId;
+                userInfo.OcrValidPeriod = form.validPeriod;
+                db.SaveChanges();
+            }
+
+            return new ResultDTO() {success = true};
+        }
+
+        [HttpGet]
+        [Route("live/checkUsername")]
+        [BasicAuth]
+        public ResultDTO CheckAyondoLiveUsername(string username)
+        {
+            var jObject = AMSCheckUsername(username, true);
+
+            var isAvailable = jObject["IsAvailable"].Value<bool>();
+            bool isValid = jObject["IsValid"].Value<bool>();
+
+            var result = new ResultDTO() {success = false};
+
+            if (!isValid)
+            {
+                result.message = __(TransKey.USERNAME_INVALID);
+                return result;
+            }
+
+            if (!isAvailable)
+            {
+                result.message = __(TransKey.USERNAME_UNAVAILABLE);
+                return result;
+            }
+
+            result.success = true;
+            return result;
+        }
+
+        [HttpPost]
+        [Route("live/signup")]
+        [BasicAuth]
+        public JObject CreateLiveAccount(LiveSignupFormDTO form)
+        {
+            return AMSLiveAccount(form);
+            //return null;
         }
 
         private bool IsLoginBlocked(string phone)

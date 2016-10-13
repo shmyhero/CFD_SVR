@@ -36,6 +36,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserAlert> UserAlerts { get; set; }
+        public virtual DbSet<UserInfo> UserInfos { get; set; }
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
         //public virtual DbSet<UserAyondo> UserAyondos { get; set; }
 

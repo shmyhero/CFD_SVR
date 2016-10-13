@@ -241,5 +241,18 @@ BwIDAQAB
         {
             return DateTime.Now.ToString(DATETIME_MASK_MILLI_SECOND)+" ";
         }
+
+        public static bool? GenderChineseToBool(string gender)
+        {
+            switch (gender)
+            {
+                case "男":
+                    return true;
+                case "女":
+                    return false;
+                default:
+                    return null;
+            }
+        }
     }
 }
