@@ -7,6 +7,15 @@ namespace CFD_API.DTO
 {
     public class ResultDTO
     {
+        public ResultDTO(bool success)
+        {
+            
+        }
+
+        public ResultDTO()
+        {
+        }
+
         public bool success { get; set; }
         public string message { get; set; }
     }

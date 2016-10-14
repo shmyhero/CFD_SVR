@@ -916,7 +916,7 @@ namespace CFD_API.Controllers
         [HttpPut]
         [Route("ocrResult")]
         [BasicAuth]
-        public ResultDTO SubmitGZTOrcResult(GZTOrcResultFormDTO form)
+        public ResultDTO SubmitGZTOcrResult(GZTOcrResultFormDTO form)
         {
             var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
             if (userInfo == null)
@@ -985,10 +985,22 @@ namespace CFD_API.Controllers
         [HttpPost]
         [Route("live/signup")]
         [BasicAuth]
-        public JObject CreateLiveAccount(LiveSignupFormDTO form)
+        public ResultDTO CreateLiveAccount(LiveSignupFormDTO form)
         {
-            return AMSLiveAccount(form);
-            //return null;
+            return new ResultDTO(true);
+
+            var jObject = AMSLiveAccount(form);
+
+            if (jObject["Error"] != null)
+            {
+                return new ResultDTO
+                {
+                    message = jObject["Error"].Value<string>(),
+                    success = false,
+                };
+            }
+
+            return new ResultDTO(true);
         }
 
         private bool IsLoginBlocked(string phone)

@@ -438,10 +438,10 @@ namespace CFD_TEST
             //德国30
             //for (int i = 0; i < 3; i++)
             //{
-            user = db.Users.FirstOrDefault(o => o.Id == 1);
-                pos = XiaDan_SheZhiYing(user, 34820, true, 100);
-                user = db.Users.FirstOrDefault(o => o.Id == 3277);
-                pos = XiaDan_SheZhiYing(user, 34820, false, 100);
+            //    user = db.Users.FirstOrDefault(o => o.Id == 1);
+            //    pos = XiaDan_SheZhiYing(user, 34820, true, 100);
+            //    user = db.Users.FirstOrDefault(o => o.Id == 3277);
+            //    pos = XiaDan_SheZhiYing(user, 34820, false, 100);
             //}
 
             //华尔街

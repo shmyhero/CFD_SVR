@@ -245,6 +245,8 @@ namespace CFD_API.Controllers
             var requestStream = httpWebRequest.GetRequestStream();
             var sw = new StreamWriter(requestStream);
 
+
+
             var s = form.ToString();//string.Format(json, username, password);
             sw.Write(s);
             sw.Flush();
@@ -258,8 +260,7 @@ namespace CFD_API.Controllers
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
-                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
             var jObject = JObject.Parse(str);
 

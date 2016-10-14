@@ -130,11 +130,30 @@ namespace CFD_API.DTO
     {
         public string username { get; set; }
         public string password { get; set; }
-
         public string email { get; set; }
 
-
+        public string realName { get; set; }
+        public bool gender { get; set; }
+        public string birthday { get; set; }
+        public string ethnic { get; set; }
+        public string idCode { get; set; }
+        public string addr { get; set; }
+        public string issueAuth { get; set; }
+        public string validPeriod { get; set; }
         
+        public int annualIncome { get; set; }
+        public int netWorth { get; set; }
+        public int investPct { get; set; }
+        public string EmpStatus { get; set; }
+        public string investFrq { get; set; }
+        public bool hasProExp { get; set; }
+        public bool hasAyondoExp { get; set; }
+        public bool hasOtherQualif { get; set; }
+        public bool expOTCDeriv { get; set; }
+        public bool expDeriv { get; set; }
+        public bool expShareBond { get; set; }
+
+        public string ocrTransId { get; set; }
     }
 
     /*
@@ -152,7 +171,7 @@ namespace CFD_API.DTO
   "transaction_id": "835aded785fd95267f29bea3c36476f2"
 }
      */
-    public class GZTOrcResultFormDTO
+    public class GZTOcrResultFormDTO
     {
         public string realName { get; set; }
         public string idCode { get; set; }
