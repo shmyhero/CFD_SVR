@@ -163,7 +163,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed_obsolete")]
+        [Route("closed")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
@@ -176,7 +176,7 @@ namespace CFD_API.Controllers
                 var endTime = DateTime.UtcNow;
                 var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
 
-                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, ignoreCache);
+                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, true);
             }
 
             var result = new List<PositionHistoryDTO>();
@@ -283,7 +283,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed")]
+        [Route("closed_new")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory()
         {
@@ -294,7 +294,7 @@ namespace CFD_API.Controllers
             var endTimeAyondo = DateTime.UtcNow;
             var startTimeAyondo = endTimeAyondo.AddDays(-1);
 
-            var endTimeDB = startTimeAyondo.AddSeconds(-1);
+            var endTimeDB = startTimeAyondo.AddMilliseconds(-1);
             var startTimeDB = endTimeDB.AddDays(-29);
 
             using (var clientHttp = new AyondoTradeClient())
@@ -305,23 +305,70 @@ namespace CFD_API.Controllers
                                         join n in db.NewPositionHistories on h.PositionId equals n.Id
                                         into x
                                         from y in x.DefaultIfEmpty()
-                                        where h.TradeTime.HasValue && h.TradeTime.Value >= startTimeDB && h.TradeTime.Value <= endTimeDB && h.AccountId == user.AyondoAccountId
-                                        select new { h.PositionId, h.AccountId, h.SecurityId, h.TradePrice, h.CreateTime, y.LongQty, y.ShortQty, y.PL, y.Leverage };
+                                        where h.TradeTime.HasValue && h.TradeTime.Value >= startTimeDB && h.TradeTime.Value <= endTimeDB && h.AccountId == user.AyondoAccountId && (h.UpdateType == "CREATE" || h.UpdateType == "DELETE")
+                                        select new { h.PositionId, h.AccountId, h.SecurityId, h.TradePrice, h.CreateTime, h.Quantity, h.Direction, h.PL, h.UpdateType, y.Leverage };
 
-                foreach (var item in positionReportsDB)
+                var groupByPositionsDB = positionReportsDB.GroupBy(o => o.PositionId);
+
+                foreach (var positionGroupDB in groupByPositionsDB)//根据开仓时的买涨、买跌，更新平仓记录
                 {
-                    historyReports.Add(new PositionReport()
+                    if (positionGroupDB.Count() >= 2)
                     {
-                        Account = item.AccountId.HasValue ? item.AccountId.Value.ToString() : string.Empty,
-                        CreateTime = item.CreateTime.HasValue ? item.CreateTime.Value : DateTime.MinValue,
-                        Leverage = item.Leverage,
-                        LongQty = item.LongQty,
-                        PL = item.PL,
-                        PosMaintRptID = item.PositionId.HasValue ? item.PositionId.Value.ToString() : string.Empty,
-                        SecurityID = item.SecurityId.HasValue ? item.SecurityId.Value.ToString() : string.Empty,
-                        SettlPrice = item.TradePrice.HasValue ? item.TradePrice.Value : 0,
-                        ShortQty = item.ShortQty,
-                    });
+                        var openReport = positionGroupDB.OrderBy(o => o.CreateTime).First();
+                        var closeReport = positionGroupDB.OrderBy(o => o.CreateTime).Last();
+
+                        if (openReport.Direction.ToLower() == "buy") //买涨
+                        {
+                            positionGroupDB.ToList().ForEach(item => {
+                                historyReports.Add(new PositionReport()
+                                {
+                                    Account = item.AccountId.HasValue ? item.AccountId.Value.ToString() : string.Empty,
+                                    CreateTime = item.CreateTime.HasValue ? item.CreateTime.Value : DateTime.MinValue,
+                                    Leverage = item.Leverage,
+                                    LongQty = item.UpdateType.ToLower() == "delete" ? (item.Quantity == openReport.Quantity? 0 : item.Quantity) : item.Quantity,
+                                    PL = item.PL,
+                                    PosMaintRptID = item.PositionId.HasValue ? item.PositionId.Value.ToString() : string.Empty,
+                                    SecurityID = item.SecurityId.HasValue ? item.SecurityId.Value.ToString() : string.Empty,
+                                    SettlPrice = item.TradePrice.HasValue ? item.TradePrice.Value : 0,
+                                });
+                            });
+                        }
+                        else if (openReport.Direction.ToLower() == "sell")//买跌
+                        {
+                            positionGroupDB.ToList().ForEach(item => {
+                                historyReports.Add(new PositionReport()
+                                {
+                                    Account = item.AccountId.HasValue ? item.AccountId.Value.ToString() : string.Empty,
+                                    CreateTime = item.CreateTime.HasValue ? item.CreateTime.Value : DateTime.MinValue,
+                                    Leverage = item.Leverage,
+                                    ShortQty = item.UpdateType.ToLower() == "delete" ? (item.Quantity == openReport.Quantity ? 0 : item.Quantity) : item.Quantity,
+                                    PL = item.PL,
+                                    PosMaintRptID = item.PositionId.HasValue ? item.PositionId.Value.ToString() : string.Empty,
+                                    SecurityID = item.SecurityId.HasValue ? item.SecurityId.Value.ToString() : string.Empty,
+                                    SettlPrice = item.TradePrice.HasValue ? item.TradePrice.Value : 0,
+                                });
+                            });
+                        }
+                    }
+                    else if(positionGroupDB.Count() == 1) //对应先前已经开仓，但平仓记录（可能）包含在Ayondo的PositionReport中的情况
+                    {
+                        var positionHistory = positionGroupDB.First();
+                        if(positionHistory.UpdateType.ToLower() == "create")
+                        {
+                            historyReports.Add(new PositionReport()
+                            {
+                                Account = positionHistory.AccountId.HasValue ? positionHistory.AccountId.Value.ToString() : string.Empty,
+                                CreateTime = positionHistory.CreateTime.HasValue ? positionHistory.CreateTime.Value : DateTime.MinValue,
+                                Leverage = positionHistory.Leverage,
+                                LongQty = positionHistory.Direction.ToLower() == "buy" ? positionHistory.Quantity : null,
+                                PL = positionHistory.PL,
+                                PosMaintRptID = positionHistory.PositionId.HasValue ? positionHistory.PositionId.Value.ToString() : string.Empty,
+                                SecurityID = positionHistory.SecurityId.HasValue ? positionHistory.SecurityId.Value.ToString() : string.Empty,
+                                SettlPrice = positionHistory.TradePrice.HasValue ? positionHistory.TradePrice.Value : 0,
+                                ShortQty = positionHistory.Direction.ToLower() == "sell" ? positionHistory.Quantity : null,
+                            });
+                        }
+                    }
                 }
             }
 
