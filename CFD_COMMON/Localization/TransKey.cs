@@ -24,5 +24,8 @@ namespace CFD_COMMON.Localization
         WECHAT_OPENID_EXISTS,
         PHONE_ALREADY_BOUND,
         PHONE_EXISTS,
+
+        USERNAME_UNAVAILABLE,
+        USERNAME_INVALID,
     }
 }

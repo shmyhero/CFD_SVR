@@ -125,4 +125,62 @@ namespace CFD_API.DTO
 
         public bool isReaded { get; set; }
     }
+
+    public class LiveSignupFormDTO
+    {
+        public string username { get; set; }
+        public string password { get; set; }
+        public string email { get; set; }
+
+        public string realName { get; set; }
+        public bool gender { get; set; }
+        public string birthday { get; set; }
+        public string ethnic { get; set; }
+        public string idCode { get; set; }
+        public string addr { get; set; }
+        public string issueAuth { get; set; }
+        public string validPeriod { get; set; }
+        
+        public int annualIncome { get; set; }
+        public int netWorth { get; set; }
+        public int investPct { get; set; }
+        public string EmpStatus { get; set; }
+        public string investFrq { get; set; }
+        public bool hasProExp { get; set; }
+        public bool hasAyondoExp { get; set; }
+        public bool hasOtherQualif { get; set; }
+        public bool expOTCDeriv { get; set; }
+        public bool expDeriv { get; set; }
+        public bool expShareBond { get; set; }
+
+        public string ocrTransId { get; set; }
+    }
+
+    /*
+{
+  "result": "0",
+  "message": "OCR识别服务处理成功",
+  "real_name": "刘六鹏",
+  "id_code": "440681198910257747 ",
+  "addr": "广东省佛山市顺德区陈村镇旧圩桂园路海棠大街37",
+  "gender": "男",
+  "ethnic": "汉",
+  "photo": "{base64 data}",
+  "issue_authority": "佛山市公安局顺德分局",
+  "valid_period": "2006.01.26-2016.01.26",
+  "transaction_id": "835aded785fd95267f29bea3c36476f2"
+}
+     */
+    public class GZTOcrResultFormDTO
+    {
+        public string realName { get; set; }
+        public string idCode { get; set; }
+        public string addr { get; set; }
+        public string gender { get; set; }
+        public string ethnic { get; set; }
+        public string photo { get; set; }
+        public string issueAuth { get; set; }
+        public string validPeriod { get; set; }
+        public string transId { get; set; }
+    }
 }

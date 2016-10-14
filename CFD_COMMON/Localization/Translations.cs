@@ -24,6 +24,9 @@ namespace CFD_COMMON.Localization
             { TransKey.OAUTH_LOGIN_REQUIRED, "需要OAuth授权" },
 
             //{TransKey.USER_NOT_EXIST, "用户不存在"},
+            
+            { TransKey.USERNAME_UNAVAILABLE, "用户名已存在" },
+            { TransKey.USERNAME_INVALID, "用户名不符合要求" },
         };
 
         public static Dictionary<string, string> ProdCNames = new Dictionary<string, string>

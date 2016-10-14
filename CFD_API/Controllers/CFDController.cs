@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
+using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
@@ -123,22 +124,7 @@ namespace CFD_API.Controllers
             string username = username_base;
             do
             {
-                var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "check-username?AccountType=Demo&UserName=" + username);
-                httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
-                httpWebRequest.Proxy = null;
-
-                var dtBegin = DateTime.UtcNow;
-
-                var webResponse = httpWebRequest.GetResponse();
-                var responseStream = webResponse.GetResponseStream();
-                var sr = new StreamReader(responseStream);
-
-                var str = sr.ReadToEnd();
-                var ts = DateTime.UtcNow - dtBegin;
-                CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
-                                         httpWebRequest.RequestUri + " Response: " + str);
-
-                var jObject = JObject.Parse(str);
+                var jObject = AMSCheckUsername(username);
 
                 tryCount++;
 
@@ -225,6 +211,60 @@ namespace CFD_API.Controllers
                     db.SaveChanges();
                 }
             }
+        }
+
+        protected static JObject AMSCheckUsername(string username, bool isLive = false)
+        {
+            var accountType = isLive ? "Live" : "Demo";
+
+            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "check-username?AccountType=Demo&UserName=" + username);
+            httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
+            httpWebRequest.Proxy = null;
+
+            var dtBegin = DateTime.UtcNow;
+
+            var webResponse = httpWebRequest.GetResponse();
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
+
+            var jObject = JObject.Parse(str);
+            return jObject;
+        }
+
+        protected static JObject AMSLiveAccount(LiveSignupFormDTO form)
+        {
+            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "live-account");
+            httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+
+
+
+            var s = form.ToString();//string.Format(json, username, password);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            var webResponse = httpWebRequest.GetResponse();
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var jObject = JObject.Parse(str);
+
+            return jObject;
         }
     }
 }

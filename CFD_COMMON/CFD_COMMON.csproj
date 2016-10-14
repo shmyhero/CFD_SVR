@@ -149,6 +149,7 @@
     <Compile Include="Models\Entities\User.cs" />
     <Compile Include="Models\Entities\UserAlert.cs" />
     <Compile Include="Models\Entities\UserAyondo.cs" />
+    <Compile Include="Models\Entities\UserInfo.cs" />
     <Compile Include="Models\Entities\VerifyCode.cs" />
     <Compile Include="Models\Cached\ProdDef.cs" />
     <Compile Include="Models\Cached\Quote.cs" />

@@ -12,17 +12,10 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<UserAlert> UserAlerts { get; set; }
+        public virtual DbSet<UserInfo> UserInfoes { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UserAlert>()
-                .Property(e => e.HighPrice)
-                .HasPrecision(18, 5);
-
-            modelBuilder.Entity<UserAlert>()
-                .Property(e => e.LowPrice)
-                .HasPrecision(18, 5);
         }
     }
 }
