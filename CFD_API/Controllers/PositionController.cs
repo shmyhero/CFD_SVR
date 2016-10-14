@@ -289,7 +289,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             CheckAndCreateAyondoAccount(user);
-              
+                 
             IList<PositionReport> historyReports;
             var endTimeAyondo = DateTime.UtcNow;
             var startTimeAyondo = endTimeAyondo.AddDays(-1);
