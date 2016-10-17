@@ -163,7 +163,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed")]
+        [Route("closed_obsolete")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
@@ -176,7 +176,7 @@ namespace CFD_API.Controllers
                 var endTime = DateTime.UtcNow;
                 var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
 
-                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, true);
+                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, ignoreCache);
             }
 
             var result = new List<PositionHistoryDTO>();
@@ -283,97 +283,29 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed_new")]
+        [Route("closed")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory()
         {
             var user = GetUser();
             CheckAndCreateAyondoAccount(user);
-                 
-            IList<PositionReport> historyReports;
-            var endTimeAyondo = DateTime.UtcNow;
-            var startTimeAyondo = endTimeAyondo.AddDays(-1);
-
-            var endTimeDB = startTimeAyondo.AddMilliseconds(-1);
-            var startTimeDB = endTimeDB.AddDays(-29);
-
-            using (var clientHttp = new AyondoTradeClient())
-            {
-                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTimeAyondo, endTimeAyondo).ToList();
-
-                var positionReportsDB = from h in db.AyondoTradeHistories
-                                        join n in db.NewPositionHistories on h.PositionId equals n.Id
-                                        into x
-                                        from y in x.DefaultIfEmpty()
-                                        where h.TradeTime.HasValue && h.TradeTime.Value >= startTimeDB && h.TradeTime.Value <= endTimeDB && h.AccountId == user.AyondoAccountId && (h.UpdateType == "CREATE" || h.UpdateType == "DELETE")
-                                        select new { h.PositionId, h.AccountId, h.SecurityId, h.TradePrice, h.CreateTime, h.Quantity, h.Direction, h.PL, h.UpdateType, y.Leverage };
-
-                var groupByPositionsDB = positionReportsDB.GroupBy(o => o.PositionId);
-
-                foreach (var positionGroupDB in groupByPositionsDB)//根据开仓时的买涨、买跌，更新平仓记录
-                {
-                    if (positionGroupDB.Count() >= 2)
-                    {
-                        var openReport = positionGroupDB.OrderBy(o => o.CreateTime).First();
-                        var closeReport = positionGroupDB.OrderBy(o => o.CreateTime).Last();
-
-                        if (openReport.Direction.ToLower() == "buy") //买涨
-                        {
-                            positionGroupDB.ToList().ForEach(item => {
-                                historyReports.Add(new PositionReport()
-                                {
-                                    Account = item.AccountId.HasValue ? item.AccountId.Value.ToString() : string.Empty,
-                                    CreateTime = item.CreateTime.HasValue ? item.CreateTime.Value : DateTime.MinValue,
-                                    Leverage = item.Leverage,
-                                    LongQty = item.UpdateType.ToLower() == "delete" ? (item.Quantity == openReport.Quantity? 0 : item.Quantity) : item.Quantity,
-                                    PL = item.PL,
-                                    PosMaintRptID = item.PositionId.HasValue ? item.PositionId.Value.ToString() : string.Empty,
-                                    SecurityID = item.SecurityId.HasValue ? item.SecurityId.Value.ToString() : string.Empty,
-                                    SettlPrice = item.TradePrice.HasValue ? item.TradePrice.Value : 0,
-                                });
-                            });
-                        }
-                        else if (openReport.Direction.ToLower() == "sell")//买跌
-                        {
-                            positionGroupDB.ToList().ForEach(item => {
-                                historyReports.Add(new PositionReport()
-                                {
-                                    Account = item.AccountId.HasValue ? item.AccountId.Value.ToString() : string.Empty,
-                                    CreateTime = item.CreateTime.HasValue ? item.CreateTime.Value : DateTime.MinValue,
-                                    Leverage = item.Leverage,
-                                    ShortQty = item.UpdateType.ToLower() == "delete" ? (item.Quantity == openReport.Quantity ? 0 : item.Quantity) : item.Quantity,
-                                    PL = item.PL,
-                                    PosMaintRptID = item.PositionId.HasValue ? item.PositionId.Value.ToString() : string.Empty,
-                                    SecurityID = item.SecurityId.HasValue ? item.SecurityId.Value.ToString() : string.Empty,
-                                    SettlPrice = item.TradePrice.HasValue ? item.TradePrice.Value : 0,
-                                });
-                            });
-                        }
-                    }
-                    else if(positionGroupDB.Count() == 1) //对应先前已经开仓，但平仓记录（可能）包含在Ayondo的PositionReport中的情况
-                    {
-                        var positionHistory = positionGroupDB.First();
-                        if(positionHistory.UpdateType.ToLower() == "create")
-                        {
-                            historyReports.Add(new PositionReport()
-                            {
-                                Account = positionHistory.AccountId.HasValue ? positionHistory.AccountId.Value.ToString() : string.Empty,
-                                CreateTime = positionHistory.CreateTime.HasValue ? positionHistory.CreateTime.Value : DateTime.MinValue,
-                                Leverage = positionHistory.Leverage,
-                                LongQty = positionHistory.Direction.ToLower() == "buy" ? positionHistory.Quantity : null,
-                                PL = positionHistory.PL,
-                                PosMaintRptID = positionHistory.PositionId.HasValue ? positionHistory.PositionId.Value.ToString() : string.Empty,
-                                SecurityID = positionHistory.SecurityId.HasValue ? positionHistory.SecurityId.Value.ToString() : string.Empty,
-                                SettlPrice = positionHistory.TradePrice.HasValue ? positionHistory.TradePrice.Value : 0,
-                                ShortQty = positionHistory.Direction.ToLower() == "sell" ? positionHistory.Quantity : null,
-                            });
-                        }
-                    }
-                }
-            }
 
             var result = new List<PositionHistoryDTO>();
 
+            IList<PositionReport> historyReports;
+            var endTimeAyondo = DateTime.UtcNow;
+            var startTimeAyondo = DateTimes.GetHistoryQueryStartTime(endTimeAyondo);
+
+            var endTimeDB = startTimeAyondo.AddMilliseconds(-1);
+            var startTimeDB = endTimeDB.AddDays(-20);
+            int monthDays = 30;//假设一个月30天
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                //可能从Ayondo拿，也可能从Cache里面拿。
+                //不论是Ayondo还是Cache，拿出来的结果集都不一定是10天。
+                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTimeAyondo, endTimeAyondo).ToList();
+            }
+            
             if (historyReports.Count == 0)
                 return result;
 
@@ -385,7 +317,7 @@ namespace CFD_API.Controllers
                 dto.id = positionGroup.Key;
 
                 var positionReportsAyondo = positionGroup.ToList();
-                
+
 
                 if (positionReportsAyondo.Count >= 2)
                 {
@@ -425,17 +357,58 @@ namespace CFD_API.Controllers
                         dto.invest = tradeValue / dto.leverage;
 
                         var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                        security.bid = null;
-                        security.ask = null;
-                        security.lastOpen = null;
-                        security.lastClose = null;
-                        security.maxLeverage = null;
-                        security.smd = null;
-                        security.gsmd = null;
-                        security.preClose = null;
-                        security.open = null;
-                        security.last = null;
-                        security.isOpen = null;
+                        HideSecInfo(security);
+
+                        dto.security = security;
+
+                        result.Add(dto);
+                    }
+                }
+                else if (positionReportsAyondo.Count == 1)//对于只拿到一条Delete Position Report的情况，去DB里拿Open的信息
+                {
+                    var closePR = positionReportsAyondo[0];
+                    //确定该条记录是Delete，而非Update
+                    if (Decimals.IsTradeSizeZero(closePR.LongQty) || Decimals.IsTradeSizeZero(closePR.ShortQty))
+                    {
+                        //去DB里面拿Open的记录
+                        var openPR = db.NewPositionHistories.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID);
+                        if (openPR == null)
+                        {
+                            continue;
+                        }
+
+                        var secId = Convert.ToInt32(openPR.SecurityId);
+                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+
+                        if (prodDef == null)
+                        {
+                            CFDGlobal.LogLine("cannot find product definition for sec id: " + secId + " in history position reports of user id: " + UserId);
+                            continue;
+                        }
+
+                        dto.openPrice = Math.Round(openPR.SettlePrice.Value, prodDef.Prec);
+                        dto.openAt = openPR.CreateTime.Value;
+
+                        dto.closePrice = Math.Round(closePR.SettlPrice, prodDef.Prec);
+                        dto.closeAt = closePR.CreateTime;
+
+                        dto.leverage = closePR.Leverage;
+                        dto.pl = closePR.PL.Value;
+
+                        dto.isLong = openPR.LongQty.HasValue;
+
+                        //************************************************************************
+                        //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                        //************************************************************************
+                        var tradeValue = openPR.SettlePrice * prodDef.LotSize / prodDef.PLUnits * (openPR.LongQty ?? openPR.ShortQty);
+                        //var tradeValueUSD = tradeValue;
+                        //if (prodDef.Ccy2 != "USD")
+                        //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+
+                        dto.invest = tradeValue / dto.leverage;
+
+                        var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                        HideSecInfo(security);
 
                         dto.security = security;
 
@@ -444,7 +417,66 @@ namespace CFD_API.Controllers
                 }
             }
 
+            #region 如果上面的接口拿到的数据不足一个月，补足一个月
+            var startTime = historyReports.Min(o => o.CreateTime);//已拿到的数据中，最前面一条的时间
+
+            if ((DateTime.UtcNow - startTime).Days < monthDays) //如果拿出来的数据的跨度小于一个月
+            {
+                endTimeDB = startTime.AddMilliseconds(-1);
+                startTimeDB = endTimeDB.AddDays(-1 * (monthDays - (DateTime.UtcNow - startTime).Days));
+
+                var positionReportsDB = db.NewPositionHistories.Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList();
+                positionReportsDB.ToList().ForEach(item => {
+                    var dto = new PositionHistoryDTO() {
+                        closeAt = item.ClosedAt.Value,
+                        closePrice = item.ClosedPrice.Value,
+                        id = item.Id.ToString(),
+                        invest = item.InvestUSD.Value,
+                        isLong = item.LongQty.HasValue,
+                        leverage = item.Leverage,
+                        openAt = item.CreateTime.Value,
+                        openPrice = item.SettlePrice.Value,
+                        pl = item.PL.Value
+                    };
+                    
+
+                    var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == item.SecurityId);
+
+                    if (prodDef == null)
+                    {
+                        CFDGlobal.LogLine("cannot find product definition for sec id: " + item.SecurityId + " in history position reports of user id: " + UserId);
+                    }
+
+                    var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                    HideSecInfo(security);
+
+                    dto.security = security;
+
+                    result.Add(dto);
+                });
+            }
+            #endregion
+
             return result.OrderByDescending(o => o.closeAt).ToList();
+        }
+
+        /// <summary>
+        /// 隐藏一些字段，使之不在平仓记录中显示
+        /// </summary>
+        /// <param name="security"></param>
+        private void HideSecInfo(SecurityDetailDTO security)
+        {
+            security.bid = null;
+            security.ask = null;
+            security.lastOpen = null;
+            security.lastClose = null;
+            security.maxLeverage = null;
+            security.smd = null;
+            security.gsmd = null;
+            security.preClose = null;
+            security.open = null;
+            security.last = null;
+            security.isOpen = null;
         }
 
         [HttpPost]
