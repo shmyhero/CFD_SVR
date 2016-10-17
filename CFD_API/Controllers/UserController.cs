@@ -987,9 +987,11 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO CreateLiveAccount(LiveSignupFormDTO form)
         {
-            return new ResultDTO(true);
+            //return new ResultDTO(true);
 
-            var jObject = AMSLiveAccount(form);
+            var user = GetUser();
+
+            var jObject = AMSLiveAccount(form,user);
 
             if (jObject["Error"] != null)
             {
@@ -999,6 +1001,13 @@ namespace CFD_API.Controllers
                     success = false,
                 };
             }
+
+            var guid = jObject["Guid"].Value<string>();
+
+            user.AyLiveUsername = form.username;
+            user.AyLivePassword = form.password;
+            user.AyLiveAccountGuid = guid;
+            db.SaveChanges();
 
             return new ResultDTO(true);
         }

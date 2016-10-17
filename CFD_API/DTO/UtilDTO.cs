@@ -9,7 +9,7 @@ namespace CFD_API.DTO
     {
         public ResultDTO(bool success)
         {
-            
+            this.success = success;
         }
 
         public ResultDTO()

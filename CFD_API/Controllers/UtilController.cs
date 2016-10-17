@@ -891,6 +891,8 @@ namespace CFD_API.Controllers
                 var expiry = split[2];
                 var checksum = split[3];
 
+                //todo: check if cfd userid and ayondo username are bound
+
                 //using (var client = new AyondoTradeClient())
                 //{
                 //    var account = client.LoginOAuth(username2, oauth_token);
