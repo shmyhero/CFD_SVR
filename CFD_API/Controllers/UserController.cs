@@ -238,6 +238,7 @@ namespace CFD_API.Controllers
             var userDto = Mapper.Map<UserDTO>(user);
 
             //TODO: only here to reward demo registration?
+            //todo: transaction required!
             if(!db.DemoRegisterRewards.Any(item => item.UserId == this.UserId))
             {
                 var reward = new DemoRegisterReward()
@@ -251,6 +252,8 @@ namespace CFD_API.Controllers
 
                 userDto.rewardAmount = reward.Amount;
             }
+
+            userDto.hasAyLiveAccount = !string.IsNullOrWhiteSpace(user.AyLiveUsername);
           
             return userDto;
         }
@@ -961,7 +964,6 @@ namespace CFD_API.Controllers
             var jObject = JObject.Parse(str);
 
             var result = jObject["result"].Value<string>();
-            var message = jObject["message"].Value<string>();
 
             if (result == "0")
             {
@@ -1012,7 +1014,8 @@ namespace CFD_API.Controllers
             }
             else
             {
-                return new ResultDTO(false) {message = message};
+                var message = jObject["message"].Value<string>();
+                return new ResultDTO(false) {message = HttpUtility.UrlDecode(message)};
             }
         }
 
