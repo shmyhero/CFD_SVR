@@ -628,6 +628,35 @@ namespace CFD_API.Controllers
             .Take(20)
             .ToList();
 
+            while(result.Count < 3) //return at least Top 3 popular securities
+            {
+                int difference = 3 - result.Count;
+                List<int> secIDs = result.Select(o => o.id).ToList();
+
+                //trace back for one more day
+               var dtEnd = dtStart;
+                dtStart = dtStart - period;
+
+                //securities exist in current result should be excluded from query
+                tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart && o.CreateTime <= dtEnd
+                && !secIDs.Contains(o.SecurityId.Value)).ToList();
+                result.AddRange(tradeHistory.GroupBy(o => o.SecurityId).Select(o =>
+                {
+                    var secId = o.Key.Value;
+                    var prodDef = activeProd.FirstOrDefault(p => p.Id == secId);
+                    return new ByPopularityDTO()
+                    {
+                        id = secId,
+                        longCount = o.Count(p => p.LongQty.HasValue),
+                        shortCount = o.Count(p => p.ShortQty.HasValue),
+                        userCount = o.Select(p => p.UserId).Distinct().Count(),
+
+                        symbol = prodDef?.Symbol,
+                        name = prodDef != null ? Translator.GetCName(prodDef.Name) : null,
+                    };
+                }).OrderByDescending(o => o.userCount).Take(difference));
+            }
+
             return result;
         } 
     }
