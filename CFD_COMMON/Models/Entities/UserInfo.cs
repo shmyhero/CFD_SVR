@@ -38,5 +38,7 @@ namespace CFD_COMMON.Models.Entities
 
         [StringLength(50)]
         public string OcrTransId { get; set; }
+
+        public DateTime? OcrCalledAt { get; set; }
     }
 }

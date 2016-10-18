@@ -253,7 +253,57 @@ namespace CFD_API.Controllers
                 userDto.rewardAmount = reward.Amount;
             }
 
-            userDto.hasAyLiveAccount = !string.IsNullOrWhiteSpace(user.AyLiveUsername);
+            if (user.AyLiveUsername != null)
+            {
+                switch (user.AyLiveAccountStatus)
+                {
+                    //pending
+                    case null:
+                    case "PendingMifid":
+                    case "PendingClassification":
+                    case "PendingDocuments":
+                    case "PendingReview":
+                    case "PendingUnlock":
+                    case "PendingUnlockRetry":
+                        userDto.liveAccStatus = UserLiveStatus.Pending;
+                        break;
+
+                    //rejected
+                    case "AbortedByExpiry":
+                        userDto.liveAccRejReason = __(TransKey.LIVE_ACC_REJ_AbortedByExpiry);
+                        userDto.liveAccStatus = UserLiveStatus.Rejected;
+                        break;
+                    case "AbortedByPolicy":
+                        userDto.liveAccRejReason = __(TransKey.LIVE_ACC_REJ_AbortedByPolicy);
+                        userDto.liveAccStatus = UserLiveStatus.Rejected;
+                        break;
+                    case "RejectedByDD":
+                        userDto.liveAccRejReason = __(TransKey.LIVE_ACC_REJ_RejectedByDD);
+                        userDto.liveAccStatus = UserLiveStatus.Rejected;
+                        break;
+                    case "RejectedMifid":
+                        userDto.liveAccRejReason = __(TransKey.LIVE_ACC_REJ_RejectedMifid);
+                        userDto.liveAccStatus = UserLiveStatus.Rejected;
+                        break;
+                    
+                    //created
+                    case "Active":
+                    case "Closed":
+                    case "Locked":
+                    case "PendingFunding":
+                    case "PendingLogin":
+                    case "PendingTrading":
+                        userDto.liveAccStatus = UserLiveStatus.Active;
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(user.AyLiveAccountStatus), user.AyLiveAccountStatus, null);
+                }
+            }
+            else
+            {
+                userDto.liveAccStatus = UserLiveStatus.None;
+            }
           
             return userDto;
         }
@@ -992,6 +1042,7 @@ namespace CFD_API.Controllers
                         OcrRealName = HttpUtility.UrlDecode(real_name),
                         OcrTransId = transaction_id,
                         OcrValidPeriod = valid_period,
+                        OcrCalledAt = DateTime.UtcNow,
                     };
                     db.UserInfos.Add(newInfo);
                     db.SaveChanges();
@@ -1007,6 +1058,7 @@ namespace CFD_API.Controllers
                     userInfo.OcrRealName = HttpUtility.UrlDecode(real_name);
                     userInfo.OcrTransId = transaction_id;
                     userInfo.OcrValidPeriod = valid_period;
+                    userInfo.OcrCalledAt=DateTime.UtcNow;
                     db.SaveChanges();
                 }
 
@@ -1019,46 +1071,46 @@ namespace CFD_API.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("ocrResult")]
-        [BasicAuth]
-        public ResultDTO SubmitGZTOcrResult(GZTOcrResultFormDTO form)
-        {
-            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
-            if (userInfo == null)
-            {
-                var newInfo = new UserInfo()
-                {
-                    UserId = UserId,
-                    OcrAddr = form.addr,
-                    OcrEthnic = form.ethnic,
-                    OcrFaceImg = form.photo,
-                    OcrGender = CFDGlobal.GenderChineseToBool(form.gender),
-                    OcrIdCode = form.idCode,
-                    OcrIssueAuth = form.issueAuth,
-                    OcrRealName = form.realName,
-                    OcrTransId = form.transId,
-                    OcrValidPeriod = form.validPeriod,
-                };
-                db.UserInfos.Add(newInfo);
-                db.SaveChanges();
-            }
-            else
-            {
-                userInfo.OcrAddr = form.addr;
-                userInfo.OcrEthnic = form.ethnic;
-                userInfo.OcrFaceImg = form.photo;
-                userInfo.OcrGender = CFDGlobal.GenderChineseToBool(form.gender);
-                userInfo.OcrIdCode = form.idCode;
-                userInfo.OcrIssueAuth = form.issueAuth;
-                userInfo.OcrRealName = form.realName;
-                userInfo.OcrTransId = form.transId;
-                userInfo.OcrValidPeriod = form.validPeriod;
-                db.SaveChanges();
-            }
+        //[HttpPut]
+        //[Route("ocrResult")]
+        //[BasicAuth]
+        //public ResultDTO SubmitGZTOcrResult(GZTOcrResultFormDTO form)
+        //{
+        //    var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+        //    if (userInfo == null)
+        //    {
+        //        var newInfo = new UserInfo()
+        //        {
+        //            UserId = UserId,
+        //            OcrAddr = form.addr,
+        //            OcrEthnic = form.ethnic,
+        //            OcrFaceImg = form.photo,
+        //            OcrGender = CFDGlobal.GenderChineseToBool(form.gender),
+        //            OcrIdCode = form.idCode,
+        //            OcrIssueAuth = form.issueAuth,
+        //            OcrRealName = form.realName,
+        //            OcrTransId = form.transId,
+        //            OcrValidPeriod = form.validPeriod,
+        //        };
+        //        db.UserInfos.Add(newInfo);
+        //        db.SaveChanges();
+        //    }
+        //    else
+        //    {
+        //        userInfo.OcrAddr = form.addr;
+        //        userInfo.OcrEthnic = form.ethnic;
+        //        userInfo.OcrFaceImg = form.photo;
+        //        userInfo.OcrGender = CFDGlobal.GenderChineseToBool(form.gender);
+        //        userInfo.OcrIdCode = form.idCode;
+        //        userInfo.OcrIssueAuth = form.issueAuth;
+        //        userInfo.OcrRealName = form.realName;
+        //        userInfo.OcrTransId = form.transId;
+        //        userInfo.OcrValidPeriod = form.validPeriod;
+        //        db.SaveChanges();
+        //    }
 
-            return new ResultDTO() {success = true};
-        }
+        //    return new ResultDTO() {success = true};
+        //}
 
         [HttpGet]
         [Route("live/checkUsername")]
@@ -1093,11 +1145,24 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO CreateLiveAccount(LiveSignupFormDTO form)
         {
-            //return new ResultDTO(true);
-
             var user = GetUser();
 
-            var jObject = AMSLiveAccount(form,user);
+            //LIVE account is Created or Pending
+            var liveStatus = GetUserLiveAccountStatus(user.AyLiveAccountStatus);
+            if (user.AyLiveUsername != null &&
+                (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending))
+            {
+                return new ResultDTO(false);
+            }
+
+            //no OCR result
+            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+            if (userInfo == null || userInfo.OcrTransId == null)
+            {
+                return new ResultDTO(false);
+            }
+
+            var jObject = AMSLiveAccount(form, user);
 
             if (jObject["Error"] != null)
             {
@@ -1116,6 +1181,63 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             return new ResultDTO(true);
+        }
+
+        private string GetUserLiveAccountRejectReason(string ayLiveAccountStatus)
+        {
+            switch (ayLiveAccountStatus)
+            {
+                //rejected
+                case "AbortedByExpiry":
+                    return __(TransKey.LIVE_ACC_REJ_AbortedByExpiry);
+                case "AbortedByPolicy":
+                    return __(TransKey.LIVE_ACC_REJ_AbortedByPolicy);
+                case "RejectedByDD":
+                    return __(TransKey.LIVE_ACC_REJ_RejectedByDD);
+                case "RejectedMifid":
+                    return __(TransKey.LIVE_ACC_REJ_RejectedMifid);
+
+                default:
+                    return null;
+            }
+        }
+
+        private UserLiveStatus GetUserLiveAccountStatus(string ayLiveAccountStatus)
+        {
+            switch (ayLiveAccountStatus)
+            {
+                //pending
+                case null:
+                case "PendingMifid":
+                case "PendingClassification":
+                case "PendingDocuments":
+                case "PendingReview":
+                case "PendingUnlock":
+                case "PendingUnlockRetry":
+                    return UserLiveStatus.Pending;
+                    break;
+
+                //rejected
+                case "AbortedByExpiry":
+                case "AbortedByPolicy":
+                case "RejectedByDD":
+                case "RejectedMifid":
+                    return UserLiveStatus.Rejected;
+                    break;
+
+                //created
+                case "Active":
+                case "Closed":
+                case "Locked":
+                case "PendingFunding":
+                case "PendingLogin":
+                case "PendingTrading":
+                    return UserLiveStatus.Active;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(ayLiveAccountStatus), ayLiveAccountStatus, null);
+            }
         }
 
         private bool IsLoginBlocked(string phone)
