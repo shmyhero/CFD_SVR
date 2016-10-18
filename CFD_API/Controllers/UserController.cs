@@ -485,8 +485,15 @@ namespace CFD_API.Controllers
             IList<PositionReport> positionHistoryReports;
             using (var clientHttp = new AyondoTradeClient())
             {
-                positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
-                positionHistoryReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
+                try
+                {
+                    positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+                    positionHistoryReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime);
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
             }
 
             //var secIds = positionOpenReports.Select(o => o.SecurityID).Concat(positionHistoryReports.Select(o => o.SecurityID)).Distinct().Select(o => Convert.ToInt32(o)).ToList();
@@ -640,7 +647,14 @@ namespace CFD_API.Controllers
             IList<PositionReport> positionOpenReports;
             using (var clientHttp = new AyondoTradeClient())
             {
-                positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+                try
+                {
+                    positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
             }
 
             var indexPL = new PLReportDTO() { name = "指数" };
