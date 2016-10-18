@@ -26,6 +26,8 @@ using System.Drawing;
 using AyondoTrade.Model;
 using CFD_COMMON.Utils.Extensions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using ServiceStack.Text;
 
 namespace CFD_API.Controllers
 {
@@ -236,6 +238,7 @@ namespace CFD_API.Controllers
             var userDto = Mapper.Map<UserDTO>(user);
 
             //TODO: only here to reward demo registration?
+            //todo: transaction required!
             if(!db.DemoRegisterRewards.Any(item => item.UserId == this.UserId))
             {
                 var reward = new DemoRegisterReward()
@@ -249,6 +252,8 @@ namespace CFD_API.Controllers
 
                 userDto.rewardAmount = reward.Amount;
             }
+
+            userDto.hasAyLiveAccount = !string.IsNullOrWhiteSpace(user.AyLiveUsername);
           
             return userDto;
         }
@@ -911,6 +916,107 @@ namespace CFD_API.Controllers
             }
 
             return transferId;
+        }
+
+        [HttpPost]
+        [Route("ocr")]
+        [BasicAuth]
+        public ResultDTO OcrCheck(OcrFormDTO form)
+        {
+           var httpWebRequest = WebRequest.CreateHttp("http://124.192.161.110:8080/ocrCheck");
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json";
+            httpWebRequest.Proxy = null;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+
+            //
+            form.accessId = "shmhxx";
+            form.accessKey = "SHMHAKQHSA";
+            form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
+            form.sign = "";
+            
+            var s = JsonConvert.SerializeObject(form); //string.Format(json, username, password);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var jObject = JObject.Parse(str);
+
+            var result = jObject["result"].Value<string>();
+
+            if (result == "0")
+            {
+                var real_name = jObject["real_name"].Value<string>();
+                var id_code = jObject["id_code"].Value<string>();
+                var addr = jObject["addr"].Value<string>();
+                var gender = jObject["gender"].Value<string>();
+                var ethnic = jObject["ethnic"].Value<string>();
+                var photo = jObject["photo"].Value<string>();
+                var issue_authority = jObject["issue_authority"].Value<string>();
+                var valid_period = jObject["valid_period"].Value<string>();
+                var transaction_id = jObject["transaction_id"].Value<string>();
+
+                var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+                if (userInfo == null)
+                {
+                    var newInfo = new UserInfo()
+                    {
+                        UserId = UserId,
+                        OcrAddr = HttpUtility.UrlDecode(addr),
+                        OcrEthnic = HttpUtility.UrlDecode(ethnic),
+                        OcrFaceImg = photo,
+                        OcrGender = CFDGlobal.GenderChineseToBool(HttpUtility.UrlDecode(gender)),
+                        OcrIdCode = id_code,
+                        OcrIssueAuth = HttpUtility.UrlDecode(issue_authority),
+                        OcrRealName = HttpUtility.UrlDecode(real_name),
+                        OcrTransId = transaction_id,
+                        OcrValidPeriod = valid_period,
+                    };
+                    db.UserInfos.Add(newInfo);
+                    db.SaveChanges();
+                }
+                else
+                {
+                    userInfo.OcrAddr = HttpUtility.UrlDecode(addr);
+                    userInfo.OcrEthnic = HttpUtility.UrlDecode(ethnic);
+                    userInfo.OcrFaceImg = photo;
+                    userInfo.OcrGender = CFDGlobal.GenderChineseToBool(HttpUtility.UrlDecode(gender));
+                    userInfo.OcrIdCode = id_code;
+                    userInfo.OcrIssueAuth = HttpUtility.UrlDecode(issue_authority);
+                    userInfo.OcrRealName = HttpUtility.UrlDecode(real_name);
+                    userInfo.OcrTransId = transaction_id;
+                    userInfo.OcrValidPeriod = valid_period;
+                    db.SaveChanges();
+                }
+
+                return new ResultDTO(true);
+            }
+            else
+            {
+                var message = jObject["message"].Value<string>();
+                return new ResultDTO(false) {message = HttpUtility.UrlDecode(message)};
+            }
         }
 
         [HttpPut]

@@ -21,6 +21,10 @@ namespace CFD_API.DTO
         public bool autoCloseAlert { get; set; }
         public string weChatOpenId { get; set; }
         public decimal? rewardAmount { get; set; }
+
+        public bool hasAyLiveAccount { get; set; }
+
+        public string ayLiveAccountStatus { get; set; }
     }
 
     public class BalanceDTO
@@ -124,6 +128,20 @@ namespace CFD_API.DTO
         public DateTime? createdAt { get; set; }
 
         public bool isReaded { get; set; }
+    }
+
+    public class OcrFormDTO
+    {
+        public string accessId { get; set; }
+        public string accessKey { get; set; }
+
+        public string frontImg { get; set; }
+        public string frontImgExt { get; set; }
+        public string backImg { get; set; }
+        public string backImgExt { get; set; }
+
+        public string timeStamp { get; set; }
+        public string sign { get; set; }
     }
 
     /*
