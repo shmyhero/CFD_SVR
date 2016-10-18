@@ -27,6 +27,7 @@ namespace CFD_COMMON.Localization
             
             { TransKey.USERNAME_UNAVAILABLE, "用户名已存在" },
             { TransKey.USERNAME_INVALID, "用户名不符合要求" },
+            { TransKey.PRICEDOWN, "当前价格中断,无法交易" },
         };
 
         public static Dictionary<string, string> ProdCNames = new Dictionary<string, string>

@@ -27,5 +27,7 @@ namespace CFD_COMMON.Localization
 
         USERNAME_UNAVAILABLE,
         USERNAME_INVALID,
+
+        PRICEDOWN
     }
 }

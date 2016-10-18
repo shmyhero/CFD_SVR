@@ -87,8 +87,12 @@ namespace CFD_API.Controllers
                 }
 
                 var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
-
+                
                 var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                if (Quotes.IsPriceDown(WebCache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+                {
+                    security.isPriceDown = true;
+                }
 
                 if (quote != null)
                 {
@@ -509,6 +513,12 @@ namespace CFD_API.Controllers
             decimal tradeValueCcy2 = FX.ConvertByOutrightMidPrice(tradeValueUSD, "USD", prodDef.Ccy2, WebCache.ProdDefs, WebCache.Quotes);
 
             var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
+            if(Quotes.IsPriceDown(WebCache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                        __(TransKey.PRICEDOWN)));
+            }
+
             var quotePrice = form.isLong ? quote.Offer : quote.Bid;
             decimal quantity = tradeValueCcy2/(quotePrice/prodDef.PLUnits*prodDef.LotSize);
             quantity = Maths.Floor(quantity, 8);
