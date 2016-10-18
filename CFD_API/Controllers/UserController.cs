@@ -253,58 +253,11 @@ namespace CFD_API.Controllers
                 userDto.rewardAmount = reward.Amount;
             }
 
-            if (user.AyLiveUsername != null)
-            {
-                switch (user.AyLiveAccountStatus)
-                {
-                    //pending
-                    case null:
-                    case "PendingMifid":
-                    case "PendingClassification":
-                    case "PendingDocuments":
-                    case "PendingReview":
-                    case "PendingUnlock":
-                    case "PendingUnlockRetry":
-                        userDto.liveAccStatus = UserLiveStatus.Pending;
-                        break;
+            userDto.liveAccStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
 
-                    //rejected
-                    case "AbortedByExpiry":
-                        userDto.liveAccRejReason = __(TransKey.LIVE_ACC_REJ_AbortedByExpiry);
-                        userDto.liveAccStatus = UserLiveStatus.Rejected;
-                        break;
-                    case "AbortedByPolicy":
-                        userDto.liveAccRejReason = __(TransKey.LIVE_ACC_REJ_AbortedByPolicy);
-                        userDto.liveAccStatus = UserLiveStatus.Rejected;
-                        break;
-                    case "RejectedByDD":
-                        userDto.liveAccRejReason = __(TransKey.LIVE_ACC_REJ_RejectedByDD);
-                        userDto.liveAccStatus = UserLiveStatus.Rejected;
-                        break;
-                    case "RejectedMifid":
-                        userDto.liveAccRejReason = __(TransKey.LIVE_ACC_REJ_RejectedMifid);
-                        userDto.liveAccStatus = UserLiveStatus.Rejected;
-                        break;
-                    
-                    //created
-                    case "Active":
-                    case "Closed":
-                    case "Locked":
-                    case "PendingFunding":
-                    case "PendingLogin":
-                    case "PendingTrading":
-                        userDto.liveAccStatus = UserLiveStatus.Active;
-                        break;
+            if (userDto.liveAccStatus == UserLiveStatus.Rejected)
+                userDto.liveAccRejReason = GetUserLiveAccountRejectReason(user.AyLiveAccountStatus);
 
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(user.AyLiveAccountStatus), user.AyLiveAccountStatus, null);
-                }
-            }
-            else
-            {
-                userDto.liveAccStatus = UserLiveStatus.None;
-            }
-          
             return userDto;
         }
 
@@ -968,12 +921,16 @@ namespace CFD_API.Controllers
             return transferId;
         }
 
+        private const string GZT_ACCESS_ID = "shmhxx";
+        private const string GZT_ACCESS_KEY = "SHMHAKQHSA";
+        private const string GZT_HOST = "http://124.192.161.110:8080/";
+
         [HttpPost]
         [Route("ocr")]
         [BasicAuth]
         public ResultDTO OcrCheck(OcrFormDTO form)
         {
-           var httpWebRequest = WebRequest.CreateHttp("http://124.192.161.110:8080/ocrCheck");
+            var httpWebRequest = WebRequest.CreateHttp(GZT_HOST + "ocrCheck");
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Proxy = null;
@@ -981,8 +938,8 @@ namespace CFD_API.Controllers
             var sw = new StreamWriter(requestStream);
 
             //
-            form.accessId = "shmhxx";
-            form.accessKey = "SHMHAKQHSA";
+            form.accessId = GZT_ACCESS_ID;
+            form.accessKey = GZT_ACCESS_KEY;
             form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
             form.sign = "";
             
@@ -1058,7 +1015,7 @@ namespace CFD_API.Controllers
                     userInfo.OcrRealName = HttpUtility.UrlDecode(real_name);
                     userInfo.OcrTransId = transaction_id;
                     userInfo.OcrValidPeriod = valid_period;
-                    userInfo.OcrCalledAt=DateTime.UtcNow;
+                    userInfo.OcrCalledAt = DateTime.UtcNow;
                     db.SaveChanges();
                 }
 
@@ -1067,7 +1024,11 @@ namespace CFD_API.Controllers
             else
             {
                 var message = jObject["message"].Value<string>();
-                return new ResultDTO(false) {message = HttpUtility.UrlDecode(message)};
+                message = HttpUtility.UrlDecode(message);
+
+                CFDGlobal.LogInformation("OCR fail: " + result + " " + message);
+
+                return new ResultDTO(false) {message = message};
             }
         }
 
@@ -1148,9 +1109,8 @@ namespace CFD_API.Controllers
             var user = GetUser();
 
             //LIVE account is Created or Pending
-            var liveStatus = GetUserLiveAccountStatus(user.AyLiveAccountStatus);
-            if (user.AyLiveUsername != null &&
-                (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending))
+            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
                 return new ResultDTO(false);
             }
@@ -1202,8 +1162,11 @@ namespace CFD_API.Controllers
             }
         }
 
-        private UserLiveStatus GetUserLiveAccountStatus(string ayLiveAccountStatus)
+        private UserLiveStatus GetUserLiveAccountStatus(string ayLiveUsername, string ayLiveAccountStatus)
         {
+            if (string.IsNullOrWhiteSpace(ayLiveUsername))
+                return UserLiveStatus.None;
+
             switch (ayLiveAccountStatus)
             {
                 //pending
