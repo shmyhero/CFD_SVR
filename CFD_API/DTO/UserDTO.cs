@@ -22,9 +22,16 @@ namespace CFD_API.DTO
         public string weChatOpenId { get; set; }
         public decimal? rewardAmount { get; set; }
 
-        public bool hasAyLiveAccount { get; set; }
+        public UserLiveStatus liveAccStatus { get; set; }
+        public string liveAccRejReason { get; set; }
+    }
 
-        public string ayLiveAccountStatus { get; set; }
+    public enum UserLiveStatus
+    {
+        None = 0,
+        Active = 1,
+        Pending = 2,
+        Rejected = 3,
     }
 
     public class BalanceDTO
@@ -199,7 +206,7 @@ namespace CFD_API.DTO
         public bool expDeriv { get; set; }
         public bool expShareBond { get; set; }
 
-        public string ocrTransId { get; set; }
+        //public string ocrTransId { get; set; }
     }
 
     public class AMSLiveUserCreateFormDTO
