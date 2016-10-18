@@ -452,6 +452,11 @@ namespace CFD_API.Controllers
             //get new price
             //var quote = redisQuoteClient.GetById(securityId);
             var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == securityId);
+            if (Quotes.IsPriceDown(WebCache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            {
+                result.isPriceDown = true;
+            }
+
             result.last = Quotes.GetLastPrice(quote);
             result.ask = quote.Offer;
             result.bid = quote.Bid;

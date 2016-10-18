@@ -145,6 +145,7 @@
     <Compile Include="Models\Entities\NewPositionHistory.cs" />
     <Compile Include="Models\Entities\PhoneSignupHistory.cs" />
     <Compile Include="Models\Entities\OperationUser.cs" />
+    <Compile Include="Models\Entities\PriceDownInterval.cs" />
     <Compile Include="Models\Entities\QuoteHistory.cs" />
     <Compile Include="Models\Entities\User.cs" />
     <Compile Include="Models\Entities\UserAlert.cs" />

@@ -32,6 +32,8 @@ namespace CFD_COMMON.Localization
             { TransKey.LIVE_ACC_REJ_RejectedByDD, "实盘注册申请信息未达到KYC(充分了解你的客户)政策的要求" },
             { TransKey.LIVE_ACC_REJ_AbortedByExpiry, "实盘注册申请已过期" },
             { TransKey.LIVE_ACC_REJ_AbortedByPolicy, "实盘注册申请被中止" },
+
+            { TransKey.PRICEDOWN, "当前价格中断,无法交易" },
         };
 
         public static Dictionary<string, string> ProdCNames = new Dictionary<string, string>
