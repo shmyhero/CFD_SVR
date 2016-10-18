@@ -807,6 +807,11 @@ namespace CFD_API.Controllers
             var queryNameValuePairs = Request.GetQueryNameValuePairs();
             //CFDGlobal.LogInformation(oauth_token+" "+state+" "+expires_in);
 
+            var currentUrl = Request.RequestUri.GetLeftPart(UriPartial.Path);
+
+            var errorResponse = Request.CreateResponse(HttpStatusCode.Redirect);
+            errorResponse.Headers.Location = new Uri(currentUrl + "/error");
+
             var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
             if (!string.IsNullOrWhiteSpace(error))
             {
@@ -815,10 +820,7 @@ namespace CFD_API.Controllers
                 CFDGlobal.LogLine(log);
 
                 //return "ERROR";
-                var response = Request.CreateResponse(HttpStatusCode.Redirect);
-                var currentUrl = Request.RequestUri.GetLeftPart(UriPartial.Path);
-                response.Headers.Location = new Uri(currentUrl + "/error");
-                return response;
+                return errorResponse;
             }
 
             var oauth_token = queryNameValuePairs.FirstOrDefault(o => o.Key == "oauth_token").Value;
@@ -837,9 +839,19 @@ namespace CFD_API.Controllers
 
                 var split = decrypted.Split(':');
                 var username1 = split[0];
-                var username2 = split[1];
+                var username2 = split[1]; //ayondo username
                 var expiry = split[2];
                 var checksum = split[3];
+
+                // check if cfd userid and ayondo username are bound
+                var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
+                var userId = Convert.ToInt32(state);
+                var user = db.Users.FirstOrDefault(o => o.Id == userId);
+                if (user == null || user.AyondoUsername != username2)
+                {
+                    CFDGlobal.LogLine("cfd user id and ayondo demo username doesn't match");
+                    return errorResponse;
+                }
 
                 using (var client = new AyondoTradeClient())
                 {
@@ -849,13 +861,12 @@ namespace CFD_API.Controllers
                 }
 
                 //return "OK";
-                var response = Request.CreateResponse(HttpStatusCode.Redirect);
-                var currentUrl = Request.RequestUri.GetLeftPart(UriPartial.Path);
-                response.Headers.Location = new Uri(currentUrl+"/ok");
-                return response;
+                var okResponse = Request.CreateResponse(HttpStatusCode.Redirect);
+                okResponse.Headers.Location = new Uri(currentUrl + "/ok");
+                return okResponse;
             }
 
-            return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+            return errorResponse;
         }
 
         [HttpGet]
@@ -874,20 +885,25 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("live/oauth")]
-        public string AyondoLiveOAuth()
+        public HttpResponseMessage AyondoLiveOAuth()
         {
             var queryNameValuePairs = Request.GetQueryNameValuePairs();
             //CFDGlobal.LogInformation(oauth_token+" "+state+" "+expires_in);
 
-            var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
+            var currentUrl = Request.RequestUri.GetLeftPart(UriPartial.Path);
 
+            var errorResponse = Request.CreateResponse(HttpStatusCode.Redirect);
+            errorResponse.Headers.Location = new Uri(currentUrl + "/error");
+
+            var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
             if (!string.IsNullOrWhiteSpace(error))
             {
                 string log = queryNameValuePairs.Aggregate("Live OAuth error: ",
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
                 CFDGlobal.LogLine(log);
 
-                return "ERROR";
+                //return "ERROR";
+                return errorResponse;
             }
 
             var oauth_token = queryNameValuePairs.FirstOrDefault(o => o.Key == "oauth_token").Value;
@@ -907,11 +923,19 @@ namespace CFD_API.Controllers
 
                 var split = decrypted.Split(':');
                 var username1 = split[0];
-                var username2 = split[1];
+                var username2 = split[1];//ayondo username
                 var expiry = split[2];
                 var checksum = split[3];
 
-                //todo: check if cfd userid and ayondo username are bound
+                // check if cfd userid and ayondo username are bound
+                var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
+                var userId = Convert.ToInt32(state);
+                var user = db.Users.FirstOrDefault(o => o.Id == userId);
+                if (user == null || user.AyLiveUsername != username2)
+                {
+                    CFDGlobal.LogLine("cfd user id and ayondo live username doesn't match");
+                    return errorResponse;
+                }
 
                 //using (var client = new AyondoTradeClient())
                 //{
@@ -920,10 +944,27 @@ namespace CFD_API.Controllers
                 //    CFDGlobal.LogLine("OAuth login: " + username2 + " " + account);
                 //}
 
-                return "OK";
+                //return "OK";
+                var okResponse = Request.CreateResponse(HttpStatusCode.Redirect);
+                okResponse.Headers.Location = new Uri(currentUrl + "/ok");
+                return okResponse;
             }
 
-            return "";
+            return errorResponse;
+        }
+
+        [HttpGet]
+        [Route("live/oauth/ok")]
+        public string AyondoLiveOAuthOK()
+        {
+            return "OK";
+        }
+
+        [HttpGet]
+        [Route("live/oauth/error")]
+        public string AyondoLiveOAuthError()
+        {
+            return "ERROR";
         }
 
         private const string LIFECYCLE_CALLBACK_AUTH_TOKEN = "Tj3Id8N7mG6Dyi9Pl1Se4b7dNMik9N0sz1V5sM8cT3we8x9PoqcW3N7dV61cD5J2Ur3Qjf8yTd3EG0UX3";

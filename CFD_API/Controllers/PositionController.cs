@@ -167,7 +167,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed_obsolete")]
+        [Route("closed")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
@@ -180,7 +180,15 @@ namespace CFD_API.Controllers
                 var endTime = DateTime.UtcNow;
                 var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
 
-                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTime, endTime, ignoreCache);
+                try
+                {
+                    historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword,
+                        startTime, endTime, ignoreCache);
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
             }
 
             var result = new List<PositionHistoryDTO>();
@@ -287,7 +295,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed")]
+        [Route("closed_obsolete")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory()
         {
@@ -305,9 +313,18 @@ namespace CFD_API.Controllers
             int monthDays = 30;//假设一个月30天
             using (var clientHttp = new AyondoTradeClient())
             {
-                //可能从Ayondo拿，也可能从Cache里面拿。
-                //不论是Ayondo还是Cache，拿出来的结果集都不一定是10天。
-                historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTimeAyondo, endTimeAyondo).ToList();
+                try
+                {
+                    //可能从Ayondo拿，也可能从Cache里面拿。
+                    //不论是Ayondo还是Cache，拿出来的结果集都不一定是10天。
+                    historyReports =
+                        clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTimeAyondo,
+                            endTimeAyondo).ToList();
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
             }
             
             if (historyReports.Count == 0)
@@ -548,6 +565,10 @@ namespace CFD_API.Controllers
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
                         __(TransKey.ORDER_REJECTED) + " " + Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
                 }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
 
                 CFDGlobal.LogLine("NewOrder: userId:" + UserId + " secId:" + form.securityId + " long:" + form.isLong +
                                   " invest:" + form.invest + " leverage:" + form.leverage +
@@ -686,6 +707,10 @@ namespace CFD_API.Controllers
                 {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
                         Translator.AyondoOrderRejectMessageTranslate(e.Detail.Text)));
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
                 }
             }
 

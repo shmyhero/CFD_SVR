@@ -23,9 +23,11 @@ using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
 using System.Web;
 using System.Drawing;
+using System.ServiceModel;
 using AyondoTrade.Model;
 using CFD_COMMON.Utils.Extensions;
 using System.Threading.Tasks;
+using AyondoTrade.FaultModel;
 using Newtonsoft.Json;
 using ServiceStack.Text;
 
@@ -413,8 +415,15 @@ namespace CFD_API.Controllers
             IList<PositionReport> positionReports;
             using (var clientHttp = new AyondoTradeClient())
             {
-                balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
-                positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+                try
+                {
+                    balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
+                    positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
             }
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
