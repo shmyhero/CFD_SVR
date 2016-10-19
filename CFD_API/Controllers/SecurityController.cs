@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web.Http;
 using AutoMapper;
 using CFD_API.Caching;
@@ -589,26 +590,27 @@ namespace CFD_API.Controllers
         [Route("byPopularity")]
         public List<ByPopularityDTO> GetByPopularity()
         {
+            var activeProd = GetActiveProds();
+
             var ts1day = TimeSpan.FromDays(1);
             var dtEnd = DateTime.UtcNow;
             var dtStart = DateTime.UtcNow - ts1day;
 
-            List<NewPositionHistory> tradeHistory=new List<NewPositionHistory>();
+            List<NewPositionHistory> tradeHistory = new List<NewPositionHistory>();
             for (int i = 0; i < 10; i++)
             {
                 tradeHistory = db.NewPositionHistories.AsNoTracking()
-                        .Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd)// >= and <
-                        .ToList();
+                    .Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd) // >= start and < end
+                    .ToList();
 
-                if (tradeHistory.Select(o => o.SecurityId).Distinct().Count() >= 3)
+                //trade history list covers more than 3 active securities
+                if (tradeHistory.Select(o => o.SecurityId).Distinct().Count(o => activeProd.Any(p => p.Id == o)) >= 3)
                     break;
 
                 //back 1 day
                 dtStart = dtStart - ts1day;
                 dtEnd = dtEnd - ts1day;
             }
-
-            var activeProd = GetActiveProds();
 
             //var period = TimeSpan.FromDays(1);
 
@@ -629,24 +631,28 @@ namespace CFD_API.Controllers
             //    tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
             //}
 
-            var result = tradeHistory.GroupBy(o => o.SecurityId).Select(o =>
-              {
-                  var secId = o.Key.Value;
-                  var prodDef = activeProd.FirstOrDefault(p => p.Id == secId);
-                  return new ByPopularityDTO()
-                  {
-                      id = secId,
-                      longCount = o.Count(p => p.LongQty.HasValue),
-                      shortCount = o.Count(p => p.ShortQty.HasValue),
-                      userCount = o.Select(p => p.UserId).Distinct().Count(),
+            var result =
+                tradeHistory.GroupBy(o => o.SecurityId)
+                .Where(o => activeProd.Any(p => p.Id == o.Key))//active products
+                .Select(o =>
+                {
+                    var secId = o.Key.Value;
+                    var prodDef = activeProd.FirstOrDefault(p => p.Id == secId);
 
-                      symbol = prodDef?.Symbol,
-                      name = prodDef != null ? Translator.GetCName(prodDef.Name) : null,
-                  };
-              })
-            .OrderByDescending(o => o.userCount)
-            .Take(20)
-            .ToList();
+                    return new ByPopularityDTO()
+                    {
+                        id = secId,
+                        longCount = o.Count(p => p.LongQty.HasValue),
+                        shortCount = o.Count(p => p.ShortQty.HasValue),
+                        userCount = o.Select(p => p.UserId).Distinct().Count(),
+
+                        symbol = prodDef?.Symbol,
+                        name = prodDef != null ? Translator.GetCName(prodDef.Name) : null,
+                    };
+                })
+                    .OrderByDescending(o => o.userCount)
+                    .Take(20)
+                    .ToList();
 
             //int maxCount = 7;//max loop count
             //while(result.Count < 3 && maxCount >0) //return at least Top 3 popular securities
@@ -680,6 +686,6 @@ namespace CFD_API.Controllers
             //}
 
             return result;
-        } 
+        }
     }
 }
