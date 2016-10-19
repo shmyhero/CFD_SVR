@@ -628,8 +628,10 @@ namespace CFD_API.Controllers
             .Take(20)
             .ToList();
 
-            while(result.Count < 3) //return at least Top 3 popular securities
+            int maxCount = 7;//max loop count
+            while(result.Count < 3 && maxCount >0) //return at least Top 3 popular securities
             {
+                maxCount--;
                 int difference = 3 - result.Count;
                 List<int> secIDs = result.Select(o => o.id).ToList();
 
