@@ -40,5 +40,54 @@ namespace CFD_COMMON.Models.Entities
         public string OcrTransId { get; set; }
 
         public DateTime? OcrCalledAt { get; set; }
+
+        [StringLength(50)]
+        public string Email { get; set; }
+
+        [StringLength(10)]
+        public string RealName { get; set; }
+
+        public bool? Gender { get; set; }
+
+        [StringLength(20)]
+        public string Birthday { get; set; }
+
+        [StringLength(10)]
+        public string Ethnic { get; set; }
+
+        [StringLength(20)]
+        public string IdCode { get; set; }
+
+        [StringLength(50)]
+        public string Addr { get; set; }
+
+        [StringLength(50)]
+        public string IssueAuth { get; set; }
+
+        [StringLength(50)]
+        public string ValidPeriod { get; set; }
+
+        public int? AnnualIncome { get; set; }
+
+        public int? NetWorth { get; set; }
+
+        public int? InvestPct { get; set; }
+
+        [StringLength(20)]
+        public string EmpStatus { get; set; }
+
+        public int? InvestFrq { get; set; }
+
+        public bool? HasProExp { get; set; }
+
+        public bool? HasAyondoExp { get; set; }
+
+        public bool? HasOtherQualif { get; set; }
+
+        public bool? ExpOTCDeriv { get; set; }
+
+        public bool? ExpDeriv { get; set; }
+
+        public bool? ExpShareBond { get; set; }
     }
 }

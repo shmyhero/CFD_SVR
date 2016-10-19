@@ -1161,6 +1161,28 @@ namespace CFD_API.Controllers
             user.AyLiveAccountGuid = guid;
             db.SaveChanges();
 
+            userInfo.Email = form.email;
+            userInfo.RealName = form.realName;
+            userInfo.Gender = form.gender;
+            userInfo.Birthday = form.birthday;
+            userInfo.Ethnic = form.ethnic;
+            userInfo.IdCode = form.idCode;
+            userInfo.Addr = form.addr;
+            userInfo.IssueAuth = form.issueAuth;
+            userInfo.ValidPeriod = form.validPeriod;
+            userInfo.AnnualIncome = form.annualIncome;
+            userInfo.NetWorth = form.netWorth;
+            userInfo.InvestPct = form.investPct;
+            userInfo.EmpStatus = form.empStatus;
+            userInfo.InvestFrq = form.investFrq;
+            userInfo.HasProExp = form.hasProExp;
+            userInfo.HasAyondoExp = form.hasAyondoExp;
+            userInfo.HasOtherQualif = form.hasOtherQualif;
+            userInfo.ExpOTCDeriv = form.expOTCDeriv;
+            userInfo.ExpDeriv = form.expDeriv;
+            userInfo.ExpShareBond = form.expShareBond;
+            db.SaveChanges();
+
             return new ResultDTO(true);
         }
 
