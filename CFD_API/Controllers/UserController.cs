@@ -953,6 +953,8 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public JObject OcrCheck(OcrFormDTO form)
         {
+            //todo: disable this api if user already has LIVE account
+
             var httpWebRequest = WebRequest.CreateHttp(GZT_HOST + "ocrCheck");
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json";
@@ -1013,6 +1015,12 @@ namespace CFD_API.Controllers
                     var newInfo = new UserInfo()
                     {
                         UserId = UserId,
+
+                        IdFrontImg = form.frontImg,
+                        IdFrontImgExt = form.frontImgExt,
+                        IdBackImg = form.backImg,
+                        IdBackImgExt = form.backImgExt,
+
                         OcrAddr = HttpUtility.UrlDecode(addr),
                         OcrEthnic = HttpUtility.UrlDecode(ethnic),
                         OcrFaceImg = photo,
@@ -1029,6 +1037,11 @@ namespace CFD_API.Controllers
                 }
                 else
                 {
+                    userInfo.IdFrontImg = form.frontImg;
+                    userInfo.IdFrontImgExt = form.frontImgExt;
+                    userInfo.IdBackImg = form.backImg;
+                    userInfo.IdBackImgExt = form.backImgExt;
+
                     userInfo.OcrAddr = HttpUtility.UrlDecode(addr);
                     userInfo.OcrEthnic = HttpUtility.UrlDecode(ethnic);
                     userInfo.OcrFaceImg = photo;
