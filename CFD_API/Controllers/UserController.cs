@@ -951,7 +951,7 @@ namespace CFD_API.Controllers
         [HttpPost]
         [Route("ocr")]
         [BasicAuth]
-        public ResultDTO OcrCheck(OcrFormDTO form)
+        public JObject OcrCheck(OcrFormDTO form)
         {
             var httpWebRequest = WebRequest.CreateHttp(GZT_HOST + "ocrCheck");
             httpWebRequest.Method = "POST";
@@ -1041,8 +1041,6 @@ namespace CFD_API.Controllers
                     userInfo.OcrCalledAt = DateTime.UtcNow;
                     db.SaveChanges();
                 }
-
-                return new ResultDTO(true);
             }
             else
             {
@@ -1050,9 +1048,9 @@ namespace CFD_API.Controllers
                 message = HttpUtility.UrlDecode(message);
 
                 CFDGlobal.LogInformation("OCR fail: " + result + " " + message);
-
-                return new ResultDTO(false) {message = message};
             }
+
+            return jObject;
         }
 
         //[HttpPut]
