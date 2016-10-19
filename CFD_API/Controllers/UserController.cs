@@ -964,7 +964,7 @@ namespace CFD_API.Controllers
             form.accessId = GZT_ACCESS_ID;
             form.accessKey = GZT_ACCESS_KEY;
             form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
-            form.sign = "";
+            form.sign = Randoms.GetRandomAlphanumericString(8);
             
             var s = JsonConvert.SerializeObject(form); //string.Format(json, username, password);
             sw.Write(s);
@@ -1147,9 +1147,13 @@ namespace CFD_API.Controllers
 
             if (jObject["Error"] != null)
             {
+                var error = jObject["Error"].Value<string>();
+
+                CFDGlobal.LogInformation("LIVE register error:" + error);
+
                 return new ResultDTO
                 {
-                    message = jObject["Error"].Value<string>(),
+                    message = error,
                     success = false,
                 };
             }
