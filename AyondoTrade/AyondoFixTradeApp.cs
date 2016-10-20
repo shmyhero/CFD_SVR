@@ -334,7 +334,7 @@ namespace AyondoTrade
         {
             CFDGlobal.LogLine("OnMessage:News: " + GetMessageString(news, true, true));
 
-            if (news.Headline.Obj == "Fatal Error")
+            if (news.Headline.Obj == "Fatal Error")//user becomes offline
             {
                 //var groupTags = news.GetGroupTags();
                 //var tag = groupTags.FirstOrDefault(o => o == Tags.LinesOfText);
@@ -388,6 +388,8 @@ namespace AyondoTrade
                 {
                     var guid = response.UserRequestID.Obj;
                     LoggedOutUserResponses.TryAdd(guid, new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, response));
+
+                    CFDCacheManager.Instance.UserLogout(account);
                 }
                 else
                     CFDGlobal.LogInformation("UserResponse: Account:" + account + " UserStatus:" + response.UserStatus.Obj);
