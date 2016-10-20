@@ -297,8 +297,8 @@ namespace CFD_TEST
         public void YunPianSMS()
         {
             var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。"+
-                "券号：G1608150944636368 密码：SGWCEVJTWXD6" +
-                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "13676547546");
+                "券号：G1609191740235290 密码：GU3SLTVMEN0D" +
+                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "13764349804");
             CFDGlobal.LogLine(sendSms);
         }
 
@@ -438,10 +438,10 @@ namespace CFD_TEST
             //德国30
             //for (int i = 0; i < 3; i++)
             //{
-            //    user = db.Users.FirstOrDefault(o => o.Id == 1);
-            //    pos = XiaDan_SheZhiYing(user, 34820, true, 100);
-            //    user = db.Users.FirstOrDefault(o => o.Id == 3277);
-            //    pos = XiaDan_SheZhiYing(user, 34820, false, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 1);
+            pos = XiaDan_SheZhiYing(user, 34820, true, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 3277);
+            pos = XiaDan_SheZhiYing(user, 34820, false, 100);
             //}
 
             //华尔街

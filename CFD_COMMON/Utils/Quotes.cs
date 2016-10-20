@@ -1,5 +1,6 @@
 ﻿using System;
 using CFD_COMMON.Models.Cached;
+using System.Collections.Generic;
 
 namespace CFD_COMMON.Utils
 {
@@ -53,6 +54,19 @@ namespace CFD_COMMON.Utils
             int decimalCount = Math.Max(c1, c2);
 
             return Math.Round((prodDef.OpenAsk.Value + prodDef.OpenBid.Value) / 2, decimalCount, MidpointRounding.AwayFromZero);
+        }
+
+        /// <summary>
+        /// 是否价格已经中断
+        /// </summary>
+        /// <param name="interval">中断的容忍周期</param>
+        /// <returns></returns>
+        public static bool IsPriceDown(KeyValuePair<int, int> interval, DateTime time)
+        {
+            if (default(KeyValuePair<int, int>).Equals(interval))
+                return (DateTime.UtcNow - time).TotalSeconds >= 3 * 60;
+
+            return (DateTime.UtcNow - time).TotalSeconds >= interval.Value;
         }
     }
 }

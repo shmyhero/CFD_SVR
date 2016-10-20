@@ -46,6 +46,11 @@ namespace CFD_API.DTO
 
         public string ccy { get; set; }
 
+        /// <summary>
+        /// 当前行情是否中断
+        /// </summary>
+        public bool isPriceDown { get; set; }
+
         public List<int> levList { get; set; }
     }
 

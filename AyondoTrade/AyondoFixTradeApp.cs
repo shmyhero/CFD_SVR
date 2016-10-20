@@ -108,6 +108,12 @@ namespace AyondoTrade
         /// <summary>
         /// guid as key
         /// </summary>
+        public ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>> LoggedOutUserResponses =
+            new ConcurrentDictionary<string, KeyValuePair<DateTime, UserResponse>>();
+
+        /// <summary>
+        /// guid as key
+        /// </summary>
         public ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>> RejectedExecutionReports =
             new ConcurrentDictionary<string, KeyValuePair<DateTime, ExecutionReport>>();
 
@@ -328,7 +334,7 @@ namespace AyondoTrade
         {
             CFDGlobal.LogLine("OnMessage:News: " + GetMessageString(news, true, true));
 
-            if (news.Headline.Obj == "Fatal Error")
+            if (news.Headline.Obj == "Fatal Error")//user becomes offline
             {
                 //var groupTags = news.GetGroupTags();
                 //var tag = groupTags.FirstOrDefault(o => o == Tags.LinesOfText);
@@ -377,6 +383,13 @@ namespace AyondoTrade
                         AccountUsernames.Add(account, username);
 
                     CFDCacheManager.Instance.UserLogin(account);
+                }
+                else if (response.UserStatus.Obj == UserStatus.NOT_LOGGED_IN && response.UserStatusText.Obj == "Success")//successfully logged out
+                {
+                    var guid = response.UserRequestID.Obj;
+                    LoggedOutUserResponses.TryAdd(guid, new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, response));
+
+                    CFDCacheManager.Instance.UserLogout(account);
                 }
                 else
                     CFDGlobal.LogInformation("UserResponse: Account:" + account + " UserStatus:" + response.UserStatus.Obj);
@@ -645,6 +658,21 @@ namespace AyondoTrade
             m.SetField(new StringField(TAG_MDS_OAUTH) {Obj = token});
             m.SetField(new StringField(TAG_MDS_SendColRep) { Obj = "N" });
             m.SetField(new StringField(TAG_MDS_SendNoPos) { Obj = "0" });
+
+            SendMessage(m);
+
+            return guid;
+        }
+
+        public string LogOut(string username, string account)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new UserRequest();
+            m.UserRequestID = new UserRequestID(guid);
+            m.UserRequestType = new UserRequestType(UserRequestType.LOGOFFUSER);
+            m.SetField(new Account(account));
+            m.Username = new Username(username); //any value will work
 
             SendMessage(m);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web.Http;
 using AutoMapper;
 using CFD_API.Caching;
@@ -10,6 +11,7 @@ using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using EntityFramework.Extensions;
@@ -452,6 +454,11 @@ namespace CFD_API.Controllers
             //get new price
             //var quote = redisQuoteClient.GetById(securityId);
             var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == securityId);
+            if (Quotes.IsPriceDown(WebCache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            {
+                result.isPriceDown = true;
+            }
+
             result.last = Quotes.GetLastPrice(quote);
             result.ask = quote.Offer;
             result.bid = quote.Bid;
@@ -581,49 +588,105 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("byPopularity")]
+        [Route("live/byPopularity")]
         public List<ByPopularityDTO> GetByPopularity()
         {
             var activeProd = GetActiveProds();
 
-            var period = TimeSpan.FromDays(1);
+            var ts1day = TimeSpan.FromDays(1);
+            var dtEnd = DateTime.UtcNow;
+            var dtStart = DateTime.UtcNow - ts1day;
 
-            var dtStart = DateTime.UtcNow-period;
-            var tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
-
-            //if no data in the latest period
-            if (tradeHistory.Count == 0)
+            List<NewPositionHistory> tradeHistory = new List<NewPositionHistory>();
+            for (int i = 0; i < 10; i++)
             {
-                var lastTrade =
-                    db.NewPositionHistories.AsNoTracking().OrderByDescending(o => o.CreateTime).FirstOrDefault();
+                tradeHistory = db.NewPositionHistories.AsNoTracking()
+                    .Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd) // >= start and < end
+                    .ToList();
 
-                if(lastTrade==null)
-                    return new List<ByPopularityDTO>();
+                //trade history list covers more than 3 active securities
+                if (tradeHistory.Select(o => o.SecurityId).Distinct().Count(o => activeProd.Any(p => p.Id == o)) >= 3)
+                    break;
 
-                dtStart = lastTrade.CreateTime.Value-period;
-
-                tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
+                //back 1 day
+                dtStart = dtStart - ts1day;
+                dtEnd = dtEnd - ts1day;
             }
 
-            var result = tradeHistory.GroupBy(o=>o.SecurityId).Select(o=>
-            {
-                var secId = o.Key.Value;
-                var prodDef = activeProd.FirstOrDefault(p => p.Id == secId);
-                return new ByPopularityDTO()
-                {
-                    id = secId,
-                    longCount = o.Count(p => p.LongQty.HasValue),
-                    shortCount = o.Count(p => p.ShortQty.HasValue),
-                    userCount = o.Select(p => p.UserId).Distinct().Count(),
+            //var period = TimeSpan.FromDays(1);
 
-                    symbol= prodDef?.Symbol,
-                    name= prodDef!=null? Translator.GetCName(prodDef.Name):null,
-                };
-            })
-            .OrderByDescending(o=>o.userCount)
-            .Take(20)
-            .ToList();
+            //var dtStart = DateTime.UtcNow-period;
+            //var tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
+
+            ////if no data in the latest period
+            //if (tradeHistory.Count == 0)
+            //{
+            //    var lastTrade =
+            //        db.NewPositionHistories.AsNoTracking().OrderByDescending(o => o.CreateTime).FirstOrDefault();
+
+            //    if(lastTrade==null)
+            //        return new List<ByPopularityDTO>();
+
+            //    dtStart = lastTrade.CreateTime.Value-period;
+
+            //    tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart).ToList();
+            //}
+
+            var result =
+                tradeHistory.GroupBy(o => o.SecurityId)
+                .Where(o => activeProd.Any(p => p.Id == o.Key))//active products
+                .Select(o =>
+                {
+                    var secId = o.Key.Value;
+                    var prodDef = activeProd.FirstOrDefault(p => p.Id == secId);
+
+                    return new ByPopularityDTO()
+                    {
+                        id = secId,
+                        longCount = o.Count(p => p.LongQty.HasValue),
+                        shortCount = o.Count(p => p.ShortQty.HasValue),
+                        userCount = o.Select(p => p.UserId).Distinct().Count(),
+
+                        symbol = prodDef?.Symbol,
+                        name = prodDef != null ? Translator.GetCName(prodDef.Name) : null,
+                    };
+                })
+                    .OrderByDescending(o => o.userCount)
+                    .Take(20)
+                    .ToList();
+
+            //int maxCount = 7;//max loop count
+            //while(result.Count < 3 && maxCount >0) //return at least Top 3 popular securities
+            //{
+            //    maxCount--;
+            //    int difference = 3 - result.Count;
+            //    List<int> secIDs = result.Select(o => o.id).ToList();
+
+            //    //trace back for one more day
+            //   var dtEnd = dtStart;
+            //    dtStart = dtStart - period;
+
+            //    //securities exist in current result should be excluded from query
+            //    tradeHistory = db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart && o.CreateTime <= dtEnd
+            //    && !secIDs.Contains(o.SecurityId.Value)).ToList();
+            //    result.AddRange(tradeHistory.GroupBy(o => o.SecurityId).Select(o =>
+            //    {
+            //        var secId = o.Key.Value;
+            //        var prodDef = activeProd.FirstOrDefault(p => p.Id == secId);
+            //        return new ByPopularityDTO()
+            //        {
+            //            id = secId,
+            //            longCount = o.Count(p => p.LongQty.HasValue),
+            //            shortCount = o.Count(p => p.ShortQty.HasValue),
+            //            userCount = o.Select(p => p.UserId).Distinct().Count(),
+
+            //            symbol = prodDef?.Symbol,
+            //            name = prodDef != null ? Translator.GetCName(prodDef.Name) : null,
+            //        };
+            //    }).OrderByDescending(o => o.userCount).Take(difference));
+            //}
 
             return result;
-        } 
+        }
     }
 }

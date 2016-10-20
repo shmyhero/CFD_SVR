@@ -9,6 +9,7 @@ using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
+using CFD_COMMON.Models.Context;
 
 namespace CFD_API.Caching
 {
@@ -18,6 +19,7 @@ namespace CFD_API.Caching
         private static Timer _timerQuote;
         private static Timer _timerTick;
         private static Timer _timerTickRaw;
+        private static Timer _timerPriceDown;
 
         private static TimeSpan _updateIntervalProdDef = TimeSpan.FromSeconds(3);
         private static TimeSpan _updateIntervalQuote = TimeSpan.FromMilliseconds(500);
@@ -32,6 +34,10 @@ namespace CFD_API.Caching
         public static ConcurrentDictionary<int, List<TickDTO>> TickToday { get; private set; }
         public static ConcurrentDictionary<int, List<TickDTO>> TickWeek { get; private set; }
         public static ConcurrentDictionary<int, List<TickDTO>> TickMonth { get; private set; }
+        /// <summary>
+        /// 价格中断的最大可接受时间
+        /// </summary>
+        public static Dictionary<int, int> PriceDownInterval { get; }
 
         static WebCache()
         {
@@ -42,6 +48,7 @@ namespace CFD_API.Caching
             TickToday = new ConcurrentDictionary<int, List<TickDTO>>();
             TickWeek = new ConcurrentDictionary<int, List<TickDTO>>();
             TickMonth = new ConcurrentDictionary<int, List<TickDTO>>();
+            PriceDownInterval = new Dictionary<int, int>();
 
             mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -58,12 +65,13 @@ namespace CFD_API.Caching
                     CFDGlobal.LogExceptionAsInfo(e);
                 }
             }
-
+            
             //set timer
             _timerProdDef = new Timer(UpdateProdDefs, null, _updateIntervalProdDef, TimeSpan.FromMilliseconds(-1));
             _timerQuote = new Timer(UpdateQuotes, null, _updateIntervalQuote, TimeSpan.FromMilliseconds(-1));
             _timerTick = new Timer(UpdateTicks, null, _updateIntervalTick, TimeSpan.FromMilliseconds(-1));
             _timerTickRaw = new Timer(UpdateRawTicks, null, _updateIntervalTickRaw, TimeSpan.FromMilliseconds(-1));
+            _timerPriceDown = new Timer(UpdatePriceDownInterval, null,0, 3 * 60 * 1000);
         }
 
         private static void UpdateRawTicks(object state)
@@ -250,6 +258,22 @@ namespace CFD_API.Caching
 
                 Thread.Sleep(_updateIntervalQuote);
             }
+        }
+
+        private static void UpdatePriceDownInterval(object state)
+        {
+            using (var db = CFDEntities.Create())
+            {
+                PriceDownInterval.Clear();
+                db.PriceDownIntervals.ToList().ForEach(p => {
+                    if (!PriceDownInterval.ContainsKey(p.SecurityID))
+                    {
+                        PriceDownInterval.Add(p.SecurityID, p.DownInterval);
+                    }
+                });
+            }
+
+
         }
 
         public static List<TickDTO> GetOrCreateTickRaw(int secId, IRedisClient redisClient)

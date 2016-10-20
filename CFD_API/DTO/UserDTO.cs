@@ -21,6 +21,17 @@ namespace CFD_API.DTO
         public bool autoCloseAlert { get; set; }
         public string weChatOpenId { get; set; }
         public decimal? rewardAmount { get; set; }
+
+        public UserLiveStatus liveAccStatus { get; set; }
+        public string liveAccRejReason { get; set; }
+    }
+
+    public enum UserLiveStatus
+    {
+        None = 0,
+        Active = 1,
+        Pending = 2,
+        Rejected = 3,
     }
 
     public class BalanceDTO
@@ -126,34 +137,18 @@ namespace CFD_API.DTO
         public bool isReaded { get; set; }
     }
 
-    public class LiveSignupFormDTO
+    public class OcrFormDTO
     {
-        public string username { get; set; }
-        public string password { get; set; }
-        public string email { get; set; }
+        public string accessId { get; set; }
+        public string accessKey { get; set; }
 
-        public string realName { get; set; }
-        public bool gender { get; set; }
-        public string birthday { get; set; }
-        public string ethnic { get; set; }
-        public string idCode { get; set; }
-        public string addr { get; set; }
-        public string issueAuth { get; set; }
-        public string validPeriod { get; set; }
-        
-        public int annualIncome { get; set; }
-        public int netWorth { get; set; }
-        public int investPct { get; set; }
-        public string EmpStatus { get; set; }
-        public string investFrq { get; set; }
-        public bool hasProExp { get; set; }
-        public bool hasAyondoExp { get; set; }
-        public bool hasOtherQualif { get; set; }
-        public bool expOTCDeriv { get; set; }
-        public bool expDeriv { get; set; }
-        public bool expShareBond { get; set; }
+        public string frontImg { get; set; }
+        public string frontImgExt { get; set; }
+        public string backImg { get; set; }
+        public string backImgExt { get; set; }
 
-        public string ocrTransId { get; set; }
+        public string timeStamp { get; set; }
+        public string sign { get; set; }
     }
 
     /*
@@ -182,5 +177,72 @@ namespace CFD_API.DTO
         public string issueAuth { get; set; }
         public string validPeriod { get; set; }
         public string transId { get; set; }
+    }
+
+    public class LiveSignupFormDTO
+    {
+        public string username { get; set; }
+        public string password { get; set; }
+        public string email { get; set; }
+
+        public string realName { get; set; }
+        public bool gender { get; set; }
+        public string birthday { get; set; }
+        public string ethnic { get; set; }
+        public string idCode { get; set; }
+        public string addr { get; set; }
+        public string issueAuth { get; set; }
+        public string validPeriod { get; set; }
+        
+        public int annualIncome { get; set; }
+        public int netWorth { get; set; }
+        public int investPct { get; set; }
+        public string empStatus { get; set; }
+        public int investFrq { get; set; }
+        public bool hasProExp { get; set; }
+        public bool hasAyondoExp { get; set; }
+        public bool hasOtherQualif { get; set; }
+        public bool expOTCDeriv { get; set; }
+        public bool expDeriv { get; set; }
+        public bool expShareBond { get; set; }
+
+        //public string ocrTransId { get; set; }
+    }
+
+    public class AMSLiveUserCreateFormDTO
+    {
+        public string AddressCity { get; set; }
+        public string AddressCountry { get; set; }
+        public string AddressLine1 { get; set; }
+        public string AddressLine2 { get; set; }
+        public string AddressZip { get; set; }
+        public string ClientIP { get; set; }
+        public string Currency { get; set; }
+        public string FirstName { get; set; }
+        public string Gender { get; set; }
+        public bool IsTestRecord { get; set; }
+        public string Language { get; set; }
+        public string LastName { get; set; }
+        public string Password { get; set; }
+        public string PhonePrimary { get; set; }
+        public string SalesRepGuid { get; set; }
+        public string UserName { get; set; }
+        public int AnnualIncome { get; set; }
+        public string DateOfBirth { get; set; }
+        public string Email { get; set; }
+        public string EmploymentStatus { get; set; }
+        public bool HasAttendedTraining { get; set; }
+        public bool HasOtherQualification { get; set; }
+        public bool HasProfessionalExperience { get; set; }
+        public int InvestmentPortfolio { get; set; }
+        public bool IsIDVerified { get; set; }
+        public string JobTitle { get; set; }
+        public string LeveragedProducts { get; set; }
+        public string Nationality { get; set; }
+        public int NetWorth { get; set; }
+        public string Nickname { get; set; }
+        public int NumberOfMarginTrades { get; set; }
+        public string PhonePrimaryCountryCode { get; set; }
+        public bool SubscribeTradeNotifications { get; set; }
     }
 }

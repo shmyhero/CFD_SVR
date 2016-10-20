@@ -72,5 +72,8 @@ namespace AyondoTrade
 
         [OperationContract]
         string NewDeposit(string username, string password, decimal amount);
+
+        [OperationContract]
+        void LogOut(string username);
     }
 }

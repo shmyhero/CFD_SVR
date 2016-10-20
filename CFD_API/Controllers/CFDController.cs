@@ -15,6 +15,7 @@ using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
 
@@ -235,7 +236,7 @@ namespace CFD_API.Controllers
             return jObject;
         }
 
-        protected static JObject AMSLiveAccount(LiveSignupFormDTO form)
+        protected static JObject AMSLiveAccount(LiveSignupFormDTO form, User user)
         {
             var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "live-account");
             httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
@@ -245,22 +246,72 @@ namespace CFD_API.Controllers
             var requestStream = httpWebRequest.GetRequestStream();
             var sw = new StreamWriter(requestStream);
 
+            var amsForm = new AMSLiveUserCreateFormDTO();
+            amsForm.AddressCity = "TestCity";
+            amsForm.AddressCountry = "CN";
+            amsForm.AddressLine1 = form.addr;
+            amsForm.AddressLine2 = null;
+            amsForm.AddressZip = "12345";
+            amsForm.ClientIP = "127.0.0.1";
+            amsForm.Currency = "USD";
+            amsForm.FirstName = "";//form.realName;
+            amsForm.Gender = form.gender ? "Male" : "Female";
+            amsForm.IsTestRecord = false;
+            amsForm.Language = "ZH";
+            amsForm.LastName = form.realName;//"THCN";
+            amsForm.Password = form.password;
+            amsForm.PhonePrimary = user.Phone;
+            amsForm.SalesRepGuid = null;
+            amsForm.UserName = form.username;
+            amsForm.AnnualIncome = form.annualIncome;
+            amsForm.DateOfBirth = form.birthday.Replace('.', '-');
+            amsForm.Email = form.email;
+            amsForm.EmploymentStatus = form.empStatus;
+            amsForm.HasAttendedTraining = false;
+            amsForm.HasOtherQualification = form.hasOtherQualif;
+            amsForm.HasProfessionalExperience = form.hasProExp;
+            amsForm.InvestmentPortfolio = form.investPct;
+            amsForm.IsIDVerified = true;
+            amsForm.JobTitle = "JobTitle";
 
+            string strProducts = string.Empty;
+            if (form.expDeriv) strProducts += "Exchange Traded Derivatives";
+            if (form.expOTCDeriv) strProducts += "OTC Derivatives";
+            if (form.expShareBond) strProducts += "Shares and Bonds";
+            if (strProducts.Length > 0) strProducts.Substring(0, strProducts.Length - 1);
+            amsForm.LeveragedProducts = strProducts;
 
-            var s = form.ToString();//string.Format(json, username, password);
+            amsForm.Nationality = "CN";
+            amsForm.NetWorth = form.netWorth;
+            amsForm.Nickname = user.Nickname;
+            amsForm.NumberOfMarginTrades = form.investFrq;
+            amsForm.PhonePrimaryCountryCode = "CN";
+            amsForm.SubscribeTradeNotifications = false;
+
+            var s = JsonConvert.SerializeObject(amsForm); //string.Format(json, username, password);
             sw.Write(s);
             sw.Flush();
             sw.Close();
 
             var dtBegin = DateTime.UtcNow;
 
-            var webResponse = httpWebRequest.GetResponse();
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
             var responseStream = webResponse.GetResponseStream();
             var sr = new StreamReader(responseStream);
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
             var jObject = JObject.Parse(str);
 
