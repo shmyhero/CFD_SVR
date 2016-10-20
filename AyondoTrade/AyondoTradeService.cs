@@ -847,6 +847,45 @@ namespace AyondoTrade
             return transferId;
         }
 
+        public void LogOut(string username)
+        {
+            string account = null;
+            try
+            {
+                account = GetAccount(username, null);
+            }
+            catch (Exception e)
+            {
+                CFDGlobal.LogExceptionAsInfo(e);
+            }
+
+            if (account != null)//user is online
+            {
+                var reqId = Global.FixApp.LogOut(username, account);
+                
+                KeyValuePair<DateTime,UserResponse> userResponse = new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, null);
+                var dt = DateTime.UtcNow;
+                do
+                {
+                    Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
+                    
+                    if (Global.FixApp.LoggedOutUserResponses.ContainsKey(reqId))
+                    {
+                        var tryGetValue = Global.FixApp.LoggedOutUserResponses.TryGetValue(reqId, out userResponse);
+
+                        if (!tryGetValue) continue;
+
+                        break;
+                    }
+
+                    CheckBusinessMessageReject(reqId);
+                } while (DateTime.UtcNow - dt <= TIMEOUT);
+
+                if (userResponse.Value == null)
+                    throw new FaultException("fail logging out " + reqId);
+            }
+        }
+
         private string SendTransferRequestAndWait(string account, decimal amount)
         {
             string balanceId=null;

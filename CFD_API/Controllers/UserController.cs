@@ -944,6 +944,21 @@ namespace CFD_API.Controllers
             return transferId;
         }
 
+        [HttpGet]
+        [Route("demo/logout")]
+        [BasicAuth]
+        public ResultDTO LogoutAyondoDemo()
+        {
+            var user = GetUser();
+            
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                clientHttp.LogOut(user.AyondoUsername);
+            }
+
+            return new ResultDTO(true);
+        }
+
         private const string GZT_ACCESS_ID = "shmhxx";
         private const string GZT_ACCESS_KEY = "SHMHAKQHSA";
         private const string GZT_HOST = "http://124.192.161.110:8080/";
