@@ -403,7 +403,8 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [ActionName("balance")]
+        [Route("balance")]
+        [Route("live/balance")]
         [BasicAuth]
         public BalanceDTO GetBalance(bool ignoreCache = false)
         {
@@ -629,7 +630,8 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [ActionName("plReport")]
+        [Route("plReport")]
+        [Route("live/plReport")]
         [BasicAuth]
         public List<PLReportDTO> GetPLReport2()
         {
@@ -881,6 +883,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("message")]
+        [Route("live/message")]
         [BasicAuth]
         public List<MessageDTO> GetMessages(int pageNum = 1, int pageSize = 20)
         {
@@ -902,6 +905,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("message/{id}")]
+        [Route("live/message/{id}")]
         [BasicAuth]
         public ResultDTO SetMessageReaded(int id)
         {
@@ -919,6 +923,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("message/unread")]
+        [Route("live/message/unread")]
         [BasicAuth]
         public int GetUnreadMessage()
         {
@@ -928,6 +933,7 @@ namespace CFD_API.Controllers
         
         [HttpGet]
         [Route("deposit/id")]
+        [Route("live/deposit/id")]
         [BasicAuth]
         public string GetDepositTransferId(decimal amount)
         {

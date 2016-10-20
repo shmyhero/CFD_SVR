@@ -588,6 +588,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("byPopularity")]
+        [Route("live/byPopularity")]
         public List<ByPopularityDTO> GetByPopularity()
         {
             var activeProd = GetActiveProds();
