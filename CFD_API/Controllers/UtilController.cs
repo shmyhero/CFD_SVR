@@ -817,7 +817,7 @@ namespace CFD_API.Controllers
             {
                 string log = queryNameValuePairs.Aggregate("Demo OAuth error: ",
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
-                CFDGlobal.LogLine(log);
+                CFDGlobal.LogInformation(log);
 
                 //return "ERROR";
                 return errorResponse;
@@ -849,7 +849,7 @@ namespace CFD_API.Controllers
                 var user = db.Users.FirstOrDefault(o => o.Id == userId);
                 if (user == null || user.AyondoUsername != username2)
                 {
-                    CFDGlobal.LogLine("cfd user id and ayondo demo username doesn't match");
+                    CFDGlobal.LogInformation("oauth DEMO error: cfd user id and ayondo demo username doesn't match "+ user.AyondoUsername + " " + username2);
                     return errorResponse;
                 }
 
@@ -857,7 +857,7 @@ namespace CFD_API.Controllers
                 {
                     var account = client.LoginOAuth(username2, oauth_token);
 
-                    CFDGlobal.LogLine("Demo OAuth logged in: " + username2 + " " + account);
+                    CFDGlobal.LogInformation("Demo OAuth logged in: " + username2 + " " + account);
                 }
 
                 //return "OK";
@@ -900,7 +900,7 @@ namespace CFD_API.Controllers
             {
                 string log = queryNameValuePairs.Aggregate("Live OAuth error: ",
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
-                CFDGlobal.LogLine(log);
+                CFDGlobal.LogInformation(log);
 
                 //return "ERROR";
                 return errorResponse;
@@ -933,10 +933,11 @@ namespace CFD_API.Controllers
                 var user = db.Users.FirstOrDefault(o => o.Id == userId);
                 if (user == null || user.AyLiveUsername != username2)
                 {
-                    CFDGlobal.LogLine("cfd user id and ayondo live username doesn't match");
+                    CFDGlobal.LogInformation("oauth LIVE error: cfd user id and ayondo live username doesn't match "+ user.AyLiveUsername + " " + username2);
                     return errorResponse;
                 }
 
+                //todo: live fix login oauth
                 //using (var client = new AyondoTradeClient())
                 //{
                 //    var account = client.LoginOAuth(username2, oauth_token);

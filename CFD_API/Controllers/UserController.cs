@@ -28,6 +28,7 @@ using AyondoTrade.Model;
 using CFD_COMMON.Utils.Extensions;
 using System.Threading.Tasks;
 using AyondoTrade.FaultModel;
+using EntityFramework.Extensions;
 using Newtonsoft.Json;
 using ServiceStack.Text;
 
@@ -974,7 +975,15 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public JObject OcrCheck(OcrFormDTO form)
         {
-            //todo: disable this api if user already has LIVE account
+            var user = GetUser();
+
+            //LIVE account is Created or Pending
+            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
+            {
+                var errorResult = new ResultDTO(false) {message = __(TransKey.LIVE_ACC_EXISTS)};
+                return JObject.Parse(JsonConvert.SerializeObject(errorResult));
+            }
 
             var httpWebRequest = WebRequest.CreateHttp(GZT_HOST + "ocrCheck");
             httpWebRequest.Method = "POST";
@@ -1167,7 +1176,7 @@ namespace CFD_API.Controllers
             var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
-                return new ResultDTO(false);
+                return new ResultDTO(false) { message = __(TransKey.LIVE_ACC_EXISTS)};
             }
 
             //no OCR result
@@ -1220,6 +1229,26 @@ namespace CFD_API.Controllers
             userInfo.ExpDeriv = form.expDeriv;
             userInfo.ExpShareBond = form.expShareBond;
             db.SaveChanges();
+
+            return new ResultDTO(true);
+        }
+
+        //todo: for test use only
+        [HttpGet]
+        [Route("live/delete")]
+        [BasicAuth]
+        public ResultDTO DeleteLiveAccount(LiveSignupFormDTO form)
+        {
+            var user = GetUser();
+
+            user.AyLiveUsername = null;
+            user.AyLivePassword = null;
+            user.AyLiveAccountGuid = null;
+            user.AyLiveAccountStatus = null;
+            user.AyLiveAccountId = null;
+            db.SaveChanges();
+
+            var delete = db.UserInfos.Where(o => o.UserId == UserId).Delete();
 
             return new ResultDTO(true);
         }
