@@ -1209,7 +1209,9 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             userInfo.Email = form.email;
-            userInfo.RealName = form.realName;
+            //userInfo.RealName = form.realName;
+            userInfo.FirstName = form.firstName;
+            userInfo.LastName = form.lastName;
             userInfo.Gender = form.gender;
             userInfo.Birthday = form.birthday;
             userInfo.Ethnic = form.ethnic;
