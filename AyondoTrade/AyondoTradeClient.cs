@@ -7,7 +7,7 @@ using System.ServiceModel.Channels;
 
 namespace AyondoTrade
 {
-    public class AyondoTradeClient : ClientBase<IAyondoTradeService>, IAyondoTradeService
+    public class AyondoTradeClient : ClientBase<IAyondoTradeService>, IAyondoTradeService, IDisposable
     {
         public AyondoTradeClient(System.ServiceModel.Channels.Binding binding, EndpointAddress edpAddr)
             : base(binding, edpAddr)
@@ -18,10 +18,10 @@ namespace AyondoTrade
         }
 
         public AyondoTradeClient()
-            : this(new NetTcpBinding(SecurityMode.None)
-            {
-                MaxReceivedMessageSize = 10*1024*1024,
-            }, new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL))
+            : this(
+                new NetTcpBinding(SecurityMode.None) {MaxReceivedMessageSize = 10*1024*1024,},
+                new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL)
+                  )
         {
         }
 
@@ -66,7 +66,7 @@ namespace AyondoTrade
 
         public IList<PositionReport> GetPositionReport(string username, string password, bool ignoreCache = false)
         {
-            return base.Channel.GetPositionReport(username, password);
+            return base.Channel.GetPositionReport(username, password, ignoreCache);
         }
 
         public IList<PositionReport> GetPositionHistoryReport(string username, string password, DateTime startTime, DateTime endTime, bool ignoreCache = false, bool updateCache = true)
@@ -129,6 +129,34 @@ namespace AyondoTrade
         public string NewDeposit(string username, string password, decimal amount)
         {
             return base.Channel.NewDeposit(username, password, amount);
+        }
+
+        public void LogOut(string username)
+        {
+            base.Channel.LogOut(username);
+        }
+
+        //important
+        //https://msdn.microsoft.com/en-us/library/aa355056.aspx
+        //https://devzone.channeladam.com/articles/2014/07/how-to-call-wcf-service-properly/
+        public void Dispose()
+        {
+            bool success = false;
+            try
+            {
+                if (State != CommunicationState.Faulted)
+                {
+                    Close();
+                    success = true;
+                }
+            }
+            finally
+            {
+                if (!success)
+                {
+                    Abort();
+                }
+            }
         }
     }
 }

@@ -35,6 +35,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("open")]
+        [Route("live/open")]
         [BasicAuth]
         public List<PositionDTO> GetOpenPositions(bool ignoreCache = false)
         {
@@ -168,6 +169,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("closed")]
+        [Route("live/closed")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
@@ -295,7 +297,8 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed_obsolete")]
+        [Route("closed2")]
+        [Route("live/closed2")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory()
         {
@@ -502,6 +505,7 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("")]
+        [Route("live")]
         [BasicAuth]
         public PositionDTO NewPosition(NewPositionFormDTO form)
         {
@@ -681,6 +685,7 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("net")]
+        [Route("live/net")]
         [BasicAuth]
         public PositionDTO NetPosition(NetPositionFormDTO form)
         {
@@ -744,6 +749,7 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("order/take")]
+        [Route("live/order/take")]
         [BasicAuth]
         public PositionDTO NewTake(NewTakeFormDTO form)
         {
@@ -778,6 +784,7 @@ namespace CFD_API.Controllers
 
         [HttpDelete]
         [Route("order/take")]
+        [Route("live/order/take")]
         [BasicAuth]
         public PositionDTO CancelTakeOrder(CancelTakeFormDTO form)
         {
@@ -812,6 +819,7 @@ namespace CFD_API.Controllers
 
         [HttpPut]
         [Route("order")]
+        [Route("live/order")]
         [BasicAuth]
         public PositionDTO ReplaceOrder(ReplaceStopTakeFormDTO form)
         {

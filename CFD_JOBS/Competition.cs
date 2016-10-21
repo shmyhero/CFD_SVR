@@ -25,7 +25,8 @@ namespace CFD_JOBS
                 var chinaNow = DateTimes.GetChinaNow();
                 var chinaToday = chinaNow.Date;
 
-                if (chinaToday > _lastCalculatedDate) //a new chinese day, calculate yesterday's data
+                if (chinaNow.Hour==0 //only run this job between 0:00~1:00 am
+                    && chinaToday > _lastCalculatedDate) //a new chinese day, calculate yesterday's data
                 {
                     try
                     {

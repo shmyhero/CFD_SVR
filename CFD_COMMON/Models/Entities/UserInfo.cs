@@ -13,6 +13,18 @@ namespace CFD_COMMON.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int UserId { get; set; }
 
+        [Column(TypeName = "ntext")]
+        public string IdFrontImg { get; set; }
+
+        [StringLength(10)]
+        public string IdFrontImgExt { get; set; }
+
+        [Column(TypeName = "ntext")]
+        public string IdBackImg { get; set; }
+
+        [StringLength(10)]
+        public string IdBackImgExt { get; set; }
+
         [StringLength(10)]
         public string OcrRealName { get; set; }
 

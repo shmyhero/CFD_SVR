@@ -288,7 +288,7 @@ namespace CFD_API.Controllers
         }
 
         /// <summary>
-        /// for test use only
+        /// todo: for test use only
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -588,6 +588,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("byPopularity")]
+        [Route("live/byPopularity")]
         public List<ByPopularityDTO> GetByPopularity()
         {
             var activeProd = GetActiveProds();

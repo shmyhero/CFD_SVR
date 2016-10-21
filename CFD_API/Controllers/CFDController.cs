@@ -275,9 +275,9 @@ namespace CFD_API.Controllers
             amsForm.JobTitle = "JobTitle";
 
             string strProducts = string.Empty;
-            if (form.expDeriv) strProducts += "Exchange Traded Derivatives";
-            if (form.expOTCDeriv) strProducts += "OTC Derivatives";
-            if (form.expShareBond) strProducts += "Shares and Bonds";
+            if (form.expDeriv) strProducts += "Exchange Traded Derivatives,";
+            if (form.expOTCDeriv) strProducts += "OTC Derivatives,";
+            if (form.expShareBond) strProducts += "Shares and Bonds,";
             if (strProducts.Length > 0) strProducts.Substring(0, strProducts.Length - 1);
             amsForm.LeveragedProducts = strProducts;
 
