@@ -384,10 +384,16 @@ namespace AyondoTrade
 
                     CFDCacheManager.Instance.UserLogin(account);
                 }
-                else if (response.UserStatus.Obj == UserStatus.NOT_LOGGED_IN && response.UserStatusText.Obj == "Success")//successfully logged out
+                else if (response.UserStatus.Obj == UserStatus.NOT_LOGGED_IN && response.UserStatusText.Obj == "Success")
+                    //successfully logged out
                 {
                     var guid = response.UserRequestID.Obj;
-                    LoggedOutUserResponses.TryAdd(guid, new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, response));
+                    LoggedOutUserResponses.TryAdd(guid,new KeyValuePair<DateTime, UserResponse>(DateTime.UtcNow, response));
+
+                    CFDGlobal.LogLine("deleting user " + username + " from online list...");
+
+                    string value;
+                    UsernameAccounts.TryRemove(username, out value);
 
                     CFDCacheManager.Instance.UserLogout(account);
                 }

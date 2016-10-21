@@ -939,9 +939,13 @@ namespace AyondoTrade
 
     internal class UserNotLoggedInException : FaultException
     {
+        public UserNotLoggedInException() : base(new FaultReason("user not logged in"))
+        {
+        }
     }
 
     internal class NoDataAvailableException : FaultException
     {
+
     }
 }
