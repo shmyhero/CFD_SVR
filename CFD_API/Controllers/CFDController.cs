@@ -254,11 +254,11 @@ namespace CFD_API.Controllers
             amsForm.AddressZip = "12345";
             amsForm.ClientIP = "127.0.0.1";
             amsForm.Currency = "USD";
-            amsForm.FirstName = "";//form.realName;
+            amsForm.FirstName = form.firstName;
             amsForm.Gender = form.gender ? "Male" : "Female";
             amsForm.IsTestRecord = false;
             amsForm.Language = "ZH";
-            amsForm.LastName = form.realName;//"THCN";
+            amsForm.LastName = form.lastName;
             amsForm.Password = form.password;
             amsForm.PhonePrimary = user.Phone;
             amsForm.SalesRepGuid = null;

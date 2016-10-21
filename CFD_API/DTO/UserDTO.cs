@@ -192,7 +192,9 @@ namespace CFD_API.DTO
         public string password { get; set; }
         public string email { get; set; }
 
-        public string realName { get; set; }
+        //public string realName { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
         public bool gender { get; set; }
         public string birthday { get; set; }
         public string ethnic { get; set; }

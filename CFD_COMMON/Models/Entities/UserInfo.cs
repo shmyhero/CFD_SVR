@@ -59,6 +59,12 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(10)]
         public string RealName { get; set; }
 
+        [StringLength(10)]
+        public string FirstName { get; set; }
+
+        [StringLength(10)]
+        public string LastName { get; set; }
+
         public bool? Gender { get; set; }
 
         [StringLength(20)]
