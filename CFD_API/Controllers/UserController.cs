@@ -28,6 +28,7 @@ using AyondoTrade.Model;
 using CFD_COMMON.Utils.Extensions;
 using System.Threading.Tasks;
 using AyondoTrade.FaultModel;
+using EntityFramework.Extensions;
 using Newtonsoft.Json;
 using ServiceStack.Text;
 
@@ -403,7 +404,8 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [ActionName("balance")]
+        [Route("balance")]
+        [Route("live/balance")]
         [BasicAuth]
         public BalanceDTO GetBalance(bool ignoreCache = false)
         {
@@ -629,7 +631,8 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [ActionName("plReport")]
+        [Route("plReport")]
+        [Route("live/plReport")]
         [BasicAuth]
         public List<PLReportDTO> GetPLReport2()
         {
@@ -881,6 +884,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("message")]
+        [Route("live/message")]
         [BasicAuth]
         public List<MessageDTO> GetMessages(int pageNum = 1, int pageSize = 20)
         {
@@ -902,6 +906,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("message/{id}")]
+        [Route("live/message/{id}")]
         [BasicAuth]
         public ResultDTO SetMessageReaded(int id)
         {
@@ -919,6 +924,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("message/unread")]
+        [Route("live/message/unread")]
         [BasicAuth]
         public int GetUnreadMessage()
         {
@@ -928,6 +934,7 @@ namespace CFD_API.Controllers
         
         [HttpGet]
         [Route("deposit/id")]
+        [Route("live/deposit/id")]
         [BasicAuth]
         public string GetDepositTransferId(decimal amount)
         {
@@ -944,6 +951,21 @@ namespace CFD_API.Controllers
             return transferId;
         }
 
+        [HttpGet]
+        [Route("demo/logout")]
+        [BasicAuth]
+        public ResultDTO LogoutAyondoDemo()
+        {
+            var user = GetUser();
+            
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                clientHttp.LogOut(user.AyondoUsername);
+            }
+
+            return new ResultDTO(true);
+        }
+
         private const string GZT_ACCESS_ID = "shmhxx";
         private const string GZT_ACCESS_KEY = "SHMHAKQHSA";
         private const string GZT_HOST = "http://124.192.161.110:8080/";
@@ -953,6 +975,16 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public JObject OcrCheck(OcrFormDTO form)
         {
+            var user = GetUser();
+
+            //LIVE account is Created or Pending
+            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
+            {
+                var errorResult = new ResultDTO(false) {message = __(TransKey.LIVE_ACC_EXISTS)};
+                return JObject.Parse(JsonConvert.SerializeObject(errorResult));
+            }
+
             var httpWebRequest = WebRequest.CreateHttp(GZT_HOST + "ocrCheck");
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json";
@@ -964,7 +996,7 @@ namespace CFD_API.Controllers
             form.accessId = GZT_ACCESS_ID;
             form.accessKey = GZT_ACCESS_KEY;
             form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
-            form.sign = "";
+            form.sign = Randoms.GetRandomAlphanumericString(8);
             
             var s = JsonConvert.SerializeObject(form); //string.Format(json, username, password);
             sw.Write(s);
@@ -1013,6 +1045,12 @@ namespace CFD_API.Controllers
                     var newInfo = new UserInfo()
                     {
                         UserId = UserId,
+
+                        IdFrontImg = form.frontImg,
+                        IdFrontImgExt = form.frontImgExt,
+                        IdBackImg = form.backImg,
+                        IdBackImgExt = form.backImgExt,
+
                         OcrAddr = HttpUtility.UrlDecode(addr),
                         OcrEthnic = HttpUtility.UrlDecode(ethnic),
                         OcrFaceImg = photo,
@@ -1029,6 +1067,11 @@ namespace CFD_API.Controllers
                 }
                 else
                 {
+                    userInfo.IdFrontImg = form.frontImg;
+                    userInfo.IdFrontImgExt = form.frontImgExt;
+                    userInfo.IdBackImg = form.backImg;
+                    userInfo.IdBackImgExt = form.backImgExt;
+
                     userInfo.OcrAddr = HttpUtility.UrlDecode(addr);
                     userInfo.OcrEthnic = HttpUtility.UrlDecode(ethnic);
                     userInfo.OcrFaceImg = photo;
@@ -1133,7 +1176,7 @@ namespace CFD_API.Controllers
             var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
-                return new ResultDTO(false);
+                return new ResultDTO(false) { message = __(TransKey.LIVE_ACC_EXISTS)};
             }
 
             //no OCR result
@@ -1147,9 +1190,13 @@ namespace CFD_API.Controllers
 
             if (jObject["Error"] != null)
             {
+                var error = jObject["Error"].Value<string>();
+
+                CFDGlobal.LogInformation("LIVE register error:" + error);
+
                 return new ResultDTO
                 {
-                    message = jObject["Error"].Value<string>(),
+                    message = error,
                     success = false,
                 };
             }
@@ -1188,6 +1235,26 @@ namespace CFD_API.Controllers
             return new ResultDTO(true);
         }
 
+        //todo: for test use only
+        [HttpGet]
+        [Route("live/delete")]
+        [BasicAuth]
+        public ResultDTO DeleteLiveAccount(LiveSignupFormDTO form)
+        {
+            var user = GetUser();
+
+            user.AyLiveUsername = null;
+            user.AyLivePassword = null;
+            user.AyLiveAccountGuid = null;
+            user.AyLiveAccountStatus = null;
+            user.AyLiveAccountId = null;
+            db.SaveChanges();
+
+            var delete = db.UserInfos.Where(o => o.UserId == UserId).Delete();
+
+            return new ResultDTO(true);
+        }
+
         [HttpPost]
         [Route("live/refaccount")]
         [BasicAuth]
@@ -1220,7 +1287,7 @@ namespace CFD_API.Controllers
             }
 
             user.BankCardNumber = form.AccountNumber;
-            if(jObject["ReferenceAccountGuid"] != null)
+            if (jObject["ReferenceAccountGuid"] != null)
             {
                 user.ReferenceAccountGuid = jObject["ReferenceAccountGuid"].Value<string>();
             }
@@ -1233,7 +1300,7 @@ namespace CFD_API.Controllers
         [Route("live/UpdateReferenceAccount")]
         public ResultDTO UpdateReferenceAccount(BankCardUpdateDTO form)
         {
-            if(string.IsNullOrEmpty(form.GUID))
+            if (string.IsNullOrEmpty(form.GUID))
             {
                 CFDGlobal.LogInformation("update reference account: GUID is null");
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "GUID is null"));
@@ -1242,7 +1309,7 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("reference account: GUID:" + form.GUID);
 
             var user = db.Users.FirstOrDefault(o => o.ReferenceAccountGuid == form.GUID);
-            if(user == null)
+            if (user == null)
             {
                 CFDGlobal.LogInformation("update reference account: can't find user by given reference account guid:" + form.GUID);
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "can't find user by guid"));
