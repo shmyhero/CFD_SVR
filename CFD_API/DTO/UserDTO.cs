@@ -34,6 +34,13 @@ namespace CFD_API.DTO
         Rejected = 3,
     }
 
+    public struct BankCardUpdateStatus
+    {
+        public static string Approved = "Approved";
+        public static string PendingReview = "PendingReview";
+        public static string Rejected = "Rejected";
+    }
+
     public class BalanceDTO
     {
         public int id { get; set; }
@@ -244,5 +251,29 @@ namespace CFD_API.DTO
         public int NumberOfMarginTrades { get; set; }
         public string PhonePrimaryCountryCode { get; set; }
         public bool SubscribeTradeNotifications { get; set; }
+    }
+
+    public class LiveUserBankCardFormDTO
+    {
+        public string AccountHolder { get; set; }
+        public string BankStatementContent { get; set; }
+        //public string BankStatementContentStr { get; set; }
+        public string BankStatementContentType { get { return "application/pdf"; } }
+        public string BankStatementFileName { get; set; }
+        //Ayondo Live Account GUID
+        public string Guid { get; set; }
+        /// <summary>
+        /// Bank card number
+        /// </summary>
+        public string AccountNumber { get; set; }
+        public string NameOfBank { get; set; }
+    }
+
+    public class BankCardUpdateDTO
+    {
+        public string GUID { get; set; }
+        public string Status { get; set; }
+        public string RejectionInfo { get; set; }
+        public string RejectionType { get; set; }
     }
 }

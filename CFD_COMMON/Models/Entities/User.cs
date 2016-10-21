@@ -64,6 +64,17 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(50)]
         public string AyLiveAccountStatus { get; set; }
 
+        [StringLength(50)]
+        public string BankCardNumber { get; set; }
+        [StringLength(50)]
+        public string BankCardStatus { get; set; }
+
+        [StringLength(50)]
+        public string BankCardRejectReason { get; set; }
+
+        [StringLength(50)]
+        public string ReferenceAccountGuid { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

@@ -317,5 +317,45 @@ namespace CFD_API.Controllers
 
             return jObject;
         }
+
+        protected static JObject AMSBindBankCard(LiveUserBankCardFormDTO form)
+        {
+            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "referenceaccount");
+            httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+            httpWebRequest.Timeout = int.MaxValue;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+            var s = JsonConvert.SerializeObject(form);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var jObject = JObject.Parse(str);
+
+            return jObject;
+        }
     }
 }
