@@ -205,7 +205,7 @@ namespace CFD_JOBS.Ayondo
             string msgTemplate = "{{\"id\":{3}, \"type\":\"1\", \"title\":\"盈交易\", \"StockID\":{1}, \"CName\":\"{2}\", \"message\":\"{0}\"}}";
 
             //me
-            string msgContentTemplate = "{0}于{1}平仓，价格为{2}美元，{3}美元";
+            string msgContentTemplate = "{0}于{1}平仓，价格为{2}，{3}美元";
 
             List<KeyValuePair<string, string>> getuiPushList = new List<KeyValuePair<string, string>>();
             List<long> ayondoAccountIds = systemCloseHistorys.Where(o => o.AccountId.HasValue).Select(o => o.AccountId.Value).Distinct().ToList();
