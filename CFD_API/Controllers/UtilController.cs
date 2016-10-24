@@ -714,37 +714,72 @@ namespace CFD_API.Controllers
             }).ToList();
         }
 
+        /// <summary>
+        /// 返回页数*10的记录，且不超过7天（有数据的天数）。
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
         [HttpGet]
-        [Route("headline/group")]
-        public IList<HeadlineGroupDTO> GetHeadlineGroup()
+        [Route("headline/group/{page}")]
+        public IList<HeadlineGroupDTO> GetHeadlineGroup(int page)
         {
-            List<Headline> headlines = null;
+            List<Headline> headlines = new List<Headline>();
             //find past 7 days which has headlines
             int maxDays = 7;
+            int maxHeadlines = page * 10; //总共需要返回的条数
 
             DateTime chinaToday = DateTime.UtcNow.AddHours(8);
             List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
 
-            while(maxDays > 0)
+            if(page > 0)
             {
-                DateTime chinaLastDay = chinaToday.AddDays(-1);
-                var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).ToList();
-                chinaToday = chinaToday.AddDays(-1);
-
-                if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 7 days)
+                while (maxDays > 0 && headlines.Count < maxHeadlines)  //只找7天内，Page*10的记录数量
                 {
-                    maxDays--;
-                    if (headlines != null)
+                    DateTime chinaLastDay = chinaToday.AddDays(-1);
+                    
+                    //一天内，不能超过剩余的需要返回的数量
+                    var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).Take(maxHeadlines - headlines.Count).ToList();
+                    chinaToday = chinaToday.AddDays(-1);
+
+                    if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 7 days)
                     {
-                        headlines.AddRange(tempHeadlines);
-                    }
-                    else
-                    {
-                        headlines = tempHeadlines;
+                        maxDays--;
+                        if (headlines != null)
+                        {
+                            headlines.AddRange(tempHeadlines);
+                        }
+                        else
+                        {
+                            headlines = tempHeadlines;
+                        }
                     }
                 }
-               
             }
+            else
+            {
+                return new List<HeadlineGroupDTO>();
+            }
+
+            //while(maxDays > 0)
+            //{
+            //    DateTime chinaLastDay = chinaToday.AddDays(-1);
+            //    var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).ToList();
+            //    chinaToday = chinaToday.AddDays(-1);
+
+            //    if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 7 days)
+            //    {
+            //        maxDays--;
+            //        if (headlines != null)
+            //        {
+            //            headlines.AddRange(tempHeadlines);
+            //        }
+            //        else
+            //        {
+            //            headlines = tempHeadlines;
+            //        }
+            //    }
+               
+            //}
 
             foreach (Headline headLine in headlines)
             {
