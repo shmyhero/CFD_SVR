@@ -53,9 +53,6 @@ namespace CFD_COMMON.Models.Entities
 
         public DateTime? OcrCalledAt { get; set; }
 
-        [StringLength(50)]
-        public string Email { get; set; }
-
         [StringLength(10)]
         public string RealName { get; set; }
 
@@ -65,6 +62,16 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(10)]
         public string LastName { get; set; }
 
+        [StringLength(20)]
+        public string IdCode { get; set; }
+
+        public DateTime? FaceCheckAt { get; set; }
+
+        public decimal? FaceCheckSimilarity { get; set; }
+
+        [StringLength(50)]
+        public string Email { get; set; }
+
         public bool? Gender { get; set; }
 
         [StringLength(20)]
@@ -72,9 +79,6 @@ namespace CFD_COMMON.Models.Entities
 
         [StringLength(10)]
         public string Ethnic { get; set; }
-
-        [StringLength(20)]
-        public string IdCode { get; set; }
 
         [StringLength(50)]
         public string Addr { get; set; }

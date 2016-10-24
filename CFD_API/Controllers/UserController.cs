@@ -1020,7 +1020,7 @@ namespace CFD_API.Controllers
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+            CFDGlobal.LogInformation("OCR called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
             var jObject = JObject.Parse(str);
@@ -1094,6 +1094,99 @@ namespace CFD_API.Controllers
             }
 
             return jObject;
+        }
+
+        [HttpPost]
+        [Route("faceCheck")]
+        [BasicAuth]
+        public JObject OcrFaceCheck(OcrFaceCheckFormDTO form)
+        {
+            //todo: access limitation
+
+            var user = GetUser();
+
+            //LIVE account is Created or Pending
+            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
+            {
+                var errorResult = new ResultDTO(false) { message = __(TransKey.LIVE_ACC_EXISTS) };
+                return JObject.Parse(JsonConvert.SerializeObject(errorResult));
+            }
+
+            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+            if (userInfo == null || userInfo.OcrTransId == null)
+            {
+                var errorResult = new ResultDTO(false) { message = __(TransKey.OCR_NO_TRANSACTION_ID) };
+                return JObject.Parse(JsonConvert.SerializeObject(errorResult));
+            }
+
+            /*
+            var httpWebRequest = WebRequest.CreateHttp(GZT_HOST + "ocrFaceCheck");
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json";
+            httpWebRequest.Proxy = null;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+
+            //
+            form.accessId = GZT_ACCESS_ID;
+            form.accessKey = GZT_ACCESS_KEY;
+            form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
+            form.sign = Randoms.GetRandomAlphanumericString(8);
+            //
+            form.transaction_id = userInfo.OcrTransId;
+
+            var s = JsonConvert.SerializeObject(form); //string.Format(json, username, password);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("OCR FaceCheck called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var jObject = JObject.Parse(str);
+
+            var result = jObject["result"].Value<string>();
+
+            if (result == "0")
+            {
+                var similarity = jObject["verify_similarity"].Value<decimal>();
+                
+                userInfo.FaceCheckAt=DateTime.UtcNow;
+                userInfo.FaceCheckSimilarity = similarity;
+                    db.SaveChanges();
+            }
+            else
+            {
+                var message = jObject["message"].Value<string>();
+                message = HttpUtility.UrlDecode(message);
+
+                CFDGlobal.LogInformation("OCR FaceCheck fail: " + result + " " + message);
+            }
+
+            return jObject;
+            */
+
+            var result= new JObject();
+            result["result"] = "0";
+            return result;
         }
 
         //[HttpPut]

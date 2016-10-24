@@ -29,6 +29,7 @@ namespace CFD_COMMON.Localization
             { TransKey.USERNAME_INVALID, "用户名不符合要求" },
 
             { TransKey.LIVE_ACC_EXISTS, "已注册过实盘账号" },
+            { TransKey.OCR_NO_TRANSACTION_ID, "请先上传身份证图片" },
 
             { TransKey.LIVE_ACC_REJ_RejectedMifid, "实盘注册申请信息未达到欧盟金融工具市场法规(MiFID)的要求" },
             { TransKey.LIVE_ACC_REJ_RejectedByDD, "实盘注册申请信息未达到KYC(充分了解你的客户)政策的要求" },

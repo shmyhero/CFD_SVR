@@ -158,6 +158,19 @@ namespace CFD_API.DTO
         public string sign { get; set; }
     }
 
+    public class OcrFaceCheckFormDTO
+    {
+        public string accessId { get; set; }
+        public string accessKey { get; set; }
+
+        public string transaction_id { get; set; }
+        public string userId { get; set; }
+        public string userName { get; set; }
+
+        public string timeStamp { get; set; }
+        public string sign { get; set; }
+    }
+
     /*
 {
   "result": "0",

@@ -29,6 +29,7 @@ namespace CFD_COMMON.Localization
         USERNAME_INVALID,
 
         LIVE_ACC_EXISTS,
+        OCR_NO_TRANSACTION_ID,
 
         LIVE_ACC_REJ_RejectedMifid,
         LIVE_ACC_REJ_RejectedByDD,

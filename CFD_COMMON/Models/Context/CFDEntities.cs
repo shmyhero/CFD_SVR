@@ -119,6 +119,7 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.PL)
                 .HasPrecision(18, 5);
 
+
             modelBuilder.Entity<QuoteHistory>()
                 .Property(e => e.Bid)
                 .HasPrecision(18, 5);
@@ -134,6 +135,11 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<UserAlert>()
                 .Property(e => e.LowPrice)
+                .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<UserInfo>()
+                .Property(e => e.FaceCheckSimilarity)
                 .HasPrecision(18, 5);
 
             //modelBuilder.Entity<AyondoSecurity>()
