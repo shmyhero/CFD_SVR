@@ -1239,7 +1239,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("live/delete")]
         [BasicAuth]
-        public ResultDTO DeleteLiveAccount(LiveSignupFormDTO form)
+        public ResultDTO DeleteLiveAccount()
         {
             var user = GetUser();
 

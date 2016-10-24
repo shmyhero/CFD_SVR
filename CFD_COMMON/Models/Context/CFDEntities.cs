@@ -41,6 +41,10 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
         //public virtual DbSet<UserAyondo> UserAyondos { get; set; }
 
+        public virtual DbSet<AyondoTradeHistory_Live> AyondoTradeHistory_Live { get; set; }
+        public virtual DbSet<NewPositionHistory_live> NewPositionHistory_live { get; set; }
+        public virtual DbSet<Message_Live> Message_Live { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<AyondoSecurity>()

@@ -126,6 +126,7 @@
     <Compile Include="Models\Context\CFDHistoryEntities.cs" />
     <Compile Include="Models\Entities\ApiHit.cs" />
     <Compile Include="Models\Entities\AyondoTradeHistory.cs" />
+    <Compile Include="Models\Entities\AyondoTradeHistory_Live.cs" />
     <Compile Include="Models\Entities\Competition.cs" />
     <Compile Include="Models\Entities\CompetitionResult.cs" />
     <Compile Include="Models\Entities\CompetitionUser.cs" />
@@ -141,8 +142,10 @@
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Feedback.cs" />
     <Compile Include="Models\Entities\Message.cs" />
+    <Compile Include="Models\Entities\Message_Live.cs" />
     <Compile Include="Models\Entities\Model1.cs" />
     <Compile Include="Models\Entities\NewPositionHistory.cs" />
+    <Compile Include="Models\Entities\NewPositionHistory_live.cs" />
     <Compile Include="Models\Entities\PhoneSignupHistory.cs" />
     <Compile Include="Models\Entities\OperationUser.cs" />
     <Compile Include="Models\Entities\PriceDownInterval.cs" />
