@@ -803,7 +803,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("headline/group")]
-        public IList<HeadlineGroupDTO> GetHeadlineGroup(int page)
+        public IList<HeadlineGroupDTO> GetHeadlineGroup()
         {
             List<Headline> headlines = null;
             //find past 7 days which has headlines
@@ -1107,6 +1107,14 @@ namespace CFD_API.Controllers
         [Route("live/UpdateReferenceAccount")]
         public ResultDTO UpdateReferenceAccount(BankCardUpdateDTO form)
         {
+            var authorization = Request.Headers.Authorization;
+
+            if (authorization == null || authorization.Parameter == null || authorization.Parameter != LIFECYCLE_CALLBACK_AUTH_TOKEN)
+            {
+                CFDGlobal.LogInformation("update reference account: invalid token");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "invalid auth token"));
+            }
+
             if (string.IsNullOrEmpty(form.GUID))
             {
                 CFDGlobal.LogInformation("update reference account: GUID is null");
