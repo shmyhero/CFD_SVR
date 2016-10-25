@@ -1389,36 +1389,6 @@ namespace CFD_API.Controllers
             return new ResultDTO(true);
         }
 
-        [HttpPut]
-        [Route("live/UpdateReferenceAccount")]
-        public ResultDTO UpdateReferenceAccount(BankCardUpdateDTO form)
-        {
-            if (string.IsNullOrEmpty(form.GUID))
-            {
-                CFDGlobal.LogInformation("update reference account: GUID is null");
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "GUID is null"));
-            }
-
-            CFDGlobal.LogInformation("reference account: GUID:" + form.GUID);
-
-            var user = db.Users.FirstOrDefault(o => o.ReferenceAccountGuid == form.GUID);
-            if (user == null)
-            {
-                CFDGlobal.LogInformation("update reference account: can't find user by given reference account guid:" + form.GUID);
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "can't find user by guid"));
-            }
-            user.BankCardStatus = form.Status;
-
-            if (form.Status == BankCardUpdateStatus.Rejected)
-            {
-                user.BankCardRejectReason = form.RejectionType == "Other" ? form.RejectionInfo : form.RejectionType;
-            }
-
-            db.SaveChanges();
-
-            return new ResultDTO(true);
-        }
-
         private string GetUserLiveAccountRejectReason(string ayLiveAccountStatus)
         {
             switch (ayLiveAccountStatus)

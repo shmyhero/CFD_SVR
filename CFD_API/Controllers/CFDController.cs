@@ -320,7 +320,7 @@ namespace CFD_API.Controllers
 
         protected static JObject AMSBindBankCard(LiveUserBankCardFormDTO form)
         {
-            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "referenceaccount");
+            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "reference-account");
             httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json; charset=UTF-8";

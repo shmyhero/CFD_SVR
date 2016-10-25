@@ -721,7 +721,7 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("headline/group/{page}")]
-        public IList<HeadlineGroupDTO> GetHeadlineGroup(int page)
+        public IList<HeadlineGroupDTO> GetHeadlineGroupPaging(int page)
         {
             List<Headline> headlines = new List<Headline>();
             //find past 7 days which has headlines
@@ -787,6 +787,58 @@ namespace CFD_API.Controllers
                 if (headlineGroupDTO != null)
                 {
                     headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue? headLine.Color.Value : 0, image = headLine.ImgUrl });
+                }
+                else
+                {
+                    headlineGroupDTO = new HeadlineGroupDTO();
+                    headlineGroupDTO.createdDay = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
+                    headlineGroupDTO.headlines = new List<HeadlineDTO>();
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl });
+                    headlinesGroup.Add(headlineGroupDTO);
+                }
+            }
+
+            return headlinesGroup;
+        }
+
+        [HttpGet]
+        [Route("headline/group")]
+        public IList<HeadlineGroupDTO> GetHeadlineGroup(int page)
+        {
+            List<Headline> headlines = null;
+            //find past 7 days which has headlines
+            int maxDays = 7;
+
+            DateTime chinaToday = DateTime.UtcNow.AddHours(8);
+            List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
+
+            while (maxDays > 0)
+            {
+                DateTime chinaLastDay = chinaToday.AddDays(-1);
+                var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).ToList();
+                chinaToday = chinaToday.AddDays(-1);
+
+                if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 7 days)
+                {
+                    maxDays--;
+                    if (headlines != null)
+                    {
+                        headlines.AddRange(tempHeadlines);
+                    }
+                    else
+                    {
+                        headlines = tempHeadlines;
+                    }
+                }
+
+            }
+
+            foreach (Headline headLine in headlines)
+            {
+                HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.createdDay == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
+                if (headlineGroupDTO != null)
+                {
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl });
                 }
                 else
                 {
@@ -1034,5 +1086,36 @@ namespace CFD_API.Controllers
 
             return new LifecycleCallbackDTO();
         }
+
+        [HttpPut]
+        [Route("live/UpdateReferenceAccount")]
+        public ResultDTO UpdateReferenceAccount(BankCardUpdateDTO form)
+        {
+            if (string.IsNullOrEmpty(form.GUID))
+            {
+                CFDGlobal.LogInformation("update reference account: GUID is null");
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "GUID is null"));
+            }
+
+            CFDGlobal.LogInformation("reference account: GUID:" + form.GUID);
+
+            var user = db.Users.FirstOrDefault(o => o.ReferenceAccountGuid == form.GUID);
+            if (user == null)
+            {
+                CFDGlobal.LogInformation("update reference account: can't find user by given reference account guid:" + form.GUID);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "can't find user by guid"));
+            }
+            user.BankCardStatus = form.Status;
+
+            if (form.Status == BankCardUpdateStatus.Rejected)
+            {
+                user.BankCardRejectReason = form.RejectionType == "Other" ? form.RejectionInfo : form.RejectionType;
+            }
+
+            db.SaveChanges();
+
+            return new ResultDTO(true);
+        }
+
     }
 }
