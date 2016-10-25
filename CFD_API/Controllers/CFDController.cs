@@ -218,7 +218,7 @@ namespace CFD_API.Controllers
         {
             var accountType = isLive ? "Live" : "Demo";
 
-            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "check-username?AccountType=Demo&UserName=" + username);
+            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "check-username?AccountType="+ accountType+"&UserName=" + username);
             httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
             httpWebRequest.Proxy = null;
 

@@ -932,7 +932,15 @@ namespace CFD_API.Controllers
 
                 // check if cfd userid and ayondo username are bound
                 var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
-                var userId = Convert.ToInt32(state);
+                int userId;
+                var tryParse = int.TryParse(state, out userId);
+
+                if (!tryParse)
+                {
+                    CFDGlobal.LogInformation("oauth DEMO error: state tryParse to int32 failed " + state);
+                    return errorResponse;
+                }
+
                 var user = db.Users.FirstOrDefault(o => o.Id == userId);
                 if (user == null || user.AyondoUsername != username2)
                 {
@@ -1016,7 +1024,15 @@ namespace CFD_API.Controllers
 
                 // check if cfd userid and ayondo username are bound
                 var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
-                var userId = Convert.ToInt32(state);
+                int userId;
+                var tryParse = int.TryParse(state, out userId);
+
+                if (!tryParse)
+                {
+                    CFDGlobal.LogInformation("oauth LIVE error: state tryParse to int32 failed " + state);
+                    return errorResponse;
+                }
+
                 var user = db.Users.FirstOrDefault(o => o.Id == userId);
                 if (user == null || user.AyLiveUsername != username2)
                 {
