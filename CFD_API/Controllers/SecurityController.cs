@@ -610,7 +610,7 @@ namespace CFD_API.Controllers
 
                 //back 1 day
                 dtStart = dtStart - ts1day;
-                dtEnd = dtEnd - ts1day;
+                //dtEnd = dtEnd - ts1day;
             }
 
             //var period = TimeSpan.FromDays(1);
