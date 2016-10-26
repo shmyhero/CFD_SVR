@@ -168,8 +168,8 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed")]
-        [Route("live/closed")]
+        [Route("closed_obsolete")]
+        [Route("live/closed_obsolete")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
@@ -297,8 +297,8 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed2")]
-        [Route("live/closed2")]
+        [Route("closed")]
+        [Route("live/closed")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory()
         {
