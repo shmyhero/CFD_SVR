@@ -17,6 +17,9 @@ namespace AyondoTrade
         string TestSleep(TimeSpan ts);
 
         [OperationContract]
+        void TestException();
+
+        [OperationContract]
         bool IsFixLoggingIn();
 
         [OperationContract]

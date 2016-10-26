@@ -48,6 +48,15 @@ namespace AyondoTrade
             return "OK";
         }
 
+        public void TestException()
+        {
+            //var arr = new int[] {1, 2, 3};
+            //var eee = arr[3];
+            //eee++;
+
+            throw new NoDataAvailableException();
+        }
+
         public bool IsFixLoggingIn()
         {
             return Global.FixApp.IsLoggingIn;
@@ -937,14 +946,14 @@ namespace AyondoTrade
     //    }
     //}
 
-    internal class UserNotLoggedInException : FaultException
+    public class UserNotLoggedInException : Exception
     {
-        public UserNotLoggedInException() : base(new FaultReason("user not logged in"))
-        {
-        }
+        //public UserNotLoggedInException() : base(new FaultReason("user not logged in"))
+        //{
+        //}
     }
 
-    internal class NoDataAvailableException : FaultException
+    public class NoDataAvailableException : Exception
     {
 
     }

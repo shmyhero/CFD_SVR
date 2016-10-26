@@ -54,6 +54,11 @@ namespace AyondoTrade
             return base.Channel.TestSleep(ts);
         }
 
+        public void TestException()
+        {
+            base.Channel.TestException();
+        }
+
         public bool IsFixLoggingIn()
         {
             return base.Channel.IsFixLoggingIn();

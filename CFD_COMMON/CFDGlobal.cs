@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -211,6 +212,20 @@ BwIDAQAB
 
                 ex = ex.InnerException;
             }
+
+            if (exception is FaultException<ExceptionDetail>)
+            {
+               var detail = ((FaultException<ExceptionDetail>)exception).Detail;
+
+                var d = detail;
+                while (d != null)
+                {
+                    Trace.WriteLine(GetLogDatetimePrefix() + d.Message);
+                    Trace.WriteLine(GetLogDatetimePrefix() + d.StackTrace);
+
+                    d = d.InnerException;
+                }
+            }
         }
 
         public static void LogExceptionAsInfo(Exception exception)
@@ -223,6 +238,20 @@ BwIDAQAB
 
                 ex = ex.InnerException;
             }
+
+            if (exception is FaultException<ExceptionDetail>)
+            {
+                var detail = ((FaultException<ExceptionDetail>)exception).Detail;
+
+                var d = detail;
+                while (d != null)
+                {
+                    Trace.TraceInformation(GetLogDatetimePrefix() + d.Message);
+                    Trace.TraceInformation(GetLogDatetimePrefix() + d.StackTrace);
+
+                    d = d.InnerException;
+                }
+            }
         }
 
         public static void LogExceptionAsWarning(Exception exception)
@@ -234,6 +263,20 @@ BwIDAQAB
                 Trace.TraceWarning(GetLogDatetimePrefix() + ex.StackTrace);
 
                 ex = ex.InnerException;
+            }
+
+            if (exception is FaultException<ExceptionDetail>)
+            {
+                var detail = ((FaultException<ExceptionDetail>)exception).Detail;
+
+                var d = detail;
+                while (d != null)
+                {
+                    Trace.TraceWarning(GetLogDatetimePrefix() + d.Message);
+                    Trace.TraceWarning(GetLogDatetimePrefix() + d.StackTrace);
+
+                    d = d.InnerException;
+                }
             }
         }
 

@@ -212,7 +212,7 @@ namespace CFD_TEST
         {
             //EndpointAddress edpTcp = new EndpointAddress("net.tcp://localhost:38113/ayondotradeservice.svc");
             //EndpointAddress edpHttp = new EndpointAddress("http://localhost:38113/ayondotradeservice.svc");
-            EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
+            //EndpointAddress edpHttp = new EndpointAddress("http://ayondotrade.chinacloudapp.cn/ayondotradeservice.svc");
 
             //AyondoTradeClient clientTcp = new AyondoTradeClient(new NetTcpBinding(SecurityMode.None), edpTcp);
             AyondoTradeClient clientHttp = new AyondoTradeClient();
@@ -224,8 +224,25 @@ namespace CFD_TEST
 
             //    var positionReport = clientHttp.Test("jiangyi1985");
             //}
+            try
+            {
 
-            var positionReport = clientHttp.Test("jiangyi1985");
+            clientHttp.TestException();
+            }
+            catch (Exception e)
+            {
+                if (e is ExceptionDetail)
+                {
+                    
+                }
+
+                if (e is FaultException)
+                {
+                    
+                }
+
+                var exceptionDetail = ((FaultException<ExceptionDetail>) e).Detail;
+            }
 
             //using (OperationContextScope scope = new OperationContextScope(clientHttp.InnerChannel))
             //{
