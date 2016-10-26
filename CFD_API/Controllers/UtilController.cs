@@ -806,8 +806,8 @@ namespace CFD_API.Controllers
         public IList<HeadlineGroupDTO> GetHeadlineGroup()
         {
             List<Headline> headlines = null;
-            //find past 7 days which has headlines
-            int maxDays = 7;
+            //find past 2 days which has headlines
+            int maxDays = 2;
 
             DateTime chinaToday = DateTime.UtcNow.AddHours(8);
             List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
@@ -818,7 +818,7 @@ namespace CFD_API.Controllers
                 var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).ToList();
                 chinaToday = chinaToday.AddDays(-1);
 
-                if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 7 days)
+                if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 2 days)
                 {
                     maxDays--;
                     if (headlines != null)
