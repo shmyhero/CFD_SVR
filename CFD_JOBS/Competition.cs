@@ -102,138 +102,146 @@ namespace CFD_JOBS
                                     //for each user
                                     foreach (var competitionUser in participants)
                                     {
-                                        if (string.IsNullOrEmpty(competitionUser.User.AyondoUsername))
+                                        try
                                         {
-                                            CFDGlobal.LogLine("user " + competitionUser.UserId +
-                                                              " has no ayondo account, skip");
-                                            continue;
-                                        }
-
-                                        var userPositions = new List<CompetitionUserPosition>();
-
-                                        IList<PositionReport> openPositions;
-                                        IList<PositionReport> historyReports;
-                                        using (var clientHttp = new AyondoTradeClient())
-                                        {
-                                            openPositions = clientHttp.GetPositionReport(
-                                                competitionUser.User.AyondoUsername, competitionUser.User.AyondoPassword);
-                                            historyReports =
-                                                clientHttp.GetPositionHistoryReport(competitionUser.User.AyondoUsername,
-                                                    competitionUser.User.AyondoPassword, startDateUtc,
-                                                    endDateUtc.AddMilliseconds(-1), true, false);
-                                        }
-
-                                        //yesterday created open positions
-                                        var yesterdayOpenedPositions =
-                                            openPositions.Where(
-                                                o => o.CreateTime >= startDateUtc && o.CreateTime < endDateUtc)
-                                                .ToList();
-
-                                        foreach (var position in yesterdayOpenedPositions)
-                                        {
-                                            var secId = Convert.ToInt32(position.SecurityID);
-
-                                            var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
-                                            if (prodDef == null) continue;
-
-                                            var competitionUserPosition = new CompetitionUserPosition()
+                                            if (string.IsNullOrEmpty(competitionUser.User.AyondoUsername))
                                             {
-                                                CompetitionId = 1,
-                                                PositionId = Convert.ToInt64(position.PosMaintRptID),
-                                                Date = startDateCN,
-                                                SecurityId = secId,
-                                                SecurityName = Translator.GetCName(prodDef.Name),
-                                                UserId = competitionUser.UserId,
-                                            };
-
-                                            //invest
-                                            var tradeValue = position.SettlPrice*prodDef.LotSize/prodDef.PLUnits*
-                                                             (position.LongQty ?? position.ShortQty);
-                                            var invest =
-                                                FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD",
-                                                    prodDefs,
-                                                    quotes)/position.Leverage.Value;
-                                            competitionUserPosition.Invest = invest;
-
-                                            //upl
-                                            var quote = quotes.FirstOrDefault(o => o.Id == secId);
-                                            decimal uplUSD = 0;
-                                            if (quote != null)
-                                            {
-                                                var upl = position.LongQty.HasValue
-                                                    ? tradeValue.Value*(quote.Bid/position.SettlPrice - 1)
-                                                    : tradeValue.Value*(1 - quote.Offer/position.SettlPrice);
-                                                uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", prodDefs,
-                                                    quotes);
+                                                CFDGlobal.LogLine("user " + competitionUser.UserId +
+                                                                  " has no ayondo account, skip");
+                                                continue;
                                             }
-                                            competitionUserPosition.PL = uplUSD;
 
-                                            userPositions.Add(competitionUserPosition);
-                                        }
+                                            var userPositions = new List<CompetitionUserPosition>();
 
-                                        var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
-
-                                        foreach (var group in groupByPositions)
-                                        {
-                                            var posId = Convert.ToInt64(group.Key);
-                                            var reports = group.ToList();
-
-                                            if (reports.Count < 2) continue;
-
-                                            var openReport = reports.OrderBy(o => o.CreateTime).First();
-                                            var closeReport = reports.OrderBy(o => o.CreateTime).Last();
-
-                                            var secId = Convert.ToInt32(openReport.SecurityID);
-
-                                            var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
-                                            if (prodDef == null) continue;
-
-                                            var competitionUserPosition = new CompetitionUserPosition()
+                                            IList<PositionReport> openPositions;
+                                            IList<PositionReport> historyReports;
+                                            using (var clientHttp = new AyondoTradeClient())
                                             {
-                                                CompetitionId = 1,
-                                                PositionId = posId,
-                                                Date = startDateCN,
-                                                SecurityId = secId,
-                                                SecurityName = Translator.GetCName(prodDef.Name),
-                                                UserId = competitionUser.UserId,
-                                            };
+                                                openPositions = clientHttp.GetPositionReport(
+                                                    competitionUser.User.AyondoUsername, competitionUser.User.AyondoPassword);
+                                                historyReports =
+                                                    clientHttp.GetPositionHistoryReport(competitionUser.User.AyondoUsername,
+                                                        competitionUser.User.AyondoPassword, startDateUtc,
+                                                        endDateUtc.AddMilliseconds(-1), true, false);
+                                            }
 
-                                            //invest
-                                            var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*
-                                                             (openReport.LongQty ?? openReport.ShortQty);
-                                            var tradeValueUSD = tradeValue;
-                                            if (prodDef.Ccy2 != "USD")
-                                                tradeValueUSD = FX.ConvertByOutrightMidPrice(tradeValue.Value,
-                                                    prodDef.Ccy2,
-                                                    "USD", prodDefs, quotes);
-                                            var invest = tradeValueUSD.Value/openReport.Leverage.Value;
-                                            competitionUserPosition.Invest = invest;
+                                            //yesterday created open positions
+                                            var yesterdayOpenedPositions =
+                                                openPositions.Where(
+                                                    o => o.CreateTime >= startDateUtc && o.CreateTime < endDateUtc)
+                                                    .ToList();
 
-                                            //pl
-                                            var pl = closeReport.PL.Value;
-                                            competitionUserPosition.PL = pl;
-
-                                            userPositions.Add(competitionUserPosition);
-                                        }
-
-                                        if (userPositions.Count > 0)
-                                        {
-                                            CFDGlobal.LogLine("found " + userPositions.Count + " positions for user " +
-                                                              competitionUser.User.Id);
-
-                                            db.CompetitionUserPositions.AddRange(userPositions);
-
-                                            competitionResults.Add(new CompetitionResult()
+                                            foreach (var position in yesterdayOpenedPositions)
                                             {
-                                                CompetitionId = 1,
-                                                Date = startDateCN,
-                                                Invest = userPositions.Sum(o => o.Invest),
-                                                Nickname = competitionUser.User.Nickname,
-                                                Phone = competitionUser.Phone,
-                                                PL = userPositions.Sum(o => o.PL),
-                                                PositionCount = userPositions.Count,
-                                                UserId = competitionUser.UserId,
-                                            });
+                                                var secId = Convert.ToInt32(position.SecurityID);
+
+                                                var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                                                if (prodDef == null) continue;
+
+                                                var competitionUserPosition = new CompetitionUserPosition()
+                                                {
+                                                    CompetitionId = 1,
+                                                    PositionId = Convert.ToInt64(position.PosMaintRptID),
+                                                    Date = startDateCN,
+                                                    SecurityId = secId,
+                                                    SecurityName = Translator.GetCName(prodDef.Name),
+                                                    UserId = competitionUser.UserId,
+                                                };
+
+                                                //invest
+                                                var tradeValue = position.SettlPrice*prodDef.LotSize/prodDef.PLUnits*
+                                                                 (position.LongQty ?? position.ShortQty);
+                                                var invest =
+                                                    FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD",
+                                                        prodDefs,
+                                                        quotes)/position.Leverage.Value;
+                                                competitionUserPosition.Invest = invest;
+
+                                                //upl
+                                                var quote = quotes.FirstOrDefault(o => o.Id == secId);
+                                                decimal uplUSD = 0;
+                                                if (quote != null)
+                                                {
+                                                    var upl = position.LongQty.HasValue
+                                                        ? tradeValue.Value*(quote.Bid/position.SettlPrice - 1)
+                                                        : tradeValue.Value*(1 - quote.Offer/position.SettlPrice);
+                                                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", prodDefs,
+                                                        quotes);
+                                                }
+                                                competitionUserPosition.PL = uplUSD;
+
+                                                userPositions.Add(competitionUserPosition);
+                                            }
+
+                                            var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
+
+                                            foreach (var group in groupByPositions)
+                                            {
+                                                var posId = Convert.ToInt64(group.Key);
+                                                var reports = group.ToList();
+
+                                                if (reports.Count < 2) continue;
+
+                                                var openReport = reports.OrderBy(o => o.CreateTime).First();
+                                                var closeReport = reports.OrderBy(o => o.CreateTime).Last();
+
+                                                var secId = Convert.ToInt32(openReport.SecurityID);
+
+                                                var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
+                                                if (prodDef == null) continue;
+
+                                                var competitionUserPosition = new CompetitionUserPosition()
+                                                {
+                                                    CompetitionId = 1,
+                                                    PositionId = posId,
+                                                    Date = startDateCN,
+                                                    SecurityId = secId,
+                                                    SecurityName = Translator.GetCName(prodDef.Name),
+                                                    UserId = competitionUser.UserId,
+                                                };
+
+                                                //invest
+                                                var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*
+                                                                 (openReport.LongQty ?? openReport.ShortQty);
+                                                var tradeValueUSD = tradeValue;
+                                                if (prodDef.Ccy2 != "USD")
+                                                    tradeValueUSD = FX.ConvertByOutrightMidPrice(tradeValue.Value,
+                                                        prodDef.Ccy2,
+                                                        "USD", prodDefs, quotes);
+                                                var invest = tradeValueUSD.Value/openReport.Leverage.Value;
+                                                competitionUserPosition.Invest = invest;
+
+                                                //pl
+                                                var pl = closeReport.PL.Value;
+                                                competitionUserPosition.PL = pl;
+
+                                                userPositions.Add(competitionUserPosition);
+                                            }
+
+                                            if (userPositions.Count > 0)
+                                            {
+                                                CFDGlobal.LogLine("found " + userPositions.Count + " positions for user " +
+                                                                  competitionUser.User.Id);
+
+                                                db.CompetitionUserPositions.AddRange(userPositions);
+
+                                                competitionResults.Add(new CompetitionResult()
+                                                {
+                                                    CompetitionId = 1,
+                                                    Date = startDateCN,
+                                                    Invest = userPositions.Sum(o => o.Invest),
+                                                    Nickname = competitionUser.User.Nickname,
+                                                    Phone = competitionUser.Phone,
+                                                    PL = userPositions.Sum(o => o.PL),
+                                                    PositionCount = userPositions.Count,
+                                                    UserId = competitionUser.UserId,
+                                                });
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            CFDGlobal.LogLine("error processing user " + competitionUser.UserId);
+                                            CFDGlobal.LogException(e);
                                         }
                                     }
 
