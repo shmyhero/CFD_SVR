@@ -65,7 +65,7 @@ namespace CFD_JOBS.Ayondo
 
                     var dtDownloadStart = DateTime.UtcNow;
                     var downloadString = webClient.DownloadString(
-                        "http://thvm-prod4.cloudapp.net:14535/demo/reports/tradehero/cn/tradehistory?start="
+                        "http://cfd-stunnel-cn2.cloudapp.net:14535/demo/reports/tradehero/cn/tradehistory?start="
                         + tsStart + "&end=" + tsEnd);
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
