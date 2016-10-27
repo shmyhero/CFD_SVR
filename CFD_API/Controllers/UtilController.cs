@@ -723,41 +723,24 @@ namespace CFD_API.Controllers
         [Route("headline/group/{page}")]
         public IList<HeadlineGroupDTO> GetHeadlineGroupPaging(int page)
         {
+            if(page<1 || page > 10)
+            {
+                return new List<HeadlineGroupDTO>();
+            }
+
             List<Headline> headlines = new List<Headline>();
             //find past 7 days which has headlines
-            int maxDays = 7;
+            //int maxDays = 7;
             int maxHeadlines = page * 10; //总共需要返回的条数
+            int skipCount = (page - 1) * 10; //跳过前N条
 
             DateTime chinaToday = DateTime.UtcNow.AddHours(8);
             List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
 
-            if(page > 0)
+            var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.CreatedAt).Skip(skipCount).Take(maxHeadlines - skipCount).ToList();
+            if (tempHeadlines != null && tempHeadlines.Count > 0) 
             {
-                while (maxDays > 0 && headlines.Count < maxHeadlines)  //只找7天内，Page*10的记录数量
-                {
-                    DateTime chinaLastDay = chinaToday.AddDays(-1);
-                    
-                    //一天内，不能超过剩余的需要返回的数量
-                    var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).Take(maxHeadlines - headlines.Count).ToList();
-                    chinaToday = chinaToday.AddDays(-1);
-
-                    if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 7 days)
-                    {
-                        maxDays--;
-                        if (headlines != null)
-                        {
-                            headlines.AddRange(tempHeadlines);
-                        }
-                        else
-                        {
-                            headlines = tempHeadlines;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                return new List<HeadlineGroupDTO>();
+                headlines.AddRange(tempHeadlines);
             }
 
             //while(maxDays > 0)
@@ -778,7 +761,7 @@ namespace CFD_API.Controllers
             //            headlines = tempHeadlines;
             //        }
             //    }
-               
+
             //}
 
             foreach (Headline headLine in headlines)
