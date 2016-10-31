@@ -18,6 +18,9 @@ namespace CFD_JOBS.Ayondo
         public Session Session { get; set; }
         private DataDictionary DD;
 
+        private readonly string _username = CFDGlobal.GetConfigurationSetting("ayondoFixFeedUsername");
+        private readonly string _password = CFDGlobal.GetConfigurationSetting("ayondoFixFeedPassword");
+
         //private DateTime BeginTimeForMsgCount = DateTime.MinValue;
         //private int MsgCount = 0;
         //private int MsgTotalCount = 0;
@@ -54,8 +57,10 @@ namespace CFD_JOBS.Ayondo
                 CFDGlobal.LogLine(" sending username and password...");
 
                 //demo
-                message.SetField(new Username("thcnprices"));
-                message.SetField(new Password("sl6map3go"));
+                message.SetField(new Username(_username));
+                message.SetField(new Password(_password));
+                //message.SetField(new Username("thcnprices"));
+                //message.SetField(new Password("sl6map3go"));
 
                 ////demo UAT
                 //message.SetField(new Username("thcnuatprices"));
