@@ -1420,6 +1420,7 @@ namespace CFD_API.Controllers
                 case "PendingMifid":
                 case "PendingClassification":
                 case "PendingDocuments":
+                case "PendingIdentityConflict":
                 case "PendingReview":
                 case "PendingUnlock":
                 case "PendingUnlockRetry":
