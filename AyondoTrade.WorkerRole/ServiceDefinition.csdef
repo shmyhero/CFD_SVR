@@ -5,6 +5,10 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
       <Setting name="CFDEntities" />
       <Setting name="redisConnectionString" />
+
+      <Setting name="ayondoFixTradeCfgFilePath" />
+      <Setting name="ayondoFixTradeUsername" />
+      <Setting name="ayondoFixTradePassword" />
     </ConfigurationSettings>
     <Endpoints>
       <InputEndpoint name="WCFEndpoint" protocol="tcp" port="10100" />

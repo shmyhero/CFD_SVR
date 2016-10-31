@@ -119,9 +119,6 @@
     <None Include="AyondoTest.cfg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="AyondoTrade.cfg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="AyondoFeed.cfg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

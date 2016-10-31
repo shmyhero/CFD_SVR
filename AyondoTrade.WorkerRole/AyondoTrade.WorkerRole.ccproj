@@ -33,6 +33,7 @@
   <!-- Items for the project -->
   <ItemGroup>
     <ServiceDefinition Include="ServiceDefinition.csdef" />
+    <ServiceConfiguration Include="ServiceConfiguration.Cloud_Live.cscfg" />
     <ServiceConfiguration Include="ServiceConfiguration.Local.cscfg" />
     <ServiceConfiguration Include="ServiceConfiguration.Cloud.cscfg" />
   </ItemGroup>
@@ -54,6 +55,7 @@
     <DiagnosticsConfiguration Include="AyondoTradeContent\diagnostics.wadcfgx" />
   </ItemGroup>
   <ItemGroup>
+    <PublishProfile Include="Profiles\AyondoTrade_Live_Production.azurePubxml" />
     <PublishProfile Include="Profiles\AyondoTradeStaging.azurePubxml" />
     <PublishProfile Include="Profiles\AyondoTradeProduction.azurePubxml" />
   </ItemGroup>

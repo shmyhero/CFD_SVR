@@ -12,9 +12,9 @@
       <Setting name="CFDEntities" value="data source=10.0.0.22;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
       <!--<Setting name="redisConnectionString" value="Password88__@10.0.0.15:6379" />-->
       <Setting name="redisConnectionString" value="Password88__@10.0.0.21:6399" />
-      <Setting name="ayondoFixTradeCfgFilePath" value="AyondoTrade.cfg" />
-      <Setting name="ayondoFixTradeUsername" value="thcntrade" />
-      <Setting name="ayondoFixTradePassword" value="d093gos3j" />
+      <Setting name="ayondoFixTradeCfgFilePath" value="AyondoTrade_Live.cfg" />
+      <Setting name="ayondoFixTradeUsername" value="thcnmaster" />
+      <Setting name="ayondoFixTradePassword" value="slifj439r4" />
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="07079B77B9734EA864BC7E413FA0C2E761DD65DF" thumbprintAlgorithm="sha1" />
