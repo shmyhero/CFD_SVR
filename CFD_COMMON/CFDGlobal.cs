@@ -58,6 +58,7 @@ BwIDAQAB
         /// the default application-wide PooledRedisClientsManager
         /// </summary>
         public static IRedisClientsManager PooledRedisClientsManager;
+        public static IRedisClientsManager PooledRedisClientsManager_Live;
 
         public static string AYONDO_TRADE_SVC_URL = CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl");
         public static string AYONDO_TRADE_SVC_URL_Live = CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl_Live");
@@ -73,6 +74,7 @@ BwIDAQAB
             BasicRedisClientManager = GetNewBasicRedisClientManager();
 
             PooledRedisClientsManager = GetNewPooledRedisClientManager();
+            PooledRedisClientsManager_Live = GetNewPooledRedisClientManager_Live();
         }
 
         private static IRedisClientsManager GetNewPooledRedisClientManager()
@@ -80,6 +82,18 @@ BwIDAQAB
             var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString");
 
             return new PooledRedisClientManager(100, 2, redisConStr);
+        }
+
+        private static IRedisClientsManager GetNewPooledRedisClientManager_Live()
+        {
+            var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString_Live");
+
+            return new PooledRedisClientManager(100, 2, redisConStr);
+        }
+
+        public static IRedisClientsManager GetDefaultPooledRedisClientsManager(bool isLive)
+        {
+            return isLive ? PooledRedisClientsManager_Live : PooledRedisClientsManager;
         }
 
         /// <summary>

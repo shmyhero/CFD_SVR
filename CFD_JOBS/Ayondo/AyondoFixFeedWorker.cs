@@ -29,10 +29,18 @@ namespace CFD_JOBS.Ayondo
         private static readonly TimeSpan _intervalTicks = TimeSpan.FromMilliseconds(1000);
         private static readonly TimeSpan _intervalKLine = TimeSpan.FromSeconds(10);
 
-        public static void Run()
+        private static bool _isLive;
+
+        public static void Run(bool isLive = false)
         {
-            SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting("ayondoFixFeedCfgFilePath"));
-            myApp = new AyondoFixFeedApp();
+            _isLive = isLive;
+
+            SessionSettings settings = new SessionSettings(CFDGlobal.GetConfigurationSetting(
+                _isLive ? "ayondoFixFeedCfgFilePath_Live" : "ayondoFixFeedCfgFilePath"));
+            myApp =
+                new AyondoFixFeedApp(
+                    CFDGlobal.GetConfigurationSetting(_isLive ? "ayondoFixFeedUsername_Live" : "ayondoFixFeedUsername"),
+                    CFDGlobal.GetConfigurationSetting(_isLive ? "ayondoFixFeedPassword_Live" : "ayondoFixFeedPassword"));
             IMessageStoreFactory storeFactory = new MemoryStoreFactory(); //new FileStoreFactory(settings);
             //ILogFactory logFactory = new FileLogFactory(settings);
             SocketInitiator initiator = new SocketInitiator(myApp, storeFactory, settings,
@@ -73,7 +81,7 @@ namespace CFD_JOBS.Ayondo
                         newQuotes.Add(obj);
                     }
 
-                    using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                    using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(_isLive).GetClient())
                     {
                         var redisProdDefClient = redisClient.As<ProdDef>();
                         var redisKLineClient = redisClient.As<KLine>();
@@ -299,7 +307,7 @@ namespace CFD_JOBS.Ayondo
                         var count = 0;
                         var entitiesToSaveToDB=new List<QuoteHistory>();
 
-                        using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                        using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(_isLive).GetClient())
                         {
                             var redisTickClient = redisClient.As<Tick>();
 
@@ -350,7 +358,9 @@ namespace CFD_JOBS.Ayondo
 
                         CFDGlobal.LogLine("\t\tSaved " + count + "/" + distinctQuotes.Count + "/" + quotes.Count + " ticks to Redis " + (DateTime.Now - dtBeginSave).TotalMilliseconds);
 
-                        if (entitiesToSaveToDB.Count > 0)
+                        if (!_isLive //demo
+                            && entitiesToSaveToDB.Count > 0
+                            )
                         {
                             dtBeginSave = DateTime.Now;
                             using (var dbHistory = CFDHistoryEntities.Create())
@@ -402,7 +412,7 @@ namespace CFD_JOBS.Ayondo
 
                         var dtBeginSave = DateTime.Now;
 
-                        using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                        using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(_isLive).GetClient())
                         {
                             var redisQuoteClient = redisClient.As<Quote>();
                             redisQuoteClient.StoreAll(distinctQuotes);
@@ -442,7 +452,7 @@ namespace CFD_JOBS.Ayondo
                     {
                         CFDGlobal.LogLine("Saving " + listNew.Count + " ProdDefs to Redis...");
 
-                        using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                        using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(_isLive).GetClient())
                         {
                             var redisProdDefClient = redisClient.As<ProdDef>();
 

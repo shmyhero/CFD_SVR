@@ -11,7 +11,7 @@ namespace CFD_JOBS.Ayondo
 {
     public class TickChartWorker
     {
-        public static void Run()
+        public static void Run(bool isLive = false)
         {
             //var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
             //var redisQuoteClient = redisClient.As<Quote>();
@@ -25,7 +25,7 @@ namespace CFD_JOBS.Ayondo
             {
                 try
                 {
-                    using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                    using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(isLive).GetClient())
                     {
                         var redisQuoteClient = redisClient.As<Quote>();
                         var redisTickClient = redisClient.As<Tick>();

@@ -13,13 +13,21 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoFixFeedApp : MessageCracker, IApplication
     {
+        public AyondoFixFeedApp(string username, string password)
+        {
+            _username = username;
+            _password = password;
+        }
+
         //public bool IsReceivingMessages { get; set; }
 
         public Session Session { get; set; }
         private DataDictionary DD;
 
-        private readonly string _username = CFDGlobal.GetConfigurationSetting("ayondoFixFeedUsername");
-        private readonly string _password = CFDGlobal.GetConfigurationSetting("ayondoFixFeedPassword");
+        //private readonly string _username = CFDGlobal.GetConfigurationSetting("ayondoFixFeedUsername");
+        //private readonly string _password = CFDGlobal.GetConfigurationSetting("ayondoFixFeedPassword");
+        private readonly string _username;
+        private readonly string _password;
 
         //private DateTime BeginTimeForMsgCount = DateTime.MinValue;
         //private int MsgCount = 0;

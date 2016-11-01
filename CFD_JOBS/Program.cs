@@ -44,6 +44,11 @@ namespace CFD_JOBS
                 {
                     AyondoFixFeedWorker.Run();
                 }
+                if (args.Contains("-AyondoFixFeed_Live"))
+                {
+                    AyondoFixFeedWorker.Run(true);
+                }
+
                 if (args.Contains("-AyondoFixTrade"))
                 {
                     AyondoFixTradeWorker.Run();
@@ -71,6 +76,10 @@ namespace CFD_JOBS
                 {
                     AyondoTradeHistory.Run();
                 }
+                //if (args.Contains("-AyondoTradeHistory_Live"))
+                //{
+                //    AyondoTradeHistory.Run(true);
+                //}
 
                 if (args.Contains("-Competition"))
                 {
@@ -96,6 +105,10 @@ namespace CFD_JOBS
                 if (args.Contains("-TickChart"))
                 {
                     TickChartWorker.Run();
+                }
+                if (args.Contains("-TickChart_Live"))
+                {
+                    TickChartWorker.Run(true);
                 }
 
                 return 0;

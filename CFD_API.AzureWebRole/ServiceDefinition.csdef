@@ -13,6 +13,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
       <Setting name="CFDEntities" />
       <Setting name="redisConnectionString" />
+      <Setting name="redisConnectionString_Live" />
       <Setting name="YunPianApiKey" />
       <Setting name="YunPianTemplateId" />
       <Setting name="AyondoTradeSvcUrl" />
