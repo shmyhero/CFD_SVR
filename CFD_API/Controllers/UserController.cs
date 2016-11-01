@@ -1356,7 +1356,7 @@ namespace CFD_API.Controllers
         /// </summary>
         /// <param name="form"></param>
         /// <returns></returns>
-        public ResultDTO ReferenceAccount(LiveUserBankCardFormDTO form)
+        public ResultDTO ReferenceAccount(LiveUserBankCardOriginalFormDTO originalForm)
         {
             var user = GetUser();
 
@@ -1369,6 +1369,7 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false);
             }
 
+            LiveUserBankCardFormDTO form = Convert2AyondoForm(originalForm);
             var jObject = AMSBindBankCard(form);
             if (jObject["Error"] != null)
             {
@@ -1387,6 +1388,47 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             return new ResultDTO(true);
+        }
+
+        /// <summary>
+        /// 将用户提交的帮卡信息转换为Ayondo需要的格式
+        /// </summary>
+        /// <param name="originalForm"></param>
+        /// <returns></returns>
+        private LiveUserBankCardFormDTO Convert2AyondoForm(LiveUserBankCardOriginalFormDTO originalForm)
+        {
+            Bitmap template = new Bitmap(HttpContext.Current.Server.MapPath("~/bin/template/BankStatementTemplate.png"));
+            Graphics g = Graphics.FromImage(template);
+            Font font = new Font("宋体", 32);
+            //写入文字
+            //银行名称、银行地址、SWIFT CODE、收款人姓名、收款人账号
+            SolidBrush sbrush = new SolidBrush(Color.Black);
+            g.DrawString(originalForm.NameOfBank, font, sbrush, new PointF(50, 65));
+            g.DrawString(originalForm.AddressOfBank, font, sbrush, new PointF(50, 170));
+            g.DrawString(originalForm.SwiftCode, font, sbrush, new PointF(50, 275));
+            g.DrawString(originalForm.AccountHolder, font, sbrush, new PointF(50, 380));
+            g.DrawString(originalForm.AccountNumber, font, sbrush, new PointF(50, 485));
+
+            MemoryStream ms = new MemoryStream();
+            template.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+            
+            //转换为base64格式
+            byte[] arr = new byte[ms.Length];
+            ms.Position = 0;
+            ms.Read(arr, 0, (int)ms.Length);
+            ms.Close();
+            string imgBase64 = Convert.ToBase64String(arr);
+
+            LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO() {
+                AccountHolder = originalForm.AccountHolder,
+                AccountNumber = originalForm.AccountNumber,
+                NameOfBank = originalForm.NameOfBank,
+                BankStatementContent = imgBase64,
+                BankStatementFileName = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
+                Guid = originalForm.Guid
+            };
+
+            return form;
         }
 
         private string GetUserLiveAccountRejectReason(string ayLiveAccountStatus)

@@ -268,12 +268,34 @@ namespace CFD_API.DTO
         public bool SubscribeTradeNotifications { get; set; }
     }
 
+    /// <summary>
+    /// 用户以文本形式输入，服务端转使用BankStatement模板转换为Ayondo需要的图片形式
+    /// </summary>
+    public class LiveUserBankCardOriginalFormDTO
+    {
+        /// <summary>
+        /// Client Real Name - must be same with what in ID Card
+        /// </summary>
+        public string AccountHolder { get; set; }
+        /// <summary>
+        /// Bank card number
+        /// </summary>
+        public string AccountNumber { get; set; }
+        /// <summary>
+        /// Ayondo Live Account GUID
+        /// </summary>
+        public string Guid { get; set; }
+        public string NameOfBank { get; set; }
+        public string SwiftCode { get; set; }
+        public string AddressOfBank { get; set; }
+    }
+
     public class LiveUserBankCardFormDTO
     {
         public string AccountHolder { get; set; }
         public string BankStatementContent { get; set; }
         //public string BankStatementContentStr { get; set; }
-        public string BankStatementContentType { get { return "application/pdf"; } }
+        public string BankStatementContentType { get { return "image/jpeg"; } }
         public string BankStatementFileName { get; set; }
         //Ayondo Live Account GUID
         public string Guid { get; set; }
