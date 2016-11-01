@@ -36,43 +36,46 @@ namespace CFD_JOBS.Ayondo
 
                         var openingProds = prodDefs.Where(o => o.QuoteType == enmQuoteType.Open || o.QuoteType == enmQuoteType.PhoneOnly).ToList();
 
-                        //the time of the last message received from Ayondo
-                        var dtAyondoNow = quotes.Max(o => o.Time);
-
-                        CFDGlobal.LogLine("prod: " + prodDefs.Count + " opening: " + openingProds.Count + " AyondoLastQuoteTime:" +
-                                          dtAyondoNow.ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND));
-
-                        //counters, for logging
-                        int append1m = 0;
-                        int update1m = 0;
-                        int ignore1m = 0;
-                        int append10m = 0;
-                        int update10m = 0;
-                        int ignore10m = 0;
-                        int append1h = 0;
-                        int update1h = 0;
-                        int ignore1h = 0;
-
-                        //for all OPEN products
-                        foreach (var p in openingProds)
+                        if (quotes.Count > 0)
                         {
-                            var quote = quotes.FirstOrDefault(o => o.Id == p.Id);
+                            //the time of the last message received from Ayondo
+                            var dtAyondoNow = quotes.Max(o => o.Time);
 
-                            if (quote == null)
+                            CFDGlobal.LogLine("prod: " + prodDefs.Count + " opening: " + openingProds.Count +
+                                              " AyondoLastQuoteTime:" + dtAyondoNow.ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND));
+
+                            //counters, for logging
+                            int append1m = 0;
+                            int update1m = 0;
+                            int ignore1m = 0;
+                            int append10m = 0;
+                            int update10m = 0;
+                            int ignore10m = 0;
+                            int append1h = 0;
+                            int update1h = 0;
+                            int ignore1h = 0;
+
+                            //for all OPEN products
+                            foreach (var p in openingProds)
                             {
-                                CFDGlobal.LogLine("cannot find quote for " + p.Id + " " + p.Name);
-                                continue;
+                                var quote = quotes.FirstOrDefault(o => o.Id == p.Id);
+
+                                if (quote == null)
+                                {
+                                    CFDGlobal.LogLine("cannot find quote for " + p.Id + " " + p.Name);
+                                    continue;
+                                }
+
+                                UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.OneMinute, ref append1m, ref update1m, ref ignore1m);
+                                UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.TenMinute, ref append10m, ref update10m, ref ignore10m);
+                                UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.OneHour, ref append1h, ref update1h, ref ignore1h);
                             }
 
-                            UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.OneMinute, ref append1m, ref update1m, ref ignore1m);
-                            UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.TenMinute, ref append10m, ref update10m, ref ignore10m);
-                            UpdateRedisTick(redisTickClient, p.Id, dtAyondoNow, quote, TickSize.OneHour, ref append1h, ref update1h, ref ignore1h);
+                            CFDGlobal.LogLine("1m update: " + update1m + " append: " + append1m + " ignore: " + ignore1m);
+                            CFDGlobal.LogLine("10m update: " + update10m + " append: " + append10m + " ignore: " + ignore10m);
+                            CFDGlobal.LogLine("1h update: " + update1h + " append: " + append1h + " ignore: " + ignore1h);
+                            CFDGlobal.LogLine("");
                         }
-
-                        CFDGlobal.LogLine("1m update: " + update1m + " append: " + append1m + " ignore: " + ignore1m);
-                        CFDGlobal.LogLine("10m update: " + update10m + " append: " + append10m + " ignore: " + ignore10m);
-                        CFDGlobal.LogLine("1h update: " + update1h + " append: " + append1h + " ignore: " + ignore1h);
-                        CFDGlobal.LogLine("");
 
                         ////skip non-updated quotes to improve speed
                         //IList<Quote> updatedQuotes;

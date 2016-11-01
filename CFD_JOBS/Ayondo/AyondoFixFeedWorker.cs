@@ -90,31 +90,34 @@ namespace CFD_JOBS.Ayondo
                         var prodDefs = redisProdDefClient.GetAll();
                         var allQuotes = redisQuoteClient.GetAll();
 
-                        var dtAyondoNow = allQuotes.Max(o => o.Time);//the time of the last message received from Ayondo
-                        var klineAyondoNow = DateTimes.GetStartTimeEvery5Minutes(dtAyondoNow);
-
-                        var dtNow = DateTime.UtcNow;
-                        var oneMinuteAgo = dtNow.AddMinutes(-1);
-
-                        var openOrRecentlyClosedProdDefs = prodDefs.Where(o =>
-                            (o.QuoteType == enmQuoteType.Open || o.QuoteType == enmQuoteType.PhoneOnly) //is open
-                            || (o.QuoteType == enmQuoteType.Closed && o.LastClose > oneMinuteAgo) //recently closed
-                            )
-                            .ToList();
-
-                        foreach (var prodDef in openOrRecentlyClosedProdDefs)
+                        if (allQuotes.Count > 0)
                         {
-                            var quotesByProd = newQuotes.Where(o => o.Id == prodDef.Id).ToList();
+                            var dtAyondoNow = allQuotes.Max(o => o.Time); //the time of the last message received from Ayondo
+                            var klineAyondoNow = DateTimes.GetStartTimeEvery5Minutes(dtAyondoNow);
 
-                            if (prodDef.QuoteType == enmQuoteType.Closed) //recently closed
-                                quotesByProd = quotesByProd.Where(o => o.Time <= prodDef.LastClose.Value).ToList();
+                            var dtNow = DateTime.UtcNow;
+                            var oneMinuteAgo = dtNow.AddMinutes(-1);
 
-                            UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FiveMinutes);
-                            UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.Day);
+                            var openOrRecentlyClosedProdDefs = prodDefs.Where(o =>
+                                (o.QuoteType == enmQuoteType.Open || o.QuoteType == enmQuoteType.PhoneOnly) //is open
+                                || (o.QuoteType == enmQuoteType.Closed && o.LastClose > oneMinuteAgo) //recently closed
+                                )
+                                .ToList();
+
+                            foreach (var prodDef in openOrRecentlyClosedProdDefs)
+                            {
+                                var quotesByProd = newQuotes.Where(o => o.Id == prodDef.Id).ToList();
+
+                                if (prodDef.QuoteType == enmQuoteType.Closed) //recently closed
+                                    quotesByProd = quotesByProd.Where(o => o.Time <= prodDef.LastClose.Value).ToList();
+
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FiveMinutes);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.Day);
+                            }
+
+                            CFDGlobal.LogLine("\t\t\t\tkline updated");
                         }
                     }
-
-                    CFDGlobal.LogLine("\t\t\t\tkline updated");
                 }
                 catch (Exception e)
                 {
