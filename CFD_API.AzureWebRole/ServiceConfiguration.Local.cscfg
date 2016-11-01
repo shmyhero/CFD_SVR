@@ -19,6 +19,7 @@
       <Setting name="YunPianTemplateId" value="1392151" />
       
       <Setting name="AyondoTradeSvcUrl" value="net.tcp://ayondotrade.chinacloudapp.cn:10100/ayondotrade" />
+      <Setting name="AyondoTradeSvcUrl_Live" value="net.tcp://ayondotrade-live.chinacloudapp.cn:10100/ayondotrade" />
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="1C98AC18A2F9B159C53533A0B73684FA7D06679C" thumbprintAlgorithm="sha1" />

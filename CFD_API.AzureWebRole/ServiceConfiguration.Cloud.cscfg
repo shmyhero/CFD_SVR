@@ -16,6 +16,7 @@
       
       <!--<Setting name="AyondoTradeSvcUrl" value="net.tcp://10.0.0.15:10100/ayondotrade" />-->
       <Setting name="AyondoTradeSvcUrl" value="net.tcp://ayondotrade.chinacloudapp.cn:10100/ayondotrade" />
+      <Setting name="AyondoTradeSvcUrl_Live" value="net.tcp://ayondotrade-live.chinacloudapp.cn:10100/ayondotrade" />
       
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="true" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="tradehero" />

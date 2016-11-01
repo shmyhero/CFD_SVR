@@ -17,11 +17,11 @@ namespace AyondoTrade
             OperationContext.Current.OutgoingMessageHeaders.Add(myHeader);
         }
 
-        public AyondoTradeClient()
+        public AyondoTradeClient(bool isLive = false)
             : this(
                 new NetTcpBinding(SecurityMode.None) {MaxReceivedMessageSize = 10*1024*1024,},
-                new EndpointAddress(CFDGlobal.AYONDO_TRADE_SVC_URL)
-                  )
+                new EndpointAddress(isLive ? CFDGlobal.AYONDO_TRADE_SVC_URL_Live : CFDGlobal.AYONDO_TRADE_SVC_URL)
+                )
         {
         }
 
