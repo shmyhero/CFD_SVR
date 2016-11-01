@@ -16,6 +16,7 @@
       <Setting name="YunPianApiKey" />
       <Setting name="YunPianTemplateId" />
       <Setting name="AyondoTradeSvcUrl" />
+      <Setting name="AyondoTradeSvcUrl_Live" />
     </ConfigurationSettings>
     <Endpoints>
       <InputEndpoint name="Endpoint1" protocol="http" port="80" />

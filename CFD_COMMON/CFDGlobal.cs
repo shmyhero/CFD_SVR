@@ -60,6 +60,8 @@ BwIDAQAB
         public static IRedisClientsManager PooledRedisClientsManager;
 
         public static string AYONDO_TRADE_SVC_URL = CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl");
+        public static string AYONDO_TRADE_SVC_URL_Live = CFDGlobal.GetConfigurationSetting("AyondoTradeSvcUrl_Live");
+
         public static TimeSpan PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS = TimeSpan.FromDays(14);
 
         static CFDGlobal()

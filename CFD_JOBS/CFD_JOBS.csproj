@@ -116,6 +116,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="AyondoFeed_Live.cfg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="AyondoFeed_UAT.cfg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="AyondoTest.cfg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
