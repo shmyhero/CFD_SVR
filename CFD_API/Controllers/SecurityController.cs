@@ -25,8 +25,12 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/security")]
     public class SecurityController : CFDController
     {
-        public SecurityController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-            : base(db, mapper, redisClient)
+        //public SecurityController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
+        //    : base(db, mapper, redisClient)
+        //{
+        //}
+
+        public SecurityController(CFDEntities db, IMapper mapper) : base(db, mapper)
         {
         }
 
@@ -39,7 +43,7 @@ namespace CFD_API.Controllers
 
             var ids = list.Select(o => o.id).ToList();
             //var quotes = redisQuoteClient.GetByIds(ids);
-            var quotes = Caching.WebCache.Quotes.Where(o => ids.Contains(o.Id)).ToList();
+            var quotes = WebCache.Quotes.Where(o => ids.Contains(o.Id)).ToList();
             //var prodDefs = redisProdDefClient.GetByIds(ids);
 
             foreach (var security in list)
@@ -94,7 +98,7 @@ namespace CFD_API.Controllers
 
         private IList<ProdDef> GetActiveProds()
         {
-            return Caching.WebCache.ProdDefs
+            return WebCache.ProdDefs
                 .Where(o => o.QuoteType != enmQuoteType.Inactive
                             && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
                             && o.Bid.HasValue && o.Offer.HasValue
@@ -296,13 +300,13 @@ namespace CFD_API.Controllers
         public List<ProdDefDTO> GetAllList(int page = 1, int perPage = 20)
         {
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var redisQuoteClient = RedisClient.As<Quote>();
-            var prodDefs = RedisClient.As<ProdDef>().GetAll();
-            var quotes = redisQuoteClient.GetAll();
+            //var redisQuoteClient = RedisClient.As<Quote>();
+            //var prodDefs = RedisClient.As<ProdDef>().GetAll();
+            //var quotes = redisQuoteClient.GetAll();
 
             //var securities = db.AyondoSecurities.ToList();
 
-            var result = prodDefs.Select(o => Mapper.Map<ProdDefDTO>(o)).ToList();
+            var result = WebCache.ProdDefs.Select(o => Mapper.Map<ProdDefDTO>(o)).ToList();
 
             foreach (var prodDTO in result)
             {
@@ -313,13 +317,13 @@ namespace CFD_API.Controllers
                 prodDTO.cname = Translator.GetCName(prodDTO.Name);
 
                 //get new price
-                var quote = quotes.FirstOrDefault(o => o.Id == prodDTO.Id);
+                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == prodDTO.Id);
                 if (quote != null)
                 {
                     //prodDTO.last = Quotes.GetLastPrice(quote);
 
                     //calculate min/max trade value
-                    var prodDef = prodDefs.FirstOrDefault(o => o.Id == prodDTO.Id);
+                    var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == prodDTO.Id);
 
                     var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
 
@@ -330,7 +334,7 @@ namespace CFD_API.Controllers
 
                     try
                     {
-                        var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", prodDefs, quotes);
+                        var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
 
                         prodDTO.minValueLong = minLong*perSizeValueUSD;
                         prodDTO.minValueShort = minShort*perSizeValueUSD;

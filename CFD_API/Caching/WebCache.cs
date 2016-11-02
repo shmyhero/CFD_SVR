@@ -7,9 +7,9 @@ using AutoMapper;
 using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
+using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
-using CFD_COMMON.Models.Context;
 
 namespace CFD_API.Caching
 {
@@ -20,24 +20,12 @@ namespace CFD_API.Caching
         private static Timer _timerTick;
         private static Timer _timerTickRaw;
         private static Timer _timerPriceDown;
-
         private static TimeSpan _updateIntervalProdDef = TimeSpan.FromSeconds(3);
         private static TimeSpan _updateIntervalQuote = TimeSpan.FromMilliseconds(500);
         private static TimeSpan _updateIntervalTick = TimeSpan.FromSeconds(10);
         private static TimeSpan _updateIntervalTickRaw = TimeSpan.FromMilliseconds(1000);
-
         private static IMapper mapper;
-
-        public static IList<ProdDef> ProdDefs { get; private set; }
-        public static IList<Quote> Quotes { get; private set; }
-        public static ConcurrentDictionary<int, List<TickDTO>> TickRaw { get; private set; }
-        public static ConcurrentDictionary<int, List<TickDTO>> TickToday { get; private set; }
-        public static ConcurrentDictionary<int, List<TickDTO>> TickWeek { get; private set; }
-        public static ConcurrentDictionary<int, List<TickDTO>> TickMonth { get; private set; }
-        /// <summary>
-        /// 价格中断的最大可接受时间
-        /// </summary>
-        public static Dictionary<int, int> PriceDownInterval { get; }
+        private static IRedisClientsManager _redisClientsManager;
 
         static WebCache()
         {
@@ -52,8 +40,10 @@ namespace CFD_API.Caching
 
             mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
+            _redisClientsManager = CFDGlobal.GetDefaultPooledRedisClientsManager(false);
+
             //get value from Redis
-            using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+            using (var redisClient = _redisClientsManager.GetClient())
             {
                 try
                 {
@@ -73,6 +63,17 @@ namespace CFD_API.Caching
             _timerTickRaw = new Timer(UpdateRawTicks, null, _updateIntervalTickRaw, TimeSpan.FromMilliseconds(-1));
             _timerPriceDown = new Timer(UpdatePriceDownInterval, null,0, 3 * 60 * 1000);
         }
+
+        public static IList<ProdDef> ProdDefs { get; private set; }
+        public static IList<Quote> Quotes { get; private set; }
+        public static ConcurrentDictionary<int, List<TickDTO>> TickRaw { get; private set; }
+        public static ConcurrentDictionary<int, List<TickDTO>> TickToday { get; private set; }
+        public static ConcurrentDictionary<int, List<TickDTO>> TickWeek { get; private set; }
+        public static ConcurrentDictionary<int, List<TickDTO>> TickMonth { get; private set; }
+        /// <summary>
+        /// 价格中断的最大可接受时间
+        /// </summary>
+        public static Dictionary<int, int> PriceDownInterval { get; }
 
         private static void UpdateRawTicks(object state)
         {
@@ -223,7 +224,7 @@ namespace CFD_API.Caching
             while (true)
             {
                 //CFDGlobal.LogLine("Updating WebCache ProdDefs...");
-                using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                using (var redisClient = _redisClientsManager.GetClient())
                 {
                     try
                     {
@@ -244,7 +245,7 @@ namespace CFD_API.Caching
             while (true)
             {
                 //CFDGlobal.LogLine("Updating WebCache Quotes...");
-                using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                using (var redisClient = _redisClientsManager.GetClient())
                 {
                     try
                     {
@@ -266,10 +267,10 @@ namespace CFD_API.Caching
             {
                 PriceDownInterval.Clear();
                 db.PriceDownIntervals.ToList().ForEach(p => {
-                    if (!PriceDownInterval.ContainsKey(p.SecurityID))
-                    {
-                        PriceDownInterval.Add(p.SecurityID, p.DownInterval);
-                    }
+                                                                if (!PriceDownInterval.ContainsKey(p.SecurityID))
+                                                                {
+                                                                    PriceDownInterval.Add(p.SecurityID, p.DownInterval);
+                                                                }
                 });
             }
 
