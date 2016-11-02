@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.Storage;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 
@@ -18,16 +19,18 @@ namespace CFD_COMMON
 {
     public class CFDGlobal
     {
+        public static readonly string BLOG_ENDPOINT = CloudStorageAccount.Parse(GetConfigurationSetting("StorageConnectionString")).BlobEndpoint.AbsoluteUri;
+
         public static string USER_PIC_BLOB_CONTAINER="user-picture";
-        public static string USER_PIC_BLOB_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + USER_PIC_BLOB_CONTAINER+"/";
+        public static string USER_PIC_BLOB_CONTAINER_URL = BLOG_ENDPOINT + USER_PIC_BLOB_CONTAINER+"/";
 
         public static string HEADLINE_PIC_BLOB_CONTAINER = "headline-img";
-        public static string HEADLINE_PIC_BLOB_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + HEADLINE_PIC_BLOB_CONTAINER + "/";
+        public static string HEADLINE_PIC_BLOB_CONTAINER_URL = BLOG_ENDPOINT + HEADLINE_PIC_BLOB_CONTAINER + "/";
 
         public static string BANNER_PIC_BLOB_CONTAINER = "banner-img";
 
         public static string FEEDBACK_PIC_BLOC_CONTAINER = "feedback-img";
-        public static string FEEDBACK_PIC_BLOC_CONTAINER_URL = "https://cfdstorage.blob.core.chinacloudapi.cn/" + FEEDBACK_PIC_BLOC_CONTAINER + "/";
+        public static string FEEDBACK_PIC_BLOC_CONTAINER_URL = BLOG_ENDPOINT + FEEDBACK_PIC_BLOC_CONTAINER + "/";
 
         public const string DATETIME_MASK_MILLI_SECOND = "yyyy-MM-dd HH:mm:ss.fff";
         public const string DATETIME_MASK_SECOND = "yyyy-MM-dd HH:mm:ss";
