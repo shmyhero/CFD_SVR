@@ -1265,6 +1265,12 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
+            //phone bound?
+            if (user.Phone == null)
+            {
+                return new ResultDTO(false) {message = __(TransKey.PHONE_NOT_BOUND)};
+            }
+
             //LIVE account is Created or Pending
             var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)

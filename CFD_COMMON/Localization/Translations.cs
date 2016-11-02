@@ -17,6 +17,8 @@ namespace CFD_COMMON.Localization
             {TransKey.PHONE_ALREADY_BOUND, "已绑定过手机" },
             {TransKey.PHONE_EXISTS, "手机号已被使用"},
 
+            {TransKey.PHONE_NOT_BOUND, "未绑定手机" },
+
             {TransKey.ORDER_REJECTED, "下单失败"},
             {TransKey.NO_AYONDO_ACCOUNT, "交易功能未开通"},
             {TransKey.EXCEPTION, "服务器繁忙，请稍后再试"},
