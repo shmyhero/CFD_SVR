@@ -85,7 +85,7 @@ namespace CFD_API.SignalR
                                         .Select(report =>
                                     {
                                         var secId = Convert.ToInt32(report.SecurityID);
-                                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
                                         var name = Translator.GetCName(prodDef.Name);
                                         var stopTake = report.Text == "Position DELETE by StopLossOrder" ? "止损" : "止盈";
                                         var price = Math.Round(report.SettlPrice, prodDef.Prec);

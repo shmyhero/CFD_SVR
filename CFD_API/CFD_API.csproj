@@ -254,6 +254,7 @@
     <Compile Include="Azure\AzureFileDetails.cs" />
     <Compile Include="Azure\BlobHelper.cs" />
     <Compile Include="Caching\WebCache.cs" />
+    <Compile Include="Caching\WebCacheInstance.cs" />
     <Compile Include="Controllers\Attributes\ApiHitRecord.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />
     <Compile Include="Controllers\Attributes\ElmahFilter.cs" />

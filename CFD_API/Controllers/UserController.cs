@@ -438,7 +438,7 @@ namespace CFD_API.Controllers
             decimal totalUPL = 0;
             foreach (var report in positionReports)
             {
-                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 if (prodDef == null) continue;
 
@@ -447,14 +447,14 @@ namespace CFD_API.Controllers
                 //************************************************************************
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
 
-                marginUsed += FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes)/report.Leverage.Value;
+                marginUsed += FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes)/report.Leverage.Value;
 
                 //calculate UPL
-                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 if (quote != null)
                 {
                     var upl = report.LongQty.HasValue ? tradeValue.Value*(quote.Bid/report.SettlPrice - 1) : tradeValue.Value*(1 - quote.Offer/report.SettlPrice);
-                    totalUPL += FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                    totalUPL += FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
                 }
                 else
                 {
@@ -517,7 +517,7 @@ namespace CFD_API.Controllers
             {
                 var secId = Convert.ToInt32(report.SecurityID);
 
-                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                 if (prodDef == null) continue;
 
@@ -528,15 +528,15 @@ namespace CFD_API.Controllers
                 //************************************************************************
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
 
-                var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes)/report.Leverage.Value;
+                var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes)/report.Leverage.Value;
 
                 //calculate UPL
                 decimal uplUSD = 0;
-                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 if (quote != null)
                 {
                     var upl = report.LongQty.HasValue ? tradeValue.Value * (quote.Bid / report.SettlPrice - 1) : tradeValue.Value * (1 - quote.Offer / report.SettlPrice);
-                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
                 }
                 else
                 {
@@ -584,7 +584,7 @@ namespace CFD_API.Controllers
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
 
-                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null) continue;
 
@@ -596,7 +596,7 @@ namespace CFD_API.Controllers
                         var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(openReport.LongQty ?? openReport.ShortQty);
                         var tradeValueUSD = tradeValue;
                         if (prodDef.Ccy2 != "USD")
-                            tradeValueUSD = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                            tradeValueUSD = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
 
                         var invest = tradeValueUSD.Value/openReport.Leverage.Value;
                         var pl = closeReport.PL.Value;
@@ -668,7 +668,7 @@ namespace CFD_API.Controllers
             #region closed positions
             foreach (var closedReport in positionHistoryReports)
             {
-                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == closedReport.SecurityId);
+                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == closedReport.SecurityId);
                 if (prodDef == null) continue;
 
                 var invest = closedReport.InvestUSD.HasValue? closedReport.InvestUSD.Value : 0;
@@ -702,7 +702,7 @@ namespace CFD_API.Controllers
             {
                 var secId = Convert.ToInt32(report.SecurityID);
 
-                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                 if (prodDef == null) continue;
 
@@ -713,15 +713,15 @@ namespace CFD_API.Controllers
                 //************************************************************************
                 var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
 
-                var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes) / report.Leverage.Value;
+                var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes) / report.Leverage.Value;
 
                 //calculate UPL
                 decimal uplUSD = 0;
-                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 if (quote != null)
                 {
                     var upl = report.LongQty.HasValue ? tradeValue.Value * (quote.Bid / report.SettlPrice - 1) : tradeValue.Value * (1 - quote.Offer / report.SettlPrice);
-                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
                 }
                 else
                 {
@@ -778,7 +778,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO SetStockAlert(StockAlertDTO form)
         {
-            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.SecurityId);
+            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.SecurityId);
 
             if (prodDef == null || prodDef.Name.EndsWith(" Outright"))
                 return new ResultDTO() {success = false};

@@ -68,7 +68,7 @@ namespace CFD_API.SignalR
                     try
                     {
                         //var quotes = _redisClient.GetAll();
-                        var quotes = WebCache.Quotes;
+                        var quotes = WebCache.Demo.Quotes;
 
                         if (dicLastQuotes == null) //first time
                         {

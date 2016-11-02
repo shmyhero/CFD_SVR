@@ -78,7 +78,7 @@ namespace CFD_API.Controllers
             var positionDtos = result.Select(delegate(PositionReport report)
             {
                 //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
-                var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 if (prodDef == null)
                 {
@@ -87,10 +87,10 @@ namespace CFD_API.Controllers
                     return null;
                 }
 
-                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 
                 var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                if (Quotes.IsPriceDown(WebCache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+                if (Quotes.IsPriceDown(WebCache.Demo.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
                 {
                     security.isPriceDown = true;
                 }
@@ -109,13 +109,13 @@ namespace CFD_API.Controllers
                 if (prodDef.Ccy2 != "USD")
                 {
                     var fxProdDef =
-                        WebCache.ProdDefs.FirstOrDefault(
+                        WebCache.Demo.ProdDefs.FirstOrDefault(
                             o => o.Symbol == prodDef.Ccy2 + "USD" && o.Name.EndsWith(" Outright"));
 
                     if (fxProdDef == null)
                     {
                         fxProdDef =
-                            WebCache.ProdDefs.FirstOrDefault(
+                            WebCache.Demo.ProdDefs.FirstOrDefault(
                                 o => o.Symbol == "USD" + prodDef.Ccy2 && o.Name.EndsWith(" Outright"));
                     }
 
@@ -125,7 +125,7 @@ namespace CFD_API.Controllers
                         fx.id = fxProdDef.Id;
                         fx.symbol = fxProdDef.Symbol;
                         
-                        var fxQuote = WebCache.Quotes.FirstOrDefault(o => o.Id == fx.id);
+                        var fxQuote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == fx.id);
                         if (fxQuote != null)
                         {
                             fx.ask = fxQuote.Offer;
@@ -153,7 +153,7 @@ namespace CFD_API.Controllers
                 if (quote != null)
                 {
                     decimal upl = report.LongQty.HasValue ? tradeValue.Value*(quote.Bid/report.SettlPrice - 1) : tradeValue.Value*(1 - quote.Offer/report.SettlPrice);
-                    var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                    var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
                     posDTO.upl = uplUSD;
                 }
                 else
@@ -223,7 +223,7 @@ namespace CFD_API.Controllers
                     if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
-                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null)
                         {
@@ -351,7 +351,7 @@ namespace CFD_API.Controllers
                     if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
-                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null)
                         {
@@ -402,7 +402,7 @@ namespace CFD_API.Controllers
                         }
 
                         var secId = Convert.ToInt32(openPR.SecurityId);
-                        var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null)
                         {
@@ -464,7 +464,7 @@ namespace CFD_API.Controllers
                     };
                     
 
-                    var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == item.SecurityId);
+                    var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == item.SecurityId);
 
                     if (prodDef == null)
                     {
@@ -521,7 +521,7 @@ namespace CFD_API.Controllers
             //if (security == null)
             //    throw new Exception("security not found");
 
-            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             if (prodDef == null)
                 throw new Exception("security not found");
 
@@ -531,10 +531,10 @@ namespace CFD_API.Controllers
             //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
             //************************************************************************
 
-            decimal tradeValueCcy2 = FX.ConvertByOutrightMidPrice(tradeValueUSD, "USD", prodDef.Ccy2, WebCache.ProdDefs, WebCache.Quotes);
+            decimal tradeValueCcy2 = FX.ConvertByOutrightMidPrice(tradeValueUSD, "USD", prodDef.Ccy2, WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
 
-            var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
-            if(Quotes.IsPriceDown(WebCache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == form.securityId);
+            if(Quotes.IsPriceDown(WebCache.Demo.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
                         __(TransKey.PRICEDOWN)));
@@ -694,7 +694,7 @@ namespace CFD_API.Controllers
             CheckAndCreateAyondoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             //if (prodDef == null)
             //    throw new Exception("security not found");
 
@@ -776,7 +776,7 @@ namespace CFD_API.Controllers
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
@@ -811,7 +811,7 @@ namespace CFD_API.Controllers
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
@@ -846,7 +846,7 @@ namespace CFD_API.Controllers
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;

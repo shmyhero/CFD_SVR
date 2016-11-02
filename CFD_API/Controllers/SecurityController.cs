@@ -43,7 +43,7 @@ namespace CFD_API.Controllers
 
             var ids = list.Select(o => o.id).ToList();
             //var quotes = redisQuoteClient.GetByIds(ids);
-            var quotes = WebCache.Quotes.Where(o => ids.Contains(o.Id)).ToList();
+            var quotes = WebCache.Demo.Quotes.Where(o => ids.Contains(o.Id)).ToList();
             //var prodDefs = redisProdDefClient.GetByIds(ids);
 
             foreach (var security in list)
@@ -98,7 +98,7 @@ namespace CFD_API.Controllers
 
         private IList<ProdDef> GetActiveProds()
         {
-            return WebCache.ProdDefs
+            return WebCache.Demo.ProdDefs
                 .Where(o => o.QuoteType != enmQuoteType.Inactive
                             && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
                             && o.Bid.HasValue && o.Offer.HasValue
@@ -297,8 +297,11 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("all")]
+        [Route("live/all")]
         public List<ProdDefDTO> GetAllList(int page = 1, int perPage = 20)
         {
+            var cache = Request.RequestUri.AbsolutePath.EndsWith("live/all") ? WebCache.Live : WebCache.Demo;
+
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
             //var prodDefs = RedisClient.As<ProdDef>().GetAll();
@@ -306,7 +309,7 @@ namespace CFD_API.Controllers
 
             //var securities = db.AyondoSecurities.ToList();
 
-            var result = WebCache.ProdDefs.Select(o => Mapper.Map<ProdDefDTO>(o)).ToList();
+            var result = cache.ProdDefs.Select(o => Mapper.Map<ProdDefDTO>(o)).ToList();
 
             foreach (var prodDTO in result)
             {
@@ -317,13 +320,13 @@ namespace CFD_API.Controllers
                 prodDTO.cname = Translator.GetCName(prodDTO.Name);
 
                 //get new price
-                var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == prodDTO.Id);
+                var quote = cache.Quotes.FirstOrDefault(o => o.Id == prodDTO.Id);
                 if (quote != null)
                 {
                     //prodDTO.last = Quotes.GetLastPrice(quote);
 
                     //calculate min/max trade value
-                    var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == prodDTO.Id);
+                    var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == prodDTO.Id);
 
                     var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
 
@@ -334,7 +337,7 @@ namespace CFD_API.Controllers
 
                     try
                     {
-                        var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+                        var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
 
                         prodDTO.minValueLong = minLong*perSizeValueUSD;
                         prodDTO.minValueShort = minShort*perSizeValueUSD;
@@ -442,7 +445,7 @@ namespace CFD_API.Controllers
             //var redisQuoteClient = RedisClient.As<Quote>();
 
             //var prodDef = redisProdDefClient.GetById(securityId);
-            var prodDef = WebCache.ProdDefs.FirstOrDefault(o => o.Id == securityId);
+            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == securityId);
 
             if (prodDef == null)
                 return null;
@@ -457,8 +460,8 @@ namespace CFD_API.Controllers
 
             //get new price
             //var quote = redisQuoteClient.GetById(securityId);
-            var quote = WebCache.Quotes.FirstOrDefault(o => o.Id == securityId);
-            if (Quotes.IsPriceDown(WebCache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == securityId);
+            if (Quotes.IsPriceDown(WebCache.Demo.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
             {
                 result.isPriceDown = true;
             }
@@ -487,7 +490,7 @@ namespace CFD_API.Controllers
             decimal maxLong = perPriceCcy2*quote.Offer*maxLongSize;
             decimal maxShort = perPriceCcy2*quote.Bid*maxShortSize;
 
-            var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+            var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
 
             result.minValueLong = Math.Ceiling(minLong*perSizeValueUSD);
             result.minValueShort = Math.Ceiling(minShort*perSizeValueUSD);
@@ -546,7 +549,7 @@ namespace CFD_API.Controllers
         {
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
-            var idsExistingProducts = WebCache.ProdDefs.Where(o => ids.Contains(o.Id)).Select(o => o.Id).ToList();
+            var idsExistingProducts = WebCache.Demo.ProdDefs.Where(o => ids.Contains(o.Id)).Select(o => o.Id).ToList();
 
             var securityService = new SecurityService(db);
             securityService.AddBookmarks(UserId, idsExistingProducts);
