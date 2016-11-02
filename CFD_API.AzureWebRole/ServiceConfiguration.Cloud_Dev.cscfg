@@ -3,10 +3,10 @@
   <Role name="CFD_API" vmName="CFD-API">
     <Instances count="1" />
     <ConfigurationSettings>
-      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="BlobEndpoint=https://cfdstorage.blob.core.chinacloudapi.cn/;QueueEndpoint=https://cfdstorage.queue.core.chinacloudapi.cn/;TableEndpoint=https://cfdstorage.table.core.chinacloudapi.cn/;AccountName=cfdstorage;AccountKey=8RxDUBSev10Z2LjeAx/HQvLcl9zkQvhw5Lh/dGgMcYhPPiBizuWOT37JDh283i98Rf2TpnE9WuDL2LpMh1QJ4w==" />
-      <Setting name="StorageConnectionString" value="BlobEndpoint=https://cfdstorage.blob.core.chinacloudapi.cn/;AccountName=cfdstorage;AccountKey=8RxDUBSev10Z2LjeAx/HQvLcl9zkQvhw5Lh/dGgMcYhPPiBizuWOT37JDh283i98Rf2TpnE9WuDL2LpMh1QJ4w==" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="BlobEndpoint=https://cfdstoragedev.blob.core.chinacloudapi.cn/;QueueEndpoint=https://cfdstoragedev.queue.core.chinacloudapi.cn/;TableEndpoint=https://cfdstoragedev.table.core.chinacloudapi.cn/;AccountName=cfdstoragedev;AccountKey=iv2GsBkYOIe8rEo2lqtD8gDIuND04m8mZ5tQBo27ja00APaMOCDrIr1YOzPysYH6yxdpX8/VyAHXbPVCwtPWfA==" />
+      <Setting name="StorageConnectionString" value="BlobEndpoint=https://cfdstoragedev.blob.core.chinacloudapi.cn/;AccountName=cfdstoragedev;AccountKey=iv2GsBkYOIe8rEo2lqtD8gDIuND04m8mZ5tQBo27ja00APaMOCDrIr1YOzPysYH6yxdpX8/VyAHXbPVCwtPWfA==" />
       <!--<Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />-->
-      <Setting name="CFDEntities" value="data source=10.0.0.22;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
+      <Setting name="CFDEntities" value="data source=10.0.0.12;initial catalog=CFD_Dev;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
       <!--<Setting name="redisConnectionString" value="Password88__@10.0.0.15:6379" />-->
       <Setting name="redisConnectionString" value="Password88__@10.0.0.21:6399" />
       <Setting name="redisConnectionString_Live" value="Password88__@10.0.0.24:6379" />

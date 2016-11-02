@@ -11,6 +11,7 @@
     </Sites>
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
+      <Setting name="StorageConnectionString" />
       <Setting name="CFDEntities" />
       <Setting name="redisConnectionString" />
       <Setting name="redisConnectionString_Live" />
