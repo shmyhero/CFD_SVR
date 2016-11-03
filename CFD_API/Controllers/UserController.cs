@@ -1257,7 +1257,7 @@ namespace CFD_API.Controllers
             result.success = true;
             return result;
         }
-
+         
         [HttpPost]
         [Route("live/signup")]
         [BasicAuth]
