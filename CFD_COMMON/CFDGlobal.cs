@@ -19,7 +19,9 @@ namespace CFD_COMMON
 {
     public class CFDGlobal
     {
-        public static readonly string BLOG_ENDPOINT = CloudStorageAccount.Parse(GetConfigurationSetting("StorageConnectionString")).BlobEndpoint.AbsoluteUri;
+        public static readonly string BLOG_ENDPOINT = GetConfigurationSetting("StorageConnectionString") == null
+            ? null
+            : CloudStorageAccount.Parse(GetConfigurationSetting("StorageConnectionString")).BlobEndpoint.AbsoluteUri;
 
         public static string USER_PIC_BLOB_CONTAINER="user-picture";
         public static string USER_PIC_BLOB_CONTAINER_URL = BLOG_ENDPOINT + USER_PIC_BLOB_CONTAINER+"/";
