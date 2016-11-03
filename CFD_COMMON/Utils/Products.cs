@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CFD_COMMON.Localization;
 
 namespace CFD_COMMON.Utils
 {
@@ -325,6 +326,11 @@ namespace CFD_COMMON.Utils
         public static bool IsShowing(int id)
         {
             return IDFilterList.Contains(id);
+        }
+
+        public static bool IsShowing(string name)
+        {
+            return Translations.ProdCNames.ContainsKey(Translator.RemoveENameSuffix(name));
         }
     }
 }

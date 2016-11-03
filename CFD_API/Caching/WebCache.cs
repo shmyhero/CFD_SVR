@@ -25,5 +25,10 @@ namespace CFD_API.Caching
         {
             get { return _live.Value; }
         }
+
+        public static WebCacheInstance GetInstance(bool isLive = false)
+        {
+            return isLive ? Live : Demo;
+        }
     }
 }

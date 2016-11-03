@@ -1024,12 +1024,12 @@ namespace CFD_API.Controllers
                 }
 
                 //todo: live fix login oauth
-                //using (var client = new AyondoTradeClient())
-                //{
-                //    var account = client.LoginOAuth(username2, oauth_token);
+                using (var client = new AyondoTradeClient(true))
+                {
+                    var account = client.LoginOAuth(username2, oauth_token);
 
-                //    CFDGlobal.LogLine("OAuth login: " + username2 + " " + account);
-                //}
+                    CFDGlobal.LogLine("Live OAuth login: " + username2 + " " + account);
+                }
 
                 //return "OK";
                 var okResponse = Request.CreateResponse(HttpStatusCode.Redirect);

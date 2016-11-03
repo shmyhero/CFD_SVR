@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace CFD_COMMON.Localization
 {
@@ -40,22 +41,22 @@ namespace CFD_COMMON.Localization
 
             { TransKey.PRICEDOWN, "当前价格中断,无法交易" },
         };
-
+        
         public static Dictionary<string, string> ProdCNames = new Dictionary<string, string>
         {
-            {"Gold", "黄金"},
-            {"Silver", "白银"},
+            {"Gold Spot", "黄金"},
+            {"Silver Spot", "白银"},
 
-            {"CAD/JPY", "加元/日元"},
-            {"EUR/CAD", "欧元/加元"},
-            {"EUR/GBP", "欧元/英镑"},
-            {"EUR/JPY", "欧元/日元"},
-            {"EUR/USD", "欧元/美元"},
-            {"GBP/CAD", "英镑/加元"},
-            {"GBP/JPY", "英镑/日元"},
-            {"GBP/USD", "英镑/美元"},
-            {"USD/CAD", "美元/加元"},
-            {"USD/JPY", "美元/日元"},
+            {"CAD/JPY Spot", "加元/日元"},
+            {"EUR/CAD Spot", "欧元/加元"},
+            {"EUR/GBP Spot", "欧元/英镑"},
+            {"EUR/JPY Spot", "欧元/日元"},
+            {"EUR/USD Spot", "欧元/美元"},
+            {"GBP/CAD Spot", "英镑/加元"},
+            {"GBP/JPY Spot", "英镑/日元"},
+            {"GBP/USD Spot", "英镑/美元"},
+            {"USD/CAD Spot", "美元/加元"},
+            {"USD/JPY Spot", "美元/日元"},
 
             {"3M Co", "3M"},
             {"58.com Inc ADR", "58同城"},
@@ -174,5 +175,7 @@ namespace CFD_COMMON.Localization
             {"US Tech 100 Rolling", "美国科技股100"},
             {"Wall Street Rolling", "华尔街"},
         };
+
+        //public static IList<KeyValuePair<string, string>> ProdCNamesList = ProdCNames.Select(o => new KeyValuePair<string, string>(o.Key, o.Value)).ToList();
     }
 }

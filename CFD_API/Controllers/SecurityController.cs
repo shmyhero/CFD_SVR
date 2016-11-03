@@ -34,7 +34,7 @@ namespace CFD_API.Controllers
         {
         }
 
-        public void UpdateQuote(IList<SecurityDTO> list)
+        public void UpdateLastPrice(IList<SecurityDTO> list)
         {
             if (list.Count == 0) return;
 
@@ -43,7 +43,7 @@ namespace CFD_API.Controllers
 
             var ids = list.Select(o => o.id).ToList();
             //var quotes = redisQuoteClient.GetByIds(ids);
-            var quotes = WebCache.Demo.Quotes.Where(o => ids.Contains(o.Id)).ToList();
+            var quotes = WebCache.GetInstance(IsLiveUrl).Quotes.Where(o => ids.Contains(o.Id)).ToList();
             //var prodDefs = redisProdDefClient.GetByIds(ids);
 
             foreach (var security in list)
@@ -96,13 +96,13 @@ namespace CFD_API.Controllers
         //    }
         //}
 
-        private IList<ProdDef> GetActiveProds()
+        private IList<ProdDef> GetActiveProds(bool isLive = false)
         {
-            return WebCache.Demo.ProdDefs
+            return WebCache.GetInstance(isLive).ProdDefs
                 .Where(o => o.QuoteType != enmQuoteType.Inactive
                             && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
                             && o.Bid.HasValue && o.Offer.HasValue
-                            && Products.IsShowing(o.Id)
+                            && Products.IsShowing(o.Name)
                 )
                 .ToList();
         }
@@ -128,7 +128,7 @@ namespace CFD_API.Controllers
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             return securityDtos;
         }
@@ -151,16 +151,17 @@ namespace CFD_API.Controllers
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             return securityDtos;
         }
 
         [HttpGet]
         [Route("stock/topGainer")]
+        [Route("live/stock/topGainer")]
         public List<SecurityDTO> GetTopGainerList(int page = 1, int perPage = 20)
         {
-            var activeProds = GetActiveProds();
+            var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
 
@@ -173,7 +174,7 @@ namespace CFD_API.Controllers
             //    o.tag = "US";
             //}
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             securityDtos = securityDtos.OrderByDescending(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
 
@@ -190,7 +191,7 @@ namespace CFD_API.Controllers
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             securityDtos = securityDtos.OrderByDescending(o => o.last/o.preClose).Skip((page - 1)*perPage).Take(perPage).ToList();
 
@@ -207,7 +208,7 @@ namespace CFD_API.Controllers
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
 
@@ -224,7 +225,7 @@ namespace CFD_API.Controllers
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             securityDtos = securityDtos.OrderByDescending(o => o.last / o.preClose).Skip((page - 1) * perPage).Take(perPage).ToList();
 
@@ -233,30 +234,32 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("index")]
+        [Route("live/index")]
         public List<SecurityDTO> GetIndexList(int page = 1, int perPage = 20)
         {
-            var activeProds = GetActiveProds();
+            var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_INDEX).ToList();
 
             var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             return securityDtos;
         }
 
         [HttpGet]
         [Route("fx")]
+        [Route("live/fx")]
         public List<SecurityDTO> GetFxList(int page = 1, int perPage = 20)
         {
-            var activeProds = GetActiveProds();
+            var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_FX && !o.Name.EndsWith(" Outright")).ToList();
 
             var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             return securityDtos;
         }
@@ -271,22 +274,23 @@ namespace CFD_API.Controllers
 
             var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             return securityDtos;
         }
 
         [HttpGet]
         [Route("futures")]
+        [Route("live/futures")]
         public List<SecurityDTO> GetFuturesList(int page = 1, int perPage = 20)
         {
-            var activeProds = GetActiveProds();
+            var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_COMMODITY).ToList();
 
             var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             return securityDtos;
         }
@@ -359,13 +363,14 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("search")]
+        [Route("live/search")]
         public List<SecurityDTO> SearchSecurity(string keyword, int page = 1, int perPage = 20)
         {
             if(string.IsNullOrWhiteSpace(keyword)) return new List<SecurityDTO>();
 
             keyword = keyword.ToLower();
 
-            var activeProds = GetActiveProds();
+            var activeProds = GetActiveProds(IsLiveUrl);
 
             //var securities = db.AyondoSecurities.Where(o => o.CName != null).ToList();
 
@@ -432,20 +437,24 @@ namespace CFD_API.Controllers
 
             //var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
-            UpdateQuote(securityDtos);
+            UpdateLastPrice(securityDtos);
 
             return securityDtos;
         }
 
         [HttpGet]
         [Route("{securityId}")]
+        [Route("live/{securityId}")]
         public SecurityDetailDTO GetSecurity(int securityId)
         {
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
 
             //var prodDef = redisProdDefClient.GetById(securityId);
-            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == securityId);
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
+            var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == securityId);
 
             if (prodDef == null)
                 return null;
@@ -460,8 +469,8 @@ namespace CFD_API.Controllers
 
             //get new price
             //var quote = redisQuoteClient.GetById(securityId);
-            var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == securityId);
-            if (Quotes.IsPriceDown(WebCache.Demo.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            var quote = cache.Quotes.FirstOrDefault(o => o.Id == securityId);
+            if (Quotes.IsPriceDown(cache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
             {
                 result.isPriceDown = true;
             }
@@ -490,7 +499,7 @@ namespace CFD_API.Controllers
             decimal maxLong = perPriceCcy2*quote.Offer*maxLongSize;
             decimal maxShort = perPriceCcy2*quote.Bid*maxShortSize;
 
-            var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
+            var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
 
             result.minValueLong = Math.Ceiling(minLong*perSizeValueUSD);
             result.minValueShort = Math.Ceiling(minShort*perSizeValueUSD);

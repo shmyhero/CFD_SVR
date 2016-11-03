@@ -12,7 +12,7 @@
 
         public static string GetCName(string name)
         {
-            var str = name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty).Replace(" Outright", string.Empty).Replace(" Spot", string.Empty);
+            var str = RemoveENameSuffix(name);
 
             if (str.StartsWith("China 50 "))
                 return "新华富时A50";
@@ -25,6 +25,17 @@
                 return Translations.ProdCNames[str];
             else
                 return str;
+            //var strLower = str.ToLower();
+            //var first = Translations.ProdCNamesList.FirstOrDefault(o => o.Key.ToLower() == strLower);
+            //if (first.Key != null)
+            //    return first.Value;
+            //else
+            //    return str;
+        }
+
+        public static string RemoveENameSuffix(string name)
+        {
+            return name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty);//.Replace(" Outright", string.Empty).Replace(" Spot", string.Empty);
         }
 
         public static string AyondoOrderRejectMessageTranslate(string ayondoText)
