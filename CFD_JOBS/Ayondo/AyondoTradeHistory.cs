@@ -20,7 +20,7 @@ namespace CFD_JOBS.Ayondo
         private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
         private static DateTime? _lastEndTime = null;
 
-        public static void Run()
+        public static void Run(bool isLive = false)
         {
             while (true)
             {
@@ -31,7 +31,8 @@ namespace CFD_JOBS.Ayondo
                     bool needSave = false;
                     using (var db = CFDEntities.Create())
                     {
-                        var lastTradeHistory = db.AyondoTradeHistories.OrderByDescending(o => o.Id).Take(1).FirstOrDefault();
+                        var dbTable = db.AyondoTradeHistories;
+                        var lastTradeHistory = dbTable.OrderByDescending(o => o.Id).Take(1).FirstOrDefault();
                         //如果上次同步时间超过24小时，则每次最多只取24小时
                         if ((DateTime.UtcNow - lastTradeHistory.TradeTime).Value.Hours > 24)
                         {
@@ -65,7 +66,7 @@ namespace CFD_JOBS.Ayondo
 
                     var dtDownloadStart = DateTime.UtcNow;
                     var downloadString = webClient.DownloadString(
-                        "http://cfd-stunnel-cn2.cloudapp.net:14535/demo/reports/tradehero/cn/tradehistory?start="
+                        CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost") + (isLive?"live":"demo") + "/reports/tradehero/cn/tradehistory?start="
                         + tsStart + "&end=" + tsEnd);
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
@@ -86,7 +87,8 @@ namespace CFD_JOBS.Ayondo
                         var entities = new List<CFD_COMMON.Models.Entities.AyondoTradeHistory>();
                         using (var db = CFDEntities.Create())
                         {
-                            var dbMaxCreateTime = db.AyondoTradeHistories.Max(o => o.CreateTime);
+                            var dbTable = db.AyondoTradeHistories;
+                            var dbMaxCreateTime = dbTable.Max(o => o.CreateTime);
                             //PositionID,TradeID,AccountID,FirstName,LastName,
                             //TradeTime,ProductID,ProductName,Direction,Trade Size,
                             //Trade Price,Realized P&L,GUID,StopLoss,TakeProfit,
@@ -165,7 +167,7 @@ namespace CFD_JOBS.Ayondo
                             if (entities.Count > 0)
                             {
                                 CFDGlobal.LogLine("saving to db...");
-                                db.AyondoTradeHistories.AddRange(entities);
+                                dbTable.AddRange(entities);
                                 needSave = true;
                             }
 

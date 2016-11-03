@@ -43,14 +43,14 @@ namespace CFD_API.Controllers
 
             var user = GetUser();
             
-            CheckAndCreateAyondoAccount(user);
+            if(!IsLiveUrl) CheckAndCreateAyondoAccount(user);
 
             IList<PositionReport> result = null;
-            using (var wcfClient = new AyondoTradeClient())
+            using (var wcfClient = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
-                    result = wcfClient.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+                    result = wcfClient.GetPositionReport(IsLiveUrl?user.AyLiveUsername: user.AyondoUsername, IsLiveUrl?null: user.AyondoPassword, ignoreCache);
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)//when oauth is required
                 {
@@ -75,10 +75,12 @@ namespace CFD_API.Controllers
 
             //var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
 
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
             var positionDtos = result.Select(delegate(PositionReport report)
             {
                 //var dbSec = dbSecurities.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
-                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 if (prodDef == null)
                 {
@@ -87,10 +89,10 @@ namespace CFD_API.Controllers
                     return null;
                 }
 
-                var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var quote = cache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 
                 var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                if (Quotes.IsPriceDown(WebCache.Demo.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+                if (Quotes.IsPriceDown(cache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
                 {
                     security.isPriceDown = true;
                 }
@@ -109,13 +111,13 @@ namespace CFD_API.Controllers
                 if (prodDef.Ccy2 != "USD")
                 {
                     var fxProdDef =
-                        WebCache.Demo.ProdDefs.FirstOrDefault(
+                        cache.ProdDefs.FirstOrDefault(
                             o => o.Symbol == prodDef.Ccy2 + "USD" && o.Name.EndsWith(" Outright"));
 
                     if (fxProdDef == null)
                     {
                         fxProdDef =
-                            WebCache.Demo.ProdDefs.FirstOrDefault(
+                            cache.ProdDefs.FirstOrDefault(
                                 o => o.Symbol == "USD" + prodDef.Ccy2 && o.Name.EndsWith(" Outright"));
                     }
 
@@ -125,7 +127,7 @@ namespace CFD_API.Controllers
                         fx.id = fxProdDef.Id;
                         fx.symbol = fxProdDef.Symbol;
                         
-                        var fxQuote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == fx.id);
+                        var fxQuote = cache.Quotes.FirstOrDefault(o => o.Id == fx.id);
                         if (fxQuote != null)
                         {
                             fx.ask = fxQuote.Offer;
@@ -153,7 +155,7 @@ namespace CFD_API.Controllers
                 if (quote != null)
                 {
                     decimal upl = report.LongQty.HasValue ? tradeValue.Value*(quote.Bid/report.SettlPrice - 1) : tradeValue.Value*(1 - quote.Offer/report.SettlPrice);
-                    var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
+                    var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
                     posDTO.upl = uplUSD;
                 }
                 else
