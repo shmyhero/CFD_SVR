@@ -262,7 +262,7 @@ namespace CFD_API.Controllers
             amsForm.FirstName = form.firstName;
             amsForm.Gender = form.gender ? "Male" : "Female";
             amsForm.IsTestRecord = false;
-            amsForm.Language = "ZH";
+            amsForm.Language = "CN";
             amsForm.LastName = form.lastName;
             amsForm.Password = form.password;
             amsForm.PhonePrimary = user.Phone;
