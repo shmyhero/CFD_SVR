@@ -78,17 +78,17 @@ namespace CFD_API.Controllers
             return db.Users.FirstOrDefault(o => o.Id == UserId);
         }
 
-        public void CheckAndCreateAyondoAccount(User user)
+        public void CheckAndCreateAyondoDemoAccount(User user)
         {
             if (string.IsNullOrEmpty(user.AyondoUsername))
             {
-                CFDGlobal.LogWarning("No Ayondo Account. Try registing... userId: " + user.Id);
+                CFDGlobal.LogWarning("No Ayondo Demo Account. Try registing... userId: " + user.Id);
 
-                CreateAyondoAccount(user);
+                CreateAyondoDemoAccount(user);
 
                 if (string.IsNullOrEmpty(user.AyondoUsername))
                 {
-                    CFDGlobal.LogWarning("Still No Ayondo Account. userId: " + user.Id);
+                    //CFDGlobal.LogWarning("Still No Ayondo Account. userId: " + user.Id);
 
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
                         __(TransKey.NO_AYONDO_ACCOUNT)));
@@ -101,7 +101,7 @@ namespace CFD_API.Controllers
 
         private static ConcurrentDictionary<int, DateTime> _ayondoRegisteringUsers = new ConcurrentDictionary<int, DateTime>();
 
-        public void CreateAyondoAccount(User user)
+        public void CreateAyondoDemoAccount(User user)
         {
             if (_ayondoRegisteringUsers.ContainsKey(user.Id))
             {
@@ -109,13 +109,13 @@ namespace CFD_API.Controllers
                 var ts = DateTime.UtcNow - time;
                 if (ts < TimeSpan.FromSeconds(8))//last request sent in less than ...
                 {
-                    CFDGlobal.LogInformation("Ayondo Registration Skipped: userId: " + user.Id + ". only " + ts.TotalSeconds +
+                    CFDGlobal.LogInformation("Ayondo Demo Registration Skipped: userId: " + user.Id + ". only " + ts.TotalSeconds +
                                              "s from last one");
                     return;
                 }
             }
 
-            CFDGlobal.LogInformation("Ayondo Registration Start: userId: " + user.Id);
+            CFDGlobal.LogInformation("Ayondo Demo Registration Start: userId: " + user.Id);
             _ayondoRegisteringUsers.AddOrUpdate(user.Id, DateTime.UtcNow, (key, value) => DateTime.UtcNow);
 
             //Must be 5-20 alphanumeric characters (letter and numerals only).
@@ -198,7 +198,7 @@ namespace CFD_API.Controllers
 
                 var str = sr.ReadToEnd();
                 var ts = DateTime.UtcNow - dtBegin;
-                CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                CFDGlobal.LogInformation("AMS demo called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                          httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
                 var jObject = JObject.Parse(str);
@@ -235,7 +235,7 @@ namespace CFD_API.Controllers
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
+            CFDGlobal.LogInformation("AMS check-username called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
 
             var jObject = JObject.Parse(str);
             return jObject;
@@ -315,7 +315,7 @@ namespace CFD_API.Controllers
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+            CFDGlobal.LogInformation("AMS live called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
             var jObject = JObject.Parse(str);
@@ -355,7 +355,7 @@ namespace CFD_API.Controllers
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+            CFDGlobal.LogInformation("AMS reference-account called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
             var jObject = JObject.Parse(str);

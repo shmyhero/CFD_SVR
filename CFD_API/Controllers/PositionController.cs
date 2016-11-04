@@ -43,7 +43,7 @@ namespace CFD_API.Controllers
 
             var user = GetUser();
             
-            if(!IsLiveUrl) CheckAndCreateAyondoAccount(user);
+            if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             IList<PositionReport> result = null;
             using (var wcfClient = new AyondoTradeClient(IsLiveUrl))
@@ -176,7 +176,7 @@ namespace CFD_API.Controllers
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
             var user = GetUser();
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
             
             IList<PositionReport> historyReports;
             using (var clientHttp = new AyondoTradeClient())
@@ -305,7 +305,7 @@ namespace CFD_API.Controllers
         public List<PositionHistoryDTO> GetPositionHistory()
         {
             var user = GetUser();
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             var result = new List<PositionHistoryDTO>();
 
@@ -513,7 +513,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
@@ -693,7 +693,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
@@ -757,7 +757,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             PositionReport report;
             using (var clientHttp = new AyondoTradeClient())
@@ -792,7 +792,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             PositionReport report;
             using (var clientHttp = new AyondoTradeClient())
@@ -827,7 +827,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             PositionReport report;
             using (var clientHttp = new AyondoTradeClient())

@@ -386,7 +386,7 @@ namespace CFD_TEST
             var db = CFDEntities.Create();
             var ivan = db.Users.FirstOrDefault(o => o.Id == 1);
             var userController = new UserController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(), CFDGlobal.BasicRedisClientManager.GetClient());
-            userController.CreateAyondoAccount(ivan);
+            userController.CreateAyondoDemoAccount(ivan);
         }
 
         [TestMethod]

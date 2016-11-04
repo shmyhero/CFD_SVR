@@ -113,7 +113,7 @@ namespace CFD_API.Controllers
                 if (user.AyondoUsername == null)
                     try
                     {
-                        CreateAyondoAccount(user);
+                        CreateAyondoDemoAccount(user);
                     }
                     catch (Exception e)
                     {
@@ -211,7 +211,7 @@ namespace CFD_API.Controllers
             if (user.AyondoUsername == null)
                 try
                 {
-                    CreateAyondoAccount(user);
+                    CreateAyondoDemoAccount(user);
                 }
                 catch (Exception e)
                 {
@@ -227,7 +227,7 @@ namespace CFD_API.Controllers
         public void ResetAyondoAccount()
         {
             var user = GetUser();
-            CreateAyondoAccount(user);
+            CreateAyondoDemoAccount(user);
         }
 
         [HttpGet]
@@ -411,7 +411,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             decimal balance;
             IList<PositionReport> positionReports;
@@ -478,7 +478,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             var endTime = DateTime.UtcNow;
             var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
@@ -638,7 +638,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             var endTime = DateTime.UtcNow;
             var startTime = endTime.AddDays(-30);
@@ -940,7 +940,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoAccount(user);
+            CheckAndCreateAyondoDemoAccount(user);
 
             string transferId;
             using (var clientHttp = new AyondoTradeClient())
