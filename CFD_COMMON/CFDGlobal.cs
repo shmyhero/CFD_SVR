@@ -54,6 +54,16 @@ hqZlC7NyvDf4xQuKFer4LvZrg6XdakHtLezu7W+ZEx9Vu8UDqQBRUjO3lcCrTfim
 BwIDAQAB
 -----END PUBLIC KEY-----";
 
+        public static string OAUTH_TOKEN_PUBLIC_KEY_Live = @"-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjpZnXDpJzWe0nmtFjRrg
+Tq1lpGLKLyQ7szBo7NQRH5x3vOob1UpEH/TQ0fpxDQKBaUYAdqlqmmWFX9H5DOtS
+xGzjGOUslhpVhXtqwh4gVTFndOYSPDubYwbed2reOzl1oxn2rqP9ww5uynPMbOyf
+qvVQulw/EI4E4XW490Hb2YOLghxXN9omIJvNGmEUDXXSR1LwtalvWf8joMZNoH3L
+B+cg+7Ook/4zS/atXL1iig1dVkgTRhBcRJvr1tJBwV52raHXTNzYJ9KPU4jvXb2H
+57x09NJJ/kfCgJ4gJKTBDnFi0eWydsSgq8fVxbrTW1UeNFyqmGfRWggH7E3XMwy9
+1wIDAQAB
+-----END PUBLIC KEY-----";
+
         /// <summary>
         /// the default application-wide BasicRedisClientManager, non-pooled, created for current application
         /// </summary>

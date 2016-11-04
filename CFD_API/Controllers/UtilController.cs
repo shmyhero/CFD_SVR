@@ -991,7 +991,7 @@ namespace CFD_API.Controllers
                 var bytes = Convert.FromBase64String(oauth_token);
 
                 var decryptEngine = new Pkcs1Encoding(new RsaEngine());
-                using (var txtreader = new StringReader(CFDGlobal.OAUTH_TOKEN_PUBLIC_KEY))
+                using (var txtreader = new StringReader(CFDGlobal.OAUTH_TOKEN_PUBLIC_KEY_Live))
                 {
                     var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
                     decryptEngine.Init(false, keyParameter);
@@ -1022,8 +1022,7 @@ namespace CFD_API.Controllers
                     CFDGlobal.LogInformation("oauth LIVE error: cfd user id and ayondo live username doesn't match "+ user.AyLiveUsername + " " + username2);
                     return errorResponse;
                 }
-
-                //todo: live fix login oauth
+                
                 using (var client = new AyondoTradeClient(true))
                 {
                     var account = client.LoginOAuth(username2, oauth_token);
