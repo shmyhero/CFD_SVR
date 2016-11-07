@@ -46,6 +46,24 @@ namespace CFD_TEST
             } 
         }
 
+        [TestMethod]
+        public void DbTest()
+        {
+            using (var db = CFDEntities.Create())
+            {
+                var newPositionHistory = db.NewPositionHistories.FirstOrDefault();
+                var newPositionHistory_Live = db.NewPositionHistory_live.FirstOrDefault();
+
+                var newPositionHistories = db.NewPositionHistories.Take(1).ToList();
+                var newPositionHistories_Live = db.NewPositionHistory_live.Take(1).ToList();
+
+                var a = 1 == 1 ? db.NewPositionHistories.FirstOrDefault() : db.NewPositionHistory_live.FirstOrDefault();
+                var aa = 1 == 2 ? db.NewPositionHistories.FirstOrDefault() : db.NewPositionHistory_live.FirstOrDefault();
+
+                var b = 1 == 1 ? db.NewPositionHistories.Take(1).ToList() : db.NewPositionHistory_live.OfType<NewPositionHistory>().Take(1).ToList();
+                var bb = 1 == 2 ? db.NewPositionHistories.Take(1).ToList() : db.NewPositionHistory_live.OfType<NewPositionHistory>().Take(1).ToList();
+            }
+        }
         
         [TestMethod]
         public void Import()

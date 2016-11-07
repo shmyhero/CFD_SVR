@@ -50,7 +50,9 @@ namespace CFD_API.Controllers
             {
                 try
                 {
-                    result = wcfClient.GetPositionReport(IsLiveUrl?user.AyLiveUsername: user.AyondoUsername, IsLiveUrl?null: user.AyondoPassword, ignoreCache);
+                    result = wcfClient.GetPositionReport(IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword,
+                        ignoreCache);
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)//when oauth is required
                 {
@@ -171,7 +173,6 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("closed_obsolete")]
-        [Route("live/closed_obsolete")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
@@ -305,7 +306,8 @@ namespace CFD_API.Controllers
         public List<PositionHistoryDTO> GetPositionHistory()
         {
             var user = GetUser();
-            CheckAndCreateAyondoDemoAccount(user);
+
+            if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             var result = new List<PositionHistoryDTO>();
 
@@ -316,15 +318,16 @@ namespace CFD_API.Controllers
             var endTimeDB = startTimeAyondo.AddMilliseconds(-1);
             var startTimeDB = endTimeDB.AddDays(-20);
             int monthDays = 30;//假设一个月30天
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
                     //可能从Ayondo拿，也可能从Cache里面拿。
                     //不论是Ayondo还是Cache，拿出来的结果集都不一定是10天。
                     historyReports =
-                        clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTimeAyondo,
-                            endTimeAyondo).ToList();
+                        clientHttp.GetPositionHistoryReport(IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                            IsLiveUrl ? null : user.AyondoPassword,
+                            startTimeAyondo, endTimeAyondo).ToList();
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
@@ -334,6 +337,8 @@ namespace CFD_API.Controllers
             
             if (historyReports.Count == 0)
                 return result;
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
 
             var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
 
@@ -353,7 +358,7 @@ namespace CFD_API.Controllers
                     if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
-                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null)
                         {
@@ -397,14 +402,16 @@ namespace CFD_API.Controllers
                     if (Decimals.IsTradeSizeZero(closePR.LongQty) || Decimals.IsTradeSizeZero(closePR.ShortQty))
                     {
                         //去DB里面拿Open的记录
-                        var openPR = db.NewPositionHistories.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID);
+                        var openPR = IsLiveUrl 
+                            ? db.NewPositionHistory_live.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID)
+                            : db.NewPositionHistories.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID);
                         if (openPR == null)
                         {
                             continue;
                         }
 
                         var secId = Convert.ToInt32(openPR.SecurityId);
-                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null)
                         {
@@ -451,7 +458,9 @@ namespace CFD_API.Controllers
                 endTimeDB = startTime.AddMilliseconds(-1);
                 startTimeDB = endTimeDB.AddDays(-1 * (monthDays - (DateTime.UtcNow - startTime).Days));
 
-                var positionReportsDB = db.NewPositionHistories.Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList();
+                var positionReportsDB = IsLiveUrl
+                    ? db.NewPositionHistory_live.OfType<NewPositionHistory>().Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList()
+                    : db.NewPositionHistories.Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList();
                 positionReportsDB.ToList().ForEach(item => {
                     var dto = new PositionHistoryDTO() {
                         closeAt = item.ClosedAt.Value,
@@ -466,7 +475,7 @@ namespace CFD_API.Controllers
                     };
                     
 
-                    var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == item.SecurityId);
+                    var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == item.SecurityId);
 
                     if (prodDef == null)
                     {
