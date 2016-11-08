@@ -761,9 +761,8 @@ namespace CFD_API.Controllers
             //{
             //    settlP = result.SettlPrice;
             //}
-            settlP = prodDef == null ? result.SettlPrice : Math.Round(result.SettlPrice, prodDef.Prec);
+           var  settlP = prodDef == null ? result.SettlPrice : Math.Round(result.SettlPrice, prodDef.Prec);
 
-#endif
 
             //Ayondo返回的Report里面不包含Invest和TakePx，要从数据库里面拿
             //to-do 先从Demo库拿，以后要考虑Live、Demo分开
