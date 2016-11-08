@@ -72,10 +72,21 @@
             };
         }
 
+        function getQueryStringByName(name) {
+            var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+            if (result == null || result.length < 1) {
+                return "";
+            }
+            return result[1];
+        }
+
         var hub;
 
         function subscribe() {
-            hub.server.S($('#subIds').val());
+            if (getQueryStringByName('live'))
+                hub.server.SL($('#subIds').val());
+            else
+                hub.server.S($('#subIds').val());
         }
 
         $(function () {

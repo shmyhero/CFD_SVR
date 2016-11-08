@@ -5,21 +5,28 @@ using System.Web.Http;
 using AutoMapper;
 using CFD_API.Caching;
 using CFD_API.DTO;
+using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
+using ServiceStack.Redis.Generic;
 
 namespace CFD_API.Controllers
 {
     [RoutePrefix("api/quote")]
     public class QuoteController : CFDController
     {
-        public QuoteController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-            : base(db, mapper, redisClient)
+        //public QuoteController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
+        //    : base(db, mapper, redisClient)
+        //{
+        //}
+        public QuoteController(CFDEntities db, IMapper mapper)
+            : base(db, mapper)
         {
         }
 
+        //todo:for test only
         [HttpGet]
         [Route("{securityId}/tick")]
         public List<TickDTO> GetTicks(int securityId)
@@ -39,16 +46,19 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/tick/10m")]
+        [Route("live/{securityId}/tick/10m")]
         public List<TickDTO> Get10MinutesTicks(int securityId)
         {
-            var rawTickDTOs = WebCache.Demo.GetOrCreateTickRaw(securityId, RedisClient);
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
+            var rawTickDTOs = cache.GetOrCreateTickRaw(securityId);
 
             if (rawTickDTOs.Count == 0)
                 return new List<TickDTO>();
 
             var lastTickTime = rawTickDTOs.Last().time;
 
-            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == securityId);
+            var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == securityId);
             if (prodDef != null && prodDef.QuoteType != enmQuoteType.Closed && prodDef.QuoteType != enmQuoteType.Inactive //is opening
                 && lastTickTime - prodDef.LastOpen < TimeSpan.FromMinutes(10)) // is opened during the last 10 minutes of the ticks data
             {
@@ -85,9 +95,12 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/tick/2h")]
+        [Route("live/{securityId}/tick/2h")]
         public List<TickDTO> Get2HoursTicks(int securityId)
         {
-            var tickToday = WebCache.Demo.GetOrCreateTickToday(securityId, RedisClient);
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
+            var tickToday = cache.GetOrCreateTickToday(securityId);
 
             if (tickToday.Count == 0)
                 return new List<TickDTO>();
@@ -98,9 +111,12 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/tick/today")]
+        [Route("live/{securityId}/tick/today")]
         public List<TickDTO> GetTodayTicks(int securityId)
         {
-            var result = WebCache.Demo.GetOrCreateTickToday(securityId, RedisClient);
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
+            var result = cache.GetOrCreateTickToday(securityId);
             return result;
         }
 
@@ -129,18 +145,25 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/tick/week")]
+        [Route("live/{securityId}/tick/week")]
         public List<TickDTO> GetWeekTicks(int securityId)
         {
             List<TickDTO> result;
 
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
             //get from WebCache
-            var tryGetValue = WebCache.Demo.TickWeek.TryGetValue(securityId, out result);
+            var tryGetValue = cache.TickWeek.TryGetValue(securityId, out result);
             if (tryGetValue)
                 return result;
 
             //get from Redis
-            var redisTickClient = RedisClient.As<Tick>();
-            var ticks = redisTickClient.Lists["tick10m:" + securityId].GetAll();
+            List<Tick> ticks;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisTickClient = redisClient.As<Tick>();
+                ticks = redisTickClient.Lists["tick10m:" + securityId].GetAll();
+            }
 
             if (ticks.Count == 0)
                 result = new List<TickDTO>();
@@ -153,7 +176,7 @@ namespace CFD_API.Controllers
                 result = ticksWeek.Select(o => Mapper.Map<TickDTO>(o)).ToList();
             }
 
-            WebCache.Demo.TickWeek.AddOrUpdate(securityId, result, (k, v) => result);
+            cache.TickWeek.AddOrUpdate(securityId, result, (k, v) => result);
 
             return result;
         }
@@ -196,18 +219,25 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/tick/month")]
+        [Route("live/{securityId}/tick/month")]
         public List<TickDTO> GetMonthTicks(int securityId)
         {
             List<TickDTO> result;
 
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
             //get from WebCache
-            var tryGetValue = WebCache.Demo.TickMonth.TryGetValue(securityId, out result);
+            var tryGetValue = cache.TickMonth.TryGetValue(securityId, out result);
             if (tryGetValue)
                 return result;
 
             //get from Redis
-            var redisTickClient = RedisClient.As<Tick>();
-            var ticks = redisTickClient.Lists["tick1h:" + securityId].GetAll();
+            List<Tick> ticks;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisTickClient = redisClient.As<Tick>();
+                ticks = redisTickClient.Lists["tick1h:" + securityId].GetAll();
+            }
 
             if (ticks.Count == 0)
                 result = new List<TickDTO>();
@@ -220,7 +250,7 @@ namespace CFD_API.Controllers
                 result = ticksMonth.Select(o => Mapper.Map<TickDTO>(o)).ToList();
             }
 
-            WebCache.Demo.TickMonth.AddOrUpdate(securityId, result, (k, v) => result);
+            cache.TickMonth.AddOrUpdate(securityId, result, (k, v) => result);
 
             return result;
         }
@@ -250,12 +280,18 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/kline/5m")]
+        [Route("live/{securityId}/kline/5m")]
         public List<KLineDTO> Get5mKLine(int securityId)
         {
-            var redisKLineClient = RedisClient.As<KLine>();
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(KLineSize.FiveMinutes) + securityId].GetAll();
-            
+            List<KLine> klines;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisKLineClient = redisClient.As<KLine>();
+                //var redisProdDefClient = redisClient.As<ProdDef>();
+
+                klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(KLineSize.FiveMinutes) + securityId].GetAll();
+            }
+
             if (klines.Count == 0)
                 return new List<KLineDTO>();
 
@@ -275,11 +311,18 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{securityId}/kline/day")]
+        [Route("live/{securityId}/kline/day")]
         public List<KLineDTO> GetDayKLine(int securityId)
         {
-            var redisKLineClient = RedisClient.As<KLine>();
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(KLineSize.Day) + securityId];
+            IRedisList<KLine> klines;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisKLineClient = redisClient.As<KLine>();
+                //var redisProdDefClient = redisClient.As<ProdDef>();
+
+                klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(KLineSize.Day) + securityId];
+            }
+
             if (klines.Count == 0)
                 return new List<KLineDTO>();
 
@@ -302,13 +345,19 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("latest")]
+        [Route("live/latest")]
         public List<QuoteTemp> GetLatestQuotes()
         {
-            var redisQuoteClient = RedisClient.As<Quote>();
-            var quotes = redisQuoteClient.GetAll().OrderByDescending(o => o.Time).ToList();
+            List<Quote> quotes;
+            IList<ProdDef> prodDefs;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisQuoteClient = redisClient.As<Quote>();
+                quotes = redisQuoteClient.GetAll().OrderByDescending(o => o.Time).ToList();
 
-            var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDefs = redisProdDefClient.GetAll();
+                var redisProdDefClient = redisClient.As<ProdDef>();
+                prodDefs = redisProdDefClient.GetAll();
+            }
 
             //var securities = db.AyondoSecurities.ToList();
 

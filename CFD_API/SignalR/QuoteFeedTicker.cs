@@ -25,7 +25,13 @@ namespace CFD_API.SignalR
             get { return _instance.Value; }
         }
 
+        /// <summary>
+        /// key:    clientID
+        /// value:  security IDs
+        /// </summary>
         private readonly ConcurrentDictionary<string, IList<int>> _subscription = new ConcurrentDictionary<string, IList<int>>();
+
+        private readonly ConcurrentDictionary<string, IList<int>> _subscription_Live = new ConcurrentDictionary<string, IList<int>>();
 
         //private readonly object _updateStockPricesLock = new object();
 
@@ -87,7 +93,9 @@ namespace CFD_API.SignalR
 
                             if (subscribedQuotes.Any())
                             {
-                                Clients.Group(userId).p(subscribedQuotes.Select(o => new QuoteFeed
+                                //Clients.Group(userId)
+                                Clients.Client(userId)
+                                    .p(subscribedQuotes.Select(o => new QuoteFeed
                                 {
                                     id = o.Id,
                                     last = Quotes.GetLastPrice(o),
@@ -119,12 +127,26 @@ namespace CFD_API.SignalR
         public void AddSubscription(string identity, IList<int> ids)
         {
             _subscription.AddOrUpdate(identity, ids, (key, value) => ids);
+
+            IList<int> output;
+            _subscription_Live.TryRemove(identity, out output);
         }
 
-        public void RemoveSubscription(string identity)
+        public void AddSubscription_Live(string identity, IList<int> ids)
+        {
+            _subscription_Live.AddOrUpdate(identity, ids, (key, value) => ids);
+
+            IList<int> output;
+            _subscription.TryRemove(identity, out output);
+        }
+
+        public void RemoveAllSubscription(string identity)
         {
             IList<int> value;
+
             _subscription.TryRemove(identity, out value);
+
+            _subscription_Live.TryRemove(identity, out value);
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
 using CFD_API.Controllers.Attributes;
+using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using ServiceStack.Redis;
 
@@ -14,7 +15,7 @@ namespace CFD_API.Controllers
 {
     public class MiscController : CFDController
     {
-        public MiscController(CFDEntities db, IMapper mapper, IRedisClient redisClient) : base(db, mapper, redisClient)
+        public MiscController(CFDEntities db, IMapper mapper) : base(db, mapper)
         {
         }
 
@@ -42,7 +43,11 @@ namespace CFD_API.Controllers
         [ActionName("redis")]
         public HttpResponseMessage RedisTest()
         {
-            var value = RedisClient.GetValue("anykey");
+            string value;
+            using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+            {
+                value = redisClient.GetValue("anykey");
+            }
             return Request.CreateResponse(HttpStatusCode.OK, "dbsize " + RedisClient.DbSize);
         }
 

@@ -14,8 +14,8 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/operation")]
     public class OperationController : CFDController
     {
-        public OperationController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-            : base(db, mapper, redisClient)
+        public OperationController(CFDEntities db, IMapper mapper)
+            : base(db, mapper)
         {
         }
 

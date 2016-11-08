@@ -17,8 +17,8 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/reward")]
     public class RewardController : CFDController
     {
-        public RewardController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-            : base(db, mapper, redisClient)
+        public RewardController(CFDEntities db, IMapper mapper)
+            : base(db, mapper)
         {
         }
         

@@ -37,8 +37,12 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/user")]
     public class UserController : CFDController
     {
-        public UserController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-            : base(db, mapper, redisClient)
+        //public UserController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
+        //    : base(db, mapper, redisClient)
+        //{
+        //}
+
+        public UserController(CFDEntities db, IMapper mapper) : base(db, mapper)
         {
         }
 
@@ -221,6 +225,7 @@ namespace CFD_API.Controllers
             return result;
         }
 
+        //todo: for test only
         [HttpGet]
         [BasicAuth]
         [ActionName("resetAyondoAccount")]
@@ -411,16 +416,21 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             decimal balance;
             IList<PositionReport> positionReports;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
-                    balance = clientHttp.GetBalance(user.AyondoUsername, user.AyondoPassword);
-                    positionReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword, ignoreCache);
+                    balance = clientHttp.GetBalance(
+                        IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword);
+                    positionReports = clientHttp.GetPositionReport(
+                        IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword,
+                        ignoreCache);
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
@@ -434,11 +444,13 @@ namespace CFD_API.Controllers
             //var prodDefs = redisProdDefClient.GetAll();
             //var quotes = redisQuoteClient.GetAll();
 
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
             decimal marginUsed = 0;
             decimal totalUPL = 0;
             foreach (var report in positionReports)
             {
-                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
 
                 if (prodDef == null) continue;
 
@@ -447,14 +459,14 @@ namespace CFD_API.Controllers
                 //************************************************************************
                 var tradeValue = report.SettlPrice*prodDef.LotSize/prodDef.PLUnits*(report.LongQty ?? report.ShortQty);
 
-                marginUsed += FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes)/report.Leverage.Value;
+                marginUsed += FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes)/report.Leverage.Value;
 
                 //calculate UPL
-                var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var quote = cache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 if (quote != null)
                 {
                     var upl = report.LongQty.HasValue ? tradeValue.Value*(quote.Bid/report.SettlPrice - 1) : tradeValue.Value*(1 - quote.Offer/report.SettlPrice);
-                    totalUPL += FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
+                    totalUPL += FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
                 }
                 else
                 {
@@ -638,21 +650,25 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             var endTime = DateTime.UtcNow;
             var startTime = endTime.AddDays(-30);
 
             //closed position
-            var positionHistoryReports = db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList();
+            var positionHistoryReports = IsLiveUrl
+                ? db.NewPositionHistory_live.OfType<NewPositionHistory>().Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList()
+                : db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList();
 
             //open position
             IList<PositionReport> positionOpenReports;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
-                    positionOpenReports = clientHttp.GetPositionReport(user.AyondoUsername, user.AyondoPassword);
+                    positionOpenReports = clientHttp.GetPositionReport(
+                        IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword);
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
@@ -665,10 +681,12 @@ namespace CFD_API.Controllers
             var commodityPL = new PLReportDTO() { name = "商品" };
             var stockUSPL = new PLReportDTO() { name = "美股" };
 
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
             #region closed positions
             foreach (var closedReport in positionHistoryReports)
             {
-                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == closedReport.SecurityId);
+                var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == closedReport.SecurityId);
                 if (prodDef == null) continue;
 
                 var invest = closedReport.InvestUSD.HasValue? closedReport.InvestUSD.Value : 0;
@@ -702,7 +720,7 @@ namespace CFD_API.Controllers
             {
                 var secId = Convert.ToInt32(report.SecurityID);
 
-                var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                 if (prodDef == null) continue;
 
@@ -713,15 +731,15 @@ namespace CFD_API.Controllers
                 //************************************************************************
                 var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
 
-                var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes) / report.Leverage.Value;
+                var invest = FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes) / report.Leverage.Value;
 
                 //calculate UPL
                 decimal uplUSD = 0;
-                var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
+                var quote = cache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 if (quote != null)
                 {
                     var upl = report.LongQty.HasValue ? tradeValue.Value * (quote.Bid / report.SettlPrice - 1) : tradeValue.Value * (1 - quote.Offer / report.SettlPrice);
-                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
+                    uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
                 }
                 else
                 {
@@ -888,10 +906,9 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<MessageDTO> GetMessages(int pageNum = 1, int pageSize = 20)
         {
-            var messages = db.Messages
-                .Where(o => o.UserId == UserId)
-                .OrderByDescending(o => o.CreatedAt)
-                .Skip((pageNum - 1) * pageSize).Take(pageSize).ToList();
+            var messages = IsLiveUrl
+                ? db.Message_Live.OfType<Message>().Where(o => o.UserId == UserId).OrderByDescending(o => o.CreatedAt).Skip((pageNum - 1) * pageSize).Take(pageSize).ToList()
+                : db.Messages.Where(o => o.UserId == UserId).OrderByDescending(o => o.CreatedAt).Skip((pageNum - 1) * pageSize).Take(pageSize).ToList();
 
             return messages.Select(o => new MessageDTO()
             {
@@ -912,7 +929,9 @@ namespace CFD_API.Controllers
         {
             ResultDTO result = new ResultDTO() { success = true };
 
-            var message = db.Messages.FirstOrDefault(o => o.UserId == UserId && o.Id == id);
+            var message = IsLiveUrl
+                ? db.Message_Live.FirstOrDefault(o => o.UserId == UserId && o.Id == id)
+                : db.Messages.FirstOrDefault(o => o.UserId == UserId && o.Id == id);
             if(message != null)
             {
                 message.IsReaded = true;
@@ -928,13 +947,14 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public int GetUnreadMessage()
         {
-            int unread = db.Messages.Count(o => o.UserId == UserId && !o.IsReaded);
+            int unread = IsLiveUrl
+                ? db.Message_Live.Count(o => o.UserId == UserId && !o.IsReaded)
+                : db.Messages.Count(o => o.UserId == UserId && !o.IsReaded);
             return unread;
         }
         
         [HttpGet]
         [Route("deposit/id")]
-        [Route("live/deposit/id")]
         [BasicAuth]
         public string GetDepositTransferId(decimal amount)
         {

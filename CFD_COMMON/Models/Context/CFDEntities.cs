@@ -203,6 +203,35 @@ namespace CFD_COMMON.Models.Context
             //modelBuilder.Entity<AyondoSecurity>()
             //    .Property(e => e.PerUnitEquals)
             //    .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.SettlePrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.LongQty)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.ShortQty)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.Leverage)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.InvestUSD)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.PL)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.ClosedPrice)
+                .HasPrecision(18, 5);
         }
     }
 }

@@ -51,7 +51,9 @@ namespace CFD_API.Controllers
             {
                 try
                 {
-                    result = wcfClient.GetPositionReport(IsLiveUrl?user.AyLiveUsername: user.AyondoUsername, IsLiveUrl?null: user.AyondoPassword, ignoreCache);
+                    result = wcfClient.GetPositionReport(IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword,
+                        ignoreCache);
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)//when oauth is required
                 {
@@ -172,7 +174,6 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("closed_obsolete")]
-        [Route("live/closed_obsolete")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
@@ -306,7 +307,8 @@ namespace CFD_API.Controllers
         public List<PositionHistoryDTO> GetPositionHistory()
         {
             var user = GetUser();
-            CheckAndCreateAyondoDemoAccount(user);
+
+            if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             var result = new List<PositionHistoryDTO>();
 
@@ -317,15 +319,17 @@ namespace CFD_API.Controllers
             var endTimeDB = startTimeAyondo.AddMilliseconds(-1);
             var startTimeDB = endTimeDB.AddDays(-20);
             int monthDays = 30;//假设一个月30天
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
                     //可能从Ayondo拿，也可能从Cache里面拿。
                     //不论是Ayondo还是Cache，拿出来的结果集都不一定是10天。
                     historyReports =
-                        clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword, startTimeAyondo,
-                            endTimeAyondo).ToList();
+                        clientHttp.GetPositionHistoryReport(
+                            IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                            IsLiveUrl ? null : user.AyondoPassword,
+                            startTimeAyondo, endTimeAyondo).ToList();
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
@@ -335,6 +339,8 @@ namespace CFD_API.Controllers
             
             if (historyReports.Count == 0)
                 return result;
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
 
             var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
 
@@ -354,7 +360,7 @@ namespace CFD_API.Controllers
                     if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
-                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null)
                         {
@@ -398,14 +404,16 @@ namespace CFD_API.Controllers
                     if (Decimals.IsTradeSizeZero(closePR.LongQty) || Decimals.IsTradeSizeZero(closePR.ShortQty))
                     {
                         //去DB里面拿Open的记录
-                        var openPR = db.NewPositionHistories.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID);
+                        var openPR = IsLiveUrl 
+                            ? db.NewPositionHistory_live.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID)
+                            : db.NewPositionHistories.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID);
                         if (openPR == null)
                         {
                             continue;
                         }
 
                         var secId = Convert.ToInt32(openPR.SecurityId);
-                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null)
                         {
@@ -452,7 +460,9 @@ namespace CFD_API.Controllers
                 endTimeDB = startTime.AddMilliseconds(-1);
                 startTimeDB = endTimeDB.AddDays(-1 * (monthDays - (DateTime.UtcNow - startTime).Days));
 
-                var positionReportsDB = db.NewPositionHistories.Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList();
+                var positionReportsDB = IsLiveUrl
+                    ? db.NewPositionHistory_live.OfType<NewPositionHistory>().Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList()
+                    : db.NewPositionHistories.Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList();
                 positionReportsDB.ToList().ForEach(item => {
                     var dto = new PositionHistoryDTO() {
                         closeAt = item.ClosedAt.Value,
@@ -467,7 +477,7 @@ namespace CFD_API.Controllers
                     };
                     
 
-                    var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == item.SecurityId);
+                    var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == item.SecurityId);
 
                     if (prodDef == null)
                     {
@@ -514,7 +524,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
@@ -524,7 +534,9 @@ namespace CFD_API.Controllers
             //if (security == null)
             //    throw new Exception("security not found");
 
-            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
+            var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             if (prodDef == null)
                 throw new Exception("security not found");
 
@@ -534,10 +546,10 @@ namespace CFD_API.Controllers
             //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
             //************************************************************************
 
-            decimal tradeValueCcy2 = FX.ConvertByOutrightMidPrice(tradeValueUSD, "USD", prodDef.Ccy2, WebCache.Demo.ProdDefs, WebCache.Demo.Quotes);
+            decimal tradeValueCcy2 = FX.ConvertByOutrightMidPrice(tradeValueUSD, "USD", prodDef.Ccy2, cache.ProdDefs, cache.Quotes);
 
-            var quote = WebCache.Demo.Quotes.FirstOrDefault(o => o.Id == form.securityId);
-            if(Quotes.IsPriceDown(WebCache.Demo.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            var quote = cache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
+            if(Quotes.IsPriceDown(cache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
                         __(TransKey.PRICEDOWN)));
@@ -556,11 +568,14 @@ namespace CFD_API.Controllers
                 stopPx = _minStopPx;
 
             PositionReport result;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
-                    result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.isLong,
+                    result = clientHttp.NewOrder(
+                        IsLiveUrl? user.AyLiveUsername: user.AyondoUsername,
+                        IsLiveUrl? null: user.AyondoPassword,
+                        form.securityId, form.isLong,
                         //form.isLong ? security.MinSizeLong.Value : security.MinSizeShort.Value
                         quantity,
                         leverage: form.leverage,
@@ -584,7 +599,7 @@ namespace CFD_API.Controllers
                                   result.SettlPrice);
 
                 //save new position history
-                db.NewPositionHistories.Add(new NewPositionHistory()
+                var newHistory = new NewPositionHistory_live()
                 {
                     Id = Convert.ToInt64(result.PosMaintRptID),
                     UserId = UserId,
@@ -595,16 +610,22 @@ namespace CFD_API.Controllers
                     ShortQty = result.ShortQty,
                     SettlePrice = result.SettlPrice,
                     InvestUSD = form.invest,
-                });
+                };
+                if (IsLiveUrl)
+                    db.NewPositionHistory_live.Add(newHistory);
+                else
+                    db.NewPositionHistories.Add(newHistory);
 
                 //update ayondo account id if not same
                 var accountId = Convert.ToInt64(result.Account);
-                if (user.AyondoAccountId != accountId)
+                if (IsLiveUrl && user.AyLiveAccountId != accountId)
+                    user.AyLiveAccountId = accountId;
+                if (!IsLiveUrl && user.AyondoAccountId != accountId)
                     user.AyondoAccountId = accountId;
 
                 db.SaveChanges();
 
-                RewardDailyDemoTransaction();
+                if(!IsLiveUrl) RewardDailyDemoTransaction();
 
                 //when price changes, set stop again to prevent >100% loss
                 if (quotePrice != result.SettlPrice)
@@ -622,7 +643,9 @@ namespace CFD_API.Controllers
                                           " | oldStop:" + stopPx + " newStop:" + newStopPx);
                         try
                         {
-                            var positionReport = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword,
+                            var positionReport = clientHttp.ReplaceOrder(
+                                IsLiveUrl?user.AyLiveUsername: user.AyondoUsername, 
+                                IsLiveUrl? null : user.AyondoPassword,
                                 Convert.ToInt32(result.SecurityID), result.StopOID, newStopPx,
                                 result.PosMaintRptID);
                         }
@@ -694,10 +717,12 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             //if (prodDef == null)
             //    throw new Exception("security not found");
 
@@ -705,22 +730,14 @@ namespace CFD_API.Controllers
             //var quote = redisQuoteClient.GetById(form.securityId);
 
             PositionReport result;
-            decimal settlP = 0;
-#if DEBUG
-            result = new PositionReport()
-            {
-                LongQty = 1,
-                SettlPrice = 100,
-                Leverage = 50,
-                PL = 600,
-                CreateTime = DateTime.UtcNow
-            };
-#else
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
-                    result = clientHttp.NewOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, !form.isPosLong, form.posQty, nettingPositionId: form.posId);
+                    result = clientHttp.NewOrder(
+                        IsLiveUrl? user.AyLiveUsername : user.AyondoUsername, 
+                        IsLiveUrl? null  :user.AyondoPassword, 
+                        form.securityId, !form.isPosLong, form.posQty, nettingPositionId: form.posId);
                 }
                 catch (FaultException<OrderRejectedFault> e)
                 {
@@ -812,14 +829,17 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             PositionReport report;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
-                    report = clientHttp.NewTakeOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.price, form.posId);
+                    report = clientHttp.NewTakeOrder(
+                        IsLiveUrl?user.AyLiveUsername: user.AyondoUsername,
+                        IsLiveUrl?null : user.AyondoPassword,
+                        form.securityId, form.price, form.posId);
                 }
                 catch (FaultException<OrderRejectedFault> e)
                 {
@@ -833,7 +853,7 @@ namespace CFD_API.Controllers
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = WebCache.GetInstance(IsLiveUrl).ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
@@ -847,14 +867,17 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             PositionReport report;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 try
                 {
-                    report = clientHttp.CancelOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.orderId, form.posId);
+                    report = clientHttp.CancelOrder(
+                        IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword,
+                        form.securityId, form.orderId, form.posId);
                 }
                 catch (FaultException<OrderRejectedFault> e)
                 {
@@ -868,7 +891,7 @@ namespace CFD_API.Controllers
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = WebCache.GetInstance(IsLiveUrl).ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
@@ -882,14 +905,17 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             PositionReport report;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             { 
                 try
                 {
-                    report = clientHttp.ReplaceOrder(user.AyondoUsername, user.AyondoPassword, form.securityId, form.orderId, form.price, form.posId);
+                    report = clientHttp.ReplaceOrder(
+                        IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword,
+                        form.securityId, form.orderId, form.price, form.posId);
                 }
                 catch (FaultException<OrderRejectedFault> e)
                 {
@@ -903,7 +929,7 @@ namespace CFD_API.Controllers
             //if (dbSec.DisplayDecimals != null)
             //    posDTO.settlePrice = Math.Round(posDTO.settlePrice, Convert.ToInt32(dbSec.DisplayDecimals));
             //var redisProdDefClient = RedisClient.As<ProdDef>();
-            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
+            var prodDef = WebCache.GetInstance(IsLiveUrl).ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
