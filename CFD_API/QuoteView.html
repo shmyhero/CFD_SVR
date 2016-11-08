@@ -62,6 +62,14 @@
             };
         }
 
+        function getQueryStringByName(name) {
+            var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+            if (result == null || result.length < 1) {
+                return "";
+            }
+            return result[1];
+        }
+
         $(function () {
 
             var ticker = 
@@ -79,7 +87,7 @@
             }
 
             $(function () {
-                $.ajax('api/quote/latest').done(function (stocks) {
+                $.ajax('api/quote/' + (getQueryStringByName('live') ? 'live/' : '') + 'latest').done(function (stocks) {
                     $stockTableBody.empty();
                     $.each(stocks, function () {
                         var stock = formatStock(this);

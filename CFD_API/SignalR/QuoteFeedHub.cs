@@ -34,11 +34,11 @@ namespace CFD_API.SignalR
             //var auth = Context.QueryString["auth"];
             //var userId = auth.Substring(0, auth.IndexOf('_'));
 
-            //leave group
-            Groups.Remove(Context.ConnectionId, Context.ConnectionId);
+            ////leave group
+            //Groups.Remove(Context.ConnectionId, Context.ConnectionId);
 
             //clear quote subscription
-            _quoteFeedTicker.RemoveSubscription(Context.ConnectionId);
+            _quoteFeedTicker.RemoveAllSubscription(Context.ConnectionId);
 
             return base.OnDisconnected(stopCalled);
         }
@@ -51,13 +51,28 @@ namespace CFD_API.SignalR
             //var auth = Context.QueryString["auth"];
             //var userId = auth.Substring(0, auth.IndexOf('_'));
 
-            //join group
-            Groups.Add(Context.ConnectionId, Context.ConnectionId);// single-user group
+            ////join group
+            //Groups.Add(Context.ConnectionId, Context.ConnectionId);// single-user group
 
             //add quote subscription
             var secIds = strSecurityIds.Split(new char[]{','},StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Distinct().ToList();
 
             _quoteFeedTicker.AddSubscription(Context.ConnectionId, secIds);
+        }
+
+        [HubMethodName("SL")]
+        public void SubscribeLive(string strSecurityIds)
+        {
+            //var auth = Context.QueryString["auth"];
+            //var userId = auth.Substring(0, auth.IndexOf('_'));
+
+            ////join group
+            //Groups.Add(Context.ConnectionId, Context.ConnectionId);// single-user group
+
+            //add quote subscription
+            var secIds = strSecurityIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Distinct().ToList();
+
+            _quoteFeedTicker.AddSubscription_Live(Context.ConnectionId, secIds);
         }
 
         //[HubMethodName("L")]
