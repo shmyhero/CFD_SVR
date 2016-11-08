@@ -29,15 +29,15 @@ namespace CFD_API.Controllers
 
         public bool IsLiveUrl
         {
-            get { return Request.RequestUri.AbsolutePath.Contains("/live/"); }
+            get { return Request.RequestUri.AbsolutePath.Contains("/live/") || Request.RequestUri.AbsolutePath.EndsWith("/live"); }
         }
 
-        public CFDController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-        {
-            this.db = db;
-            this.Mapper = mapper;
-            this.RedisClient = redisClient;
-        }
+        //public CFDController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
+        //{
+        //    this.db = db;
+        //    this.Mapper = mapper;
+        //    this.RedisClient = redisClient;
+        //}
 
         public CFDController(CFDEntities db, IMapper mapper)
         {

@@ -16,8 +16,8 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/competition")]
     public class CompetitionController : CFDController
     {
-        public CompetitionController(CFDEntities db, IMapper mapper, IRedisClient redisClient)
-            : base(db, mapper, redisClient)
+        public CompetitionController(CFDEntities db, IMapper mapper)
+            : base(db, mapper)
         {
         }
 

@@ -401,10 +401,10 @@ namespace CFD_TEST
         [TestMethod]
         public void CreateAyondoAccount()
         {
-            var db = CFDEntities.Create();
-            var ivan = db.Users.FirstOrDefault(o => o.Id == 1);
-            var userController = new UserController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(), CFDGlobal.BasicRedisClientManager.GetClient());
-            userController.CreateAyondoDemoAccount(ivan);
+            //var db = CFDEntities.Create();
+            //var ivan = db.Users.FirstOrDefault(o => o.Id == 1);
+            //var userController = new UserController(db, MapperConfig.GetAutoMapperConfiguration().CreateMapper(), CFDGlobal.BasicRedisClientManager.GetClient());
+            //userController.CreateAyondoDemoAccount(ivan);
         }
 
         [TestMethod]

@@ -55,8 +55,7 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(50)]
         public string AyLivePassword { get; set; }
 
-        [StringLength(50)]
-        public string AyLiveAccountId { get; set; }
+        public long? AyLiveAccountId { get; set; }
 
         [StringLength(50)]
         public string AyLiveAccountGuid { get; set; }

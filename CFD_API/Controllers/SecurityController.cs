@@ -266,9 +266,10 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("fx/outright")]
+        [Route("live/fx/outright")]
         public List<SecurityDTO> GetFxOutrightList(int page = 1, int perPage = 20)
         {
-            var activeProds = GetActiveProds();
+            var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_FX && o.Name.EndsWith(" Outright")).ToList();
 
@@ -607,7 +608,7 @@ namespace CFD_API.Controllers
         [Route("live/byPopularity")]
         public List<ByPopularityDTO> GetByPopularity()
         {
-            var activeProd = GetActiveProds();
+            var activeProd = GetActiveProds(IsLiveUrl);
 
             var ts1day = TimeSpan.FromDays(1);
             var dtEnd = DateTime.UtcNow;
@@ -616,10 +617,10 @@ namespace CFD_API.Controllers
             List<NewPositionHistory> tradeHistory = new List<NewPositionHistory>();
             for (int i = 0; i < 10; i++)
             {
-                tradeHistory = db.NewPositionHistories.AsNoTracking()
-                    .Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd) // >= start and < end
-                    .ToList();
-
+                tradeHistory =IsLiveUrl
+                    ? db.NewPositionHistory_live.AsNoTracking().OfType<NewPositionHistory>().Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd).ToList()
+                    :db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd).ToList(); // >= start and < end
+                    
                 //trade history list covers more than 3 active securities
                 if (tradeHistory.Select(o => o.SecurityId).Distinct().Count(o => activeProd.Any(p => p.Id == o)) >= 3)
                     break;

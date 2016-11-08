@@ -75,7 +75,7 @@ namespace CFD_API.Caching
         /// </summary>
         public  Dictionary<int, int> PriceDownInterval { get; private set; }
 
-        private  void UpdateRawTicks(object state)
+        private void UpdateRawTicks(object state)
         {
             var tsTickListLengthCleanWhen = TimeSpan.FromMinutes(60);
             var tsTickListLengthCleanTo = TimeSpan.FromMinutes(30);
@@ -137,7 +137,7 @@ namespace CFD_API.Caching
             }
         }
 
-        private  void UpdateTicks(object state)
+        private void UpdateTicks(object state)
         {
             while (true)
             {
@@ -153,7 +153,7 @@ namespace CFD_API.Caching
             }
         }
 
-        private  void UpdateTicksByConditions(ConcurrentDictionary<int, List<TickDTO>> dicTicks, TickSize tickSize, TimeSpan tsTickListLength)
+        private void UpdateTicksByConditions(ConcurrentDictionary<int, List<TickDTO>> dicTicks, TickSize tickSize, TimeSpan tsTickListLength)
         {
             try
             {
@@ -219,7 +219,7 @@ namespace CFD_API.Caching
             }
         }
 
-        private  void UpdateProdDefs(object state)
+        private void UpdateProdDefs(object state)
         {
             while (true)
             {
@@ -240,7 +240,7 @@ namespace CFD_API.Caching
             }
         }
 
-        private  void UpdateQuotes(object state)
+        private void UpdateQuotes(object state)
         {
             while (true)
             {
@@ -261,7 +261,7 @@ namespace CFD_API.Caching
             }
         }
 
-        private  void UpdatePriceDownInterval(object state)
+        private void UpdatePriceDownInterval(object state)
         {
             using (var db = CFDEntities.Create())
             {
@@ -277,7 +277,7 @@ namespace CFD_API.Caching
 
         }
 
-        public  List<TickDTO> GetOrCreateTickRaw(int secId, IRedisClient redisClient)
+        public List<TickDTO> GetOrCreateTickRaw(int secId)
         {
             List<TickDTO> rawTickDTOs;
 
@@ -287,8 +287,12 @@ namespace CFD_API.Caching
                 return rawTickDTOs;
 
             //get from Redis
-            var redisTickClient = redisClient.As<Tick>();
-            var ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.Raw) + secId].GetAll();
+            List<Tick> ticks;
+            using (var redisClient = _redisClientsManager.GetClient())
+            {
+                var redisTickClient = redisClient.As<Tick>();
+                ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.Raw) + secId].GetAll();
+            }
 
             if (ticks.Count == 0)
                 rawTickDTOs = new List<TickDTO>();
@@ -304,7 +308,7 @@ namespace CFD_API.Caching
             return rawTickDTOs;
         }
 
-        public  List<TickDTO> GetOrCreateTickToday(int secId, IRedisClient redisClient)
+        public List<TickDTO> GetOrCreateTickToday(int secId)
         {
             List<TickDTO> tickDTOs;
 
@@ -314,8 +318,12 @@ namespace CFD_API.Caching
                 return tickDTOs;
 
             //get from Redis
-            var redisTickClient = redisClient.As<Tick>();
-            var ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.OneMinute) + secId].GetAll();
+            List<Tick> ticks;
+            using (var redisClient = _redisClientsManager.GetClient())
+            {
+                var redisTickClient = redisClient.As<Tick>();
+                ticks = redisTickClient.Lists[Ticks.GetTickListNamePrefix(TickSize.OneMinute) + secId].GetAll();
+            }
 
             if (ticks.Count == 0)
                 tickDTOs = new List<TickDTO>();
