@@ -42,11 +42,13 @@ namespace CFD_API.SignalR
         //private readonly Random _updateOrNotRandom = new Random();
 
         private readonly Timer _timer;
+        private readonly Timer _timer_Live;
         //private volatile bool _updatingStockPrices = false;
 
         //private readonly IRedisTypedClient<Quote> _redisClient;
 
         private IDictionary<int, Quote> dicLastQuotes;
+        private IDictionary<int, Quote> dicLastQuotes_Live;
 
         private IHubConnectionContext<dynamic> Clients { get; set; }
 
@@ -60,6 +62,7 @@ namespace CFD_API.SignalR
             CFDGlobal.LogLine("Starting QuoteFeedTicker...");
             //Start();
             _timer = new Timer(Start, null, _updateInterval, TimeSpan.FromMilliseconds(-1));
+            _timer_Live = new Timer(Start_Live, null, _updateInterval, TimeSpan.FromMilliseconds(-1));
         }
 
         private void Start(object state)
@@ -112,6 +115,67 @@ namespace CFD_API.SignalR
                     catch (Exception)
                     {
                         
+                    }
+                }
+
+                var workTime = DateTime.Now - dtLastBegin;
+
+                //broadcast prices every second
+                var sleepTime = _updateInterval > workTime ? _updateInterval - workTime : TimeSpan.Zero;
+
+                Thread.Sleep(sleepTime);
+            }
+        }
+
+        private void Start_Live(object state)
+        {
+            DateTime dtLastBegin;
+            while (true)
+            {
+                dtLastBegin = DateTime.Now;
+
+                if (_subscription_Live.Count > 0)
+                {
+                    try
+                    {
+                        //var quotes = _redisClient.GetAll();
+                        var quotes = WebCache.Live.Quotes;
+
+                        if (dicLastQuotes_Live == null) //first time
+                        {
+                            dicLastQuotes_Live = quotes.ToDictionary(o => o.Id);
+                            continue;
+                        }
+
+                        var updatedQuotes = quotes.Where(o => !dicLastQuotes_Live.ContainsKey(o.Id) || o.Time != dicLastQuotes_Live[o.Id].Time).ToList();
+
+                        foreach (var pair in _subscription_Live)
+                        {
+                            var userId = pair.Key;
+                            var subscribedQuotesIds = pair.Value;
+                            var subscribedQuotes = updatedQuotes.Where(o => subscribedQuotesIds.Contains(o.Id));
+
+                            if (subscribedQuotes.Any())
+                            {
+                                //Clients.Group(userId)
+                                Clients.Client(userId)
+                                    .p(subscribedQuotes.Select(o => new QuoteFeed
+                                    {
+                                        id = o.Id,
+                                        last = Quotes.GetLastPrice(o),
+                                        bid = o.Bid,
+                                        ask = o.Offer,
+
+                                        time = o.Time,
+                                    }));
+                            }
+                        }
+
+                        dicLastQuotes_Live = quotes.ToDictionary(o => o.Id);
+                    }
+                    catch (Exception)
+                    {
+
                     }
                 }
 
