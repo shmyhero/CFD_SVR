@@ -73,6 +73,7 @@ namespace CFD_API.DTO
 
     public class CardDTO
     {
+        public int cardId { get; set; }
         public decimal? invest { get; set; }
         public bool? isLong { get; set; }
         public decimal? leverage { get; set; }
@@ -92,6 +93,9 @@ namespace CFD_API.DTO
         public string ccy { get; set; }
 
         public string stockName { get; set; }
+
+        public string themeColor { get; set; }
+
         /// <summary>
         /// 点赞的总数
         /// </summary>
