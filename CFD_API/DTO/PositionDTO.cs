@@ -27,6 +27,8 @@ namespace CFD_API.DTO
         public string takeOID { get; set; }
 
         public SecurityDetailDTO fxOutright { get; set; }
+
+        public CardDTO card { get; set; }
     }
 
     public class PositionHistoryDTO
@@ -67,5 +69,36 @@ namespace CFD_API.DTO
         public string posId { get; set; }
         public int securityId { get; set; }
         public decimal price { get; set; }
+    }
+
+    public class CardDTO
+    {
+        public decimal? invest { get; set; }
+        public bool? isLong { get; set; }
+        public decimal? leverage { get; set; }
+        public decimal? tradePrice { get; set; }
+        public decimal? settlePrice { get; set; }
+
+        public string imgUrlBig { get; set; }
+
+        public string imgUrlMiddle { get; set; }
+
+        public string imgUrlSmall { get; set; }
+
+        public decimal? reward { get; set; }
+
+        public DateTime? tradeTime { get; set; }
+
+        public string ccy { get; set; }
+
+        public string stockName { get; set; }
+        /// <summary>
+        /// 点赞的总数
+        /// </summary>
+        public int? likes { get; set; }
+        /// <summary>
+        /// 当前用户是否点赞过
+        /// </summary>
+        public bool? liked { get; set; }
     }
 }

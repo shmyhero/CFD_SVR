@@ -20,6 +20,7 @@ using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
+using System.Data.SqlTypes;
 
 namespace CFD_API.Controllers
 {
@@ -704,6 +705,17 @@ namespace CFD_API.Controllers
             //var quote = redisQuoteClient.GetById(form.securityId);
 
             PositionReport result;
+            decimal settlP = 0;
+#if DEBUG
+            result = new PositionReport()
+            {
+                LongQty = 1,
+                SettlPrice = 100,
+                Leverage = 50,
+                PL = 600,
+                CreateTime = DateTime.UtcNow
+            };
+#else
             using (var clientHttp = new AyondoTradeClient())
             {
                 try
@@ -732,7 +744,15 @@ namespace CFD_API.Controllers
             //{
             //    settlP = result.SettlPrice;
             //}
-            decimal settlP = prodDef == null ? result.SettlPrice : Math.Round(result.SettlPrice, prodDef.Prec);
+            settlP = prodDef == null ? result.SettlPrice : Math.Round(result.SettlPrice, prodDef.Prec);
+
+#endif
+
+            //Ayondo返回的Report里面不包含Invest和TakePx，要从数据库里面拿
+            //to-do 先从Demo库拿，以后要考虑Live、Demo分开
+            long posID = long.Parse(form.posId);
+            var history = db.NewPositionHistories.FirstOrDefault(o => o.Id == posID);
+            result.TakePx = history.SettlePrice;
 
             var posDTO = new PositionDTO()
             {
@@ -746,7 +766,42 @@ namespace CFD_API.Controllers
                 pl = result.PL,
             };
 
+            Card card = GetCard(result);
+            if(card != null)
+            {
+                posDTO.card = new CardDTO() { imgUrlBig = card.CardImgUrlBig, imgUrlMiddle = card.CardImgUrlMiddle, imgUrlSmall = card.CardImgUrlSmall, invest = history.InvestUSD,
+                  isLong = posDTO.isLong, leverage = posDTO.leverage, reward = card.Reward, settlePrice = history.ClosedPrice,
+                    tradePrice = history.SettlePrice, tradeTime = history.CreateTime.Value, ccy = prodDef == null? string.Empty : prodDef.Ccy2, stockName= prodDef == null ? string.Empty : Translator.GetCName(prodDef.Name)
+                };
+            }
+
+            UserCard uc = new UserCard() {
+                 CardId = card.Id, CCY = posDTO.card.ccy, ClosedAt = result.CreateTime, CreatedAt = DateTime.UtcNow, Expiration = SqlDateTime.MaxValue.Value,
+                  Invest = posDTO.card.invest, IsLong = posDTO.card.isLong, Leverage = posDTO.card.leverage, Likes = 0, PL = posDTO.pl,
+                   Qty = posDTO.quantity, Reward = card.Reward, SettlePrice = posDTO.card.settlePrice, StockName = posDTO.card.stockName, TradePrice = posDTO.card.tradePrice, TradeTime = posDTO.card.tradeTime,
+                    UserId = this.UserId
+            };
+            db.UserCards.Add(uc);
+            db.SaveChanges();
+
             return posDTO;
+        }
+
+        public Card GetCard(PositionReport pos)
+        {
+            //收益率
+            decimal plRate = (pos.SettlPrice - pos.TakePx.Value)/pos.TakePx.Value * pos.Leverage.Value * 100;
+            var cardsList = db.Cards.Where(o => o.LowProfit < pos.PL && (!o.HighProfit.HasValue || o.HighProfit > pos.PL)
+            && o.LowProfitRate<plRate && (!o.HighProfitRate.HasValue || o.HighProfitRate > plRate ));
+            int count = cardsList.Count();
+            if (cardsList == null || count == 0)
+            {
+                return null;
+            }
+
+            Random ran = new Random(DateTime.UtcNow.Millisecond);
+            int index = ran.Next(0, count - 1);
+            return cardsList.ToList()[index];
         }
 
         [HttpPost]

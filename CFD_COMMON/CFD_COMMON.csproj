@@ -128,6 +128,7 @@
     <Compile Include="Models\Entities\ApiHit.cs" />
     <Compile Include="Models\Entities\AyondoTradeHistory.cs" />
     <Compile Include="Models\Entities\AyondoTradeHistory_Live.cs" />
+    <Compile Include="Models\Entities\Card.cs" />
     <Compile Include="Models\Entities\Competition.cs" />
     <Compile Include="Models\Entities\CompetitionResult.cs" />
     <Compile Include="Models\Entities\CompetitionUser.cs" />
@@ -142,6 +143,7 @@
     <Compile Include="Models\Entities\Bookmark.cs" />
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Feedback.cs" />
+    <Compile Include="Models\Entities\LikeHistory.cs" />
     <Compile Include="Models\Entities\Message.cs" />
     <Compile Include="Models\Entities\Message_Live.cs" />
     <Compile Include="Models\Entities\Model1.cs" />
@@ -154,6 +156,7 @@
     <Compile Include="Models\Entities\User.cs" />
     <Compile Include="Models\Entities\UserAlert.cs" />
     <Compile Include="Models\Entities\UserAyondo.cs" />
+    <Compile Include="Models\Entities\UserCard.cs" />
     <Compile Include="Models\Entities\UserInfo.cs" />
     <Compile Include="Models\Entities\VerifyCode.cs" />
     <Compile Include="Models\Cached\ProdDef.cs" />

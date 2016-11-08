@@ -19,6 +19,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Banner> Banners { get; set; }
         public virtual DbSet<Banner2> Banners2 { get; set; }
         public virtual DbSet<Bookmark> Bookmarks { get; set; }
+        public virtual DbSet<Card> Cards { get; set; }
         public virtual DbSet<Competition> Competitions { get; set; }
         public virtual DbSet<CompetitionResult> CompetitionResults { get; set; }
         public virtual DbSet<CompetitionUserPosition> CompetitionUserPositions { get; set; }
@@ -29,12 +30,14 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Headline> Headlines { get; set; }
+        public virtual DbSet<LikeHistory> LikeHistories { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
         public virtual DbSet<OperationUser> OperationUsers { get; set; }
         public virtual DbSet<PriceDownInterval> PriceDownIntervals { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
+        public virtual DbSet<UserCard> UserCards { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserAlert> UserAlerts { get; set; }
         public virtual DbSet<UserInfo> UserInfos { get; set; }
@@ -137,6 +140,21 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.LowPrice)
                 .HasPrecision(18, 5);
 
+            modelBuilder.Entity<UserCard>()
+                .Property(e => e.Qty)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserCard>()
+                .Property(e => e.Invest)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserCard>()
+                .Property(e => e.TradePrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserCard>()
+                .Property(e => e.SettlePrice)
+                .HasPrecision(18, 5);
 
             modelBuilder.Entity<UserInfo>()
                 .Property(e => e.FaceCheckSimilarity)
