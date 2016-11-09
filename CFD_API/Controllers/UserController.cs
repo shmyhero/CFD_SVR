@@ -1417,6 +1417,38 @@ namespace CFD_API.Controllers
         }
 
         /// <summary>
+        /// 个人卡片中心
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("live/card")]
+        [BasicAuth]
+        public CardDTOCollection CardList()
+        {
+            CardDTOCollection coll = new CardDTOCollection();
+            var myCards = from u in db.UserCards
+                          join c in db.Cards on u.CardId equals c.Id
+                          into x
+                          from y in x.DefaultIfEmpty()
+                          where u.UserId == this.UserId
+                          select new CardDTO() { cardId = u.CardId, ccy = u.CCY, imgUrlBig = y.CardImgUrlBig, imgUrlMiddle = y.CardImgUrlMiddle, imgUrlSmall = y.CardImgUrlSmall,
+                           invest = u.Invest, isLong = u.IsLong, isNew = !u.IsNew.HasValue? true: u.IsNew.Value , leverage = u.Leverage, likes = u.Likes, reward = y.Reward, settlePrice = u.SettlePrice, stockName = u.StockName,
+                           themeColor = y.ThemeColor, tradePrice = u.TradePrice, tradeTime = u.TradeTime};
+
+            if(myCards != null)
+            {
+                coll.cards = myCards.ToList();
+                coll.hasNew = coll.cards.Any(item => !item.isNew.HasValue || !item.isNew.Value);
+            }
+            else
+            {
+                coll.hasNew = false;
+            }
+
+            return coll;
+        }
+
+        /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式
         /// </summary>
         /// <param name="originalForm"></param>
@@ -1535,5 +1567,6 @@ namespace CFD_API.Controllers
 
             return false;
         }
+
     }
 }

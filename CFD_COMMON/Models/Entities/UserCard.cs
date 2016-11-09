@@ -59,6 +59,8 @@ namespace CFD_COMMON.Models.Entities
         /// </summary>
         public int? Likes { get; set; }
 
+        public bool? IsNew { get; set; }
+
         public DateTime? CreatedAt { get; set; }
 
         public DateTime? Expiration { get; set; }
