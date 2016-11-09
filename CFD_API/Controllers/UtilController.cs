@@ -839,42 +839,88 @@ namespace CFD_API.Controllers
             return headlinesGroup;
         }
 
+        /// <summary>
+        /// 如果经过身份认证，则根据用户身份去DB获取相关信息
+        /// 如果没有经过身份认证，则默认Liked=false. 前端会在点赞的时候做判断。
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Route("cards")]
-        [BasicAuth]
         public List<CardDTO> GetTopCards()
         {
-            var topCards = (from u in db.UserCards
-                           join c in db.Cards on u.CardId equals c.Id
-                           into x
-                           from y in x.DefaultIfEmpty()
-                           join us in db.Users on u.UserId equals us.Id
-                           //join h in db.LikeHistories on new { id = u.Id, id1 = this.UserId }
-                           //                           equals new { id = h.UserCardId, id1 = h.UserId }
+            int userId = GetUserID();
+            List<CardDTO> topCards = null;
+
+            if(userId ==0)
+            {
+                topCards = (from u in db.UserCards
+                            join c in db.Cards on u.CardId equals c.Id
+                            into x
+                            from y in x.DefaultIfEmpty()
+                            join us in db.Users on u.UserId equals us.Id
+                            //join h in db.LikeHistories on new { id = u.Id, id1 = this.UserId }
+                            //                           equals new { id = h.UserCardId, id1 = h.UserId }
                             orderby u.ClosedAt descending, y.CardType descending
-                           select new CardDTO()
-                           {
-                               cardId = u.Id,
-                               ccy = u.CCY,
-                               imgUrlBig = y.CardImgUrlBig,
-                               imgUrlMiddle = y.CardImgUrlMiddle,
-                               imgUrlSmall = y.CardImgUrlSmall,
-                               invest = u.Invest,
-                               isLong = u.IsLong,
-                               isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
-                               leverage = u.Leverage,
-                               likes = u.Likes,
-                               reward = y.Reward,
-                               settlePrice = u.SettlePrice,
-                               stockName = u.StockName,
-                               pl = u.PL,
-                               plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
-                               themeColor = y.ThemeColor,
-                               tradePrice = u.TradePrice,
-                               tradeTime = u.TradeTime,
-                               userName = us.Nickname,
-                               liked = db.LikeHistories.Any(o=>o.UserId == this.UserId && o.UserCardId == u.Id)
-                           }).Take(6).ToList();
+                            select new CardDTO()
+                            {
+                                cardId = u.Id,
+                                ccy = u.CCY,
+                                imgUrlBig = y.CardImgUrlBig,
+                                imgUrlMiddle = y.CardImgUrlMiddle,
+                                imgUrlSmall = y.CardImgUrlSmall,
+                                invest = u.Invest,
+                                isLong = u.IsLong,
+                                isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
+                                leverage = u.Leverage,
+                                likes = u.Likes,
+                                reward = y.Reward,
+                                settlePrice = u.SettlePrice,
+                                stockName = u.StockName,
+                                pl = u.PL,
+                                plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
+                                themeColor = y.ThemeColor,
+                                tradePrice = u.TradePrice,
+                                tradeTime = u.TradeTime,
+                                userName = us.Nickname,
+                                liked = false
+                            }).Take(6).ToList();
+            }
+            else
+            {
+                topCards = (from u in db.UserCards
+                                join c in db.Cards on u.CardId equals c.Id
+                                into x
+                                from y in x.DefaultIfEmpty()
+                                join us in db.Users on u.UserId equals us.Id
+                                //join h in db.LikeHistories on new { id = u.Id, id1 = this.UserId }
+                                //                           equals new { id = h.UserCardId, id1 = h.UserId }
+                                orderby u.ClosedAt descending, y.CardType descending
+                                select new CardDTO()
+                                {
+                                    cardId = u.Id,
+                                    ccy = u.CCY,
+                                    imgUrlBig = y.CardImgUrlBig,
+                                    imgUrlMiddle = y.CardImgUrlMiddle,
+                                    imgUrlSmall = y.CardImgUrlSmall,
+                                    invest = u.Invest,
+                                    isLong = u.IsLong,
+                                    isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
+                                    leverage = u.Leverage,
+                                    likes = u.Likes,
+                                    reward = y.Reward,
+                                    settlePrice = u.SettlePrice,
+                                    stockName = u.StockName,
+                                    pl = u.PL,
+                                    plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
+                                    themeColor = y.ThemeColor,
+                                    tradePrice = u.TradePrice,
+                                    tradeTime = u.TradeTime,
+                                    userName = us.Nickname,
+                                    liked = db.LikeHistories.Any(o => o.UserId == userId && o.UserCardId == u.Id)
+                                }).Take(6).ToList();
+            }
+
+            
 
             int count = topCards.Count();
             if (count < 3) //优先补黄金
@@ -912,8 +958,38 @@ namespace CFD_API.Controllers
                 }
             }
             
-
             return topCards.ToList();
+        }
+
+        /// <summary>
+        /// 无验证信息或验证信息错误时返回0，否则返回UserID
+        /// </summary>
+        /// <returns></returns>
+        public int GetUserID()
+        {
+            if(HttpContext.Current.Request.Headers.AllKeys.Contains("Authorization"))
+            {
+                string auth = HttpContext.Current.Request.Headers["Authorization"];
+                var authArray = auth.Split(' ');
+                if(authArray.Length !=2)
+                {
+                    return 0;
+                }
+
+                var tokenArray = authArray[1].Split('_');
+                if(tokenArray.Length != 2)
+                {
+                    return 0;
+                }
+
+                string userIdStr = tokenArray[0];
+                int userId = 0;
+                int.TryParse(userIdStr, out userId);
+
+                return userId;
+            }
+
+            return 0;
         }
 
         public decimal GetLastPrice(ProdDef prodDef)
