@@ -13,6 +13,8 @@ namespace CFD_API
         {
             return new MapperConfiguration(cfg =>
             {
+                CFD_COMMON.MapperConfig.CreateCommonMap(cfg);
+
                 //var r = new Random();
 
                 cfg.CreateMap<User, UserDTO>();

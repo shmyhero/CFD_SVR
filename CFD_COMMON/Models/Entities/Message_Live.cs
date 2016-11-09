@@ -6,8 +6,8 @@ namespace CFD_COMMON.Models.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("Message_Live")]
-    public partial class Message_Live : Message
+    //[Table("Message_Live")]
+    public partial class Message_Live : MessageBase
     {
         //public int Id { get; set; }
 
