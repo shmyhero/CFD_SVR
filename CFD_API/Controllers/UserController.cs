@@ -1426,12 +1426,14 @@ namespace CFD_API.Controllers
         public CardDTOCollection CardList()
         {
             CardDTOCollection coll = new CardDTOCollection();
+
+            //这里的cardId用UserCard的ID，而不是Card.ID
             var myCards = from u in db.UserCards
                           join c in db.Cards on u.CardId equals c.Id
                           into x
                           from y in x.DefaultIfEmpty()
                           where u.UserId == this.UserId
-                          select new CardDTO() { cardId = u.CardId, ccy = u.CCY, imgUrlBig = y.CardImgUrlBig, imgUrlMiddle = y.CardImgUrlMiddle, imgUrlSmall = y.CardImgUrlSmall,
+                          select new CardDTO() { cardId = u.Id, ccy = u.CCY, imgUrlBig = y.CardImgUrlBig, imgUrlMiddle = y.CardImgUrlMiddle, imgUrlSmall = y.CardImgUrlSmall,
                            invest = u.Invest, isLong = u.IsLong, isNew = !u.IsNew.HasValue? true: u.IsNew.Value , leverage = u.Leverage, likes = u.Likes, reward = y.Reward, settlePrice = u.SettlePrice, stockName = u.StockName,
                            themeColor = y.ThemeColor, tradePrice = u.TradePrice, tradeTime = u.TradeTime};
 
@@ -1446,6 +1448,49 @@ namespace CFD_API.Controllers
             }
 
             return coll;
+        }
+
+        [HttpGet]
+        [Route("live/card/{id}")]
+        [BasicAuth]
+        public CardDTO GetCard(int id)
+        {
+            var cardDTO = (from u in db.UserCards
+                          join c in db.Cards on u.CardId equals c.Id
+                          into x
+                          from y in x.DefaultIfEmpty()
+                          where u.UserId == this.UserId
+                          select new CardDTO()
+                          {
+                              cardId = u.Id,
+                              ccy = u.CCY,
+                              imgUrlBig = y.CardImgUrlBig,
+                              imgUrlMiddle = y.CardImgUrlMiddle,
+                              imgUrlSmall = y.CardImgUrlSmall,
+                              invest = u.Invest,
+                              isLong = u.IsLong,
+                              isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
+                              leverage = u.Leverage,
+                              likes = u.Likes,
+                              reward = y.Reward,
+                              settlePrice = u.SettlePrice,
+                              stockName = u.StockName,
+                              themeColor = y.ThemeColor,
+                              tradePrice = u.TradePrice,
+                              tradeTime = u.TradeTime
+                          }).FirstOrDefault();
+
+            if(cardDTO != null && cardDTO.isNew.Value)
+            {
+                UserCard card = db.UserCards.Where(item => item.Id == id).FirstOrDefault();
+                if(card!=null)
+                {
+                    card.IsNew = false;
+                    db.SaveChanges();
+                }
+            }
+
+            return cardDTO;
         }
 
         /// <summary>

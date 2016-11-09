@@ -806,6 +806,7 @@ namespace CFD_API.Controllers
 
                     UserCard uc = new UserCard()
                     {
+                        UserId = this.UserId,
                         CardId = card.Id,
                         CCY = posDTO.card.ccy,
                         ClosedAt = result.CreateTime,
@@ -816,13 +817,13 @@ namespace CFD_API.Controllers
                         Leverage = posDTO.card.leverage,
                         Likes = 0,
                         PL = posDTO.pl,
-                        Qty = history.LongQty?? history.ShortQty,
+                        Qty = history.LongQty ?? history.ShortQty,
                         Reward = card.Reward,
                         SettlePrice = settlP,
                         StockName = posDTO.card.stockName,
                         TradePrice = posDTO.card.tradePrice,
                         TradeTime = posDTO.card.tradeTime,
-                        UserId = this.UserId
+                        IsNew = false
                     };
                     db.UserCards.Add(uc);
                     db.SaveChanges();
