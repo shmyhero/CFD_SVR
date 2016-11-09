@@ -26,6 +26,9 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
+using CFD_API.Controllers.Attributes;
+using CFD_API.Caching;
+using CFD_COMMON.Models.Cached;
 
 namespace CFD_API.Controllers
 {
@@ -834,6 +837,97 @@ namespace CFD_API.Controllers
             }
 
             return headlinesGroup;
+        }
+
+        [HttpGet]
+        [Route("cards")]
+        [BasicAuth]
+        public List<CardDTO> GetTopCards()
+        {
+            var topCards = (from u in db.UserCards
+                           join c in db.Cards on u.CardId equals c.Id
+                           into x
+                           from y in x.DefaultIfEmpty()
+                           join us in db.Users on u.UserId equals us.Id
+                           //join h in db.LikeHistories on new { id = u.Id, id1 = this.UserId }
+                           //                           equals new { id = h.UserCardId, id1 = h.UserId }
+                            orderby u.ClosedAt descending, y.CardType descending
+                           select new CardDTO()
+                           {
+                               cardId = u.Id,
+                               ccy = u.CCY,
+                               imgUrlBig = y.CardImgUrlBig,
+                               imgUrlMiddle = y.CardImgUrlMiddle,
+                               imgUrlSmall = y.CardImgUrlSmall,
+                               invest = u.Invest,
+                               isLong = u.IsLong,
+                               isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
+                               leverage = u.Leverage,
+                               likes = u.Likes,
+                               reward = y.Reward,
+                               settlePrice = u.SettlePrice,
+                               stockName = u.StockName,
+                               pl = u.PL,
+                               plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
+                               themeColor = y.ThemeColor,
+                               tradePrice = u.TradePrice,
+                               tradeTime = u.TradeTime,
+                               userName = us.Nickname,
+                               liked = db.LikeHistories.Any(o=>o.UserId == this.UserId && o.UserCardId == u.Id)
+                           }).Take(6).ToList();
+
+            int count = topCards.Count();
+            if (count < 3) //优先补黄金
+            {
+                //从Demo的产品列表中取黄金
+                var prodDef = WebCache.GetInstance(false).ProdDefs.FirstOrDefault(o => o.Id == 34821);
+                if (prodDef != null)
+                {
+                    decimal last = GetLastPrice(prodDef);
+                    topCards.Add(new CardDTO()
+                    {
+                        ccy = prodDef.Ccy2,
+                        settlePrice = last,
+                        plRate = (last - Quotes.GetOpenPrice(prodDef)) / Quotes.GetOpenPrice(prodDef) * 100,
+                        stockName = "黄金",
+                        stockID = 34821
+                    });
+                }
+
+                if (count < 2) //再补白银
+                {
+                    prodDef = WebCache.GetInstance(false).ProdDefs.FirstOrDefault(o => o.Id == 34847);
+                    if (prodDef != null)
+                    {
+                        decimal last = GetLastPrice(prodDef);
+                        topCards.Add(new CardDTO()
+                        {
+                            ccy = prodDef.Ccy2,
+                            settlePrice = last,
+                            plRate = last - Quotes.GetOpenPrice(prodDef) / Quotes.GetOpenPrice(prodDef) * 100,
+                            stockName = "白银",
+                            stockID = 34847
+                        });
+                    }
+                }
+            }
+            
+
+            return topCards.ToList();
+        }
+
+        public decimal GetLastPrice(ProdDef prodDef)
+        {
+          
+            var quotes = WebCache.GetInstance(IsLiveUrl).Quotes.Where(o => o.Id == prodDef.Id).ToList();
+            //var prodDefs = redisProdDefClient.GetByIds(ids);
+            var quote = quotes.FirstOrDefault(o => o.Id == prodDef.Id);
+            if (quote != null)
+            {
+                return Quotes.GetLastPrice(quote);
+            }
+
+            return 0;
         }
 
         private const string SMS_Auth = "7AF1CCCC-DDB8-460A-A526-B204C91D316E";

@@ -1435,7 +1435,7 @@ namespace CFD_API.Controllers
                           where u.UserId == this.UserId
                           select new CardDTO() { cardId = u.Id, ccy = u.CCY, imgUrlBig = y.CardImgUrlBig, imgUrlMiddle = y.CardImgUrlMiddle, imgUrlSmall = y.CardImgUrlSmall,
                            invest = u.Invest, isLong = u.IsLong, isNew = !u.IsNew.HasValue? true: u.IsNew.Value , leverage = u.Leverage, likes = u.Likes, reward = y.Reward, settlePrice = u.SettlePrice, stockName = u.StockName,
-                           themeColor = y.ThemeColor, tradePrice = u.TradePrice, tradeTime = u.TradeTime};
+                           pl = u.PL, plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1), themeColor = y.ThemeColor, tradePrice = u.TradePrice, tradeTime = u.TradeTime};
 
             if(myCards != null)
             {
@@ -1452,14 +1452,13 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("live/card/{id}")]
-        [BasicAuth]
         public CardDTO GetCard(int id)
         {
             var cardDTO = (from u in db.UserCards
                           join c in db.Cards on u.CardId equals c.Id
                           into x
                           from y in x.DefaultIfEmpty()
-                          where u.UserId == this.UserId
+                          where u.Id == id
                           select new CardDTO()
                           {
                               cardId = u.Id,
@@ -1477,7 +1476,9 @@ namespace CFD_API.Controllers
                               stockName = u.StockName,
                               themeColor = y.ThemeColor,
                               tradePrice = u.TradePrice,
-                              tradeTime = u.TradeTime
+                              tradeTime = u.TradeTime,
+                              pl = u.PL,
+                              plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value? 1 : -1)
                           }).FirstOrDefault();
 
             if(cardDTO != null && cardDTO.isNew.Value)

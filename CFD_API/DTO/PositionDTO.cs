@@ -92,10 +92,15 @@ namespace CFD_API.DTO
         public DateTime? tradeTime { get; set; }
 
         public string ccy { get; set; }
-
+       
+        public int? stockID { get; set; }
         public string stockName { get; set; }
 
         public string themeColor { get; set; }
+
+        public decimal? pl { get; set; }
+
+        public decimal? plRate { get; set; }
 
         /// <summary>
         /// 点赞的总数
@@ -109,6 +114,12 @@ namespace CFD_API.DTO
         /// 是否查看过
         /// </summary>
         public bool? isNew { get; set; }
+
+        /// <summary>
+        /// 在首页显示时需要人名
+        /// </summary>
+        public string userName { get; set; }
+        
     }
 
     public class CardDTOCollection
