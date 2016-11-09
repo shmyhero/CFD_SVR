@@ -6,51 +6,52 @@ namespace CFD_COMMON.Models.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class AyondoTradeHistory_Live
+    //[Table("AyondoTradeHistory_Live")]
+    public partial class AyondoTradeHistory_Live : AyondoTradeHistoryBase
     {
-        public long Id { get; set; }
+        //public long Id { get; set; }
 
-        public long? PositionId { get; set; }
+        //public long? PositionId { get; set; }
 
-        public long? TradeId { get; set; }
+        //public long? TradeId { get; set; }
 
-        public long? AccountId { get; set; }
+        //public long? AccountId { get; set; }
 
-        [StringLength(50)]
-        public string FirstName { get; set; }
+        //[StringLength(50)]
+        //public string FirstName { get; set; }
 
-        [StringLength(50)]
-        public string LastName { get; set; }
+        //[StringLength(50)]
+        //public string LastName { get; set; }
 
-        public DateTime? TradeTime { get; set; }
+        //public DateTime? TradeTime { get; set; }
 
-        public int? SecurityId { get; set; }
+        //public int? SecurityId { get; set; }
 
-        [StringLength(200)]
-        public string SecurityName { get; set; }
+        //[StringLength(200)]
+        //public string SecurityName { get; set; }
 
-        [StringLength(10)]
-        public string Direction { get; set; }
+        //[StringLength(10)]
+        //public string Direction { get; set; }
 
-        public decimal? Quantity { get; set; }
+        //public decimal? Quantity { get; set; }
 
-        public decimal? TradePrice { get; set; }
+        //public decimal? TradePrice { get; set; }
 
-        public decimal? PL { get; set; }
+        //public decimal? PL { get; set; }
 
-        [StringLength(50)]
-        public string GUID { get; set; }
+        //[StringLength(50)]
+        //public string GUID { get; set; }
 
-        public decimal? StopLoss { get; set; }
+        //public decimal? StopLoss { get; set; }
 
-        public decimal? TakeProfit { get; set; }
+        //public decimal? TakeProfit { get; set; }
 
-        public DateTime? CreateTime { get; set; }
+        //public DateTime? CreateTime { get; set; }
 
-        [StringLength(20)]
-        public string UpdateType { get; set; }
+        //[StringLength(20)]
+        //public string UpdateType { get; set; }
 
-        [StringLength(20)]
-        public string DeviceType { get; set; }
+        //[StringLength(20)]
+        //public string DeviceType { get; set; }
     }
 }

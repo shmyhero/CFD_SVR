@@ -20,8 +20,10 @@ using Newtonsoft.Json;
 using ServiceStack.Redis.Generic;
 using System.ServiceModel.Channels;
 using System.Text;
+using AutoMapper;
 using CFD_API.DTO;
 using CFD_JOBS;
+using EntityFramework.Extensions;
 using Newtonsoft.Json.Linq;
 
 namespace CFD_TEST
@@ -51,17 +53,41 @@ namespace CFD_TEST
         {
             using (var db = CFDEntities.Create())
             {
-                var newPositionHistory = db.NewPositionHistories.FirstOrDefault();
-                var newPositionHistory_Live = db.NewPositionHistory_live.FirstOrDefault();
+                //var pos = db.AyondoTradeHistory_Live.FirstOrDefault(o => o.Id == 1);
+                //pos.PL = 12345;
+                //db.SaveChanges();
 
-                var newPositionHistories = db.NewPositionHistories.Take(1).ToList();
-                var newPositionHistories_Live = db.NewPositionHistory_live.Take(1).ToList();
 
-                var a = 1 == 1 ? db.NewPositionHistories.FirstOrDefault() : db.NewPositionHistory_live.FirstOrDefault();
-                var aa = 1 == 2 ? db.NewPositionHistories.FirstOrDefault() : db.NewPositionHistory_live.FirstOrDefault();
+                //var a = 1 == 1
+                //    ? (AyondoTradeHistoryBase)db.AyondoTradeHistories.FirstOrDefault()
+                //    : db.AyondoTradeHistory_Live.FirstOrDefault();
+                //a.PL = 11;
+                //var aa = 1 == 2
+                //    ? (AyondoTradeHistoryBase)db.AyondoTradeHistories.FirstOrDefault()
+                //    : db.AyondoTradeHistory_Live.FirstOrDefault();
+                //aa.PL = 11;
+                //db.SaveChanges();
 
-                var b = 1 == 1 ? db.NewPositionHistories.Take(1).ToList() : db.NewPositionHistory_live.OfType<NewPositionHistory>().Take(1).ToList();
-                var bb = 1 == 2 ? db.NewPositionHistories.Take(1).ToList() : db.NewPositionHistory_live.OfType<NewPositionHistory>().Take(1).ToList();
+
+                var ooo = new AyondoTradeHistoryBase() { PositionId = 1 };
+
+                var mapper = CFD_COMMON.MapperConfig.GetAutoMapperConfiguration().CreateMapper();
+
+                db.AyondoTradeHistories.Add(mapper.Map<AyondoTradeHistory>(ooo));
+                db.AyondoTradeHistory_Live.Add(mapper.Map<AyondoTradeHistory_Live>(ooo));
+                db.SaveChanges();
+
+                //var newPositionHistory = db.NewPositionHistories.FirstOrDefault();
+                //var newPositionHistory_Live = db.NewPositionHistory_live.FirstOrDefault();
+
+                //var newPositionHistories = db.NewPositionHistories.Take(1).ToList();
+                //var newPositionHistories_Live = db.NewPositionHistory_live.Take(1).ToList();
+
+                //var a = 1 == 1 ? db.NewPositionHistories.FirstOrDefault() : db.NewPositionHistory_live.FirstOrDefault();
+                //var aa = 1 == 2 ? db.NewPositionHistories.FirstOrDefault() : db.NewPositionHistory_live.FirstOrDefault();
+
+                //var b = 1 == 1 ? db.NewPositionHistories.Take(1).ToList() : db.NewPositionHistory_live.OfType<NewPositionHistory>().Take(1).ToList();
+                //var bb = 1 == 2 ? db.NewPositionHistories.Take(1).ToList() : db.NewPositionHistory_live.OfType<NewPositionHistory>().Take(1).ToList();
             }
         }
         
@@ -332,8 +358,8 @@ namespace CFD_TEST
         public void YunPianSMS()
         {
             var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。"+
-                "券号：G1609191740235320 密码：5WJSRFW6XY42" +
-                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "18516539018");
+                "券号：G1609191740235326 密码：B4ACXMZ7PD9A" +
+                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "18301933810");
             CFDGlobal.LogLine(sendSms);
         }
 
@@ -518,7 +544,7 @@ namespace CFD_TEST
 
         private static PositionDTO SheZhiYing(User user, PositionDTO pos)
         {
-            var takePx = pos.isLong ? pos.settlePrice * 1.008m : pos.settlePrice * 0.992m;
+            var takePx = pos.isLong ? pos.settlePrice * 1.0065m : pos.settlePrice * 0.9935m;
 
             string jsonData = "{\"posId\":" + pos.id + ",\"securityId\":" + pos.security.id + ",\"price\":"+ takePx+"}";
             var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/order/take");

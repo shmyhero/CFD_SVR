@@ -205,6 +205,27 @@ namespace CFD_COMMON.Models.Context
             //    .HasPrecision(18, 5);
 
 
+            modelBuilder.Entity<AyondoTradeHistory_Live>()
+                .Property(e => e.Quantity)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoTradeHistory_Live>()
+                .Property(e => e.TradePrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoTradeHistory_Live>()
+                .Property(e => e.PL)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoTradeHistory_Live>()
+                .Property(e => e.StopLoss)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<AyondoTradeHistory_Live>()
+                .Property(e => e.TakeProfit)
+                .HasPrecision(18, 5);
+
+
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.SettlePrice)
                 .HasPrecision(18, 5);

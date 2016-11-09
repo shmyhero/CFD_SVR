@@ -405,7 +405,7 @@ namespace CFD_API.Controllers
                     {
                         //去DB里面拿Open的记录
                         var openPR = IsLiveUrl 
-                            ? db.NewPositionHistory_live.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID)
+                            ? (NewPositionHistoryBase) db.NewPositionHistory_live.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID)
                             : db.NewPositionHistories.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID);
                         if (openPR == null)
                         {
@@ -599,7 +599,7 @@ namespace CFD_API.Controllers
                                   result.SettlPrice);
 
                 //save new position history
-                var newHistory = new NewPositionHistory_live()
+                var newHistory = new NewPositionHistoryBase()
                 {
                     Id = Convert.ToInt64(result.PosMaintRptID),
                     UserId = UserId,
@@ -612,9 +612,9 @@ namespace CFD_API.Controllers
                     InvestUSD = form.invest,
                 };
                 if (IsLiveUrl)
-                    db.NewPositionHistory_live.Add(newHistory);
+                    db.NewPositionHistory_live.Add(Mapper.Map<NewPositionHistory_live>( newHistory));
                 else
-                    db.NewPositionHistories.Add(newHistory);
+                    db.NewPositionHistories.Add(Mapper.Map<NewPositionHistory>(newHistory));
 
                 //update ayondo account id if not same
                 var accountId = Convert.ToInt64(result.Account);

@@ -74,11 +74,11 @@ namespace CFD_JOBS
 
                 if (args.Contains("-AyondoTradeHistory"))
                 {
-                    AyondoTradeHistory.Run();
+                    AyondoTradeHistoryImport.Run();
                 }
                 if (args.Contains("-AyondoTradeHistory_Live"))
                 {
-                    AyondoTradeHistory.Run(true);
+                    AyondoTradeHistoryImport.Run(true);
                 }
 
                 if (args.Contains("-Competition"))

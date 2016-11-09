@@ -15,47 +15,85 @@ using CFD_COMMON.Models.Entities;
 
 namespace CFD_JOBS.Ayondo
 {
-    public class AyondoTradeHistory
+    public class AyondoTradeHistoryImport
     {
         private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
         private static DateTime? _lastEndTime = null;
 
         public static void Run(bool isLive = false)
         {
+            var mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
+
             while (true)
             {
                 try
                 {
                     DateTime dtStart;
-                    DateTime dtEnd = DateTime.UtcNow;
-                    bool needSave = false;
-                    using (var db = CFDEntities.Create())
+                    DateTime dtEnd;
+                    var dtNow = DateTime.UtcNow;
+
+                    //bool needSave = false;
+
+                    if (_lastEndTime == null) //first time started
                     {
-                        var dbTable = db.AyondoTradeHistories;
-                        var lastTradeHistory = dbTable.OrderByDescending(o => o.Id).Take(1).FirstOrDefault();
-                        //如果上次同步时间超过24小时，则每次最多只取24小时
-                        if ((DateTime.UtcNow - lastTradeHistory.TradeTime).Value.Hours > 24)
+                        AyondoTradeHistoryBase lastDbRecord;
+                        using (var db = CFDEntities.Create())//find last record in db
                         {
-                            dtEnd = lastTradeHistory.TradeTime.Value.AddHours(24);
+                            lastDbRecord = isLive
+                                ? (AyondoTradeHistoryBase) db.AyondoTradeHistory_Live.OrderByDescending(o => o.Id).FirstOrDefault()
+                                : db.AyondoTradeHistories.OrderByDescending(o => o.Id).FirstOrDefault();
                         }
 
-                        //最后一次结束时间为空，意味着服务重新开启，此时需要获取数据库中最后一条TradeHistory作为开始时间
-                        if (_lastEndTime == null)
+                        if (lastDbRecord == null) //db is empty
                         {
-                            if(lastTradeHistory != null)
-                            {
-                                dtStart = lastTradeHistory.TradeTime.Value.AddMilliseconds(1);
-                            }
-                            else
-                            {
-                                dtStart = dtEnd - Interval; //fetch interval length of period
-                            }
+                            dtEnd = dtNow;
+                            dtStart = dtEnd - Interval;
                         }
-                        else
+                        else //last record in db is found
                         {
-                            dtStart = _lastEndTime.Value.AddMilliseconds(1); //fetch data since last fetch
+                            var dtLastDbRecord = lastDbRecord.TradeTime.Value;
+
+                            dtStart = dtLastDbRecord.AddMilliseconds(1);
+
+                            //如果上次同步时间超过24小时，则每次最多只取24小时
+                            dtEnd = dtNow - dtLastDbRecord > TimeSpan.FromHours(24) ? dtStart.AddHours(24) : dtNow;
                         }
                     }
+                    else
+                    {
+                        dtStart = _lastEndTime.Value.AddMilliseconds(1);
+                        dtEnd = dtNow;
+                    }
+
+                    //using (var db = CFDEntities.Create())
+                    //{
+                    //    var lastTradeHistory = isLive
+                    //        ? db.AyondoTradeHistory_Live.OrderByDescending(o => o.Id).FirstOrDefault()
+                    //        : db.AyondoTradeHistories.OrderByDescending(o => o.Id).FirstOrDefault();
+
+                    //    //如果上次同步时间超过24小时，则每次最多只取24小时
+                    //    if ((DateTime.UtcNow - lastTradeHistory.TradeTime).Value.Hours > 24)
+                    //    {
+                    //        dtEnd = lastTradeHistory.TradeTime.Value.AddHours(24);
+                    //    }
+
+                    //    //最后一次结束时间为空，意味着服务重新开启，此时需要获取数据库中最后一条TradeHistory作为开始时间
+                    //    if (_lastEndTime == null)
+                    //    {
+                    //        if(lastTradeHistory != null)
+                    //        {
+                    //            dtStart = lastTradeHistory.TradeTime.Value.AddMilliseconds(1);
+                    //        }
+                    //        else
+                    //        {
+                    //            dtStart = dtEnd - Interval; //fetch interval length of period
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        dtStart = _lastEndTime.Value.AddMilliseconds(1); //fetch data since last fetch
+                    //    }
+                    //}
 
                     var tsStart = dtStart.ToUnixTimeMs();
                     var tsEnd = dtEnd.ToUnixTimeMs();
@@ -66,7 +104,8 @@ namespace CFD_JOBS.Ayondo
 
                     var dtDownloadStart = DateTime.UtcNow;
                     var downloadString = webClient.DownloadString(
-                        CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost") + (isLive?"live":"demo") + "/reports/tradehero/cn/tradehistory?start="
+                        CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost"+(isLive?"_Live":"")) 
+                        + (isLive?"live":"demo") + "/reports/tradehero/cn/tradehistory?start="
                         + tsStart + "&end=" + tsEnd);
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
@@ -84,11 +123,11 @@ namespace CFD_JOBS.Ayondo
                     }
                     else
                     {
-                        var entities = new List<CFD_COMMON.Models.Entities.AyondoTradeHistory>();
+                        var newTradeHistories = new List<AyondoTradeHistoryBase>();
                         using (var db = CFDEntities.Create())
                         {
-                            var dbTable = db.AyondoTradeHistories;
-                            var dbMaxCreateTime = dbTable.Max(o => o.CreateTime);
+                            //var dbMaxCreateTime = db.AyondoTradeHistories.Max(o => o.CreateTime);
+
                             //PositionID,TradeID,AccountID,FirstName,LastName,
                             //TradeTime,ProductID,ProductName,Direction,Trade Size,
                             //Trade Price,Realized P&L,GUID,StopLoss,TakeProfit,
@@ -121,14 +160,14 @@ namespace CFD_JOBS.Ayondo
                                 var updateType = arr[16];
                                 var deviceType = arr[17];
 
-                                var tradeHistory = new CFD_COMMON.Models.Entities.AyondoTradeHistory()
+                                var tradeHistory = new AyondoTradeHistoryBase()
                                 {
                                     PositionId = posId,
                                     TradeId = tradeId,
                                     AccountId = accountId,
                                     FirstName = firstName,
                                     LastName = lastName,
-                                    TradeTime = time,//data time
+                                    TradeTime = time, //data time
                                     SecurityId = secIdD,
                                     SecurityName = secName,
                                     Direction = direction,
@@ -138,49 +177,79 @@ namespace CFD_JOBS.Ayondo
                                     GUID = guid,
                                     StopLoss = stopLoss,
                                     TakeProfit = takeProfit,
-                                    CreateTime = createTime,//position created time
+                                    CreateTime = createTime, //position created time
                                     UpdateType = updateType,
                                     DeviceType = deviceType,
                                 };
 
-                                if (tradeHistory.TradeTime <= dbMaxCreateTime)
-                                    continue; //skip old data
+                                //if (tradeHistory.TradeTime <= dbMaxCreateTime)
+                                //    continue; //skip old data
 
-                                entities.Add(tradeHistory);
+                                newTradeHistories.Add(tradeHistory);
+                            }
 
-                                if(tradeHistory.UpdateType == "DELETE")
+                            //if(tradeHistory.UpdateType == "DELETE")
+                            //        {
+                            //            var newPositionHistory = isLive
+                            //                ? db.NewPositionHistory_live.FirstOrDefault(h => h.Id == tradeHistory.PositionId)
+                            //                : db.NewPositionHistories.FirstOrDefault(h => h.Id == tradeHistory.PositionId);
+
+                            //            if(newPositionHistory != null)
+                            //            {
+                            //                newPositionHistory.ClosedPrice = tradeHistory.TradePrice;
+                            //                newPositionHistory.ClosedAt = tradeHistory.TradeTime;
+                            //                newPositionHistory.PL = tradeHistory.PL;
+                            //                needSave = true;
+                            //            }
+                            //        }
+                            //}
+
+                            //CFDGlobal.LogLine("maxCreateTime: " + dbMaxCreateTime + " data:" + lineArrays.Count +
+                            //                  " newData:" + entities.Count);
+
+                            var newClosedTradeHistories = newTradeHistories.Where(o => o.UpdateType == "DELETE").ToList();
+
+                            if (newClosedTradeHistories.Count > 0)//update position table with new closed trade histories
+                            {
+                                var newClosedPosIDs = newClosedTradeHistories.Select(o => o.PositionId).ToList();
+                                
+                                var positionsToClose = isLive
+                                    ? db.NewPositionHistory_live.OfType<NewPositionHistory>()
+                                        .Where(o => newClosedPosIDs.Contains(o.Id))
+                                        .ToList()
+                                    : db.NewPositionHistories.Where(o => newClosedPosIDs.Contains(o.Id)).ToList();
+
+                                if (positionsToClose.Count > 0)
                                 {
-                                    var newPositionHistory = db.NewPositionHistories.Where(h => h.Id == tradeHistory.PositionId).FirstOrDefault();
-                                    if(newPositionHistory != null)
+                                    foreach (var pos in positionsToClose)
                                     {
-                                        newPositionHistory.ClosedPrice = tradeHistory.TradePrice;
-                                        newPositionHistory.ClosedAt = tradeHistory.TradeTime;
-                                        newPositionHistory.PL = tradeHistory.PL;
-                                        needSave = true;
+                                        var trade = newClosedTradeHistories.FirstOrDefault(o => o.PositionId == pos.Id);
+
+                                        //update db fields
+                                        pos.ClosedPrice = trade.TradePrice;
+                                        pos.ClosedAt = trade.TradeTime;
+                                        pos.PL = trade.PL;
                                     }
+
+                                    CFDGlobal.LogLine("updating position close time/price/pl...");
+                                    db.SaveChanges();
                                 }
                             }
 
-                            CFDGlobal.LogLine("maxCreateTime: " + dbMaxCreateTime + " data:" + lineArrays.Count +
-                                              " newData:" + entities.Count);
-
-                            if (entities.Count > 0)
+                            if (newTradeHistories.Count > 0)
                             {
-                                CFDGlobal.LogLine("saving to db...");
-                                dbTable.AddRange(entities);
-                                needSave = true;
-                            }
+                                if (isLive)
+                                    db.AyondoTradeHistory_Live.AddRange(newTradeHistories.Select(o=> mapper.Map<AyondoTradeHistory_Live>(o)));
+                                else
+                                    db.AyondoTradeHistories.AddRange(newTradeHistories.Select(o => mapper.Map<AyondoTradeHistory>(o)));
 
-                            if(needSave)
-                            {
+                                CFDGlobal.LogLine("saving trade histories...");
                                 db.SaveChanges();
                             }
                         }
 
-                        Task.Factory.StartNew(() => {
-                            List<CFD_COMMON.Models.Entities.AyondoTradeHistory> systemClosedPositions = entities.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
-                            Push(systemClosedPositions);
-                        });
+                            var autoClosedHistories = newTradeHistories.OfType<AyondoTradeHistory>().Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
+                            Push(autoClosedHistories);
                     }
 
                     CFDGlobal.LogLine("");

@@ -6,8 +6,8 @@ namespace CFD_COMMON.Models.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("NewPositionHistory_live")]
-    public partial class NewPositionHistory_live : NewPositionHistory
+    //[Table("NewPositionHistory_live")]
+    public partial class NewPositionHistory_live : NewPositionHistoryBase
     {
         //[DatabaseGenerated(DatabaseGeneratedOption.None)]
         //public long Id { get; set; }

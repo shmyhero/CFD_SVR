@@ -930,7 +930,7 @@ namespace CFD_API.Controllers
             ResultDTO result = new ResultDTO() { success = true };
 
             var message = IsLiveUrl
-                ? db.Message_Live.FirstOrDefault(o => o.UserId == UserId && o.Id == id)
+                ? (MessageBase) db.Message_Live.FirstOrDefault(o => o.UserId == UserId && o.Id == id)
                 : db.Messages.FirstOrDefault(o => o.UserId == UserId && o.Id == id);
             if(message != null)
             {
