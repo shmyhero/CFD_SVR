@@ -62,6 +62,9 @@ namespace CFD_API.DTO
         /// 卡片头像
         /// </summary>
         public string profileUrl { get; set; }
+        
+        public decimal? last { get; set; }
+        public decimal? preClose { get; set; }
     }
 
     public class CardCollectionDTO

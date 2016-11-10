@@ -297,8 +297,8 @@ namespace CFD_API.Controllers
                     topCards.Add(new CardDTO()
                     {
                         ccy = prodDef.Ccy2,
-                        settlePrice = last,
-                        plRate = (last - Quotes.GetOpenPrice(prodDef)) / Quotes.GetOpenPrice(prodDef) * 100,
+                        last = last,
+                        preClose = Quotes.GetClosePrice(prodDef),
                         stockName = "黄金",
                         stockID = 34821
                     });
@@ -313,8 +313,8 @@ namespace CFD_API.Controllers
                         topCards.Add(new CardDTO()
                         {
                             ccy = prodDef.Ccy2,
-                            settlePrice = last,
-                            plRate = last - Quotes.GetOpenPrice(prodDef) / Quotes.GetOpenPrice(prodDef) * 100,
+                            last = last,
+                            preClose = Quotes.GetClosePrice(prodDef),
                             stockName = "白银",
                             stockID = 34847
                         });
