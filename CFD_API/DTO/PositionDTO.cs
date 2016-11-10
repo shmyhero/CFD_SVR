@@ -110,6 +110,12 @@ namespace CFD_API.DTO
         /// 当前用户是否点赞过
         /// </summary>
         public bool? liked { get; set; }
+
+        /// <summary>
+        /// 是否被分享到首页
+        /// </summary>
+        public bool? shared { get; set; }
+
         /// <summary>
         /// 是否查看过
         /// </summary>

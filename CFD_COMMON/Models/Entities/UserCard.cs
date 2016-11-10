@@ -61,6 +61,11 @@ namespace CFD_COMMON.Models.Entities
 
         public bool? IsNew { get; set; }
 
+        /// <summary>
+        /// 是否被分享到首页
+        /// </summary>
+        public bool? IsShared { get; set; }
+
         public DateTime? CreatedAt { get; set; }
 
         public DateTime? Expiration { get; set; }

@@ -1434,7 +1434,7 @@ namespace CFD_API.Controllers
                           from y in x.DefaultIfEmpty()
                           where u.UserId == this.UserId
                           select new CardDTO() { cardId = u.Id, ccy = u.CCY, imgUrlBig = y.CardImgUrlBig, imgUrlMiddle = y.CardImgUrlMiddle, imgUrlSmall = y.CardImgUrlSmall,
-                           invest = u.Invest, isLong = u.IsLong, isNew = !u.IsNew.HasValue? true: u.IsNew.Value , leverage = u.Leverage, likes = u.Likes, reward = y.Reward, settlePrice = u.SettlePrice, stockName = u.StockName,
+                           invest = u.Invest, isLong = u.IsLong, isNew = !u.IsNew.HasValue? true: u.IsNew.Value , shared = !u.IsShared.HasValue? false : u.IsShared.Value , leverage = u.Leverage, likes = u.Likes, reward = y.Reward, settlePrice = u.SettlePrice, stockName = u.StockName,
                            pl = u.PL, plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1), themeColor = y.ThemeColor, tradePrice = u.TradePrice, tradeTime = u.TradeTime};
 
             if(myCards != null)
@@ -1469,6 +1469,7 @@ namespace CFD_API.Controllers
                               invest = u.Invest,
                               isLong = u.IsLong,
                               isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
+                              shared = !u.IsShared.HasValue? false : u.IsShared.Value,
                               leverage = u.Leverage,
                               likes = u.Likes,
                               reward = y.Reward,
@@ -1493,6 +1494,54 @@ namespace CFD_API.Controllers
 
             return cardDTO;
         }
+
+        [HttpGet]
+        [Route("live/card/share/{id}")]
+        [BasicAuth]
+        public ResultDTO ShareCard(int id)
+        {
+            UserCard uc = db.UserCards.Where(o => o.Id == id && o.UserId == this.UserId).FirstOrDefault();
+            if(uc != null)
+            {
+                uc.IsShared = true;
+                db.SaveChanges();
+            }
+            else
+            {
+                return new ResultDTO(false);
+            }
+
+            return new ResultDTO(true);
+        }
+
+        [HttpGet]
+        [Route("live/card/like/{id}")]
+        [BasicAuth]
+        public ResultDTO LikeCard(int id)
+        {
+            if(db.LikeHistories.Any(o=>o.UserId == this.UserId && o.UserCardId == id))
+            {
+                return new ResultDTO(false) { message = "您已赞过该卡片" };
+            }
+
+            UserCard uc = db.UserCards.Where(o => o.Id == id).FirstOrDefault();
+            if (uc != null)
+            {
+                uc.Likes = uc.Likes.HasValue ? uc.Likes + 1 : 1;
+
+                LikeHistory history = new LikeHistory() { UserCardId = uc.Id, UserId = this.UserId, CreatedAt = DateTime.UtcNow };
+                db.LikeHistories.Add(history);
+
+                db.SaveChanges();
+            }
+            else
+            {
+                return new ResultDTO(false);
+            }
+
+            return new ResultDTO(true);
+        }
+
 
         /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式

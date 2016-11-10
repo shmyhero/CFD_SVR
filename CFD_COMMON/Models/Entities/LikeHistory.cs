@@ -10,7 +10,6 @@ namespace CFD_COMMON.Models.Entities
     {
         [Key]
         [Column(Order = 0)]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
         public int UserId { get; set; }

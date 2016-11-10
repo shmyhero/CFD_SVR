@@ -823,7 +823,8 @@ namespace CFD_API.Controllers
                         StockName = posDTO.card.stockName,
                         TradePrice = posDTO.card.tradePrice,
                         TradeTime = posDTO.card.tradeTime,
-                        IsNew = false
+                        IsNew = false,
+                        IsShared = false
                     };
                     db.UserCards.Add(uc);
                     db.SaveChanges();
