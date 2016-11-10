@@ -214,10 +214,8 @@ namespace CFD_JOBS.Ayondo
                                 var newClosedPosIDs = newClosedTradeHistories.Select(o => o.PositionId).ToList();
                                 
                                 var positionsToClose = isLive
-                                    ? db.NewPositionHistory_live.OfType<NewPositionHistory>()
-                                        .Where(o => newClosedPosIDs.Contains(o.Id))
-                                        .ToList()
-                                    : db.NewPositionHistories.Where(o => newClosedPosIDs.Contains(o.Id)).ToList();
+                                    ? db.NewPositionHistory_live.Where(o => newClosedPosIDs.Contains(o.Id)).ToList().Select(o=> o as NewPositionHistoryBase).ToList()
+                                    : db.NewPositionHistories.Where(o => newClosedPosIDs.Contains(o.Id)).ToList().Select(o => o as NewPositionHistoryBase).ToList();
 
                                 if (positionsToClose.Count > 0)
                                 {

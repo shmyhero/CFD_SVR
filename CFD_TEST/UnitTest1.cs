@@ -69,13 +69,12 @@ namespace CFD_TEST
                 //db.SaveChanges();
 
 
-                var ooo = new AyondoTradeHistoryBase() { PositionId = 1 };
+                //var ooo = new AyondoTradeHistoryBase() { PositionId = 1 };
+                //var mapper = CFD_COMMON.MapperConfig.GetAutoMapperConfiguration().CreateMapper();
+                //db.AyondoTradeHistories.Add(mapper.Map<AyondoTradeHistory>(ooo));
+                //db.AyondoTradeHistory_Live.Add(mapper.Map<AyondoTradeHistory_Live>(ooo));
+                //db.SaveChanges();
 
-                var mapper = CFD_COMMON.MapperConfig.GetAutoMapperConfiguration().CreateMapper();
-
-                db.AyondoTradeHistories.Add(mapper.Map<AyondoTradeHistory>(ooo));
-                db.AyondoTradeHistory_Live.Add(mapper.Map<AyondoTradeHistory_Live>(ooo));
-                db.SaveChanges();
 
                 //var newPositionHistory = db.NewPositionHistories.FirstOrDefault();
                 //var newPositionHistory_Live = db.NewPositionHistory_live.FirstOrDefault();
@@ -86,8 +85,11 @@ namespace CFD_TEST
                 //var a = 1 == 1 ? db.NewPositionHistories.FirstOrDefault() : db.NewPositionHistory_live.FirstOrDefault();
                 //var aa = 1 == 2 ? db.NewPositionHistories.FirstOrDefault() : db.NewPositionHistory_live.FirstOrDefault();
 
-                //var b = 1 == 1 ? db.NewPositionHistories.Take(1).ToList() : db.NewPositionHistory_live.OfType<NewPositionHistory>().Take(1).ToList();
-                //var bb = 1 == 2 ? db.NewPositionHistories.Take(1).ToList() : db.NewPositionHistory_live.OfType<NewPositionHistory>().Take(1).ToList();
+                var b = 1 == 1 ? db.NewPositionHistories.Take(1).ToList().Select(o=>o as NewPositionHistoryBase).ToList() : db.NewPositionHistory_live.Take(1).ToList().Select(o => o as NewPositionHistoryBase).ToList();
+                var bb = 1 == 2 ? db.NewPositionHistories.Take(1).ToList().Select(o => o as NewPositionHistoryBase).ToList() : db.NewPositionHistory_live.Take(1).ToList().Select(o => o as NewPositionHistoryBase).ToList();
+                b[0].PL = 22;
+                bb[0].PL = 33;
+                db.SaveChanges();
             }
         }
         

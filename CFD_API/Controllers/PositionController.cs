@@ -461,8 +461,18 @@ namespace CFD_API.Controllers
                 startTimeDB = endTimeDB.AddDays(-1 * (monthDays - (DateTime.UtcNow - startTime).Days));
 
                 var positionReportsDB = IsLiveUrl
-                    ? db.NewPositionHistory_live.OfType<NewPositionHistory>().Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList()
-                    : db.NewPositionHistories.Where(o => o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue && o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId).ToList();
+                    ? db.NewPositionHistory_live.Where(
+                        o =>
+                            o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue &&
+                            o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId)
+                        .ToList()
+                        .Select(o => o as NewPositionHistoryBase).ToList()
+                    : db.NewPositionHistories.Where(
+                        o =>
+                            o.PL.HasValue && o.SettlePrice.HasValue && o.CreateTime.HasValue && o.ClosedAt.HasValue &&
+                            o.ClosedAt >= startTimeDB && o.ClosedAt <= endTimeDB && o.UserId == UserId)
+                        .ToList()
+                        .Select(o => o as NewPositionHistoryBase).ToList();
                 positionReportsDB.ToList().ForEach(item => {
                     var dto = new PositionHistoryDTO() {
                         closeAt = item.ClosedAt.Value,

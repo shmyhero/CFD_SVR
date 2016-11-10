@@ -657,8 +657,8 @@ namespace CFD_API.Controllers
 
             //closed position
             var positionHistoryReports = IsLiveUrl
-                ? db.NewPositionHistory_live.OfType<NewPositionHistory>().Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList()
-                : db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList();
+                ? db.NewPositionHistory_live.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList().Select(o=>o as NewPositionHistoryBase).ToList()
+                : db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList().Select(o => o as NewPositionHistoryBase).ToList();
 
             //open position
             IList<PositionReport> positionOpenReports;
@@ -907,8 +907,8 @@ namespace CFD_API.Controllers
         public List<MessageDTO> GetMessages(int pageNum = 1, int pageSize = 20)
         {
             var messages = IsLiveUrl
-                ? db.Message_Live.OfType<Message>().Where(o => o.UserId == UserId).OrderByDescending(o => o.CreatedAt).Skip((pageNum - 1) * pageSize).Take(pageSize).ToList()
-                : db.Messages.Where(o => o.UserId == UserId).OrderByDescending(o => o.CreatedAt).Skip((pageNum - 1) * pageSize).Take(pageSize).ToList();
+                ? db.Message_Live.Where(o => o.UserId == UserId).OrderByDescending(o => o.CreatedAt).Skip((pageNum - 1) * pageSize).Take(pageSize).ToList().Select(o=>o as MessageBase).ToList()
+                : db.Messages.Where(o => o.UserId == UserId).OrderByDescending(o => o.CreatedAt).Skip((pageNum - 1) * pageSize).Take(pageSize).ToList().Select(o => o as MessageBase).ToList();
 
             return messages.Select(o => new MessageDTO()
             {

@@ -614,12 +614,12 @@ namespace CFD_API.Controllers
             var dtEnd = DateTime.UtcNow;
             var dtStart = DateTime.UtcNow - ts1day;
 
-            List<NewPositionHistory> tradeHistory = new List<NewPositionHistory>();
+            var tradeHistory = new List<NewPositionHistoryBase>();
             for (int i = 0; i < 10; i++)
             {
                 tradeHistory =IsLiveUrl
-                    ? db.NewPositionHistory_live.AsNoTracking().OfType<NewPositionHistory>().Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd).ToList()
-                    :db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd).ToList(); // >= start and < end
+                    ? db.NewPositionHistory_live.AsNoTracking().Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd).ToList().Select(o=>o as NewPositionHistoryBase).ToList()
+                    :db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd).ToList().Select(o => o as NewPositionHistoryBase).ToList(); // >= start and < end
                     
                 //trade history list covers more than 3 active securities
                 if (tradeHistory.Select(o => o.SecurityId).Distinct().Count(o => activeProd.Any(p => p.Id == o)) >= 3)
