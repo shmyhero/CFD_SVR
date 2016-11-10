@@ -65,6 +65,7 @@ namespace CFD_API.DTO
         
         public decimal? last { get; set; }
         public decimal? preClose { get; set; }
+        public decimal? rate { get; set; }
     }
 
     public class CardCollectionDTO

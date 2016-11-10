@@ -299,6 +299,7 @@ namespace CFD_API.Controllers
                         ccy = prodDef.Ccy2,
                         last = last,
                         preClose = Quotes.GetClosePrice(prodDef),
+                        rate = (last - Quotes.GetClosePrice(prodDef)) / Quotes.GetClosePrice(prodDef) *100,
                         stockName = "黄金",
                         stockID = 34821
                     });
@@ -315,6 +316,7 @@ namespace CFD_API.Controllers
                             ccy = prodDef.Ccy2,
                             last = last,
                             preClose = Quotes.GetClosePrice(prodDef),
+                            rate = (last - Quotes.GetClosePrice(prodDef)) / Quotes.GetClosePrice(prodDef) * 100,
                             stockName = "白银",
                             stockID = 34847
                         });
