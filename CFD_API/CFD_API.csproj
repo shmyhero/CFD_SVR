@@ -260,6 +260,7 @@
     <Compile Include="Controllers\Attributes\ElmahFilter.cs" />
     <Compile Include="Controllers\Attributes\RequireHttpsAttribute.cs" />
     <Compile Include="Controllers\Attributes\RestrictByIp.cs" />
+    <Compile Include="Controllers\CardController.cs" />
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\CompetitionController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
@@ -271,6 +272,7 @@
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
     <Compile Include="DTO\Ayondo\CreateAccountRequest.cs" />
+    <Compile Include="DTO\CardDTO.cs" />
     <Compile Include="DTO\CompetitionDTO.cs" />
     <Compile Include="DTO\FormDTO\PositionFormDTO.cs" />
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
@@ -305,6 +307,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Card\" />
     <Folder Include="Views\Operation\" />
     <Folder Include="Views\Reward\" />
   </ItemGroup>
