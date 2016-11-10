@@ -763,12 +763,6 @@ namespace CFD_API.Controllers
             //}
            var  settlP = prodDef == null ? result.SettlPrice : Math.Round(result.SettlPrice, prodDef.Prec);
 
-
-            //Ayondo返回的Report里面不包含Invest和TakePx，要从数据库里面拿
-            //to-do 先从Demo库拿，以后要考虑Live、Demo分开
-            long posID = long.Parse(form.posId);
-            var history = db.NewPositionHistories.FirstOrDefault(o => o.Id == posID);
-            
             var posDTO = new PositionDTO()
             {
                 id = result.PosMaintRptID,
@@ -781,74 +775,72 @@ namespace CFD_API.Controllers
                 pl = result.PL,
             };
 
-            if(!IsLiveUrl)//目前只在模拟盘有卡牌
+            if (!IsLiveUrl) //目前只在模拟盘有卡牌
             {
-                Card card = GetCard(result, history.SettlePrice);
-                if (card != null)
-                {
-                    posDTO.card = new CardDTO()
-                    {
-                        cardId = card.Id,
-                        imgUrlBig = card.CardImgUrlBig,
-                        imgUrlMiddle = card.CardImgUrlMiddle,
-                        imgUrlSmall = card.CardImgUrlSmall,
-                        invest = history.InvestUSD,
-                        isLong = posDTO.isLong,
-                        leverage = posDTO.leverage,
-                        reward = card.Reward,
-                        settlePrice = settlP,
-                        tradePrice = history.SettlePrice,
-                        tradeTime = history.CreateTime.Value,
-                        ccy = prodDef == null ? string.Empty : prodDef.Ccy2,
-                        stockName = prodDef == null ? string.Empty : Translator.GetCName(prodDef.Name),
-                        themeColor = card.ThemeColor
-                    };
+                //Ayondo返回的Report里面不包含Invest和开仓价格，要从数据库里面拿
+                //todo: 先从Demo库拿，以后要考虑Live、Demo分开
+                long posID = long.Parse(form.posId);
+                var position = db.NewPositionHistories.FirstOrDefault(o => o.Id == posID);
 
-                    UserCard uc = new UserCard()
+                if (position != null)
+                {
+                    //收益率
+                    var plRatePercent = posDTO.isLong
+                        ? (result.SettlPrice - position.SettlePrice)/position.SettlePrice*result.Leverage*100
+                        : (position.SettlePrice - result.SettlPrice)/position.SettlePrice*result.Leverage*100;
+
+                    var cardService = new CardService(db);
+                    var card = cardService.GetCard(result.PL.Value, plRatePercent.Value, position.SettlePrice.Value);
+
+                    if (card != null)
                     {
-                        UserId = this.UserId,
-                        CardId = card.Id,
-                        CCY = posDTO.card.ccy,
-                        ClosedAt = result.CreateTime,
-                        CreatedAt = DateTime.UtcNow,
-                        Expiration = SqlDateTime.MaxValue.Value,
-                        Invest = posDTO.card.invest,
-                        IsLong = posDTO.card.isLong,
-                        Leverage = posDTO.card.leverage,
-                        Likes = 0,
-                        PL = posDTO.pl,
-                        Qty = history.LongQty ?? history.ShortQty,
-                        Reward = card.Reward,
-                        SettlePrice = settlP,
-                        StockName = posDTO.card.stockName,
-                        TradePrice = posDTO.card.tradePrice,
-                        TradeTime = posDTO.card.tradeTime,
-                        IsNew = false,
-                        IsShared = false
-                    };
-                    db.UserCards.Add(uc);
-                    db.SaveChanges();
+                        posDTO.card = new CardDTO()
+                        {
+                            cardId = card.Id,
+                            imgUrlBig = card.CardImgUrlBig,
+                            imgUrlMiddle = card.CardImgUrlMiddle,
+                            imgUrlSmall = card.CardImgUrlSmall,
+                            invest = position.InvestUSD,
+                            isLong = posDTO.isLong,
+                            leverage = posDTO.leverage,
+                            reward = card.Reward,
+                            settlePrice = settlP,
+                            tradePrice = position.SettlePrice,
+                            tradeTime = position.CreateTime.Value,
+                            ccy = prodDef == null ? string.Empty : prodDef.Ccy2,
+                            stockName = prodDef == null ? string.Empty : Translator.GetCName(prodDef.Name),
+                            themeColor = card.ThemeColor
+                        };
+
+                        UserCard uc = new UserCard()
+                        {
+                            UserId = this.UserId,
+                            CardId = card.Id,
+                            CCY = posDTO.card.ccy,
+                            ClosedAt = result.CreateTime,
+                            CreatedAt = DateTime.UtcNow,
+                            Expiration = SqlDateTime.MaxValue.Value,
+                            Invest = posDTO.card.invest,
+                            IsLong = posDTO.card.isLong,
+                            Leverage = posDTO.card.leverage,
+                            Likes = 0,
+                            PL = posDTO.pl,
+                            Qty = position.LongQty ?? position.ShortQty,
+                            Reward = card.Reward,
+                            SettlePrice = settlP,
+                            StockName = posDTO.card.stockName,
+                            TradePrice = posDTO.card.tradePrice,
+                            TradeTime = posDTO.card.tradeTime,
+                            IsNew = false,
+                            IsShared = false
+                        };
+                        db.UserCards.Add(uc);
+                        db.SaveChanges();
+                    }
                 }
             }
 
             return posDTO;
-        }
-
-        public Card GetCard(PositionReport pos, decimal? openPrice)
-        {
-            //收益率
-            decimal plRate = (pos.SettlPrice - openPrice.Value) / openPrice.Value * pos.Leverage.Value * 100;
-            var cardsList = db.Cards.Where(o => o.LowProfit < pos.PL && (!o.HighProfit.HasValue || o.HighProfit > pos.PL)
-            && o.LowProfitRate<plRate && (!o.HighProfitRate.HasValue || o.HighProfitRate > plRate ));
-            int count = cardsList.Count();
-            if (cardsList == null || count == 0)
-            {
-                return null;
-            }
-
-            Random ran = new Random(DateTime.UtcNow.Millisecond);
-            int index = ran.Next(0, count - 1);
-            return cardsList.ToList()[index];
         }
 
         [HttpPost]
