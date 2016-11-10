@@ -248,8 +248,9 @@ namespace CFD_JOBS.Ayondo
                             }
                         }
 
-                            var autoClosedHistories = newTradeHistories.OfType<AyondoTradeHistory>().Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
-                            Push(autoClosedHistories);
+                        var autoClosedHistories =
+                            newTradeHistories.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
+                        Push(autoClosedHistories);
                     }
 
                     CFDGlobal.LogLine("");
@@ -268,7 +269,7 @@ namespace CFD_JOBS.Ayondo
         /// push auto-close notification
         /// </summary>
         /// <param name="systemCloseHistory"></param>
-        private static void Push(List<CFD_COMMON.Models.Entities.AyondoTradeHistory> systemCloseHistorys)
+        private static void Push(List<AyondoTradeHistoryBase> systemCloseHistorys)
         {
             if (systemCloseHistorys == null || systemCloseHistorys.Count == 0)
                 return;
@@ -368,7 +369,6 @@ namespace CFD_JOBS.Ayondo
                         }
                     }
                 }
-                
             }
 
             var splitedPushList = getuiPushList.SplitInChunks(1000);
@@ -386,7 +386,7 @@ namespace CFD_JOBS.Ayondo
         /// <param name="closedHistory"></param>
         /// <param name="db"></param>
         /// <returns></returns>
-        private static bool isAutoClose(CFD_COMMON.Models.Entities.AyondoTradeHistory closedHistory, CFDEntities db)
+        private static bool isAutoClose(AyondoTradeHistoryBase closedHistory, CFDEntities db)
         {
             //用平仓记录的PositionID去找到开仓记录
             var openHistory = db.AyondoTradeHistories.FirstOrDefault(o => o.PositionId == closedHistory.PositionId && o.UpdateType == "CREATE");
