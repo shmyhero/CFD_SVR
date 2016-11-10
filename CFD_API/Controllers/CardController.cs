@@ -106,12 +106,14 @@ namespace CFD_API.Controllers
                                plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1)
                            }).FirstOrDefault();
 
-            if (cardDTO != null && cardDTO.isNew.Value)
+            var authUserId = GetAuthUserId();
+
+            if (authUserId!=0 && cardDTO != null && cardDTO.isNew.Value)
             {
                 UserCard card = db.UserCards.Where(item => item.Id == id).FirstOrDefault();
                 if (card != null)
                 {
-                    card.IsNew = false;//todo: set isNew = false when read by anyone?
+                    card.IsNew = false;
                     db.SaveChanges();
                 }
             }
@@ -172,7 +174,7 @@ namespace CFD_API.Controllers
         /// 无验证信息或验证信息错误时返回0，否则返回UserID
         /// </summary>
         /// <returns></returns>
-        private int GetUserID()
+        private int GetAuthUserId()
         {
             if (HttpContext.Current.Request.Headers.AllKeys.Contains("Authorization"))
             {
@@ -208,7 +210,7 @@ namespace CFD_API.Controllers
         [Route("top")]
         public List<CardDTO> GetTopCards()
         {
-            int userId = GetUserID();
+            int userId = GetAuthUserId();
             List<CardDTO> topCards = null;
 
             if (userId == 0)
