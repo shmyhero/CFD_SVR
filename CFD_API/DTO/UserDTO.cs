@@ -125,6 +125,10 @@ namespace CFD_API.DTO
         /// </summary>
         public decimal totalDemoTransaction { get; set; }
         /// <summary>
+        /// 卡牌产生的交易金
+        /// </summary>
+        public decimal totalCard { get; set; }
+        /// <summary>
         /// 模拟盘注册奖励（20元）
         /// </summary>
         public decimal demoRegister { get; set; }

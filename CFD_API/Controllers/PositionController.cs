@@ -494,6 +494,21 @@ namespace CFD_API.Controllers
             }
             #endregion
 
+            //拿到平仓记录的PositionId, 与卡牌表中的PositionId做比较。 然后更新平仓记录的HasCard数据
+            List<long> positionIdList = result.Select(o => long.Parse(o.id)).ToList();
+            var posList = (from u in db.UserCards
+                          where positionIdList.Contains(u.PositionId)
+                          orderby u.ClosedAt descending
+                          select u.PositionId.ToString()).ToList();
+
+            result.ForEach(item =>
+            {
+                if(posList.Contains(item.id))
+                {
+                    item.hasCard = true;
+                }
+            });
+
             return result.OrderByDescending(o => o.closeAt).ToList();
         }
 
@@ -821,6 +836,7 @@ namespace CFD_API.Controllers
                             CreatedAt = DateTime.UtcNow,
                             Expiration = SqlDateTime.MaxValue.Value,
                             Invest = posDTO.card.invest,
+                            PositionId = long.Parse(posDTO.id),
                             IsLong = posDTO.card.isLong,
                             Leverage = posDTO.card.leverage,
                             Likes = 0,
@@ -832,7 +848,8 @@ namespace CFD_API.Controllers
                             TradePrice = posDTO.card.tradePrice,
                             TradeTime = posDTO.card.tradeTime,
                             IsNew = false,
-                            IsShared = false
+                            IsShared = false,
+                            IsPaid = false
                         };
                         db.UserCards.Add(uc);
                         db.SaveChanges();

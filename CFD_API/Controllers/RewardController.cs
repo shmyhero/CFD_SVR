@@ -191,11 +191,13 @@ namespace CFD_API.Controllers
             //    totalDemoTransactionReward = dailyTransactionsList.Sum(item => item.Amount);
             //}
 
+            var totalCard = db.UserCards.Where(o => (!o.IsPaid.HasValue || !o.IsPaid.Value) && o.UserId == UserId).Select(o => o.Reward).DefaultIfEmpty(0).Sum();
+
             //reward for demo register
             var reward = db.DemoRegisterRewards.FirstOrDefault(o => o.UserId == UserId);
             decimal demoRegisterReward = reward == null ? 0 : reward.Amount;
 
-            return new RewardDTO() { demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalDemoTransaction = totalDemoTransactionReward }; //totalDailySignReward + totalDemoTransactionReward + demoRegisterReward;
+            return new RewardDTO() { demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward }; //totalDailySignReward + totalDemoTransactionReward + demoRegisterReward;
         }
 
         [HttpGet]

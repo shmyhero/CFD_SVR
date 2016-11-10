@@ -21,6 +21,8 @@ namespace CFD_COMMON.Models.Entities
         /// </summary>
         public int CardId { get; set; }
 
+        public long PositionId { get; set; }
+
         /// <summary>
         /// 买涨、买跌
         /// </summary>
@@ -65,6 +67,10 @@ namespace CFD_COMMON.Models.Entities
         /// 是否被分享到首页
         /// </summary>
         public bool? IsShared { get; set; }
+        /// <summary>
+        /// 是否已支付过交易金
+        /// </summary>
+        public bool? IsPaid { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 
