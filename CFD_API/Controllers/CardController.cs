@@ -220,8 +220,7 @@ namespace CFD_API.Controllers
                             into x
                             from y in x.DefaultIfEmpty()
                             join us in db.Users on u.UserId equals us.Id
-                            //join h in db.LikeHistories on new { id = u.Id, id1 = this.UserId }
-                            //                           equals new { id = h.UserCardId, id1 = h.UserId }
+                            where u.IsShared.HasValue && u.IsShared.Value
                             orderby u.ClosedAt descending, y.CardType descending
                             select new CardDTO()
                             {
@@ -255,8 +254,7 @@ namespace CFD_API.Controllers
                             into x
                             from y in x.DefaultIfEmpty()
                             join us in db.Users on u.UserId equals us.Id
-                            //join h in db.LikeHistories on new { id = u.Id, id1 = this.UserId }
-                            //                           equals new { id = h.UserCardId, id1 = h.UserId }
+                            where u.IsShared.HasValue && u.IsShared.Value
                             orderby u.ClosedAt descending, y.CardType descending
                             select new CardDTO()
                             {
