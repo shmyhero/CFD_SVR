@@ -882,6 +882,7 @@ namespace CFD_API.Controllers
                                 tradePrice = u.TradePrice,
                                 tradeTime = u.TradeTime,
                                 userName = us.Nickname,
+                                profileUrl = us.PicUrl,
                                 liked = false
                             }).Take(6).ToList();
             }
@@ -916,6 +917,7 @@ namespace CFD_API.Controllers
                                     tradePrice = u.TradePrice,
                                     tradeTime = u.TradeTime,
                                     userName = us.Nickname,
+                                    profileUrl = us.PicUrl,
                                     liked = db.LikeHistories.Any(o => o.UserId == userId && o.UserCardId == u.Id)
                                 }).Take(6).ToList();
             }

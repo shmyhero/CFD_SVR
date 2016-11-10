@@ -125,7 +125,10 @@ namespace CFD_API.DTO
         /// 在首页显示时需要人名
         /// </summary>
         public string userName { get; set; }
-        
+        /// <summary>
+        /// 卡片头像
+        /// </summary>
+        public string profileUrl { get; set; }
     }
 
     public class CardDTOCollection
