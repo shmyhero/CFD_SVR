@@ -819,6 +819,8 @@ namespace CFD_API.Controllers
                     var cardService = new CardService(db);
                     var card = cardService.GetCard(result.PL.Value, plRatePercent.Value, position.SettlePrice.Value);
 
+                    posDTO.isLong = position.LongQty.HasValue;
+
                     if (card != null)
                     {
                         posDTO.card = new CardDTO()
@@ -828,7 +830,7 @@ namespace CFD_API.Controllers
                             imgUrlMiddle = card.CardImgUrlMiddle,
                             imgUrlSmall = card.CardImgUrlSmall,
                             invest = position.InvestUSD,
-                            isLong = posDTO.isLong,
+                            isLong = position.LongQty.HasValue,
                             leverage = posDTO.leverage,
                             reward = card.Reward,
                             settlePrice = settlP,
