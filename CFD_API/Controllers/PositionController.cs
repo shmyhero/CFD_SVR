@@ -336,124 +336,126 @@ namespace CFD_API.Controllers
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
                 }
             }
-            
-            if (historyReports.Count == 0)
-                return result;
 
             var cache = WebCache.GetInstance(IsLiveUrl);
 
-            var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
-
-            foreach (var positionGroup in groupByPositions) //for every position group
+            if (historyReports.Count > 0)
             {
-                var dto = new PositionHistoryDTO();
-                dto.id = positionGroup.Key;
+                var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
 
-                var positionReportsAyondo = positionGroup.ToList();
-
-
-                if (positionReportsAyondo.Count >= 2)
+                foreach (var positionGroup in groupByPositions) //for every position group
                 {
-                    var openReport = positionReportsAyondo.OrderBy(o => o.CreateTime).First();
-                    var closeReport = positionReportsAyondo.OrderBy(o => o.CreateTime).Last();
+                    var dto = new PositionHistoryDTO();
+                    dto.id = positionGroup.Key;
 
-                    if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
+                    var positionReportsAyondo = positionGroup.ToList();
+
+
+                    if (positionReportsAyondo.Count >= 2)
                     {
-                        var secId = Convert.ToInt32(openReport.SecurityID);
-                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var openReport = positionReportsAyondo.OrderBy(o => o.CreateTime).First();
+                        var closeReport = positionReportsAyondo.OrderBy(o => o.CreateTime).Last();
 
-                        if (prodDef == null)
+                        if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                         {
-                            CFDGlobal.LogLine("cannot find product definition for sec id: " + secId + " in history position reports of user id: " + UserId);
-                            continue;
+                            var secId = Convert.ToInt32(openReport.SecurityID);
+                            var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+
+                            if (prodDef == null)
+                            {
+                                CFDGlobal.LogLine("cannot find product definition for sec id: " + secId + " in history position reports of user id: " + UserId);
+                                continue;
+                            }
+
+                            dto.openPrice = Math.Round(openReport.SettlPrice, prodDef.Prec);
+                            dto.openAt = openReport.CreateTime;
+
+                            dto.closePrice = Math.Round(closeReport.SettlPrice, prodDef.Prec);
+                            dto.closeAt = closeReport.CreateTime;
+
+                            dto.leverage = closeReport.Leverage;
+                            dto.pl = closeReport.PL.Value;
+
+                            dto.isLong = openReport.LongQty != null;
+
+                            //************************************************************************
+                            //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                            //************************************************************************
+                            var tradeValue = openReport.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (openReport.LongQty ?? openReport.ShortQty);
+                            //var tradeValueUSD = tradeValue;
+                            //if (prodDef.Ccy2 != "USD")
+                            //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+
+                            dto.invest = tradeValue / dto.leverage;
+
+                            var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                            HideSecInfo(security);
+
+                            dto.security = security;
+
+                            result.Add(dto);
                         }
-
-                        dto.openPrice = Math.Round(openReport.SettlPrice, prodDef.Prec);
-                        dto.openAt = openReport.CreateTime;
-
-                        dto.closePrice = Math.Round(closeReport.SettlPrice, prodDef.Prec);
-                        dto.closeAt = closeReport.CreateTime;
-
-                        dto.leverage = closeReport.Leverage;
-                        dto.pl = closeReport.PL.Value;
-
-                        dto.isLong = openReport.LongQty != null;
-
-                        //************************************************************************
-                        //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
-                        //************************************************************************
-                        var tradeValue = openReport.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (openReport.LongQty ?? openReport.ShortQty);
-                        //var tradeValueUSD = tradeValue;
-                        //if (prodDef.Ccy2 != "USD")
-                        //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
-
-                        dto.invest = tradeValue / dto.leverage;
-
-                        var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                        HideSecInfo(security);
-
-                        dto.security = security;
-
-                        result.Add(dto);
                     }
-                }
-                else if (positionReportsAyondo.Count == 1)//对于只拿到一条Delete Position Report的情况，去DB里拿Open的信息
-                {
-                    var closePR = positionReportsAyondo[0];
-                    //确定该条记录是Delete，而非Update
-                    if (Decimals.IsTradeSizeZero(closePR.LongQty) || Decimals.IsTradeSizeZero(closePR.ShortQty))
+                    else if (positionReportsAyondo.Count == 1)//对于只拿到一条Delete Position Report的情况，去DB里拿Open的信息
                     {
-                        //去DB里面拿Open的记录
-                        var openPR = IsLiveUrl 
-                            ? (NewPositionHistoryBase) db.NewPositionHistory_live.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID)
-                            : db.NewPositionHistories.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID);
-                        if (openPR == null)
+                        var closePR = positionReportsAyondo[0];
+                        //确定该条记录是Delete，而非Update
+                        if (Decimals.IsTradeSizeZero(closePR.LongQty) || Decimals.IsTradeSizeZero(closePR.ShortQty))
                         {
-                            continue;
+                            //去DB里面拿Open的记录
+                            var openPR = IsLiveUrl
+                                ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID)
+                                : db.NewPositionHistories.FirstOrDefault(o => o.Id.ToString() == closePR.PosMaintRptID);
+                            if (openPR == null)
+                            {
+                                continue;
+                            }
+
+                            var secId = Convert.ToInt32(openPR.SecurityId);
+                            var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
+
+                            if (prodDef == null)
+                            {
+                                CFDGlobal.LogLine("cannot find product definition for sec id: " + secId + " in history position reports of user id: " + UserId);
+                                continue;
+                            }
+
+                            dto.openPrice = Math.Round(openPR.SettlePrice.Value, prodDef.Prec);
+                            dto.openAt = openPR.CreateTime.Value;
+
+                            dto.closePrice = Math.Round(closePR.SettlPrice, prodDef.Prec);
+                            dto.closeAt = closePR.CreateTime;
+
+                            dto.leverage = closePR.Leverage;
+                            dto.pl = closePR.PL.Value;
+
+                            dto.isLong = openPR.LongQty.HasValue;
+
+                            //************************************************************************
+                            //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+                            //************************************************************************
+                            var tradeValue = openPR.SettlePrice * prodDef.LotSize / prodDef.PLUnits * (openPR.LongQty ?? openPR.ShortQty);
+                            //var tradeValueUSD = tradeValue;
+                            //if (prodDef.Ccy2 != "USD")
+                            //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
+
+                            dto.invest = tradeValue / dto.leverage;
+
+                            var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                            HideSecInfo(security);
+
+                            dto.security = security;
+
+                            result.Add(dto);
                         }
-
-                        var secId = Convert.ToInt32(openPR.SecurityId);
-                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
-
-                        if (prodDef == null)
-                        {
-                            CFDGlobal.LogLine("cannot find product definition for sec id: " + secId + " in history position reports of user id: " + UserId);
-                            continue;
-                        }
-
-                        dto.openPrice = Math.Round(openPR.SettlePrice.Value, prodDef.Prec);
-                        dto.openAt = openPR.CreateTime.Value;
-
-                        dto.closePrice = Math.Round(closePR.SettlPrice, prodDef.Prec);
-                        dto.closeAt = closePR.CreateTime;
-
-                        dto.leverage = closePR.Leverage;
-                        dto.pl = closePR.PL.Value;
-
-                        dto.isLong = openPR.LongQty.HasValue;
-
-                        //************************************************************************
-                        //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
-                        //************************************************************************
-                        var tradeValue = openPR.SettlePrice * prodDef.LotSize / prodDef.PLUnits * (openPR.LongQty ?? openPR.ShortQty);
-                        //var tradeValueUSD = tradeValue;
-                        //if (prodDef.Ccy2 != "USD")
-                        //    tradeValueUSD = FX.Convert(tradeValue.Value, prodDef.Ccy2, "USD", WebCache.ProdDefs, WebCache.Quotes);
-
-                        dto.invest = tradeValue / dto.leverage;
-
-                        var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                        HideSecInfo(security);
-
-                        dto.security = security;
-
-                        result.Add(dto);
                     }
                 }
             }
 
             #region 如果上面的接口拿到的数据不足一个月，补足一个月
-            var startTime = historyReports.Min(o => o.CreateTime);//已拿到的数据中，最前面一条的时间
+            //已拿到的数据中，最前面一条的平仓时间
+            //如果已拿到的数据集为空，则以当前时间为开始时间
+            var startTime = historyReports.Count == 0? DateTime.UtcNow : result.Min(o => o.closeAt);
 
             if ((DateTime.UtcNow - startTime).Days < monthDays) //如果拿出来的数据的跨度小于一个月
             {
