@@ -8,6 +8,7 @@ using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using ServiceStack.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using CFD_COMMON.Utils;
 using CFD_COMMON.Utils.Extensions;
 using CFD_COMMON.Localization;
@@ -19,11 +20,10 @@ namespace CFD_JOBS.Ayondo
     {
         private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
         private static DateTime? _lastEndTime = null;
+        private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
         public static void Run(bool isLive = false)
         {
-            var mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
-
             while (true)
             {
                 try
@@ -240,9 +240,9 @@ namespace CFD_JOBS.Ayondo
                             if (newTradeHistories.Count > 0)
                             {
                                 if (isLive)
-                                    db.AyondoTradeHistory_Live.AddRange(newTradeHistories.Select(o=> mapper.Map<AyondoTradeHistory_Live>(o)));
+                                    db.AyondoTradeHistory_Live.AddRange(newTradeHistories.Select(o=> Mapper.Map<AyondoTradeHistory_Live>(o)));
                                 else
-                                    db.AyondoTradeHistories.AddRange(newTradeHistories.Select(o => mapper.Map<AyondoTradeHistory>(o)));
+                                    db.AyondoTradeHistories.AddRange(newTradeHistories.Select(o => Mapper.Map<AyondoTradeHistory>(o)));
 
                                 CFDGlobal.LogLine("saving trade histories...");
                                 db.SaveChanges();
@@ -259,7 +259,7 @@ namespace CFD_JOBS.Ayondo
                         newTradeHistories.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
 
                     if (autoClosedHistories.Count > 0)
-                        Push(autoClosedHistories, isLive);
+                        NotifyUser(autoClosedHistories, isLive);
                 }
                 catch (Exception e)
                 {
@@ -273,7 +273,7 @@ namespace CFD_JOBS.Ayondo
         /// <summary>
         /// push auto-close notification
         /// </summary>
-        private static void Push(List<AyondoTradeHistoryBase> autoClosedHistories, bool isLive)
+        private static void NotifyUser(List<AyondoTradeHistoryBase> autoClosedHistories, bool isLive)
         {
             if (autoClosedHistories == null || autoClosedHistories.Count == 0)
                 return;
@@ -292,86 +292,97 @@ namespace CFD_JOBS.Ayondo
                             join d in db.Devices on u.Id equals d.userId
                             into x from y in x.DefaultIfEmpty()
                             where ayondoAccountIds.Contains(isLive ? u.AyLiveAccountId.Value : u.AyondoAccountId.Value) //&& u.AutoCloseAlert.HasValue && u.AutoCloseAlert.Value
-                               select new {y.deviceToken, u.Id, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live   };
+                               select new {y.deviceToken, UserId = u.Id, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live   };
 
-                var result = query.ToList();
+                var users = query.ToList();
+
                 //因为一个用户可能有多台设备，所以要在循环的时候判断一下，是否一条Position的平仓消息已经被记录过
                 //Key - Position Id
                 //Value - 生成的Message Id
-                Dictionary<long, int> messageSaved = new Dictionary<long, int>();
-                foreach(var h in autoClosedHistories)
+                var messageSaved = new Dictionary<long, int>();
+
+                foreach(var trade in autoClosedHistories)
                 {
-                    if (!h.PositionId.HasValue)
+                    if (!trade.PositionId.HasValue)
                         continue;
+
+                    var user = users.FirstOrDefault(o => (isLive ? o.AyLiveAccountId : o.AyondoAccountId) == trade.AccountId);
                   
-                    foreach (var item in result)
+                    if(user == null) continue;
+                    
+                    #region save Message
+                    //针对每一个position id，只保存一次message
+                    if (!messageSaved.ContainsKey(trade.PositionId.Value))
                     {
-                        if(item.AyondoAccountId == h.AccountId)
+                        MessageBase msg = isLive ? (MessageBase) new Message_Live() : (MessageBase) new Message();
+                        msg.UserId = user.UserId;
+                        //如果PL大于零，则为止盈消息（因为系统自动平仓没有止盈，只有止损）
+                        if (trade.PL > 0)
                         {
-                            #region save Message
-                            //针对每一个position id，只保存一次message
-                            if (!messageSaved.ContainsKey(h.PositionId.Value))
-                            {
-                                Message msg = new Message();
-                                msg.UserId = item.Id;
-                                //如果PL大于零，则为止盈消息（因为系统自动平仓没有止盈，只有止损）
-                                if (h.PL > 0)
-                                {
-                                    string msgFormat = "{0}已达到您设置的止盈价格:{1},盈利+{2}";
-                                    msg.Title = "止盈消息";
-                                    string pl = Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
-                                    msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
-                                    msg.CreatedAt = DateTime.UtcNow;
-                                    msg.IsReaded = false;
-                                }
-                                else if(!isAutoClose(h, db))//如果是设置的止损
-                                {
-                                    string msgFormat = "{0}已达到您设置的止损价格:{1},亏损-{2}";
-                                    msg.Title = "止损消息";
-                                    string pl = Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
-                                    msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
-                                    msg.CreatedAt = DateTime.UtcNow;
-                                    msg.IsReaded = false;
-                                }
-                                else//系统自动平仓
-                                {
-                                    string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
-                                    msg.Title = "平仓消息";
-                                    string pl = h.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(h.PL.Value, 2)).ToString();
-                                    msg.Body = string.Format(msgFormat, Translator.GetCName(h.SecurityName), Math.Round(h.TradePrice.Value, 2), pl + "美元");
-                                    msg.CreatedAt = DateTime.UtcNow;
-                                    msg.IsReaded = false;
-                                }
-                                
-                                db.Messages.Add(msg);
-                                db.SaveChanges();
-                                messageSaved.Add(h.PositionId.Value, msg.Id);
-                            }
-                            #endregion
-
-                            #region Push notification
-                            if (item.AutoCloseAlert.HasValue && item.AutoCloseAlert.Value && !string.IsNullOrEmpty(item.deviceToken))
-                            {
-                                string msgPart4 = string.Empty;
-                                if (h.PL.HasValue)
-                                {
-                                    if (h.PL.Value < 0)
-                                    {
-                                        msgPart4 = "亏损" + Math.Abs(Math.Round(h.PL.Value)).ToString();
-                                    }
-                                    else
-                                    {
-                                        msgPart4 = "盈利" + Math.Abs(Math.Round(h.PL.Value)).ToString();
-                                    }
-                                }
-
-                                string message = string.Format(msgContentTemplate, Translator.GetCName(h.SecurityName), DateTimes.UtcToChinaTime(h.TradeTime.Value).ToString(CFDGlobal.DATETIME_MASK_SECOND), Math.Round(h.TradePrice.Value, 2), msgPart4);
-                                getuiPushList.Add(new KeyValuePair<string, string>(item.deviceToken, string.Format(msgTemplate, message, h.SecurityId, Translator.GetCName(h.SecurityName), messageSaved[h.PositionId.Value])));
-                            }
-                            #endregion
-
+                            string msgFormat = "{0}已达到您设置的止盈价格:{1},盈利+{2}";
+                            msg.Title = "止盈消息";
+                            string pl = Math.Abs(Math.Round(trade.PL.Value, 2)).ToString();
+                            msg.Body = string.Format(msgFormat, Translator.GetCName(trade.SecurityName), Math.Round(trade.TradePrice.Value, 2), pl + "美元");
+                            msg.CreatedAt = DateTime.UtcNow;
+                            msg.IsReaded = false;
                         }
+                        else if(!isAutoClose(trade, db))//如果是设置的止损
+                        {
+                            string msgFormat = "{0}已达到您设置的止损价格:{1},亏损-{2}";
+                            msg.Title = "止损消息";
+                            string pl = Math.Abs(Math.Round(trade.PL.Value, 2)).ToString();
+                            msg.Body = string.Format(msgFormat, Translator.GetCName(trade.SecurityName), Math.Round(trade.TradePrice.Value, 2), pl + "美元");
+                            msg.CreatedAt = DateTime.UtcNow;
+                            msg.IsReaded = false;
+                        }
+                        else//系统自动平仓
+                        {
+                            string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
+                            msg.Title = "平仓消息";
+                            string pl = trade.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(trade.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(trade.PL.Value, 2)).ToString();
+                            msg.Body = string.Format(msgFormat, Translator.GetCName(trade.SecurityName), Math.Round(trade.TradePrice.Value, 2), pl + "美元");
+                            msg.CreatedAt = DateTime.UtcNow;
+                            msg.IsReaded = false;
+                        }
+
+                        if (isLive)
+                            db.Message_Live.Add(msg as Message_Live);
+                        else
+                            db.Messages.Add(msg as Message);
+
+                        db.SaveChanges();
+
+                        messageSaved.Add(trade.PositionId.Value, msg.Id);
                     }
+                    #endregion
+
+                    #region Push notification
+
+                    if (user.AutoCloseAlert.HasValue && user.AutoCloseAlert.Value && !string.IsNullOrEmpty(user.deviceToken))
+                    {
+                        string msgPart4 = string.Empty;
+                        if (trade.PL.HasValue)
+                        {
+                            if (trade.PL.Value < 0)
+                            {
+                                msgPart4 = "亏损" + Math.Abs(Math.Round(trade.PL.Value)).ToString();
+                            }
+                            else
+                            {
+                                msgPart4 = "盈利" + Math.Abs(Math.Round(trade.PL.Value)).ToString();
+                            }
+                        }
+
+                        string message = string.Format(msgContentTemplate, Translator.GetCName(trade.SecurityName),
+                            DateTimes.UtcToChinaTime(trade.TradeTime.Value).ToString(CFDGlobal.DATETIME_MASK_SECOND),
+                            Math.Round(trade.TradePrice.Value, 2), msgPart4);
+
+                        getuiPushList.Add(new KeyValuePair<string, string>(user.deviceToken,
+                            string.Format(msgTemplate, message, trade.SecurityId,
+                                Translator.GetCName(trade.SecurityName), messageSaved[trade.PositionId.Value])));
+                    }
+
+                    #endregion
                 }
             }
 
