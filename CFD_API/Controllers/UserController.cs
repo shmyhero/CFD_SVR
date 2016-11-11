@@ -853,11 +853,15 @@ namespace CFD_API.Controllers
 
                 device.userId = UserId;
 
+                device.UpdateTime = DateTime.UtcNow;
+
                 db.Devices.Add(device);
             }
             else//if device token exists, update userid
             { 
                 device.userId = UserId;
+
+                device.UpdateTime = DateTime.UtcNow;
             }
 
             db.SaveChanges();
@@ -892,11 +896,16 @@ namespace CFD_API.Controllers
                 device = new Device();
                 device.deviceToken = form.deviceToken;
                 device.deviceType = form.deviceType;
+
+                device.UpdateTime = DateTime.UtcNow;
+
                 db.Devices.Add(device);
             }
             else
             { 
                 device.userId = null;
+
+                device.UpdateTime = DateTime.UtcNow;
             }
 
             db.SaveChanges();
