@@ -840,10 +840,10 @@ namespace CFD_API.Controllers
             if (string.IsNullOrEmpty(form.deviceToken))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ""));
 
-            ResultDTO result = new ResultDTO() { success = true };
-           
+            ResultDTO result = new ResultDTO() {success = true};
+
             //User user = db.Users.FirstOrDefault( o => o.Id == UserId);
-           
+
             Device device = db.Devices.FirstOrDefault(o => o.deviceToken == form.deviceToken && o.deviceType == o.deviceType);
             if (device == null) //device token does not exist.
             {
@@ -851,19 +851,11 @@ namespace CFD_API.Controllers
                 device.deviceToken = form.deviceToken;
                 device.deviceType = form.deviceType;
 
-                device.userId = UserId;
-
-                device.UpdateTime = DateTime.UtcNow;
-
                 db.Devices.Add(device);
             }
-            else//if device token exists, update userid
-            { 
-                device.userId = UserId;
 
-                device.UpdateTime = DateTime.UtcNow;
-            }
-
+            device.userId = UserId;
+            device.UpdateTime = DateTime.UtcNow;
             db.SaveChanges();
 
             return result;
@@ -897,18 +889,13 @@ namespace CFD_API.Controllers
                 device.deviceToken = form.deviceToken;
                 device.deviceType = form.deviceType;
 
-                device.UpdateTime = DateTime.UtcNow;
-
                 db.Devices.Add(device);
             }
-            else
-            { 
-                device.userId = null;
 
-                device.UpdateTime = DateTime.UtcNow;
-            }
-
+            device.userId = null;
+            device.UpdateTime = DateTime.UtcNow;
             db.SaveChanges();
+
             return result;
         }
 
