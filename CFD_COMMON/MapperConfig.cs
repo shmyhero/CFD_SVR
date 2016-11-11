@@ -23,6 +23,9 @@ namespace CFD_COMMON
 
             cfg.CreateMap<NewPositionHistoryBase, NewPositionHistory>();
             cfg.CreateMap<NewPositionHistoryBase, NewPositionHistory_live>();
+
+            cfg.CreateMap<UserAlertBase, UserAlert>();
+            cfg.CreateMap<UserAlertBase, UserAlert_Live>();
         }
     }
 }

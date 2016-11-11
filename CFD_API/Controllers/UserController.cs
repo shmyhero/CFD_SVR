@@ -850,6 +850,9 @@ namespace CFD_API.Controllers
                 device = new Device();
                 device.deviceToken = form.deviceToken;
                 device.deviceType = form.deviceType;
+
+                device.userId = UserId;
+
                 db.Devices.Add(device);
             }
             else//if device token exists, update userid

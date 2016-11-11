@@ -47,6 +47,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<AyondoTradeHistory_Live> AyondoTradeHistory_Live { get; set; }
         public virtual DbSet<NewPositionHistory_live> NewPositionHistory_live { get; set; }
         public virtual DbSet<Message_Live> Message_Live { get; set; }
+        public virtual DbSet<UserAlert_Live> UserAlert_Live { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -252,6 +253,15 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.ClosedPrice)
+                .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<UserAlert_Live>()
+                .Property(e => e.HighPrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserAlert_Live>()
+                .Property(e => e.LowPrice)
                 .HasPrecision(18, 5);
         }
     }

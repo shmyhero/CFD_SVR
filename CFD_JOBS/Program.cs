@@ -101,6 +101,10 @@ namespace CFD_JOBS
                 {
                     StockAlert.Run();
                 }
+                if (args.Contains("-StockAlert_Live"))
+                {
+                    StockAlert.Run(true);
+                }
 
                 if (args.Contains("-TickChart"))
                 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using AutoMapper;
 using CFD_COMMON;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
@@ -22,15 +23,17 @@ namespace CFD_JOBS.Ayondo
         private static string PUSH_TEMP =
             @"{{""id"":{3},  ""type"":""2"", ""title"":""盈交易"", ""StockID"":{0}, ""CName"":""{1}"", ""message"":""{2}""}}"; //{{ as {
 
-        public static void Run()
+        public static void Run(bool isLive = false)
         {
             CFDGlobal.LogLine("Starting...");
+
+            var mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
             while (true)
             {
                 try
                 {
-                    using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
+                    using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(isLive).GetClient())
                     {
                         var redisProdDefClient = redisClient.As<ProdDef>();
                         var redisQuoteClient = redisClient.As<Quote>();
@@ -41,8 +44,9 @@ namespace CFD_JOBS.Ayondo
 
                         using (var db = CFDEntities.Create())
                         {
-                            var userAlerts =
-                                db.UserAlerts.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList();
+                            var userAlerts = isLive
+                                ? db.UserAlerts.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList().Select(o=>o as UserAlertBase).ToList()
+                                : db.UserAlert_Live.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList().Select(o => o as UserAlertBase).ToList();
 
                             CFDGlobal.LogLine("Got " + userAlerts.Count + " alerts.");
 
@@ -50,7 +54,7 @@ namespace CFD_JOBS.Ayondo
 
                             var newAlertList = new List<KeyValuePair<int, string>>();
 
-                            foreach (var group in groups)
+                            foreach (var group in groups) //foreach security
                             {
                                 var secId = group.Key;
 
@@ -90,14 +94,19 @@ namespace CFD_JOBS.Ayondo
 
                                 //}
 
-                                foreach (var alert in group)
+                                var messages = new List<MessageBase>();
+
+                                foreach (var alert in group) //foreach alert belong to a security
                                 {
                                     if (alert.HighEnabled.Value && quote.Bid >= alert.HighPrice)
                                     {
                                         var text =
                                             $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格达到{quote.Bid}，高于您设置的{Math.Round(alert.HighPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}";
 
-                                        Message msg = new Message()
+                                        alert.HighEnabled = false;
+                                        alert.HighPrice = null;
+
+                                        var msg = new MessageBase()
                                         {
                                             UserId = alert.UserId,
                                             Title = "价格消息",
@@ -105,17 +114,17 @@ namespace CFD_JOBS.Ayondo
                                             IsReaded = false,
                                             CreatedAt = DateTime.UtcNow
                                         };
-                                        db.Messages.Add(msg);
-                                        db.SaveChanges();
-                                        int msgId = msg.Id;
+                                        
+                                        messages.Add(isLive 
+                                            ? (MessageBase)mapper.Map<Message_Live>(msg) 
+                                            : (MessageBase)mapper.Map<Message>(msg));
 
-                                        newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
-                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text, msgId)));
+                                        //db.Messages.Add(msg);
+                                        //db.SaveChanges();
+                                        //int msgId = msg.Id;
 
-                                        alert.HighEnabled = false;
-                                        alert.HighPrice = null;
-
-                                         
+                                        //newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
+                                        //    string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text, msgId)));
                                     }
 
                                     if (alert.LowEnabled.Value && quote.Offer <= alert.LowPrice)
@@ -123,7 +132,10 @@ namespace CFD_JOBS.Ayondo
                                         var text =
                                             $"{Translator.GetCName(prodDef.Name)}于{quote.Time.AddHours(8).ToString("HH:mm")}价格跌到{quote.Offer}，低于您设置的{Math.Round(alert.LowPrice.Value, prodDef.Prec, MidpointRounding.AwayFromZero)}";
 
-                                        Message msg = new Message()
+                                        alert.LowEnabled = false;
+                                        alert.LowPrice = null;
+
+                                        var msg = new MessageBase()
                                         {
                                             UserId = alert.UserId,
                                             Title = "价格消息",
@@ -131,24 +143,46 @@ namespace CFD_JOBS.Ayondo
                                             IsReaded = false,
                                             CreatedAt = DateTime.UtcNow
                                         };
-                                        db.Messages.Add(msg);
-                                        db.SaveChanges();
-                                        int msgId = msg.Id;
 
-                                        newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
-                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text, msgId)));
+                                        messages.Add(isLive
+                                            ? (MessageBase)mapper.Map<Message_Live>(msg)
+                                            : (MessageBase)mapper.Map<Message>(msg));
 
-                                        alert.LowEnabled = false;
-                                        alert.LowPrice = null;
-                                        
+                                        //db.Messages.Add(msg);
+                                        //db.SaveChanges();
+                                        //int msgId = msg.Id;
+
+                                        //newAlertList.Add(new KeyValuePair<int, string>(alert.UserId,
+                                        //    string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), text, msgId)));
+                                    }
+                                }
+
+                                //db.SaveChanges();
+                                
+                                if (messages.Count > 0)
+                                {
+                                    if (isLive)
+                                        db.Message_Live.AddRange(messages.Select(o => o as Message_Live));
+                                    else
+                                        db.Messages.AddRange(messages.Select(o => o as Message));
+
+                                    //save to UserAlert: disable triggered alert
+                                    //save to Message: save messages
+                                    db.SaveChanges();
+
+                                    //Got message auto ID after saving to DB
+                                    foreach (var message in messages)
+                                    {
+                                        newAlertList.Add(new KeyValuePair<int, string>(message.UserId,
+                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), message.Body, message.Id)));//using message id here
                                     }
                                 }
                             }
 
                             if (newAlertList.Count > 0)
                             {
-                                //disable triggered alert
-                                db.SaveChanges();
+                                ////disable triggered alert
+                                //db.SaveChanges();
 
                                 CFDGlobal.LogLine(newAlertList.Count + " alerts to send...");
 

@@ -32,7 +32,10 @@ namespace CFD_COMMON.Service
                         {
                             CreatedAt = DateTime.UtcNow,
                             Phone = phone,
-                            Token = Guid.NewGuid().ToString("N")
+                            Token = Guid.NewGuid().ToString("N"),
+
+                            AutoCloseAlert = true,
+                            AutoCloseAlert_Live = true,
                         };
                         dbIsolated.Users.Add(userIsolated);
 
@@ -57,7 +60,10 @@ namespace CFD_COMMON.Service
                             CreatedAt = DateTime.UtcNow,
                             WeChatOpenId = openid,
                             WeChatUnionId = unionid,
-                            Token = Guid.NewGuid().ToString("N")
+                            Token = Guid.NewGuid().ToString("N"),
+
+                            AutoCloseAlert = true,
+                            AutoCloseAlert_Live = true,
                         };
                         dbIsolated.Users.Add(userIsolated);
 

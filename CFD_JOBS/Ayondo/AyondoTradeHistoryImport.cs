@@ -117,13 +117,14 @@ namespace CFD_JOBS.Ayondo
                         //.Where(o => o.Last() == "NA") //DeviceType == NA
                         .ToList();
 
+                    var newTradeHistories = new List<AyondoTradeHistoryBase>();
+
                     if (lineArrays.Count == 0)
                     {
                         CFDGlobal.LogLine("no data received");
                     }
                     else
                     {
-                        var newTradeHistories = new List<AyondoTradeHistoryBase>();
                         using (var db = CFDEntities.Create())
                         {
                             //var dbMaxCreateTime = db.AyondoTradeHistories.Max(o => o.CreateTime);
@@ -209,7 +210,8 @@ namespace CFD_JOBS.Ayondo
 
                             var newClosedTradeHistories = newTradeHistories.Where(o => o.UpdateType == "DELETE").ToList();
 
-                            if (newClosedTradeHistories.Count > 0)//update position table with new closed trade histories
+                            //update position table with new closed trade histories
+                            if (newClosedTradeHistories.Count > 0)
                             {
                                 var newClosedPosIDs = newClosedTradeHistories.Select(o => o.PositionId).ToList();
                                 
@@ -221,12 +223,12 @@ namespace CFD_JOBS.Ayondo
                                 {
                                     foreach (var pos in positionsToClose)
                                     {
-                                        var trade = newClosedTradeHistories.FirstOrDefault(o => o.PositionId == pos.Id);
+                                        var closeTrade = newClosedTradeHistories.FirstOrDefault(o => o.PositionId == pos.Id);
 
                                         //update db fields
-                                        pos.ClosedPrice = trade.TradePrice;
-                                        pos.ClosedAt = trade.TradeTime;
-                                        pos.PL = trade.PL;
+                                        pos.ClosedPrice = closeTrade.TradePrice;
+                                        pos.ClosedAt = closeTrade.TradeTime;
+                                        pos.PL = closeTrade.PL;
                                     }
 
                                     CFDGlobal.LogLine("updating position close time/price/pl...");
@@ -234,6 +236,7 @@ namespace CFD_JOBS.Ayondo
                                 }
                             }
 
+                            //update history table
                             if (newTradeHistories.Count > 0)
                             {
                                 if (isLive)
@@ -245,14 +248,18 @@ namespace CFD_JOBS.Ayondo
                                 db.SaveChanges();
                             }
                         }
-
-                        var autoClosedHistories =
-                            newTradeHistories.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
-                        Push(autoClosedHistories);
                     }
 
+                    //mark success time
                     CFDGlobal.LogLine("");
                     _lastEndTime = dtEnd;
+                        
+                    //auto close alert/push
+                    var autoClosedHistories =
+                        newTradeHistories.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
+
+                    if (autoClosedHistories.Count > 0)
+                        Push(autoClosedHistories, isLive);
                 }
                 catch (Exception e)
                 {
@@ -266,10 +273,9 @@ namespace CFD_JOBS.Ayondo
         /// <summary>
         /// push auto-close notification
         /// </summary>
-        /// <param name="systemCloseHistory"></param>
-        private static void Push(List<AyondoTradeHistoryBase> systemCloseHistorys)
+        private static void Push(List<AyondoTradeHistoryBase> autoClosedHistories, bool isLive)
         {
-            if (systemCloseHistorys == null || systemCloseHistorys.Count == 0)
+            if (autoClosedHistories == null || autoClosedHistories.Count == 0)
                 return;
 
             string msgTemplate = "{{\"id\":{3}, \"type\":\"1\", \"title\":\"盈交易\", \"StockID\":{1}, \"CName\":\"{2}\", \"message\":\"{0}\"}}";
@@ -278,22 +284,22 @@ namespace CFD_JOBS.Ayondo
             string msgContentTemplate = "{0}于{1}平仓，价格为{2}，{3}美元";
 
             List<KeyValuePair<string, string>> getuiPushList = new List<KeyValuePair<string, string>>();
-            List<long> ayondoAccountIds = systemCloseHistorys.Where(o => o.AccountId.HasValue).Select(o => o.AccountId.Value).Distinct().ToList();
+            List<long> ayondoAccountIds = autoClosedHistories.Where(o => o.AccountId.HasValue).Select(o => o.AccountId.Value).Distinct().ToList();
             using (var db = CFDEntities.Create())
             {
                 //原先是只获取开启了自动提醒的用户。现在为了消息中心，改为获取全部用户，在后面的循环里面再判断是否要发推送（消息中心一定要保存的）。
                 var query = from u in db.Users
                             join d in db.Devices on u.Id equals d.userId
                             into x from y in x.DefaultIfEmpty()
-                            where ayondoAccountIds.Contains(u.AyondoAccountId.Value) //&& u.AutoCloseAlert.HasValue && u.AutoCloseAlert.Value
-                               select new {y.deviceToken, u.Id, u.AyondoAccountId, u.AutoCloseAlert   };
+                            where ayondoAccountIds.Contains(isLive ? u.AyLiveAccountId.Value : u.AyondoAccountId.Value) //&& u.AutoCloseAlert.HasValue && u.AutoCloseAlert.Value
+                               select new {y.deviceToken, u.Id, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live   };
 
                 var result = query.ToList();
                 //因为一个用户可能有多台设备，所以要在循环的时候判断一下，是否一条Position的平仓消息已经被记录过
                 //Key - Position Id
                 //Value - 生成的Message Id
                 Dictionary<long, int> messageSaved = new Dictionary<long, int>();
-                foreach(var h in systemCloseHistorys)
+                foreach(var h in autoClosedHistories)
                 {
                     if (!h.PositionId.HasValue)
                         continue;

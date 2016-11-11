@@ -74,6 +74,8 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(50)]
         public string ReferenceAccountGuid { get; set; }
 
+        public bool? AutoCloseAlert_Live { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

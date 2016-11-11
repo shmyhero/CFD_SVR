@@ -6,8 +6,7 @@ namespace CFD_COMMON.Models.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("UserAlert")]
-    public partial class UserAlert
+    public class UserAlertBase
     {
         [Key]
         [Column(Order = 0)]
@@ -20,11 +19,13 @@ namespace CFD_COMMON.Models.Entities
         public int SecurityId { get; set; }
 
         public decimal? HighPrice { get; set; }
-
         public decimal? LowPrice { get; set; }
-
         public bool? HighEnabled { get; set; }
-
         public bool? LowEnabled { get; set; }
+    }
+
+    [Table("UserAlert")]
+    public partial class UserAlert : UserAlertBase
+    {
     }
 }
