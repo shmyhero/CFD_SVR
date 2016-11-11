@@ -58,7 +58,7 @@ namespace CFD_API.Controllers
                               plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
                               themeColor = y.ThemeColor,
                               tradePrice = u.TradePrice,
-                              tradeTime = u.TradeTime
+                              tradeTime = u.ClosedAt
                           };
 
             if (myCards != null)
@@ -101,7 +101,7 @@ namespace CFD_API.Controllers
                                stockName = u.StockName,
                                themeColor = y.ThemeColor,
                                tradePrice = u.TradePrice,
-                               tradeTime = u.TradeTime,
+                               tradeTime = u.ClosedAt,
                                pl = u.PL,
                                plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1)
                            }).FirstOrDefault();
@@ -241,7 +241,7 @@ namespace CFD_API.Controllers
                                 plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
                                 themeColor = y.ThemeColor,
                                 tradePrice = u.TradePrice,
-                                tradeTime = u.TradeTime,
+                                tradeTime = u.ClosedAt,
                                 userName = us.Nickname,
                                 profileUrl = us.PicUrl,
                                 liked = false
@@ -275,7 +275,7 @@ namespace CFD_API.Controllers
                                 plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
                                 themeColor = y.ThemeColor,
                                 tradePrice = u.TradePrice,
-                                tradeTime = u.TradeTime,
+                                tradeTime = u.ClosedAt,
                                 userName = us.Nickname,
                                 profileUrl = us.PicUrl,
                                 liked = db.LikeHistories.Any(o => o.UserId == userId && o.UserCardId == u.Id)
