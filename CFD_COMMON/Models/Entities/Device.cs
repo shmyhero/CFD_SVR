@@ -13,7 +13,7 @@ namespace CFD_COMMON.Models.Entities
         public int? userId { get; set; }
         public string deviceToken { get; set; }
         public int deviceType { get; set; }
-        public DateTime UpdateTime { get; set; }
+        public DateTime? UpdateTime { get; set; }
 
         public virtual User User { get; set; }
     }
