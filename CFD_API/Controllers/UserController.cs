@@ -1080,9 +1080,11 @@ namespace CFD_API.Controllers
                         OcrTransId = transaction_id,
                         OcrValidPeriod = valid_period,
                         OcrCalledAt = DateTime.UtcNow,
+
+                        FaceCheckAt = null,
+                        FaceCheckSimilarity = null,
                     };
                     db.UserInfos.Add(newInfo);
-                    db.SaveChanges();
                 }
                 else
                 {
@@ -1101,8 +1103,12 @@ namespace CFD_API.Controllers
                     userInfo.OcrTransId = transaction_id;
                     userInfo.OcrValidPeriod = valid_period;
                     userInfo.OcrCalledAt = DateTime.UtcNow;
-                    db.SaveChanges();
+
+                    userInfo.FaceCheckAt = null;
+                    userInfo.FaceCheckSimilarity = null;
                 }
+
+                db.SaveChanges();
             }
             else
             {
@@ -1139,7 +1145,6 @@ namespace CFD_API.Controllers
                 return JObject.Parse(JsonConvert.SerializeObject(errorResult));
             }
 
-            /*
             var httpWebRequest = WebRequest.CreateHttp(GZT_HOST + "ocrFaceCheck");
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json";
@@ -1152,6 +1157,12 @@ namespace CFD_API.Controllers
             form.accessKey = GZT_ACCESS_KEY;
             form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
             form.sign = Randoms.GetRandomAlphanumericString(8);
+            //
+            var firstName = form.firstName;
+            var lastName = form.lastName;
+            form.lastName = null;
+            form.firstName = null;
+            form.userName = HttpUtility.UrlEncode(lastName + firstName);
             //
             form.transaction_id = userInfo.OcrTransId;
 
@@ -1187,10 +1198,14 @@ namespace CFD_API.Controllers
             if (result == "0")
             {
                 var similarity = jObject["verify_similarity"].Value<decimal>();
-                
-                userInfo.FaceCheckAt=DateTime.UtcNow;
+
+                userInfo.FirstName = firstName;
+                userInfo.LastName = lastName;
+                userInfo.IdCode = form.userId;
+
+                userInfo.FaceCheckAt = DateTime.UtcNow;
                 userInfo.FaceCheckSimilarity = similarity;
-                    db.SaveChanges();
+                db.SaveChanges();
             }
             else
             {
@@ -1201,11 +1216,6 @@ namespace CFD_API.Controllers
             }
 
             return jObject;
-            */
-
-            var result= new JObject();
-            result["result"] = "0";
-            return result;
         }
 
         //[HttpPut]
@@ -1299,12 +1309,12 @@ namespace CFD_API.Controllers
 
             //no OCR result
             var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
-            if (userInfo == null || userInfo.OcrTransId == null)
+            if (userInfo == null || userInfo.OcrTransId == null || userInfo.FaceCheckAt==null)
             {
                 return new ResultDTO(false);
             }
 
-            var jObject = AMSLiveAccount(form, user);
+            var jObject = AMSLiveAccount(form, user, userInfo);
 
             if (jObject["Error"] != null)
             {
@@ -1328,12 +1338,12 @@ namespace CFD_API.Controllers
 
             userInfo.Email = form.email;
             //userInfo.RealName = form.realName;
-            userInfo.FirstName = form.firstName;
-            userInfo.LastName = form.lastName;
+            //userInfo.FirstName = form.firstName;
+            //userInfo.LastName = form.lastName;
             userInfo.Gender = form.gender;
             userInfo.Birthday = form.birthday;
             userInfo.Ethnic = form.ethnic;
-            userInfo.IdCode = form.idCode;
+            //userInfo.IdCode = form.idCode;
             userInfo.Addr = form.addr;
             userInfo.IssueAuth = form.issueAuth;
             userInfo.ValidPeriod = form.validPeriod;

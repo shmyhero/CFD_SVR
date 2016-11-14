@@ -53,8 +53,8 @@ namespace CFD_COMMON.Models.Entities
 
         public DateTime? OcrCalledAt { get; set; }
 
-        [StringLength(10)]
-        public string RealName { get; set; }
+        //[StringLength(10)]
+        //public string RealName { get; set; }
 
         [StringLength(10)]
         public string FirstName { get; set; }

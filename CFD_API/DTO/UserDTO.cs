@@ -171,6 +171,8 @@ namespace CFD_API.DTO
         public string transaction_id { get; set; }
         public string userId { get; set; }
         public string userName { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
 
         public string timeStamp { get; set; }
         public string sign { get; set; }
@@ -191,18 +193,18 @@ namespace CFD_API.DTO
   "transaction_id": "835aded785fd95267f29bea3c36476f2"
 }
      */
-    public class GZTOcrResultFormDTO
-    {
-        public string realName { get; set; }
-        public string idCode { get; set; }
-        public string addr { get; set; }
-        public string gender { get; set; }
-        public string ethnic { get; set; }
-        public string photo { get; set; }
-        public string issueAuth { get; set; }
-        public string validPeriod { get; set; }
-        public string transId { get; set; }
-    }
+    //public class GZTOcrResultFormDTO
+    //{
+    //    public string realName { get; set; }
+    //    public string idCode { get; set; }
+    //    public string addr { get; set; }
+    //    public string gender { get; set; }
+    //    public string ethnic { get; set; }
+    //    public string photo { get; set; }
+    //    public string issueAuth { get; set; }
+    //    public string validPeriod { get; set; }
+    //    public string transId { get; set; }
+    //}
 
     public class LiveSignupFormDTO
     {
@@ -211,12 +213,12 @@ namespace CFD_API.DTO
         public string email { get; set; }
 
         //public string realName { get; set; }
-        public string firstName { get; set; }
-        public string lastName { get; set; }
+        //public string firstName { get; set; }
+        //public string lastName { get; set; }
         public bool gender { get; set; }
         public string birthday { get; set; }
         public string ethnic { get; set; }
-        public string idCode { get; set; }
+        //public string idCode { get; set; }
         public string addr { get; set; }
         public string issueAuth { get; set; }
         public string validPeriod { get; set; }

@@ -241,7 +241,7 @@ namespace CFD_API.Controllers
             return jObject;
         }
 
-        protected static JObject AMSLiveAccount(LiveSignupFormDTO form, User user)
+        protected static JObject AMSLiveAccount(LiveSignupFormDTO form, User user, UserInfo userInfo)
         {
             var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "live-account");
             httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
@@ -259,11 +259,11 @@ namespace CFD_API.Controllers
             amsForm.AddressZip = "12345";
             amsForm.ClientIP = "127.0.0.1";
             amsForm.Currency = "USD";
-            amsForm.FirstName = form.firstName;
+            amsForm.FirstName = userInfo.FirstName;// form.firstName;
             amsForm.Gender = form.gender ? "Male" : "Female";
             amsForm.IsTestRecord = false;
             amsForm.Language = "CN";
-            amsForm.LastName = form.lastName;
+            amsForm.LastName = userInfo.LastName;// form.lastName;
             amsForm.Password = form.password;
             amsForm.PhonePrimary = user.Phone;
             amsForm.SalesRepGuid = null;

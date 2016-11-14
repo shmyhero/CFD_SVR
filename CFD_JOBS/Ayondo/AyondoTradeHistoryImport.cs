@@ -326,7 +326,7 @@ namespace CFD_JOBS.Ayondo
                             msg.CreatedAt = DateTime.UtcNow;
                             msg.IsReaded = false;
                         }
-                        else if(!isAutoClose(trade, db))//如果是设置的止损
+                        else if(!isAutoClose(trade, db))//如果是设置的止损 //todo:multiple db access
                         {
                             string msgFormat = "{0}已达到您设置的止损价格:{1},亏损-{2}";
                             msg.Title = "止损消息";

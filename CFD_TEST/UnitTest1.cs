@@ -360,8 +360,8 @@ namespace CFD_TEST
         public void YunPianSMS()
         {
             var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。"+
-                "券号：G1609191740235329 密码：584XB8GJSY94" +
-                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "13585617960");
+                "券号：G1609191740235335 密码：Q4WBQVUQ8XB5" +
+                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "18016208926");
             CFDGlobal.LogLine(sendSms);
         }
 
@@ -524,8 +524,6 @@ namespace CFD_TEST
             pos = XiaDan_SheZhiYing(user, 34864, true, 100);
             user = db.Users.FirstOrDefault(o => o.Id == 3218);
             pos = XiaDan_SheZhiYing(user, 34864, false, 100);
-
-            ////华尔街
             //for (int i = 0; i < 1; i++)
             //{
             //    user = db.Users.FirstOrDefault(o => o.Id == 3281);
@@ -537,16 +535,20 @@ namespace CFD_TEST
             ////欧元对英镑
             //for (int i = 0; i < 1; i++)
             //{
-            //    user = db.Users.FirstOrDefault(o => o.Id == 3281);
-            //    pos = XiaDan_SheZhiYing(user, 34803, true, 125);
-            //    user = db.Users.FirstOrDefault(o => o.Id == 3218);
-            //    pos = XiaDan_SheZhiYing(user, 34803, false, 125);
+            user = db.Users.FirstOrDefault(o => o.Id == 1);
+            pos = XiaDan_SheZhiYing(user, 34803, true, 125);
+            user = db.Users.FirstOrDefault(o => o.Id == 3277);
+            pos = XiaDan_SheZhiYing(user, 34803, false, 125);
+            //user = db.Users.FirstOrDefault(o => o.Id == 3281);
+            //pos = XiaDan_SheZhiYing(user, 34803, true, 125);
+            //user = db.Users.FirstOrDefault(o => o.Id == 3218);
+            //pos = XiaDan_SheZhiYing(user, 34803, false, 125);
             //}
         }
 
         private static PositionDTO SheZhiYing(User user, PositionDTO pos)
         {
-            var takePx = pos.isLong ? pos.settlePrice * 1.0065m : pos.settlePrice * 0.9935m;
+            var takePx = pos.isLong ? pos.settlePrice * 1.0085m : pos.settlePrice * 0.9915m;
 
             string jsonData = "{\"posId\":" + pos.id + ",\"securityId\":" + pos.security.id + ",\"price\":"+ takePx+"}";
             var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/order/take");
