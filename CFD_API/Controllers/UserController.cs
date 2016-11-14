@@ -1145,6 +1145,12 @@ namespace CFD_API.Controllers
                 return JObject.Parse(JsonConvert.SerializeObject(errorResult));
             }
 
+            if (string.IsNullOrWhiteSpace(form.userId) || string.IsNullOrWhiteSpace(form.firstName) ||
+                string.IsNullOrWhiteSpace(form.lastName))
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,"required field missing"));
+            }
+
             var httpWebRequest = WebRequest.CreateHttp(GZT_HOST + "ocrFaceCheck");
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json";
