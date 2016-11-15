@@ -11,6 +11,7 @@ using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
+using CFD_COMMON.Localization;
 
 namespace CFD_API.Controllers
 {
@@ -41,7 +42,7 @@ namespace CFD_API.Controllers
                           select new CardDTO()
                           {
                               cardId = u.Id,
-                              ccy = u.CCY,
+                              //ccy = u.CCY,
                               imgUrlBig = y.CardImgUrlBig,
                               imgUrlMiddle = y.CardImgUrlMiddle,
                               imgUrlSmall = y.CardImgUrlSmall,
@@ -53,7 +54,8 @@ namespace CFD_API.Controllers
                               likes = u.Likes,
                               reward = y.Reward,
                               settlePrice = u.SettlePrice,
-                              stockName = u.StockName,
+                              //stockName = u.StockName,
+                              stockID = u.SecurityId,
                               pl = u.PL,
                               plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
                               themeColor = y.ThemeColor,
@@ -63,7 +65,16 @@ namespace CFD_API.Controllers
 
             if (myCards != null)
             {
+                var cache = WebCache.GetInstance(IsLiveUrl);
                 coll.cards = myCards.ToList();
+                coll.cards.ForEach(cardDTO => {
+                    var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == cardDTO.stockID);
+                    if (prodDef != null)
+                    {
+                        cardDTO.ccy = prodDef.Ccy2;
+                        cardDTO.stockName = Translator.GetCName(prodDef.Name);
+                    }
+                });
                 coll.hasNew = coll.cards.Any(item => !item.isNew.HasValue || !item.isNew.Value);
             }
             else
@@ -86,7 +97,7 @@ namespace CFD_API.Controllers
                            select new CardDTO()
                            {
                                cardId = u.Id,
-                               ccy = u.CCY,
+                               //ccy = u.CCY,
                                imgUrlBig = y.CardImgUrlBig,
                                imgUrlMiddle = y.CardImgUrlMiddle,
                                imgUrlSmall = y.CardImgUrlSmall,
@@ -98,13 +109,25 @@ namespace CFD_API.Controllers
                                likes = u.Likes,
                                reward = y.Reward,
                                settlePrice = u.SettlePrice,
-                               stockName = u.StockName,
+                               stockID = u.SecurityId,
+                               //stockName = u.StockName,
                                themeColor = y.ThemeColor,
                                tradePrice = u.TradePrice,
                                tradeTime = u.ClosedAt,
                                pl = u.PL,
                                plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1)
                            }).FirstOrDefault();
+
+            if (cardDTO == null)
+                return null;
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
+            var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == cardDTO.stockID);
+            if(prodDef != null)
+            {
+                cardDTO.ccy = prodDef.Ccy2;
+                cardDTO.stockName = Translator.GetCName(prodDef.Name);
+            }
 
             var authUserId = GetAuthUserId();
 
@@ -225,7 +248,7 @@ namespace CFD_API.Controllers
                             select new CardDTO()
                             {
                                 cardId = u.Id,
-                                ccy = u.CCY,
+                                //ccy = u.CCY,
                                 imgUrlBig = y.CardImgUrlBig,
                                 imgUrlMiddle = y.CardImgUrlMiddle,
                                 imgUrlSmall = y.CardImgUrlSmall,
@@ -236,7 +259,8 @@ namespace CFD_API.Controllers
                                 likes = u.Likes,
                                 reward = y.Reward,
                                 settlePrice = u.SettlePrice,
-                                stockName = u.StockName,
+                                stockID = u.SecurityId,
+                                //stockName = u.StockName,
                                 pl = u.PL,
                                 plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
                                 themeColor = y.ThemeColor,
@@ -259,7 +283,7 @@ namespace CFD_API.Controllers
                             select new CardDTO()
                             {
                                 cardId = u.Id,
-                                ccy = u.CCY,
+                                //ccy = u.CCY,
                                 imgUrlBig = y.CardImgUrlBig,
                                 imgUrlMiddle = y.CardImgUrlMiddle,
                                 imgUrlSmall = y.CardImgUrlSmall,
@@ -270,7 +294,7 @@ namespace CFD_API.Controllers
                                 likes = u.Likes,
                                 reward = y.Reward,
                                 settlePrice = u.SettlePrice,
-                                stockName = u.StockName,
+                                //stockName = u.StockName,
                                 pl = u.PL,
                                 plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
                                 themeColor = y.ThemeColor,
@@ -282,7 +306,17 @@ namespace CFD_API.Controllers
                             }).Take(6).ToList();
             }
 
-
+            var cache = WebCache.GetInstance(IsLiveUrl);
+        
+            topCards.ForEach(cardDTO =>
+            {
+                var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == cardDTO.stockID);
+                if(prodDef != null)
+                {
+                    cardDTO.ccy = prodDef.Ccy2;
+                    cardDTO.stockName = Translator.GetCName(prodDef.Name);
+                }
+            });
 
             int count = topCards.Count();
             if (count < 3) //优先补黄金

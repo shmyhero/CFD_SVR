@@ -455,7 +455,7 @@ namespace CFD_API.Controllers
             #region 如果上面的接口拿到的数据不足一个月，补足一个月
             //已拿到的数据中，最前面一条的平仓时间
             //如果已拿到的数据集为空，则以当前时间为开始时间
-            var startTime = historyReports.Count == 0? DateTime.UtcNow : result.Min(o => o.closeAt);
+            var startTime = (historyReports.Count == 0 || result.Count == 0)? DateTime.UtcNow : result.Min(o => o.closeAt);
 
             if ((DateTime.UtcNow - startTime).Days < monthDays) //如果拿出来的数据的跨度小于一个月
             {
@@ -844,7 +844,7 @@ namespace CFD_API.Controllers
                         {
                             UserId = this.UserId,
                             CardId = card.Id,
-                            CCY = posDTO.card.ccy,
+                            //CCY = posDTO.card.ccy,
                             ClosedAt = result.CreateTime,
                             CreatedAt = DateTime.UtcNow,
                             Expiration = SqlDateTime.MaxValue.Value,
@@ -857,7 +857,8 @@ namespace CFD_API.Controllers
                             Qty = position.LongQty ?? position.ShortQty,
                             Reward = card.Reward,
                             SettlePrice = settlP,
-                            StockName = posDTO.card.stockName,
+                            //StockName = posDTO.card.stockName,
+                            SecurityId = form.securityId,
                             TradePrice = posDTO.card.tradePrice,
                             TradeTime = posDTO.card.tradeTime,
                             IsNew = false,

@@ -28,7 +28,6 @@ namespace CFD_API.DTO
 
         public int? stockID { get; set; }
         public string stockName { get; set; }
-
         public string themeColor { get; set; }
 
         public decimal? pl { get; set; }

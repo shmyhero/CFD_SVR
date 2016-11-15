@@ -48,9 +48,7 @@ namespace CFD_COMMON.Models.Entities
         /// </summary>
         public decimal? Reward { get; set; }
 
-        public string CCY { get; set; }
-
-        public string StockName { get; set; }
+        public int? SecurityId { get; set; }
 
         public decimal? PL { get; set; }
 

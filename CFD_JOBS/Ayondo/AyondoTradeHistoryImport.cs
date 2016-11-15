@@ -13,6 +13,8 @@ using CFD_COMMON.Utils;
 using CFD_COMMON.Utils.Extensions;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Service;
+using System.Data.SqlTypes;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -300,8 +302,9 @@ namespace CFD_JOBS.Ayondo
                 //Key - Position Id
                 //Value - 生成的Message Id
                 var messageSaved = new Dictionary<long, int>();
+                var cardService = new CardService(db);
 
-                foreach(var trade in autoClosedHistories)
+                foreach (var trade in autoClosedHistories)
                 {
                     if (!trade.PositionId.HasValue)
                         continue;
@@ -381,6 +384,66 @@ namespace CFD_JOBS.Ayondo
                             string.Format(msgTemplate, message, trade.SecurityId,
                                 Translator.GetCName(trade.SecurityName), messageSaved[trade.PositionId.Value])));
                     }
+
+                    #endregion
+
+                    #region 生成卡片
+                    try
+                    {
+                        if(!isLive)
+                        {
+                            var tradeHistory = isLive
+                                ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == trade.PositionId)
+                                : db.NewPositionHistories.FirstOrDefault(o => o.Id == trade.PositionId);
+                            if (tradeHistory == null)
+                            {
+                                var plRatePercent = tradeHistory.LongQty.HasValue
+                                ? (trade.TradePrice - tradeHistory.SettlePrice) / tradeHistory.SettlePrice * tradeHistory.Leverage * 100
+                                : (tradeHistory.SettlePrice - trade.TradePrice) / tradeHistory.SettlePrice * tradeHistory.Leverage * 100;
+
+                                var card = cardService.GetCard(trade.PL.Value, plRatePercent.Value, tradeHistory.SettlePrice.Value);
+                                if (card != null)
+                                {
+                                    UserCard uc = new UserCard()
+                                    {
+                                        UserId = user.UserId,
+                                        CardId = card.Id,
+                                        ClosedAt = trade.CreateTime,
+                                        CreatedAt = DateTime.UtcNow,
+                                        Expiration = SqlDateTime.MaxValue.Value,
+                                        Invest = tradeHistory.InvestUSD,
+                                        PositionId = trade.PositionId.Value,
+                                        IsLong = tradeHistory.LongQty.HasValue,
+                                        Leverage = tradeHistory.Leverage,
+                                        Likes = 0,
+                                        SecurityId = trade.SecurityId,
+                                        PL = trade.PL,
+                                        Qty = trade.Quantity,
+                                        Reward = card.Reward,
+                                        SettlePrice = trade.TradePrice,
+                                        TradePrice = tradeHistory.SettlePrice,
+                                        TradeTime = tradeHistory.CreateTime,
+                                        IsNew = false,
+                                        IsShared = false,
+                                        IsPaid = false
+                                    };
+                                    db.UserCards.Add(uc);
+                                    db.SaveChanges();
+                                }
+                            }
+                        }
+                        
+                        //    trade.PositionId
+                        //   trade
+                        //var card = cardService.GetCard(trade.PL.Value, plRatePercent.Value, position.SettlePrice.Value);
+
+                        //var card = cardService.GetCard(result.PL.Value, plRatePercent.Value, position.SettlePrice.Value);
+                    }
+                    catch(Exception ex)
+                    {
+                        CFDGlobal.LogLine("Card exception:" + ex.Message);
+                    }
+                    
 
                     #endregion
                 }
