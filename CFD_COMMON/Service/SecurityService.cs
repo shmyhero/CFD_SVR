@@ -18,18 +18,20 @@ namespace CFD_COMMON.Service
             this.db = db;
         }
 
-        public void DeleteBookmarks(int userId, IList<int> secIds)
+        public void DeleteBookmarks(int userId, IList<int> secIds, bool isLive)
         {
             //var bookmarks = db.Bookmarks.Where(o => ids.Contains(o.AyondoSecurityId));
             //db.Bookmarks.RemoveRange(bookmarks);
             //db.SaveChanges();
 
-            int rowDeleted = db.Bookmarks.Where(o => o.UserId == userId && secIds.Contains(o.AyondoSecurityId)).Delete();
+            int rowDeleted = isLive
+                ? db.Bookmark_Live.Where(o => o.UserId == userId && secIds.Contains(o.AyondoSecurityId)).Delete()
+                : db.Bookmarks.Where(o => o.UserId == userId && secIds.Contains(o.AyondoSecurityId)).Delete();
             CFDGlobal.LogLine("Delete bookmarks. " + rowDeleted + " rows deleted. " + "userid: " + userId);
             //no need to db.savechanges()
         }
 
-        public void AddBookmarks(int userId, IList<int> secIds)
+        public void AddBookmarks(int userId, IList<int> secIds, bool isLive)
         {
             if (secIds.Count == 0) return;
 
@@ -38,7 +40,9 @@ namespace CFD_COMMON.Service
             //secIds = secIds.Where(o => allSecIds.Contains(o)).ToList();
 
             //get my current bookmarks
-            var myBookmarks = db.Bookmarks.Where(o => o.UserId == userId).ToList();
+            var myBookmarks = isLive
+                ? db.Bookmark_Live.Where(o => o.UserId == userId).ToList().Select(o => o as BookmarkBase).ToList()
+                : db.Bookmarks.Where(o => o.UserId == userId).ToList().Select(o => o as BookmarkBase).ToList();
 
             int? maxDisplayOrder = myBookmarks.Max(o => o.DisplayOrder);
 
@@ -46,20 +50,32 @@ namespace CFD_COMMON.Service
 
             foreach (var secId in secIds)
             {
-                if (myBookmarks.All(o => o.AyondoSecurityId != secId))//skip if already existed
-                    db.Bookmarks.Add(new Bookmark
-                    {
-                        UserId = userId,
-                        AyondoSecurityId = secId,
-                        DisplayOrder = order++//setting display order
-                    });
+                if (myBookmarks.All(o => o.AyondoSecurityId != secId)) //skip if already existed
+                {
+                    if (isLive)
+                        db.Bookmark_Live.Add(new Bookmark_Live()
+                        {
+                            UserId = userId,
+                            AyondoSecurityId = secId,
+                            DisplayOrder = order++ //setting display order
+                        });
+                    else
+                        db.Bookmarks.Add(new Bookmark
+                        {
+                            UserId = userId,
+                            AyondoSecurityId = secId,
+                            DisplayOrder = order++ //setting display order
+                        });
+                }
             }
             db.SaveChanges();
         }
 
-        public void DeleteBookmarks(int userId)
+        public void DeleteBookmarks(int userId, bool isLive)
         {
-            int rowDeleted = db.Bookmarks.Where(o => o.UserId == userId).Delete();
+            int rowDeleted = isLive
+                ? db.Bookmark_Live.Where(o => o.UserId == userId).Delete()
+                : db.Bookmarks.Where(o => o.UserId == userId).Delete();
             CFDGlobal.LogLine("Delete bookmarks. " + rowDeleted + " rows deleted. " + "userid: " + userId);
         }
     }

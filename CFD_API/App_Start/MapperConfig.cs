@@ -68,7 +68,7 @@ namespace CFD_API
                 cfg.CreateMap<CompetitionResult, CompetitionResultDTO>();
                 cfg.CreateMap<CompetitionUserPosition, CompetitionUserPositionDTO>();
 
-                cfg.CreateMap<UserAlert, StockAlertDTO>();
+                cfg.CreateMap<UserAlertBase, StockAlertDTO>();
             });
         }
     }

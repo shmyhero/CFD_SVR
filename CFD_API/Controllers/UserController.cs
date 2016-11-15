@@ -775,45 +775,65 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("stockAlert")]
+        [Route("live/stockAlert")]
         [BasicAuth]
         public List<StockAlertDTO> GetStockAlerts()
         {
-            var alerts = db.UserAlerts.Where(o => o.UserId == UserId && (o.HighEnabled.Value || o.LowEnabled.Value)).ToList();
+            var alerts = IsLiveUrl
+                ?db.UserAlert_Live.Where(o => o.UserId == UserId && (o.HighEnabled.Value || o.LowEnabled.Value)).ToList().Select(o => o as UserAlertBase).ToList()
+                : db.UserAlerts.Where(o => o.UserId == UserId && (o.HighEnabled.Value || o.LowEnabled.Value)).ToList().Select(o => o as UserAlertBase).ToList();
             return alerts.Select(o => Mapper.Map<StockAlertDTO>(o)).ToList();
         }
 
         [HttpGet]
         [Route("stockAlert/all")]
+        [Route("live/stockAlert/all")]
         [BasicAuth]
         public List<StockAlertDTO> GetAllStockAlerts()
         {
-            var alerts = db.UserAlerts.Where(o => o.UserId == UserId).ToList();
+            var alerts = IsLiveUrl
+                ?db.UserAlert_Live.Where(o => o.UserId == UserId).ToList().Select(o => o as UserAlertBase).ToList()
+                : db.UserAlerts.Where(o => o.UserId == UserId).ToList().Select(o => o as UserAlertBase).ToList();
             return alerts.Select(o => Mapper.Map<StockAlertDTO>(o)).ToList();
         }
 
         [HttpPut]
         [Route("stockAlert")]
+        [Route("live/stockAlert")]
         [BasicAuth]
         public ResultDTO SetStockAlert(StockAlertDTO form)
         {
-            var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == form.SecurityId);
+            var prodDef = WebCache.GetInstance(IsLiveUrl).ProdDefs.FirstOrDefault(o => o.Id == form.SecurityId);
 
             if (prodDef == null || prodDef.Name.EndsWith(" Outright"))
                 return new ResultDTO() {success = false};
 
-            var alert = db.UserAlerts.FirstOrDefault(o => o.UserId == UserId && o.SecurityId == form.SecurityId);
+            var alert = IsLiveUrl
+                ? (UserAlertBase)db.UserAlert_Live.FirstOrDefault(o => o.UserId == UserId && o.SecurityId == form.SecurityId)
+                : (UserAlertBase)db.UserAlerts.FirstOrDefault(o => o.UserId == UserId && o.SecurityId == form.SecurityId);
 
             if (alert == null)
             {
-                db.UserAlerts.Add(new UserAlert()
-                {
-                    UserId = UserId,
-                    SecurityId = form.SecurityId,
-                    HighPrice = form.HighPrice,
-                    HighEnabled = form.HighEnabled,
-                    LowPrice = form.LowPrice,
-                    LowEnabled = form.LowEnabled
-                });
+                if (IsLiveUrl)
+                    db.UserAlert_Live.Add(new UserAlert_Live()
+                    {
+                        UserId = UserId,
+                        SecurityId = form.SecurityId,
+                        HighPrice = form.HighPrice,
+                        HighEnabled = form.HighEnabled,
+                        LowPrice = form.LowPrice,
+                        LowEnabled = form.LowEnabled
+                    });
+                else
+                    db.UserAlerts.Add(new UserAlert()
+                    {
+                        UserId = UserId,
+                        SecurityId = form.SecurityId,
+                        HighPrice = form.HighPrice,
+                        HighEnabled = form.HighEnabled,
+                        LowPrice = form.LowPrice,
+                        LowEnabled = form.LowEnabled
+                    });
             }
             else
             {

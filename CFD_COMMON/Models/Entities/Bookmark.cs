@@ -6,8 +6,7 @@ namespace CFD_COMMON.Models.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("Bookmark")]
-    public partial class Bookmark
+    public class BookmarkBase
     {
         [Key]
         [Column(Order = 0)]
@@ -19,10 +18,12 @@ namespace CFD_COMMON.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int AyondoSecurityId { get; set; }
 
-        //public DateTime? CreatedAt { get; set; }
         public int? DisplayOrder { get; set; }
-
-        //public virtual AyondoSecurity AyondoSecurity { get; set; }
         public virtual User User { get; set; }
+    }
+
+    [Table("Bookmark")]
+    public partial class Bookmark : BookmarkBase
+    {
     }
 }

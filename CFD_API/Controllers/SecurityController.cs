@@ -107,24 +107,23 @@ namespace CFD_API.Controllers
                 .ToList();
         }
 
-        private IList<ProdDef> GetActiveProdsByIds(IList<int> ids)
+        private IList<ProdDef> GetActiveProdsByIds(IList<int> ids, bool isLive)
         {
-            return GetActiveProds().Where(o => ids.Contains(o.Id)).ToList();
+            return GetActiveProds(isLive).Where(o => ids.Contains(o.Id)).ToList();
         }
 
         [HttpGet]
         [Route("bookmark")]
+        [Route("live/bookmark")]
         [BasicAuth]
         public List<SecurityDTO> GetBookmarkList(int page = 1, int perPage = 20)
         {
-            var bookmarkIDs = db.Bookmarks
-                .Where(o => o.UserId == UserId)
-                //.Include(o => o.AyondoSecurity)
-                .OrderBy(o => o.DisplayOrder)
-                .Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList();
+            var bookmarkIDs = IsLiveUrl
+                ? db.Bookmark_Live.Where(o => o.UserId == UserId).OrderBy(o => o.DisplayOrder).Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList()
+                : db.Bookmarks.Where(o => o.UserId == UserId).OrderBy(o => o.DisplayOrder).Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList();
 
             //var prodDefs = RedisClient.As<ProdDef>().GetByIds(bookmarkIDs);
-            var prodDefs = GetActiveProdsByIds(bookmarkIDs);
+            var prodDefs = GetActiveProdsByIds(bookmarkIDs, IsLiveUrl);
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
@@ -135,6 +134,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("byIds/{securityIds}")]
+        [Route("live/byIds/{securityIds}")]
         public List<SecurityDTO> GetSecuritiesByIds(string securityIds)
         {
             if (securityIds == null)
@@ -145,7 +145,7 @@ namespace CFD_API.Controllers
             //var redisTypedClient = RedisClient.As<ProdDef>();
 
             //var prodDefs = redisTypedClient.GetByIds(ids);
-            var prodDefs = GetActiveProdsByIds(ids);
+            var prodDefs = GetActiveProdsByIds(ids, IsLiveUrl);
 
             //var securities = db.AyondoSecurities.Where(o => ids.Contains(o.Id)).ToList();
 
@@ -554,21 +554,23 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("bookmark")]
+        [Route("live/bookmark")]
         [BasicAuth]
         public ResultDTO AddBookmark(string securityIds)
         {
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
-            var idsExistingProducts = WebCache.Demo.ProdDefs.Where(o => ids.Contains(o.Id)).Select(o => o.Id).ToList();
+            var idsExistingProducts = WebCache.GetInstance(IsLiveUrl).ProdDefs.Where(o => ids.Contains(o.Id)).Select(o => o.Id).ToList();
 
             var securityService = new SecurityService(db);
-            securityService.AddBookmarks(UserId, idsExistingProducts);
+            securityService.AddBookmarks(UserId, idsExistingProducts, IsLiveUrl);
 
             return new ResultDTO {success = true};
         }
 
         [HttpPut]
         [Route("bookmark")]
+        [Route("live/bookmark")]
         [BasicAuth]
         public ResultDTO ResetBookmark(string securityIds)
         {
@@ -578,27 +580,34 @@ namespace CFD_API.Controllers
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
             var securityService = new SecurityService(db);
-            securityService.DeleteBookmarks(UserId);
-            securityService.AddBookmarks(UserId, ids);
+            securityService.DeleteBookmarks(UserId, IsLiveUrl);
+            securityService.AddBookmarks(UserId, ids, IsLiveUrl);
 
             //delete stock alerts NOT IN id list
-            db.UserAlerts.Where(o => o.UserId == UserId && !ids.Contains(o.SecurityId)).Delete();
+            if (IsLiveUrl)
+                db.UserAlert_Live.Where(o => o.UserId == UserId && !ids.Contains(o.SecurityId)).Delete();
+            else
+                db.UserAlerts.Where(o => o.UserId == UserId && !ids.Contains(o.SecurityId)).Delete();
 
             return new ResultDTO {success = true};
         }
 
         [HttpDelete]
         [Route("bookmark")]
+        [Route("live/bookmark")]
         [BasicAuth]
         public ResultDTO DeleteBookmark(string securityIds)
         {
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
 
             var securityService = new SecurityService(db);
-            securityService.DeleteBookmarks(UserId, ids);
+            securityService.DeleteBookmarks(UserId, ids, IsLiveUrl);
 
             //delete stock alerts IN id list
-            db.UserAlerts.Where(o => o.UserId == UserId && ids.Contains(o.SecurityId)).Delete();
+            if (IsLiveUrl)
+                db.UserAlert_Live.Where(o => o.UserId == UserId && ids.Contains(o.SecurityId)).Delete();
+            else
+                db.UserAlerts.Where(o => o.UserId == UserId && ids.Contains(o.SecurityId)).Delete();
 
             return new ResultDTO {success = true};
         }
