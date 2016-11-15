@@ -13,6 +13,7 @@ using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
 {
+    [RoutePrefix("api/misc")]
     public class MiscController : CFDController
     {
         public MiscController(CFDEntities db, IMapper mapper) : base(db, mapper)
@@ -40,15 +41,27 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [ActionName("redis")]
+        [Route("redis")]
         public HttpResponseMessage RedisTest()
         {
             string value;
             using (var redisClient = CFDGlobal.PooledRedisClientsManager.GetClient())
             {
                 value = redisClient.GetValue("anykey");
+                return Request.CreateResponse(HttpStatusCode.OK, "dbsize " + redisClient.DbSize);
             }
-            return Request.CreateResponse(HttpStatusCode.OK, "dbsize " + RedisClient.DbSize);
+        }
+
+        [HttpGet]
+        [Route("live/redis")]
+        public HttpResponseMessage RedisLiveTest()
+        {
+            string value;
+            using (var redisClient = CFDGlobal.PooledRedisClientsManager_Live.GetClient())
+            {
+                value = redisClient.GetValue("anykey");
+                return Request.CreateResponse(HttpStatusCode.OK, "dbsize " + redisClient.DbSize);
+            }
         }
 
         [HttpGet]
