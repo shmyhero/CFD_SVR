@@ -45,8 +45,8 @@ namespace CFD_JOBS.Ayondo
                         using (var db = CFDEntities.Create())
                         {
                             var userAlerts = isLive
-                                ? db.UserAlerts.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList().Select(o=>o as UserAlertBase).ToList()
-                                : db.UserAlert_Live.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList().Select(o => o as UserAlertBase).ToList();
+                                ? db.UserAlert_Live.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList().Select(o => o as UserAlertBase).ToList()
+                                : db.UserAlerts.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList().Select(o => o as UserAlertBase).ToList();
 
                             CFDGlobal.LogLine("Got " + userAlerts.Count + " alerts.");
 

@@ -46,7 +46,7 @@ namespace CFD_JOBS.Ayondo
                                 : db.AyondoTradeHistories.OrderByDescending(o => o.Id).FirstOrDefault();
                         }
 
-                        if (lastDbRecord == null) //db is empty
+                        if (lastDbRecord == null || lastDbRecord.TradeTime == null) //db is empty
                         {
                             dtEnd = dtNow;
                             dtStart = dtEnd - Interval;
@@ -148,15 +148,16 @@ namespace CFD_JOBS.Ayondo
                                 var secIdD = Convert.ToInt32(arr[6]);
                                 var secName = arr[7];
                                 var direction = arr[8];
-                                var qty = Convert.ToDecimal(arr[9]);
-                                var price = Convert.ToDecimal(arr[10]);
-                                var pl = Convert.ToDecimal(arr[11]);
+                                var qty = decimal.Parse(arr[9], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
+                                var price = decimal.Parse(arr[10], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
+                                var pl = decimal.Parse(arr[11], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
                                 var guid = arr[12];
-                                decimal? stopLoss = arr[13] == ""
-                                    ? (decimal?) null
-                                    : decimal.Parse(arr[13], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
-                                //1.0E-6
-                                decimal? takeProfit = arr[14] == "" ? (decimal?) null : Convert.ToDecimal(arr[14]);
+                                decimal? stopLoss = arr[13] == "" 
+                                    ? (decimal?) null 
+                                    : decimal.Parse(arr[13], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);//1.0E-6
+                                decimal? takeProfit = arr[14] == "" 
+                                    ? (decimal?) null 
+                                    : decimal.Parse(arr[14], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
                                 var createTime = DateTime.ParseExact(arr[15], CFDGlobal.AYONDO_DATETIME_MASK,
                                     CultureInfo.CurrentCulture,
                                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
