@@ -825,7 +825,6 @@ namespace CFD_API.Controllers
                     {
                         posDTO.card = new CardDTO()
                         {
-                            cardId = card.Id,
                             imgUrlBig = card.CardImgUrlBig,
                             imgUrlMiddle = card.CardImgUrlMiddle,
                             imgUrlSmall = card.CardImgUrlSmall,
@@ -867,6 +866,8 @@ namespace CFD_API.Controllers
                         };
                         db.UserCards.Add(uc);
                         db.SaveChanges();
+
+                        posDTO.card.cardId = uc.Id;
                     }
                 }
             }
