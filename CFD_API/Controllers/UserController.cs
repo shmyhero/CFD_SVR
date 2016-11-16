@@ -261,8 +261,8 @@ namespace CFD_API.Controllers
                 userDto.rewardAmount = reward.Amount;
             }
 
+            userDto.liveUsername = user.AyLiveUsername;
             userDto.liveAccStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
-
             if (userDto.liveAccStatus == UserLiveStatus.Rejected)
                 userDto.liveAccRejReason = GetUserLiveAccountRejectReason(user.AyLiveAccountStatus);
 

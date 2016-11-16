@@ -972,12 +972,12 @@ namespace CFD_API.Controllers
                     return errorResponse;
                 }
 
-                var user = db.Users.FirstOrDefault(o => o.Id == userId);
-                if (user == null || user.AyondoUsername != username2)
-                {
-                    CFDGlobal.LogInformation("oauth DEMO error: cfd user id and ayondo demo username doesn't match "+ user.AyondoUsername + " " + username2);
-                    return errorResponse;
-                }
+                //var user = db.Users.FirstOrDefault(o => o.Id == userId);
+                //if (user == null || user.AyondoUsername != username2)
+                //{
+                //    CFDGlobal.LogInformation("oauth DEMO error: cfd user id and ayondo demo username doesn't match "+ user.AyondoUsername + " " + username2);
+                //    return errorResponse;
+                //}
 
                 using (var client = new AyondoTradeClient())
                 {
@@ -1064,12 +1064,12 @@ namespace CFD_API.Controllers
                     return errorResponse;
                 }
 
-                var user = db.Users.FirstOrDefault(o => o.Id == userId);
-                if (user == null || user.AyLiveUsername != username2)
-                {
-                    CFDGlobal.LogInformation("oauth LIVE error: cfd user id and ayondo live username doesn't match "+ user.AyLiveUsername + " " + username2);
-                    return errorResponse;
-                }
+                //var user = db.Users.FirstOrDefault(o => o.Id == userId);
+                //if (user == null || user.AyLiveUsername != username2)
+                //{
+                //    CFDGlobal.LogInformation("oauth LIVE error: cfd user id and ayondo live username doesn't match "+ user.AyLiveUsername + " " + username2);
+                //    return errorResponse;
+                //}
                 
                 using (var client = new AyondoTradeClient(true))
                 {
