@@ -261,10 +261,11 @@ namespace CFD_API.Controllers
                 userDto.rewardAmount = reward.Amount;
             }
 
-            userDto.liveUsername = user.AyLiveUsername;
             userDto.liveAccStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (userDto.liveAccStatus == UserLiveStatus.Rejected)
                 userDto.liveAccRejReason = GetUserLiveAccountRejectReason(user.AyLiveAccountStatus);
+            userDto.liveUsername = user.AyLiveUsername;
+            userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
 
             return userDto;
         }
@@ -320,12 +321,17 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("alert/{setting}")]
+        [Route("live/alert/{setting}")]
         [BasicAuth]
         public ResultDTO SetSystemAlert(bool setting)
         {
             var user = GetUser();
 
-            user.AutoCloseAlert = setting;
+            if (IsLiveUrl)
+                user.AutoCloseAlert_Live = setting;
+            else
+                user.AutoCloseAlert = setting;
+
             db.SaveChanges();
 
             return new ResultDTO { success = true };
