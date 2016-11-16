@@ -961,16 +961,16 @@ namespace CFD_API.Controllers
                 var expiry = split[2];
                 var checksum = split[3];
 
-                // check if cfd userid and ayondo username are bound
-                var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
-                int userId;
-                var tryParse = int.TryParse(state, out userId);
+                //// check if cfd userid and ayondo username are bound
+                //var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
+                //int userId;
+                //var tryParse = int.TryParse(state, out userId);
 
-                if (!tryParse)
-                {
-                    CFDGlobal.LogInformation("oauth DEMO error: state tryParse to int32 failed " + state);
-                    return errorResponse;
-                }
+                //if (!tryParse)
+                //{
+                //    CFDGlobal.LogInformation("oauth DEMO error: state tryParse to int32 failed " + state);
+                //    return errorResponse;
+                //}
 
                 //var user = db.Users.FirstOrDefault(o => o.Id == userId);
                 //if (user == null || user.AyondoUsername != username2)
@@ -1053,16 +1053,16 @@ namespace CFD_API.Controllers
                 var expiry = split[2];
                 var checksum = split[3];
 
-                // check if cfd userid and ayondo username are bound
-                var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
-                int userId;
-                var tryParse = int.TryParse(state, out userId);
+                //// check if cfd userid and ayondo username are bound
+                //var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
+                //int userId;
+                //var tryParse = int.TryParse(state, out userId);
 
-                if (!tryParse)
-                {
-                    CFDGlobal.LogInformation("oauth LIVE error: state tryParse to int32 failed " + state);
-                    return errorResponse;
-                }
+                //if (!tryParse)
+                //{
+                //    CFDGlobal.LogInformation("oauth LIVE error: state tryParse to int32 failed " + state);
+                //    return errorResponse;
+                //}
 
                 //var user = db.Users.FirstOrDefault(o => o.Id == userId);
                 //if (user == null || user.AyLiveUsername != username2)
