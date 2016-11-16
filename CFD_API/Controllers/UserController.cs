@@ -1193,59 +1193,59 @@ namespace CFD_API.Controllers
             //
             form.transaction_id = userInfo.OcrTransId;
 
-            //var s = JsonConvert.SerializeObject(form); //string.Format(json, username, password);
-            //sw.Write(s);
-            //sw.Flush();
-            //sw.Close();
+            var s = JsonConvert.SerializeObject(form); //string.Format(json, username, password);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
 
-            //var dtBegin = DateTime.UtcNow;
+            var dtBegin = DateTime.UtcNow;
 
-            //WebResponse webResponse;
-            //try
-            //{
-            //    webResponse = httpWebRequest.GetResponse();
-            //}
-            //catch (WebException e)
-            //{
-            //    webResponse = e.Response;
-            //}
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
 
-            //var responseStream = webResponse.GetResponseStream();
-            //var sr = new StreamReader(responseStream);
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
 
-            //var str = sr.ReadToEnd();
-            //var ts = DateTime.UtcNow - dtBegin;
-            //CFDGlobal.LogInformation("OCR FaceCheck called. Time: " + ts.TotalMilliseconds + "ms Url: " +
-            //                         httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("OCR FaceCheck called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
-            //var jObject = JObject.Parse(str);
+            var jObject = JObject.Parse(str);
 
-            //var result = jObject["result"].Value<string>();
+            var result = jObject["result"].Value<string>();
 
-            //if (result == "0")
-            //{
-            //    var similarity = jObject["verify_similarity"].Value<decimal>();
+            if (result == "0")
+            {
+                var similarity = jObject["verify_similarity"].Value<decimal>();
 
                 userInfo.FirstName = firstName;
                 userInfo.LastName = lastName;
                 userInfo.IdCode = form.userId;
 
                 userInfo.FaceCheckAt = DateTime.UtcNow;
-                //userInfo.FaceCheckSimilarity = similarity;
+                userInfo.FaceCheckSimilarity = similarity;
                 db.SaveChanges();
-            //}
-            //else
-            //{
-            //    var message = jObject["message"].Value<string>();
-            //    message = HttpUtility.UrlDecode(message);
+            }
+            else
+            {
+                var message = jObject["message"].Value<string>();
+                message = HttpUtility.UrlDecode(message);
 
-            //    CFDGlobal.LogInformation("OCR FaceCheck fail: " + result + " " + message);
-            //}
+                CFDGlobal.LogInformation("OCR FaceCheck fail: " + result + " " + message);
+            }
 
-            //return jObject;
+            return jObject;
 
-            var jObj = new JObject {["result"] = "0"};
-            return jObj;
+            //var jObj = new JObject {["result"] = "0"};
+            //return jObj;
         }
 
         //[HttpPut]
