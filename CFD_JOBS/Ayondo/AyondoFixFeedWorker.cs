@@ -496,7 +496,9 @@ namespace CFD_JOBS.Ayondo
                                         old.OpenBid = newProdDef.Bid;
 
                                         //preclose
-                                        old.PreClose = Quotes.GetClosePrice(newProdDef);
+                                        old.PreClose = Quotes.GetClosePrice(newProdDef) ??
+                                        //when close ask/bid is null, get from ask/bid
+                                                       Quotes.GetLastPrice(newProdDef);
 
                                         ////prod def will be treated as a new QUOTE when stock open/close
                                         //listToSaveAsQuote.Add(newProdDef);
