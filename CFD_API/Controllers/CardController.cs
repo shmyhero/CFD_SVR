@@ -294,6 +294,7 @@ namespace CFD_API.Controllers
                                 likes = u.Likes,
                                 reward = y.Reward,
                                 settlePrice = u.SettlePrice,
+                                stockID = u.SecurityId,
                                 //stockName = u.StockName,
                                 pl = u.PL,
                                 plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
