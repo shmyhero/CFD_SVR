@@ -130,6 +130,12 @@ namespace CFD_JOBS.Ayondo
 
         private static void UpdateKLine(List<Quote> quotes, IRedisTypedClient<KLine> redisKLineClient, ProdDef prodDef, DateTime klineAyondoNow, KLineSize kLineSize)
         {
+            if (kLineSize == KLineSize.Day && prodDef.LastOpen == null)
+            {
+                CFDGlobal.LogLine("no LastOpen time for "+prodDef.Id);
+                return;
+            }
+
             var list = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(kLineSize) + prodDef.Id];
 
             if (quotes.Count == 0) //no quotes received, then should just fill the non-changing quotes
