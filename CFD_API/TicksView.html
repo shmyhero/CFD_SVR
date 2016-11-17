@@ -13,8 +13,16 @@
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script type="text/javascript">
+    function getQueryStringByName(name) {
+        var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+        if (result == null || result.length < 1) {
+            return "";
+        }
+        return result[1];
+    }
+
     $(function () {
-        $.getJSON('api/security/stock/us?perPage=999', function (result) {
+        $.getJSON('api/security/' + (getQueryStringByName('live') ? 'live/' : '') + 'stock/topGainer?perPage=999', function (result) {
             //debugger;
             $.each(result, function (i, sec) {
                 //debugger;
@@ -22,7 +30,7 @@
             });
         });
 
-        $.getJSON('api/security/index?perPage=999', function (result) {
+        $.getJSON('api/security/' + (getQueryStringByName('live') ? 'live/' : '') + 'index?perPage=999', function (result) {
             //debugger;
             $.each(result, function (i, sec) {
                 //debugger;
@@ -30,7 +38,7 @@
             });
         });
 
-        $.getJSON('api/security/fx?perPage=999', function(result) {
+        $.getJSON('api/security/' + (getQueryStringByName('live') ? 'live/' : '') + 'fx?perPage=999', function (result) {
             //debugger;
             $.each(result, function(i, sec) {
                 //debugger;
@@ -38,7 +46,7 @@
             });
         });
 
-        $.getJSON('api/security/futures?perPage=999', function (result) {
+        $.getJSON('api/security/' + (getQueryStringByName('live') ? 'live/' : '') + 'futures?perPage=999', function (result) {
             //debugger;
             $.each(result, function(i, sec) {
                 //debugger;
@@ -68,7 +76,7 @@
     function draw(secId) {
         //var typeUrl = type == '' ? '' : '/' + type;
 
-        $.getJSON('api/quote/' + secId + '/tick/today', function(result) {
+        $.getJSON('api/quote/' + (getQueryStringByName('live') ? 'live/' : '') + '' + secId + '/tick/today', function (result) {
             //debugger;
             data = new Array();
             $.each(result, function(i, tick) {
