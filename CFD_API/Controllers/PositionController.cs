@@ -812,7 +812,7 @@ namespace CFD_API.Controllers
                 if (position != null)
                 {
                     //收益率
-                    var plRatePercent = posDTO.isLong
+                    var plRatePercent = position.LongQty.HasValue
                         ? (result.SettlPrice - position.SettlePrice)/position.SettlePrice*result.Leverage*100
                         : (position.SettlePrice - result.SettlPrice)/position.SettlePrice*result.Leverage*100;
 

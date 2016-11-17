@@ -19,8 +19,8 @@ namespace CFD_COMMON.Service
 
         public Card GetCard(decimal pl, decimal plRate, decimal openPrice)
         {
-            var cards = db.Cards.Where(o => o.LowProfit < pl && (!o.HighProfit.HasValue || o.HighProfit > pl)
-            && o.LowProfitRate < plRate && (!o.HighProfitRate.HasValue || o.HighProfitRate > plRate)).ToList();
+            var cards = db.Cards.Where(o => o.LowProfit <= pl && (!o.HighProfit.HasValue || o.HighProfit > pl)
+            && o.LowProfitRate < plRate && (!o.HighProfitRate.HasValue || o.HighProfitRate >= plRate)).ToList();
 
             if (cards.Count==0)
             {
