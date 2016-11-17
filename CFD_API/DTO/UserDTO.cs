@@ -24,6 +24,8 @@ namespace CFD_API.DTO
 
         public UserLiveStatus liveAccStatus { get; set; }
         public string liveAccRejReason { get; set; }
+        public string liveUsername { get; set; }
+        public string liveEmail { get; set; }
         public bool autoCloseAlert_Live { get; set; }
     }
 

@@ -330,7 +330,7 @@ namespace CFD_COMMON.Utils
 
         public static bool IsShowing(string name)
         {
-            return Translations.ProdCNames.ContainsKey(Translator.RemoveENameSuffix(name));
+            return Translations.ProdCNames.ContainsKey(Translator.RemoveENameSuffix(name).ToLower());
         }
     }
 }

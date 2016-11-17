@@ -262,9 +262,10 @@ namespace CFD_API.Controllers
             }
 
             userDto.liveAccStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
-
             if (userDto.liveAccStatus == UserLiveStatus.Rejected)
                 userDto.liveAccRejReason = GetUserLiveAccountRejectReason(user.AyLiveAccountStatus);
+            userDto.liveUsername = user.AyLiveUsername;
+            userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
 
             return userDto;
         }
@@ -320,12 +321,17 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("alert/{setting}")]
+        [Route("live/alert/{setting}")]
         [BasicAuth]
         public ResultDTO SetSystemAlert(bool setting)
         {
             var user = GetUser();
 
-            user.AutoCloseAlert = setting;
+            if (IsLiveUrl)
+                user.AutoCloseAlert_Live = setting;
+            else
+                user.AutoCloseAlert = setting;
+
             db.SaveChanges();
 
             return new ResultDTO { success = true };
@@ -992,12 +998,13 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("demo/logout")]
+        [Route("live/logout")]
         [BasicAuth]
         public ResultDTO LogoutAyondoDemo()
         {
             var user = GetUser();
             
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 clientHttp.LogOut(user.AyondoUsername);
             }
@@ -1409,6 +1416,34 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             var delete = db.UserInfos.Where(o => o.UserId == UserId).Delete();
+
+            return new ResultDTO(true);
+        }
+
+        [HttpGet]
+        [Route("live/resetPwd")]
+        [BasicAuth]
+        public ResultDTO ResetPassword()
+        {
+            var user = GetUser();
+
+            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            if (liveStatus != UserLiveStatus.Active)
+                return new ResultDTO(false);
+
+            var httpWebRequest = WebRequest.CreateHttp("https://www.tradehub.net/live/ams/proxy/ForgotPassword?UserName=" + user.AyLiveUsername);
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Proxy = null;
+
+            var dtBegin = DateTime.UtcNow;
+
+            var webResponse = httpWebRequest.GetResponse();
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("tradehub ForgotPassword called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
 
             return new ResultDTO(true);
         }
