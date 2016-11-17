@@ -274,7 +274,7 @@ namespace CFD_API.Controllers
             amsForm.EmploymentStatus = form.empStatus;
             amsForm.HasAttendedTraining = false;
             amsForm.HasOtherQualification = form.hasOtherQualif;
-            amsForm.HasProfessionalExperience = form.hasProExp;
+            amsForm.HasProfessionalExperience = false;// form.hasProExp;
             amsForm.InvestmentPortfolio = form.investPct;
             amsForm.IsIDVerified = true;
             amsForm.JobTitle = "JobTitle";
@@ -287,7 +287,7 @@ namespace CFD_API.Controllers
             amsForm.LeveragedProducts = strProducts;
 
             amsForm.Nationality = "CN";
-            amsForm.NetWorth = form.netWorth;
+            amsForm.NetWorth = form.netWorth > 100 ? 100 : form.netWorth;//form.netWorth;
             amsForm.Nickname = user.Nickname;
             amsForm.NumberOfMarginTrades = form.investFrq;
             amsForm.PhonePrimaryCountryCode = "CN";
