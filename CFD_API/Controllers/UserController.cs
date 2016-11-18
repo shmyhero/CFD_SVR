@@ -1490,6 +1490,23 @@ namespace CFD_API.Controllers
             return new ResultDTO(true);
         }
 
+        [HttpPost]
+        [Route("live/withdraw")]
+        [BasicAuth]
+        public string WithDraw(decimal amount)
+        {
+            var user = GetUser();
+
+            CheckAndCreateAyondoDemoAccount(user);
+
+            string transferId;
+            using (var clientHttp = new AyondoTradeClient())
+            {
+                transferId = clientHttp.NewWithdraw(user.AyondoUsername, user.AyondoPassword, amount);
+            }
+
+            return transferId;
+        }
 
         /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式

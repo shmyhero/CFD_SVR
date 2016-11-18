@@ -136,6 +136,11 @@ namespace AyondoTrade
             return base.Channel.NewDeposit(username, password, amount);
         }
 
+        public string NewWithdraw(string username, string password, decimal amount)
+        {
+            return base.Channel.NewWithdraw(username, password, amount);
+        }
+
         public void LogOut(string username)
         {
             base.Channel.LogOut(username);

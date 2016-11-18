@@ -862,6 +862,13 @@ namespace AyondoTrade
             return guid;
         }
 
+        /// <summary>
+        /// RequestID由客户端指定，TransferID由Ayondo返回
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="balanceId"></param>
+        /// <param name="amount"></param>
+        /// <returns></returns>
         public string MDS3WithdrawalRequest(string account, string balanceId, decimal amount)
         {
             var guid = Guid.NewGuid().ToString();
