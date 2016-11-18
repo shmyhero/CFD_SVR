@@ -59,23 +59,23 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<AyondoTradeHistory>()
                 .Property(e => e.Quantity)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<AyondoTradeHistory>()
                 .Property(e => e.TradePrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<AyondoTradeHistory>()
                 .Property(e => e.PL)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<AyondoTradeHistory>()
                 .Property(e => e.StopLoss)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<AyondoTradeHistory>()
                 .Property(e => e.TakeProfit)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
 
             modelBuilder.Entity<CompetitionResult>()
@@ -98,15 +98,15 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.SettlePrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.LongQty)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.ShortQty)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.Leverage)
@@ -114,15 +114,15 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.InvestUSD)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.ClosedPrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.PL)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
 
             modelBuilder.Entity<QuoteHistory>()
@@ -136,11 +136,11 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<UserAlert>()
                 .Property(e => e.HighPrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<UserAlert>()
                 .Property(e => e.LowPrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<UserCard>()
                 .Property(e => e.Qty)
@@ -209,36 +209,36 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<AyondoTradeHistory_Live>()
                 .Property(e => e.Quantity)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<AyondoTradeHistory_Live>()
                 .Property(e => e.TradePrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<AyondoTradeHistory_Live>()
                 .Property(e => e.PL)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<AyondoTradeHistory_Live>()
                 .Property(e => e.StopLoss)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<AyondoTradeHistory_Live>()
                 .Property(e => e.TakeProfit)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.SettlePrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.LongQty)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.ShortQty)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.Leverage)
@@ -246,24 +246,24 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.InvestUSD)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.PL)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.ClosedPrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
 
             modelBuilder.Entity<UserAlert_Live>()
                 .Property(e => e.HighPrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
 
             modelBuilder.Entity<UserAlert_Live>()
                 .Property(e => e.LowPrice)
-                .HasPrecision(18, 5);
+                .HasPrecision(18, 8);
         }
     }
 }
