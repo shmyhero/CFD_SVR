@@ -173,22 +173,23 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("closed_obsolete")]
+        [Route("closed2")]
+        [Route("live/closed2")]
         [BasicAuth]
         public List<PositionHistoryDTO> GetPositionHistory(bool ignoreCache = false)
         {
             var user = GetUser();
-            CheckAndCreateAyondoDemoAccount(user);
+            if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
             
             IList<PositionReport> historyReports;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 var endTime = DateTime.UtcNow;
                 var startTime = DateTimes.GetHistoryQueryStartTime(endTime);
 
                 try
                 {
-                    historyReports = clientHttp.GetPositionHistoryReport(user.AyondoUsername, user.AyondoPassword,
+                    historyReports = clientHttp.GetPositionHistoryReport(IsLiveUrl?user.AyLiveUsername:user.AyondoUsername, IsLiveUrl?null: user.AyondoPassword,
                         startTime, endTime, ignoreCache);
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
@@ -212,6 +213,7 @@ namespace CFD_API.Controllers
             //var prodDefs = redisProdDefClient.GetAll();
             //var quotes = redisQuoteClient.GetAll();
 
+            var cache = WebCache.GetInstance(IsLiveUrl);
             foreach (var positionGroup in groupByPositions) //for every position group
             {
                 var dto = new PositionHistoryDTO();
@@ -227,7 +229,7 @@ namespace CFD_API.Controllers
                     if (Decimals.IsTradeSizeZero(closeReport.LongQty) || Decimals.IsTradeSizeZero(closeReport.ShortQty))
                     {
                         var secId = Convert.ToInt32(openReport.SecurityID);
-                        var prodDef = WebCache.Demo.ProdDefs.FirstOrDefault(o => o.Id == secId);
+                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == secId);
 
                         if (prodDef == null)
                         {

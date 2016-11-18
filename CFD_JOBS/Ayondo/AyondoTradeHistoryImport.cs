@@ -48,8 +48,8 @@ namespace CFD_JOBS.Ayondo
 
                         if (lastDbRecord == null || lastDbRecord.TradeTime == null) //db is empty
                         {
-                            dtEnd = dtNow;
-                            dtStart = dtEnd - Interval;
+                            dtStart =dtNow.AddDays(-30);
+                            dtEnd = dtStart.AddDays(1);
                         }
                         else //last record in db is found
                         {
@@ -57,14 +57,14 @@ namespace CFD_JOBS.Ayondo
 
                             dtStart = dtLastDbRecord.AddMilliseconds(1);
 
-                            //如果上次同步时间超过24小时，则每次最多只取24小时
+                            //最多取24小时
                             dtEnd = dtNow - dtLastDbRecord > TimeSpan.FromHours(24) ? dtStart.AddHours(24) : dtNow;
                         }
                     }
                     else
                     {
                         dtStart = _lastEndTime.Value.AddMilliseconds(1);
-                        dtEnd = dtNow;
+                        dtEnd = dtNow - dtStart > TimeSpan.FromHours(24)? dtStart.AddHours(24) : dtNow;
                     }
 
                     //using (var db = CFDEntities.Create())
