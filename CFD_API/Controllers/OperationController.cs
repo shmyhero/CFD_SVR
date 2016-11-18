@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
 using CFD_COMMON.Models.Context;
@@ -24,7 +25,13 @@ namespace CFD_API.Controllers
             return null;
         }
 
+        /// <summary>
+        /// 由运营人员发起的消息推送
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
         [HttpPost]
+        [OperationBasicAuth]
         public ResultDTO Push(OperationPushDTO form)
         {
             ResultDTO result = new ResultDTO() { success = true };
