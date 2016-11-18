@@ -21,6 +21,7 @@ namespace CFD_JOBS.Ayondo
     public class AyondoTradeHistoryImport
     {
         private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(4);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -57,14 +58,15 @@ namespace CFD_JOBS.Ayondo
 
                             dtStart = dtLastDbRecord.AddMilliseconds(1);
 
-                            //最多取24小时
-                            dtEnd = dtNow - dtLastDbRecord > TimeSpan.FromHours(24) ? dtStart.AddHours(24) : dtNow;
+                            //最多取...
+                            dtEnd = dtNow - dtLastDbRecord > MaxDuration ? dtStart + MaxDuration : dtNow;
                         }
                     }
                     else
                     {
                         dtStart = _lastEndTime.Value.AddMilliseconds(1);
-                        dtEnd = dtNow - dtStart > TimeSpan.FromHours(24)? dtStart.AddHours(24) : dtNow;
+                        //最多取...
+                        dtEnd = dtNow - dtStart > MaxDuration ? dtStart + MaxDuration : dtNow;
                     }
 
                     //using (var db = CFDEntities.Create())
@@ -127,6 +129,8 @@ namespace CFD_JOBS.Ayondo
                     }
                     else
                     {
+                        CFDGlobal.LogLine("got " + lineArrays.Count + " records");
+
                         using (var db = CFDEntities.Create())
                         {
                             //var dbMaxCreateTime = db.AyondoTradeHistories.Max(o => o.CreateTime);
@@ -150,7 +154,7 @@ namespace CFD_JOBS.Ayondo
                                 var direction = arr[8];
                                 var qty = decimal.Parse(arr[9], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
                                 var price = decimal.Parse(arr[10], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
-                                var pl = decimal.Parse(arr[11], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
+                                var pl = decimal.Parse(arr[11], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
                                 var guid = arr[12];
                                 decimal? stopLoss = arr[13] == "" 
                                     ? (decimal?) null 
@@ -254,21 +258,23 @@ namespace CFD_JOBS.Ayondo
                     }
 
                     //mark success time
-                    CFDGlobal.LogLine("");
                     _lastEndTime = dtEnd;
                         
                     //auto close alert/push
-                    var autoClosedHistories =
-                        newTradeHistories.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
+                    var autoClosedHistories =newTradeHistories.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
 
                     if (autoClosedHistories.Count > 0)
+                    {
+                        CFDGlobal.LogLine("auto close record count: " + autoClosedHistories.Count );
                         NotifyUser(autoClosedHistories, isLive);
+                    }
                 }
                 catch (Exception e)
                 {
                     CFDGlobal.LogException(e);
                 }
 
+                CFDGlobal.LogLine("");
                 Thread.Sleep(Interval);
             }
         }
@@ -362,7 +368,9 @@ namespace CFD_JOBS.Ayondo
 
                     #region Push notification
 
-                    if (user.AutoCloseAlert.HasValue && user.AutoCloseAlert.Value && !string.IsNullOrEmpty(user.deviceToken))
+                    if (user.AutoCloseAlert.HasValue && user.AutoCloseAlert.Value && !string.IsNullOrEmpty(user.deviceToken)
+                        && DateTime.UtcNow - trade.TradeTime < TimeSpan.FromHours(1)//do not send push if it's already late
+                        )
                     {
                         string msgPart4 = string.Empty;
                         if (trade.PL.HasValue)
