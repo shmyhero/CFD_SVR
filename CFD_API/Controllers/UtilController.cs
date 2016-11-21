@@ -669,7 +669,7 @@ namespace CFD_API.Controllers
             }
             else //take specific one
             {
-                headlines = db.Headlines.Where(item => item.Id == id && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
+                headlines = db.Headlines.Where(item => item.Id == id && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.CreatedAt).ToList();
             }
 
             //return headlines.Select(o => Mapper.Map<HeadlineDTO>(o)).ToList();
