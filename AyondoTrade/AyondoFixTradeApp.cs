@@ -441,12 +441,12 @@ namespace AyondoTrade
             //for console test
             _balanceId = balanceId;
 
-            CFDGlobal.LogLine("OnMessage:CollateralReport: " + GetMessageString(report));
+            //CFDGlobal.LogLine("OnMessage:CollateralReport: " + GetMessageString(report));
         }
 
         public void OnMessage(ExecutionReport report, SessionID session)
         {
-            CFDGlobal.LogLine("OnMessage:ExecutionReport: " + GetMessageString(report));
+            //CFDGlobal.LogLine("OnMessage:ExecutionReport: " + GetMessageString(report));
 
             if (report.OrdStatus.Obj == OrdStatus.REJECTED)
             {
