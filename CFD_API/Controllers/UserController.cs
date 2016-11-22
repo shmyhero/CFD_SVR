@@ -276,6 +276,32 @@ namespace CFD_API.Controllers
             return userDto;
         }
 
+        [HttpGet]
+        [Route("switchTo/{environment}")]
+        [BasicAuth]
+        public ResultDTO SwitchTo(string environment)
+        {
+            var user = GetUser();
+
+            var lower = environment.ToLower();
+
+            switch (lower)
+            {
+                case "live":
+                    user.IsOnLive = true;
+                    break;
+                case "demo":
+                    user.IsOnLive = false;
+                    break;
+                default:
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,""));
+            }
+
+            db.SaveChanges();
+
+            return new ResultDTO(true);
+        }
+
         [HttpPost]
         //[RequireHttps]
         [ActionName("nickname")]

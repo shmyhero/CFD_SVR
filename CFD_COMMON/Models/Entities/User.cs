@@ -76,6 +76,8 @@ namespace CFD_COMMON.Models.Entities
 
         public bool? AutoCloseAlert_Live { get; set; }
 
+        public bool? IsOnLive { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

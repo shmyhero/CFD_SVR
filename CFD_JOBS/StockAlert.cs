@@ -48,11 +48,14 @@ namespace CFD_JOBS.Ayondo
                                 ? db.UserAlert_Live.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList().Select(o => o as UserAlertBase).ToList()
                                 : db.UserAlerts.Where(o => o.HighEnabled.Value || o.LowEnabled.Value).ToList().Select(o => o as UserAlertBase).ToList();
 
+                            var userAlertsUserIds = userAlerts.Select(o => o.UserId).Distinct().ToList();
+                            var userEnvironments = db.Users.Where(o => userAlertsUserIds.Contains(o.Id)).ToDictionary(o => o.Id, o => o.IsOnLive);
+
                             CFDGlobal.LogLine("Got " + userAlerts.Count + " alerts.");
 
                             var groups = userAlerts.GroupBy(o => o.SecurityId).ToList();
 
-                            var newAlertList = new List<KeyValuePair<int, string>>();
+                            var alertsToPush = new List<KeyValuePair<int, string>>();
 
                             foreach (var group in groups) //foreach security
                             {
@@ -173,28 +176,34 @@ namespace CFD_JOBS.Ayondo
                                     //Got message auto ID after saving to DB
                                     foreach (var message in messages)
                                     {
-                                        newAlertList.Add(new KeyValuePair<int, string>(message.UserId,
-                                            string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name), message.Body, message.Id)));//using message id here
+                                        var userIsOnLive = userEnvironments[message.UserId];
+
+                                        //add to push list only when user is on the same environment as which this job is running on
+                                        if (isLive && userIsOnLive == true || !isLive && userIsOnLive != true)
+                                            //using message id here
+                                            alertsToPush.Add(new KeyValuePair<int, string>(message.UserId,
+                                                string.Format(PUSH_TEMP, prodDef.Id, Translator.GetCName(prodDef.Name),
+                                                    message.Body, message.Id)));
                                     }
                                 }
                             }
 
-                            if (newAlertList.Count > 0)
+                            if (alertsToPush.Count > 0)
                             {
                                 ////disable triggered alert
                                 //db.SaveChanges();
 
-                                CFDGlobal.LogLine(newAlertList.Count + " alerts to send...");
+                                CFDGlobal.LogLine(alertsToPush.Count + " alerts to send...");
 
                                 CFDGlobal.LogLine("pushing to GeTui...");
                                 var geTuiList = new List<KeyValuePair<string, string>>();
 
-                                var userIds = newAlertList.Select(o => o.Key).Distinct().ToList();
+                                var userIds = alertsToPush.Select(o => o.Key).Distinct().ToList();
                                 var devices =
                                     db.Devices.Where(o => o.userId.HasValue && userIds.Contains(o.userId.Value))
                                         .ToList();
 
-                                foreach (var pair in newAlertList)
+                                foreach (var pair in alertsToPush)
                                 {
                                     var userDevices = devices.Where(o => o.userId == pair.Key).ToList();
 

@@ -301,7 +301,7 @@ namespace CFD_JOBS.Ayondo
                             join d in db.Devices on u.Id equals d.userId
                             into x from y in x.DefaultIfEmpty()
                             where ayondoAccountIds.Contains(isLive ? u.AyLiveAccountId.Value : u.AyondoAccountId.Value) //&& u.AutoCloseAlert.HasValue && u.AutoCloseAlert.Value
-                               select new {y.deviceToken, UserId = u.Id, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live   };
+                               select new {y.deviceToken, UserId = u.Id, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive   };
 
                 var users = query.ToList();
 
@@ -370,6 +370,7 @@ namespace CFD_JOBS.Ayondo
 
                     if (user.AutoCloseAlert.HasValue && user.AutoCloseAlert.Value && !string.IsNullOrEmpty(user.deviceToken)
                         && DateTime.UtcNow - trade.TradeTime < TimeSpan.FromHours(1)//do not send push if it's already late
+                        && (isLive && user.IsOnLive == true || !isLive && user.IsOnLive != true)//add to push list only when user is on the same environment as which this job is running on
                         )
                     {
                         string msgPart4 = string.Empty;
