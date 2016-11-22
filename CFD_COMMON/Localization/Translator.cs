@@ -36,7 +36,7 @@
 
         public static string RemoveENameSuffix(string name)
         {
-            return name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty);//.Replace(" Outright", string.Empty).Replace(" Spot", string.Empty);
+            return name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty).Replace(" Outright", string.Empty).Replace(" Spot", string.Empty);//;
         }
 
         public static string AyondoOrderRejectMessageTranslate(string ayondoText)

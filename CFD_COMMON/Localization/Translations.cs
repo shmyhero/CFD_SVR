@@ -44,19 +44,19 @@ namespace CFD_COMMON.Localization
         
         public static Dictionary<string, string> ProdCNames = new Dictionary<string, string>
         {
-            {"gold spot", "黄金"},
-            {"silver spot", "白银"},
+            {"gold", "黄金"},
+            {"silver", "白银"},
 
-            {"cad/jpy spot", "加元/日元"},
-            {"eur/cad spot", "欧元/加元"},
-            {"eur/gbp spot", "欧元/英镑"},
-            {"eur/jpy spot", "欧元/日元"},
-            {"eur/usd spot", "欧元/美元"},
-            {"gbp/cad spot", "英镑/加元"},
-            {"gbp/jpy spot", "英镑/日元"},
-            {"gbp/usd spot", "英镑/美元"},
-            {"usd/cad spot", "美元/加元"},
-            {"usd/jpy spot", "美元/日元"},
+            {"cad/jpy", "加元/日元"},
+            {"eur/cad", "欧元/加元"},
+            {"eur/gbp", "欧元/英镑"},
+            {"eur/jpy", "欧元/日元"},
+            {"eur/usd", "欧元/美元"},
+            {"gbp/cad", "英镑/加元"},
+            {"gbp/jpy", "英镑/日元"},
+            {"gbp/usd", "英镑/美元"},
+            {"usd/cad", "美元/加元"},
+            {"usd/jpy", "美元/日元"},
 
             {"3m co", "3M"},
             {"58.com inc adr", "58同城"},
