@@ -20,8 +20,8 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoTradeHistoryImport
     {
-        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(4);
+        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(10);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -404,7 +404,7 @@ namespace CFD_JOBS.Ayondo
                             var tradeHistory = isLive
                                 ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == trade.PositionId)
                                 : db.NewPositionHistories.FirstOrDefault(o => o.Id == trade.PositionId);
-                            if (tradeHistory == null)
+                            if (tradeHistory != null)
                             {
                                 var plRatePercent = tradeHistory.LongQty.HasValue
                                 ? (trade.TradePrice - tradeHistory.SettlePrice) / tradeHistory.SettlePrice * tradeHistory.Leverage * 100
