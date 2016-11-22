@@ -20,8 +20,8 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoTradeHistoryImport
     {
-        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(10);
-        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(10);
+        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(4);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
