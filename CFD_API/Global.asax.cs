@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.EnterpriseServices;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Web;
 using System.Web.Mvc;
@@ -27,6 +28,13 @@ namespace CFD_API
         void Application_Start(object sender, EventArgs e)
         {
             ThreadPool.SetMinThreads(1000, 1000);
+
+            ServicePointManager.DefaultConnectionLimit = 1000;
+
+            ServicePointManager.ServerCertificateValidationCallback = (o, certificate, chain, errors) => true;
+
+            ServicePointManager.Expect100Continue = false;
+
 
             // Code that runs on application startup
             AreaRegistration.RegisterAllAreas();
@@ -60,6 +68,8 @@ namespace CFD_API
             //var configurationSetting = CFDGlobal.GetConfigurationSetting("CFDEntities");
             //var setting = CFDGlobal.GetConfigurationSetting("asdf");
             //var s = CFDGlobal.GetConfigurationSetting("YunPianApiKey");
+
+
         }
 
         void ErrorLog_Filtering(object sender, ExceptionFilterEventArgs e)

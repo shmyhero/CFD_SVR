@@ -108,6 +108,9 @@ namespace CFD_API.Controllers
                 }
                 else //phone exists
                 {
+                    user.Token = UserService.NewToken();
+                    db.SaveChanges();
+
                     result.success = true;
                     result.isNewUser = false;
                     result.userId = user.Id;
@@ -175,7 +178,7 @@ namespace CFD_API.Controllers
                 }
 
                 //save wechat pic to azure storage blob
-                if (form.headimgurl != null)
+                if (!string.IsNullOrWhiteSpace(form.headimgurl))
                 {
                     try
                     {
@@ -204,6 +207,9 @@ namespace CFD_API.Controllers
             }
             else //openid exists
             {
+                user.Token = UserService.NewToken();
+                db.SaveChanges();
+
                 result.success = true;
                 result.isNewUser = false;
                 result.userId = user.Id;
@@ -1002,13 +1008,13 @@ namespace CFD_API.Controllers
         [Route("demo/logout")]
         [Route("live/logout")]
         [BasicAuth]
-        public ResultDTO LogoutAyondoDemo()
+        public ResultDTO LogoutAyondo()
         {
             var user = GetUser();
             
             using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
-                clientHttp.LogOut(user.AyondoUsername);
+                clientHttp.LogOut(IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername);
             }
 
             return new ResultDTO(true);

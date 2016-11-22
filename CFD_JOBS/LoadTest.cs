@@ -21,6 +21,9 @@ namespace CFD_JOBS
     {
         private static ConcurrentBag<ResponseInfo> _responses = new ConcurrentBag<ResponseInfo>();
 
+        //private const string CFD_HOST = "http://cfd-webapi.chinacloudapp.cn/";
+        private const string CFD_HOST = "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/";
+
         public void Run()
         {
             var defaultConnectionLimit = System.Net.ServicePointManager.DefaultConnectionLimit = 10000;
@@ -84,14 +87,16 @@ namespace CFD_JOBS
             }
             CFDGlobal.LogLine("--------------------------------------------------------");
 
-            foreach (var group in groupBy)
-            {
-                CFDGlobal.LogLine(group.Key + ":");
-                foreach (var responseInfo in group)
-                {
-                    CFDGlobal.LogLine(responseInfo.TotalMilliSecond.ToString());
-                }
-            }
+            CFDGlobal.LogLine("Press any key to exit...");
+            Console.ReadKey();
+            //foreach (var group in groupBy)
+            //{
+            //    CFDGlobal.LogLine(group.Key + ":");
+            //    foreach (var responseInfo in group)
+            //    {
+            //        CFDGlobal.LogLine(responseInfo.TotalMilliSecond.ToString());
+            //    }
+            //}
         }
 
         private void DoUserOperation(Object obj)
@@ -100,40 +105,40 @@ namespace CFD_JOBS
 
             //-----------------Initialize----------------------
             CFDGlobal.LogLine(Thread.CurrentThread.ManagedThreadId + " " + user.Id + " Initializing...");
-            var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/stock/topGainer");
+            var request = HttpWebRequest.Create(CFD_HOST + "api/security/stock/topGainer");
             var topGainer = GetResponseJArray(GetResponseString(request));
             var topGainerIds = topGainer.Select(o => o["id"]).Aggregate((o, n) => o + "," + n);
 
             //return;
 
-            request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/index");
+            request = HttpWebRequest.Create(CFD_HOST + "api/security/index");
             var index = GetResponseJArray(GetResponseString(request));
             var indexIds = index.Select(o => o["id"]).Aggregate((o, n) => o + "," + n);
 
-            request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/fx");
+            request = HttpWebRequest.Create(CFD_HOST + "api/security/fx");
             var fx = GetResponseJArray(GetResponseString(request));
             var fxIds = fx.Select(o => o["id"]).Aggregate((o, n) => o + "," + n);
 
-            request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/futures");
+            request = HttpWebRequest.Create(CFD_HOST + "api/security/futures");
             var futures = GetResponseJArray(GetResponseString(request));
             var futuresIds = futures.Select(o => o["id"]).Aggregate((o, n) => o + "," + n);
 
-            request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/byIds/34821,34804,34768,34858,34847,34817,34763,34864");
+            request = HttpWebRequest.Create(CFD_HOST + "api/security/byIds/34821,34804,34768,34858,34847,34817,34763,34864");
             var byIds = GetResponseJArray(GetResponseString(request));
             var byIdsIds = byIds.Select(o => o["id"]).Aggregate((o, n) => o + "," + n);
 
-            request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/banner");
+            request = HttpWebRequest.Create(CFD_HOST + "api/banner");
             var banner = GetResponseJArray(GetResponseString(request));
 
-            //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
+            //request = HttpWebRequest.Create(CFD_HOST + "api/position/open");
             //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
             //var open = GetResponseJArray(GetResponseString(request));
 
-            //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/closed");
+            //request = HttpWebRequest.Create(CFD_HOST + "api/position/closed");
             //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
             //var closed = GetResponseJArray(GetResponseString(request));
 
-            var hubConnection = new HubConnection("http://cfd-webapi.chinacloudapp.cn/signalR");
+            var hubConnection = new HubConnection(CFD_HOST + "signalR");
             IHubProxy hub = hubConnection.CreateHubProxy("Q");
             hub.On("p", stocks =>
             {
@@ -170,11 +175,11 @@ namespace CFD_JOBS
                 //美股详情
                 var secId = GetRandomElement(topGainer)["id"];
                 secId = 34768;
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/" + secId);
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + secId);
                 var security = GetResponseJObject(GetResponseString(request));
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/today");
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/today");
                 var tick = GetResponseJArray(GetResponseString(request));
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/user/balance");
+                //request = HttpWebRequest.Create(CFD_HOST + "api/user/balance");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //var balance = GetResponseJObject(GetResponseString(request));
                 Thread.Sleep(GetRandomIdleTime());
@@ -190,9 +195,9 @@ namespace CFD_JOBS
                 //外汇详情
                 secId = GetRandomElement(fx)["id"];
                 secId = 34804;
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/" + secId);
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + secId);
                 security = GetResponseJObject(GetResponseString(request));
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/today");
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/today");
                 tick = GetResponseJArray(GetResponseString(request));
                 Thread.Sleep(GetRandomIdleTime());
 
@@ -207,9 +212,9 @@ namespace CFD_JOBS
                 //指数详情
                 secId = GetRandomElement(index)["id"];
                 secId = 34858;
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/" + secId);
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + secId);
                 security = GetResponseJObject(GetResponseString(request));
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/today");
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/today");
                 tick = GetResponseJArray(GetResponseString(request));
                 Thread.Sleep(GetRandomIdleTime());
 
@@ -224,9 +229,9 @@ namespace CFD_JOBS
                 //商品详情
                 secId = GetRandomElement(futures)["id"];
                 secId = 34821;
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/" + secId);
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + secId);
                 security = GetResponseJObject(GetResponseString(request));
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/today");
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/today");
                 tick = GetResponseJArray(GetResponseString(request));
                 Thread.Sleep(GetRandomIdleTime());
 
@@ -235,19 +240,19 @@ namespace CFD_JOBS
                 Thread.Sleep(GetRandomIdleTime());
 
                 ////持仓
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
+                //request = HttpWebRequest.Create(CFD_HOST + "api/position/open");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //open = GetResponseJArray(GetResponseString(request));
                 //Thread.Sleep(GetRandomIdleTime());
 
                 ////平仓
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/closed");
+                //request = HttpWebRequest.Create(CFD_HOST + "api/position/closed");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //closed = GetResponseJArray(GetResponseString(request));
                 //Thread.Sleep(GetRandomIdleTime());
 
                 ////统计
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/user/plReport");
+                //request = HttpWebRequest.Create(CFD_HOST + "api/user/plReport");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //var plReport = GetResponseJArray(GetResponseString(request));
 
@@ -262,69 +267,85 @@ namespace CFD_JOBS
             var user = (User)obj;
 
             var dt = DateTime.UtcNow;
-            while (DateTime.UtcNow - dt < TimeSpan.FromMinutes(1)) //////////////////test for how long
+            while (DateTime.UtcNow - dt < TimeSpan.FromMinutes(2)) //////////////////test for how long
             {
-                //Thread.Sleep(GetRandomIdleTime());
-                //var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/stock/topGainer");
-                //var topGainer = GetResponseJArray(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                var request = HttpWebRequest.Create(CFD_HOST + "api/security/stock/topGainer?perPage=999");
+                var topGainer = GetResponseJArray(GetResponseString(request));
 
-                //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/index");
-                //var index = GetResponseJArray(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/index?perPage=999");
+                var index = GetResponseJArray(GetResponseString(request));
 
-                //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/fx");
-                //var fx = GetResponseJArray(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/fx?perPage=999");
+                var fx = GetResponseJArray(GetResponseString(request));
 
-                //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/futures");
-                //var futures = GetResponseJArray(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/futures?perPage=999");
+                var futures = GetResponseJArray(GetResponseString(request));
 
-                //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/byIds/34821,34804,34768,34858,34847,34817,34763,34864");
-                //var byIds = GetResponseJArray(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/byIds/34821,34804,34768,34858,34847,34817,34763,34864");
+                var byIds = GetResponseJArray(GetResponseString(request));
 
-                //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/banner");
-                //var banner = GetResponseJArray(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/banner");
+                var banner = GetResponseJArray(GetResponseString(request));
 
                 var secId = 34804; //fx
 
-                //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/security/" + secId);
-                //var security = GetResponseJObject(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + secId);
+                var security = GetResponseJObject(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/10m");
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/byPopularity");
+                var securities = GetResponseJArray(GetResponseString(request));
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/today");
                 var tick = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/2h");
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/week");
                 tick = GetResponseJArray(GetResponseString(request));
 
                 //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/week");
+                //request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/month");
                 //tick = GetResponseJArray(GetResponseString(request));
 
                 //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/quote/" + secId + "/tick/month");
+                //request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/10m");
                 //tick = GetResponseJArray(GetResponseString(request));
+
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/2h");
+                tick = GetResponseJArray(GetResponseString(request));
+
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/kline/5m");
+                //var kline = GetResponseJArray(GetResponseString(request));
+
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/kline/day");
+                //kline = GetResponseJArray(GetResponseString(request));
 
 
                 ////持仓
                 ////Thread.Sleep(GetRandomIdleTime());
-                //var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
+                //var request = HttpWebRequest.Create(CFD_HOST + "api/position/open");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //var open = GetResponseJArray(GetResponseString(request));
 
                 ////平仓
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/closed");
+                //request = HttpWebRequest.Create(CFD_HOST + "api/position/closed");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //closed = GetResponseJArray(GetResponseString(request));
                 //Thread.Sleep(GetRandomIdleTime());
 
                 ////统计
-                //request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/user/plReport");
+                //request = HttpWebRequest.Create(CFD_HOST + "api/user/plReport");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //var plReport = GetResponseJArray(GetResponseString(request));
             }
@@ -352,7 +373,7 @@ namespace CFD_JOBS
         {
             users.ForEach(user => {
                 //get open positions for specific user
-                var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/open");
+                var request = HttpWebRequest.Create(CFD_HOST + "api/position/open");
                 request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 var open = GetResponseJArray(GetResponseString(request));
 
@@ -370,7 +391,7 @@ namespace CFD_JOBS
 
         private string TestWCF()
         {
-            var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/misc/wcf");
+            var request = HttpWebRequest.Create(CFD_HOST + "api/misc/wcf");
             request.Method = "get";
             //request.ContentType = "application/json";
 
@@ -469,8 +490,8 @@ namespace CFD_JOBS
         private JObject OpenPosition(string securityId, int amount, int leverage, int userId, string userToken)
         {
             string jsonData = "{\"securityId\":" + securityId + ",\"isLong\":false,\"invest\":" + amount + ",\"leverage\":" + leverage + "}";
-            var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position");
-            //var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position");
+            var request = HttpWebRequest.Create(CFD_HOST + "api/position");
+            //var request = HttpWebRequest.Create(CFD_HOST + "api/position");
             //var request = HttpWebRequest.Create("http://localhost:11033/api/position");
             request.Headers["Authorization"] = string.Format("Basic {0}_{1}", userId, userToken);
             request.Method = "post";
@@ -510,7 +531,7 @@ namespace CFD_JOBS
         {
             //德国DAX30
             string jsonData = "{\"posId\":\"" + posID + "\",\"securityId\":" + securityId + ",\"isPosLong\":false,\"posQty\":" + qty + "}";
-            var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/net");
+            var request = HttpWebRequest.Create(CFD_HOST + "api/position/net");
             request.Headers["Authorization"] = string.Format("Basic {0}_{1}", userId, userToken);
             request.Method = "post";
             request.ContentType = "application/json";
