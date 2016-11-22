@@ -9,7 +9,7 @@ using System.Web.Http.Filters;
 
 namespace CFD_API.Controllers.Attributes
 {
-    public class OperationBasicAuth : AuthorizationFilterAttribute
+    public class AdminAuth : AuthorizationFilterAttribute
     {
         private const string token = "82E0E0F9-C630-49F0-9FEA-E60DAD86129D";
         public override void OnAuthorization(HttpActionContext actionContext)

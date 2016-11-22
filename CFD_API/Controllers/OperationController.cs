@@ -31,7 +31,7 @@ namespace CFD_API.Controllers
         /// <param name="form"></param>
         /// <returns></returns>
         [HttpPost]
-        [OperationBasicAuth]
+        [AdminAuth]
         public ResultDTO Push(OperationPushDTO form)
         {
             ResultDTO result = new ResultDTO() { success = true };

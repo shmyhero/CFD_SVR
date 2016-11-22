@@ -258,7 +258,7 @@
     <Compile Include="Controllers\Attributes\ApiHitRecord.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />
     <Compile Include="Controllers\Attributes\ElmahFilter.cs" />
-    <Compile Include="Controllers\Attributes\OperationBasicAuth.cs" />
+    <Compile Include="Controllers\Attributes\AdminAuth.cs" />
     <Compile Include="Controllers\Attributes\RequireHttpsAttribute.cs" />
     <Compile Include="Controllers\Attributes\RestrictByIp.cs" />
     <Compile Include="Controllers\CardController.cs" />
