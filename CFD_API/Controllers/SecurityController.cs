@@ -96,13 +96,13 @@ namespace CFD_API.Controllers
         //    }
         //}
 
-        private IList<ProdDef> GetActiveProds(bool isLive = false)
+        private IList<ProdDef> GetActiveProds(bool isLive = false, bool includeUntranslated = false)
         {
             return WebCache.GetInstance(isLive).ProdDefs
                 .Where(o => o.QuoteType != enmQuoteType.Inactive
                             && (DateTime.UtcNow - o.Time) < CFDGlobal.PROD_DEF_ACTIVE_IF_TIME_NOT_OLDER_THAN_TS
                             && o.Bid.HasValue && o.Offer.HasValue
-                            && Products.IsShowing(o.Name)
+                            && (includeUntranslated || Products.HasChineseTranslation(o.Name))
                 )
                 .ToList();
         }
@@ -269,7 +269,7 @@ namespace CFD_API.Controllers
         [Route("live/fx/outright")]
         public List<SecurityDTO> GetFxOutrightList(int page = 1, int perPage = 20)
         {
-            var activeProds = GetActiveProds(IsLiveUrl);
+            var activeProds = GetActiveProds(IsLiveUrl, true);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_FX && o.Name.EndsWith(" Outright")).ToList();
 

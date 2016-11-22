@@ -323,12 +323,12 @@ namespace CFD_COMMON.Utils
             34864,
         };
 
-        public static bool IsShowing(int id)
+        public static bool HasChineseTranslation(int id)
         {
             return IDFilterList.Contains(id);
         }
 
-        public static bool IsShowing(string name)
+        public static bool HasChineseTranslation(string name)
         {
             return Translations.ProdCNames.ContainsKey(Translator.RemoveENameSuffix(name).ToLower());
         }
