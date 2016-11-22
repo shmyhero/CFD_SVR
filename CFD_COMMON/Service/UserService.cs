@@ -18,6 +18,11 @@ namespace CFD_COMMON.Service
             this.db = db;
         }
 
+        public static string NewToken()
+        {
+            return Guid.NewGuid().ToString("N");
+        }
+
         public void CreateUserByPhone(string phone)
         {
             //creating new user if phone doesn't exist in a new transaction
@@ -32,7 +37,7 @@ namespace CFD_COMMON.Service
                         {
                             CreatedAt = DateTime.UtcNow,
                             Phone = phone,
-                            Token = Guid.NewGuid().ToString("N"),
+                            Token = NewToken(),
 
                             AutoCloseAlert = true,
                             AutoCloseAlert_Live = true,
@@ -60,7 +65,7 @@ namespace CFD_COMMON.Service
                             CreatedAt = DateTime.UtcNow,
                             WeChatOpenId = openid,
                             WeChatUnionId = unionid,
-                            Token = Guid.NewGuid().ToString("N"),
+                            Token = NewToken(),
 
                             AutoCloseAlert = true,
                             AutoCloseAlert_Live = true,
