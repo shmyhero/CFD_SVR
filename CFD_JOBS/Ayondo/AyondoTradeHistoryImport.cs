@@ -20,8 +20,8 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoTradeHistoryImport
     {
-        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(4);
+        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1000);
+        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(10);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -311,9 +311,19 @@ namespace CFD_JOBS.Ayondo
                 var messageSaved = new Dictionary<long, int>();
                 var cardService = new CardService(db);
 
+                List<long> posIDList = autoClosedHistories.Select(o => o.PositionId.Value).ToList();
+                //根据PositionID找到相关记录
+                var positionHistoryList = from n in db.NewPositionHistories
+                                              where posIDList.Contains(n.Id)
+                                              select new NewPositionHistoryBase() { Id = n.Id, LongQty = n.LongQty, ShortQty = n.ShortQty, Leverage = n.Leverage, SettlePrice = n.SettlePrice, ClosedPrice = n.ClosedPrice };
+
                 foreach (var trade in autoClosedHistories)
                 {
                     if (!trade.PositionId.HasValue)
+                        continue;
+
+                    var positionHistory = positionHistoryList.FirstOrDefault(o => o.Id == trade.PositionId);
+                    if (positionHistory == null)
                         continue;
 
                     var user = users.FirstOrDefault(o => (isLive ? o.AyLiveAccountId : o.AyondoAccountId) == trade.AccountId);
@@ -326,8 +336,8 @@ namespace CFD_JOBS.Ayondo
                     {
                         MessageBase msg = isLive ? (MessageBase) new Message_Live() : (MessageBase) new Message();
                         msg.UserId = user.UserId;
-                        //如果PL大于零，则为止盈消息（因为系统自动平仓没有止盈，只有止损）
-                        if (trade.PL > 0)
+                        //如果有盈利，则为止盈消息（因为系统自动平仓没有止盈，只有止损）
+                        if (Quotes.IsProfit(positionHistory.LongQty.HasValue, positionHistory.SettlePrice, positionHistory.ClosedPrice))
                         {
                             string msgFormat = "{0}已达到您设置的止盈价格: {1}，盈利{2}";
                             msg.Title = "止盈消息";
@@ -336,7 +346,7 @@ namespace CFD_JOBS.Ayondo
                             msg.CreatedAt = DateTime.UtcNow;
                             msg.IsReaded = false;
                         }
-                        else if(!isAutoClose(trade, db))//如果是设置的止损 //todo:multiple db access
+                        else if(!isAutoClose(positionHistory))//如果是设置的止损 //todo:multiple db access
                         {
                             string msgFormat = "{0}已达到您设置的止损价格: {1}，亏损{2}";
                             msg.Title = "止损消息";
@@ -472,26 +482,12 @@ namespace CFD_JOBS.Ayondo
         /// 判断某条平仓记录是系统自动平仓，还是设置止损后的平仓
         /// </summary>
         /// <param name="closedHistory"></param>
-        /// <param name="db"></param>
         /// <returns></returns>
-        private static bool isAutoClose(AyondoTradeHistoryBase closedHistory, CFDEntities db)
+        private static bool isAutoClose(NewPositionHistoryBase positionHistory)
         {
-            //用平仓记录的PositionID去找到开仓记录
-            var openHistory = db.AyondoTradeHistories.FirstOrDefault(o => o.PositionId == closedHistory.PositionId && o.UpdateType == "CREATE");
-            if (openHistory == null) //如果没有找到开仓记录（原则上不会发生），就认为是系统自动平仓
-            {
-                return true;
-            }
-
-            if(!openHistory.Quantity.HasValue || !openHistory.TradePrice.HasValue)//如果开仓记录没有价格或数量，就认为是系统自动平仓
-            {
-                return true;
-            }
-
-            decimal investment = openHistory.Quantity.Value * openHistory.TradePrice.Value;
             //如果亏损/投资比，大于0.9就认为是系统自动平仓
-            if(0.9M < Math.Abs((closedHistory.PL / investment).Value))
-            {
+            if(0.9M < Math.Abs(Quotes.GetProfitRate(positionHistory.LongQty.HasValue, positionHistory.SettlePrice, positionHistory.ClosedPrice, positionHistory.Leverage).Value))
+            { 
                 return true;
             }
 

@@ -68,5 +68,34 @@ namespace CFD_COMMON.Utils
 
             return (DateTime.UtcNow - time).TotalSeconds >= interval.Value;
         }
+
+        /// <summary>
+        /// 计算收益率
+        /// </summary>
+        /// <param name="buyLong">是否买涨</param>
+        /// <param name="tradePrice">买入价</param>
+        /// <param name="settlePrice">卖出价</param>
+        /// <param name="levarage">杠杆</param>
+        /// <returns>收益率</returns>
+        public static decimal? GetProfitRate(bool buyLong, decimal? tradePrice, decimal? settlePrice, decimal? leverage)
+        {
+            var plRatePercent = buyLong?
+                        (settlePrice - tradePrice) / tradePrice * leverage * 100
+                        : (tradePrice - settlePrice) / tradePrice * leverage * 100;
+
+            return plRatePercent;
+        }
+
+        /// <summary>
+        /// 是否盈利
+        /// </summary>
+        /// <param name="buyLong">是否买涨</param>
+        /// <param name="tradePrice">买入价</param>
+        /// <param name="settlePrice">卖出价</param>
+        /// <returns>是否盈利</returns>
+        public static bool IsProfit(bool buyLong, decimal? tradePrice, decimal? settlePrice)
+        {
+            return buyLong ? settlePrice >= tradePrice : tradePrice >= settlePrice;
+        }
     }
 }
