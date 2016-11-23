@@ -308,6 +308,8 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO SetNickname(string nickname)
         {
+            nickname = nickname.Trim();
+
             if (nickname.Length > NICKNAME_MAX_LENGTH)
                 return new ResultDTO() {success = false, message = __(TransKey.NICKNAME_TOO_LONG)};
 
