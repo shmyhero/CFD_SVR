@@ -1019,7 +1019,8 @@ namespace CFD_API.Controllers
             var currentUrl = Request.RequestUri.GetLeftPart(UriPartial.Path);
 
             var errorResponse = Request.CreateResponse(HttpStatusCode.Redirect);
-            errorResponse.Headers.Location = new Uri(currentUrl + "/error");
+            //errorResponse.Headers.Location = new Uri(currentUrl + "/error");
+            errorResponse.Headers.Location = new Uri("http://cn.tradehero.mobi/tradehub/live/login.html?client_id=62d275a211&loginError=error");
 
             var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
             if (!string.IsNullOrWhiteSpace(error))
