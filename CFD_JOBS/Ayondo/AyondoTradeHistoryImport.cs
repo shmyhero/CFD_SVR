@@ -329,7 +329,7 @@ namespace CFD_JOBS.Ayondo
                         //如果PL大于零，则为止盈消息（因为系统自动平仓没有止盈，只有止损）
                         if (trade.PL > 0)
                         {
-                            string msgFormat = "{0}已达到您设置的止盈价格:{1},盈利+{2}";
+                            string msgFormat = "{0}已达到您设置的止盈价格: {1}，盈利{2}";
                             msg.Title = "止盈消息";
                             string pl = Math.Abs(Math.Round(trade.PL.Value, 2)).ToString();
                             msg.Body = string.Format(msgFormat, Translator.GetCName(trade.SecurityName), Math.Round(trade.TradePrice.Value, 2), pl + "美元");
@@ -338,7 +338,7 @@ namespace CFD_JOBS.Ayondo
                         }
                         else if(!isAutoClose(trade, db))//如果是设置的止损 //todo:multiple db access
                         {
-                            string msgFormat = "{0}已达到您设置的止损价格:{1},亏损-{2}";
+                            string msgFormat = "{0}已达到您设置的止损价格: {1}，亏损{2}";
                             msg.Title = "止损消息";
                             string pl = Math.Abs(Math.Round(trade.PL.Value, 2)).ToString();
                             msg.Body = string.Format(msgFormat, Translator.GetCName(trade.SecurityName), Math.Round(trade.TradePrice.Value, 2), pl + "美元");
@@ -347,9 +347,9 @@ namespace CFD_JOBS.Ayondo
                         }
                         else//系统自动平仓
                         {
-                            string msgFormat = "{0}已经被系统自动平仓，平仓价格:{1},{2}";
+                            string msgFormat = "{0}已经被系统自动平仓，平仓价格: {1}，{2}";
                             msg.Title = "平仓消息";
-                            string pl = trade.PL.Value < 0 ? "亏损-" + Math.Abs(Math.Round(trade.PL.Value, 2)).ToString() : "盈利+" + Math.Abs(Math.Round(trade.PL.Value, 2)).ToString();
+                            string pl = trade.PL.Value < 0 ? "亏损" + Math.Abs(Math.Round(trade.PL.Value, 2)).ToString() : "盈利" + Math.Abs(Math.Round(trade.PL.Value, 2)).ToString();
                             msg.Body = string.Format(msgFormat, Translator.GetCName(trade.SecurityName), Math.Round(trade.TradePrice.Value, 2), pl + "美元");
                             msg.CreatedAt = DateTime.UtcNow;
                             msg.IsReaded = false;
