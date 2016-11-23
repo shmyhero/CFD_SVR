@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Web.Http;
 using AutoMapper;
 using CFD_API.Caching;
@@ -17,7 +16,6 @@ using CFD_COMMON.Utils;
 using EntityFramework.Extensions;
 using Pinyin4net;
 using Pinyin4net.Format;
-using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
 {
@@ -107,9 +105,10 @@ namespace CFD_API.Controllers
                 .ToList();
         }
 
-        private IList<ProdDef> GetActiveProdsByIds(IList<int> ids, bool isLive)
+        private IList<ProdDef> GetActiveProdsByIdsKeepOrder(IList<int> ids, bool isLive)
         {
-            return GetActiveProds(isLive).Where(o => ids.Contains(o.Id)).ToList();
+            var activeProds = GetActiveProds(isLive);
+            return ids.Select(id => activeProds.FirstOrDefault(o => o.Id == id)).Where(o => o != null).ToList();
         }
 
         [HttpGet]
@@ -123,7 +122,7 @@ namespace CFD_API.Controllers
                 : db.Bookmarks.Where(o => o.UserId == UserId).OrderBy(o => o.DisplayOrder).Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList();
 
             //var prodDefs = RedisClient.As<ProdDef>().GetByIds(bookmarkIDs);
-            var prodDefs = GetActiveProdsByIds(bookmarkIDs, IsLiveUrl);
+            var prodDefs = GetActiveProdsByIdsKeepOrder(bookmarkIDs, IsLiveUrl);
 
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
 
@@ -145,7 +144,7 @@ namespace CFD_API.Controllers
             //var redisTypedClient = RedisClient.As<ProdDef>();
 
             //var prodDefs = redisTypedClient.GetByIds(ids);
-            var prodDefs = GetActiveProdsByIds(ids, IsLiveUrl);
+            var prodDefs = GetActiveProdsByIdsKeepOrder(ids, IsLiveUrl);
 
             //var securities = db.AyondoSecurities.Where(o => ids.Contains(o.Id)).ToList();
 
