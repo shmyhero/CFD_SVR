@@ -314,19 +314,21 @@ namespace CFD_JOBS.Ayondo
 
                 List<long> posIDList = autoClosedHistories.Select(o => o.PositionId.Value).ToList();
                 //根据PositionID找到相关记录
-                IQueryable<NewPositionHistoryBase> positionHistoryList = null;
+                IQueryable<NewPositionHistoryBase> positionHistoryQuery = null;
                 if(isLive)
                 {
-                    positionHistoryList = from n in db.NewPositionHistory_live
+                    positionHistoryQuery = from n in db.NewPositionHistory_live
                                           where posIDList.Contains(n.Id)
                                           select new NewPositionHistoryBase() { Id = n.Id, LongQty = n.LongQty, ShortQty = n.ShortQty, Leverage = n.Leverage, SettlePrice = n.SettlePrice, ClosedPrice = n.ClosedPrice, InvestUSD= n.InvestUSD, ClosedAt = n.ClosedAt, CreateTime = n.CreateTime, PL = n.PL, SecurityId = n.SecurityId, UserId =n.UserId };
                 }
                 else
                 {
-                    positionHistoryList = from n in db.NewPositionHistories
+                    positionHistoryQuery = from n in db.NewPositionHistories
                                           where posIDList.Contains(n.Id)
                                           select new NewPositionHistoryBase() { Id = n.Id, LongQty = n.LongQty, ShortQty = n.ShortQty, Leverage = n.Leverage, SettlePrice = n.SettlePrice, ClosedPrice = n.ClosedPrice, InvestUSD = n.InvestUSD, ClosedAt = n.ClosedAt, CreateTime = n.CreateTime, PL = n.PL, SecurityId = n.SecurityId, UserId = n.UserId };
                 }
+
+                List<NewPositionHistoryBase> positionHistoryList = positionHistoryQuery.ToList();
 
                 foreach (var trade in autoClosedHistories)
                 {
