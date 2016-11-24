@@ -310,12 +310,23 @@ namespace CFD_JOBS.Ayondo
                 //Value - 生成的Message Id
                 var messageSaved = new Dictionary<long, int>();
                 var cardService = new CardService(db);
+                var allCards = db.Cards.Where(item=> item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).ToList();
 
                 List<long> posIDList = autoClosedHistories.Select(o => o.PositionId.Value).ToList();
                 //根据PositionID找到相关记录
-                var positionHistoryList = from n in db.NewPositionHistories
-                                              where posIDList.Contains(n.Id)
-                                              select new NewPositionHistoryBase() { Id = n.Id, LongQty = n.LongQty, ShortQty = n.ShortQty, Leverage = n.Leverage, SettlePrice = n.SettlePrice, ClosedPrice = n.ClosedPrice };
+                IQueryable<NewPositionHistoryBase> positionHistoryList = null;
+                if(isLive)
+                {
+                    positionHistoryList = from n in db.NewPositionHistory_live
+                                          where posIDList.Contains(n.Id)
+                                          select new NewPositionHistoryBase() { Id = n.Id, LongQty = n.LongQty, ShortQty = n.ShortQty, Leverage = n.Leverage, SettlePrice = n.SettlePrice, ClosedPrice = n.ClosedPrice, InvestUSD= n.InvestUSD, ClosedAt = n.ClosedAt, CreateTime = n.CreateTime, PL = n.PL, SecurityId = n.SecurityId, UserId =n.UserId };
+                }
+                else
+                {
+                    positionHistoryList = from n in db.NewPositionHistories
+                                          where posIDList.Contains(n.Id)
+                                          select new NewPositionHistoryBase() { Id = n.Id, LongQty = n.LongQty, ShortQty = n.ShortQty, Leverage = n.Leverage, SettlePrice = n.SettlePrice, ClosedPrice = n.ClosedPrice, InvestUSD = n.InvestUSD, ClosedAt = n.ClosedAt, CreateTime = n.CreateTime, PL = n.PL, SecurityId = n.SecurityId, UserId = n.UserId };
+                }
 
                 foreach (var trade in autoClosedHistories)
                 {
@@ -412,37 +423,38 @@ namespace CFD_JOBS.Ayondo
                     {
                         if(!isLive)
                         {
-                            var tradeHistory = isLive
-                                ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == trade.PositionId)
-                                : db.NewPositionHistories.FirstOrDefault(o => o.Id == trade.PositionId);
-                            if (tradeHistory != null)
-                            {
-                                var plRatePercent = tradeHistory.LongQty.HasValue
-                                ? (trade.TradePrice - tradeHistory.SettlePrice) / tradeHistory.SettlePrice * tradeHistory.Leverage * 100
-                                : (tradeHistory.SettlePrice - trade.TradePrice) / tradeHistory.SettlePrice * tradeHistory.Leverage * 100;
+                            //var tradeHistory = isLive
+                            //    ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == trade.PositionId)
+                            //    : db.NewPositionHistories.FirstOrDefault(o => o.Id == trade.PositionId);
 
-                                var card = cardService.GetCard(trade.PL.Value, plRatePercent.Value, tradeHistory.SettlePrice.Value);
+                            if (positionHistory != null)
+                            {
+                                var plRatePercent = positionHistory.LongQty.HasValue
+                                ? (trade.TradePrice - positionHistory.SettlePrice) / positionHistory.SettlePrice * positionHistory.Leverage * 100
+                                : (positionHistory.SettlePrice - trade.TradePrice) / positionHistory.SettlePrice * positionHistory.Leverage * 100;
+
+                                var card = cardService.GetCard(trade.PL.Value, plRatePercent.Value, allCards);
                                 if (card != null)
                                 {
                                     UserCard uc = new UserCard()
                                     {
                                         UserId = user.UserId,
                                         CardId = card.Id,
-                                        ClosedAt = trade.CreateTime,
+                                        ClosedAt = trade.TradeTime,
                                         CreatedAt = DateTime.UtcNow,
                                         Expiration = SqlDateTime.MaxValue.Value,
-                                        Invest = tradeHistory.InvestUSD,
+                                        Invest = positionHistory.InvestUSD,
                                         PositionId = trade.PositionId.Value,
-                                        IsLong = tradeHistory.LongQty.HasValue,
-                                        Leverage = tradeHistory.Leverage,
+                                        IsLong = positionHistory.LongQty.HasValue,
+                                        Leverage = positionHistory.Leverage,
                                         Likes = 0,
                                         SecurityId = trade.SecurityId,
                                         PL = trade.PL,
                                         Qty = trade.Quantity,
                                         Reward = card.Reward,
                                         SettlePrice = trade.TradePrice,
-                                        TradePrice = tradeHistory.SettlePrice,
-                                        TradeTime = tradeHistory.CreateTime,
+                                        TradePrice = positionHistory.SettlePrice,
+                                        TradeTime = positionHistory.CreateTime,
                                         IsNew = false,
                                         IsShared = false,
                                         IsPaid = false
