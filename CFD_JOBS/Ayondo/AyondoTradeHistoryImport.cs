@@ -20,8 +20,8 @@ namespace CFD_JOBS.Ayondo
 {
     public class AyondoTradeHistoryImport
     {
-        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1000);
-        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(10);
+        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan MaxDuration = TimeSpan.FromHours(4);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -485,8 +485,8 @@ namespace CFD_JOBS.Ayondo
         /// <returns></returns>
         private static bool isAutoClose(NewPositionHistoryBase positionHistory)
         {
-            //如果亏损/投资比，大于0.9就认为是系统自动平仓
-            if(0.9M < Math.Abs(Quotes.GetProfitRate(positionHistory.LongQty.HasValue, positionHistory.SettlePrice, positionHistory.ClosedPrice, positionHistory.Leverage).Value))
+            //如果亏损率大于90，就认为是系统自动平仓
+            if(90M < Math.Abs(Quotes.GetProfitRate(positionHistory.LongQty.HasValue, positionHistory.SettlePrice, positionHistory.ClosedPrice, positionHistory.Leverage).Value))
             { 
                 return true;
             }
