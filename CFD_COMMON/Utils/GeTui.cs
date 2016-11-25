@@ -18,28 +18,38 @@ namespace CFD_COMMON.Utils
         //private const String GETUI_APPKEY = "1F6q9VIJrt9n6Hm72VjVe6";
         //private const String GETUI_MASTERSECRET = "9wm17xrCRhAeuTsa8vKyz1";
         //盈交易
-        private const String GETUI_APPID = "v28qIAj6TO6ykm4QYEQFU";
-        private const String GETUI_APPKEY = "wY0MaVLXBjAneFnLwmBUDA";
-        private const String GETUI_MASTERSECRET = "ENk0Dc9Fac5AzZlPV7LSs5";
+        //private const String GETUI_APPID = "v28qIAj6TO6ykm4QYEQFU";
+        //private const String GETUI_APPKEY = "wY0MaVLXBjAneFnLwmBUDA";
+        //private const String GETUI_MASTERSECRET = "ENk0Dc9Fac5AzZlPV7LSs5";
+        private string[] appIdList = new string[] { "v28qIAj6TO6ykm4QYEQFU", "yug3IJK3kh8SKs7FQaSdI3" };
+        private string[] appKeyList = new string[] { "wY0MaVLXBjAneFnLwmBUDA", "2ZIYLZjWQy8i4l7jcmdyB3" };
+        private string[] masterSecretList = new string[] { "ENk0Dc9Fac5AzZlPV7LSs5", "H5ERSFQeO98OLMWcos6cB" };
+
         private const String GETUI_HOST = "http://sdk.open.api.igexin.com/apiex.htm";
 
-        private IGtPush gtPush;
+        private List<IGtPush> gtPushList;
 
         public GeTui()
         {
-            gtPush = new IGtPush(GETUI_HOST, GETUI_APPKEY, GETUI_MASTERSECRET);
+            gtPushList = new List<IGtPush>();
+
+            for(int i=0; i< appIdList.Length; i++)
+            {
+                gtPushList.Add(new IGtPush(GETUI_HOST, appKeyList[i], masterSecretList[i]));
+            }
+            
         }
 
-        public string Push(string token, string text)
-        {
-            var message = CreateMessage(text);
+        //public string Push(string token, string text)
+        //{
+        //    var message = CreateMessage(text);
 
-            var target = CreateTarget(token);
+        //    var target = CreateTarget(token);
 
-            var response = gtPush.pushMessageToSingle(message, target);
+        //    var response = gtPush.pushMessageToSingle(message, target);
 
-            return response;
-        }
+        //    return response;
+        //}
 
         /// <summary>
         /// All json text must include token "message"
@@ -48,25 +58,32 @@ namespace CFD_COMMON.Utils
         /// <returns></returns>
         public string PushBatch(IEnumerable<KeyValuePair<string, string>> lstTokenAndText)
         {
-            var batch = gtPush.getBatch();
-
-            foreach (var tokenAndText in lstTokenAndText)
+            List<string> response = new List<string>();
+            for(int x=0; x<gtPushList.Count; x++)
             {
-                var message = CreateMessage(tokenAndText.Value);
+                var batch = gtPushList[x].getBatch();
+                string appID = appIdList[x];
+                string appKey = appKeyList[x];
 
-                var target = CreateTarget(tokenAndText.Key);
+                foreach (var tokenAndText in lstTokenAndText)
+                {
+                    var message = CreateMessage(tokenAndText.Value,appID, appKey);
 
-                batch.add(message, target);
+                    var target = CreateTarget(tokenAndText.Key, appID);
+
+                    batch.add(message, target);
+                }
+
+                response.Add(batch.submit());
             }
 
-            var response = batch.submit();
 
             //dynamic result = JsonConvert.DeserializeObject(response);
 
-            return response;
+            return string.Join(";", response.ToArray());
         }
 
-        private SingleMessage CreateMessage(string text)
+        private SingleMessage CreateMessage(string text, string appID, string appKey)
         {
             //推送通知
             //var template = new NotificationTemplate
@@ -87,8 +104,8 @@ namespace CFD_COMMON.Utils
             //透传消息
             var template = new TransmissionTemplate()
             {
-                AppId = GETUI_APPID,
-                AppKey = GETUI_APPKEY,
+                AppId = appID,
+                AppKey = appKey,
                 //应用启动类型，1：强制应用启动 2：等待应用启动
                 TransmissionType = "2",
                 TransmissionContent = text
@@ -114,11 +131,11 @@ namespace CFD_COMMON.Utils
             return message;
         }
 
-        private Target CreateTarget(string token)
+        private Target CreateTarget(string token, string appID)
         {
             var target = new Target
             {
-                appId = GETUI_APPID,
+                appId = appID,
                 clientId = token
             };
 
