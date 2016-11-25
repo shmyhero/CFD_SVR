@@ -383,7 +383,7 @@ namespace CFD_JOBS.Ayondo
                         else
                             db.Messages.Add(msg as Message);
 
-                        //db.SaveChanges();
+                        db.SaveChanges();
 
                         messageSaved.Add(trade.PositionId.Value, msg.Id);
                     }
@@ -462,7 +462,7 @@ namespace CFD_JOBS.Ayondo
                                         IsPaid = false
                                     };
                                     db.UserCards.Add(uc);
-                                    //db.SaveChanges();
+                                    db.SaveChanges();
                                 }
                             }
                         }
@@ -481,8 +481,6 @@ namespace CFD_JOBS.Ayondo
 
                     #endregion
                 }
-
-                db.SaveChanges();
             }
 
             var splitedPushList = getuiPushList.SplitInChunks(1000);
