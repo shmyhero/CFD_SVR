@@ -20,6 +20,17 @@ namespace CFD_API.DTO
         public string message { get; set; }
     }
 
+    public class VersionDTO
+    {
+        public int iOSLatestInt { get; set; }
+        
+        public string iOSLatestStr { get; set; }
+
+        public int androidLatestInt { get; set; }
+
+        public string androidLatestStr { get; set; }
+    }
+
     public class SimpleBannerDTO
     {
         public int id { get; set; }

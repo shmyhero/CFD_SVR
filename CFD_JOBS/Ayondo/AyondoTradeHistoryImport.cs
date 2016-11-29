@@ -49,7 +49,7 @@ namespace CFD_JOBS.Ayondo
 
                         if (lastDbRecord == null || lastDbRecord.TradeTime == null) //db is empty
                         {
-                            dtStart =dtNow.AddDays(-30);
+                            dtStart = dtNow.AddDays(-30);
                             dtEnd = dtStart.AddDays(1);
                         }
                         else //last record in db is found

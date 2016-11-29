@@ -42,6 +42,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<UserAlert> UserAlerts { get; set; }
         public virtual DbSet<UserInfo> UserInfos { get; set; }
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
+        public virtual DbSet<Entities.Version> Versions { get; set; }
         //public virtual DbSet<UserAyondo> UserAyondos { get; set; }
 
         public virtual DbSet<AyondoTradeHistory_Live> AyondoTradeHistory_Live { get; set; }

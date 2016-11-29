@@ -39,6 +39,15 @@ namespace CFD_API.Controllers
         {
         }
 
+        [HttpGet]
+        [Route("version")]
+        public VersionDTO GetVersion()
+        {
+            var version = db.Versions.FirstOrDefault();
+
+            return Mapper.Map<VersionDTO>(version);
+        }
+
         [Route("sendCode")]
         [HttpPost]
         //[RequireHttps]

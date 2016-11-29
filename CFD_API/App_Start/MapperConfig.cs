@@ -17,6 +17,8 @@ namespace CFD_API
 
                 //var r = new Random();
 
+                cfg.CreateMap<Version, VersionDTO>();
+
                 cfg.CreateMap<User, UserDTO>();
 
                 cfg.CreateMap<AyondoSecurity, SecurityDTO>()
