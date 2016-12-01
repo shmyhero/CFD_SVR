@@ -425,53 +425,8 @@ namespace CFD_JOBS.Ayondo
                     {
                         if(!isLive)
                         {
-                            //var tradeHistory = isLive
-                            //    ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == trade.PositionId)
-                            //    : db.NewPositionHistories.FirstOrDefault(o => o.Id == trade.PositionId);
-
-                            if (positionHistory != null)
-                            {
-                                var plRatePercent = positionHistory.LongQty.HasValue
-                                ? (trade.TradePrice - positionHistory.SettlePrice) / positionHistory.SettlePrice * positionHistory.Leverage * 100
-                                : (positionHistory.SettlePrice - trade.TradePrice) / positionHistory.SettlePrice * positionHistory.Leverage * 100;
-
-                                var card = cardService.GetCard(trade.PL.Value, plRatePercent.Value, allCards);
-                                if (card != null)
-                                {
-                                    UserCard uc = new UserCard()
-                                    {
-                                        UserId = user.UserId,
-                                        CardId = card.Id,
-                                        ClosedAt = trade.TradeTime,
-                                        CreatedAt = DateTime.UtcNow,
-                                        Expiration = SqlDateTime.MaxValue.Value,
-                                        Invest = positionHistory.InvestUSD,
-                                        PositionId = trade.PositionId.Value,
-                                        IsLong = positionHistory.LongQty.HasValue,
-                                        Leverage = positionHistory.Leverage,
-                                        Likes = 0,
-                                        SecurityId = trade.SecurityId,
-                                        PL = trade.PL,
-                                        Qty = trade.Quantity,
-                                        Reward = card.Reward,
-                                        SettlePrice = trade.TradePrice,
-                                        TradePrice = positionHistory.SettlePrice,
-                                        TradeTime = positionHistory.CreateTime,
-                                        IsNew = false,
-                                        IsShared = false,
-                                        IsPaid = false
-                                    };
-                                    db.UserCards.Add(uc);
-                                    db.SaveChanges();
-                                }
-                            }
+                            cardService.DeliverCard(trade, positionHistory, user.UserId, allCards);
                         }
-                        
-                        //    trade.PositionId
-                        //   trade
-                        //var card = cardService.GetCard(trade.PL.Value, plRatePercent.Value, position.SettlePrice.Value);
-
-                        //var card = cardService.GetCard(result.PL.Value, plRatePercent.Value, position.SettlePrice.Value);
                     }
                     catch(Exception ex)
                     {
