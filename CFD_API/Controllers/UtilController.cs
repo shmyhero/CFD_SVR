@@ -39,6 +39,15 @@ namespace CFD_API.Controllers
         {
         }
 
+        [HttpGet]
+        [Route("version")]
+        public VersionDTO GetVersion()
+        {
+            var version = db.Versions.FirstOrDefault();
+
+            return Mapper.Map<VersionDTO>(version);
+        }
+
         [Route("sendCode")]
         [HttpPost]
         //[RequireHttps]
@@ -1081,7 +1090,8 @@ namespace CFD_API.Controllers
 
                 //return "OK";
                 var okResponse = Request.CreateResponse(HttpStatusCode.Redirect);
-                okResponse.Headers.Location = new Uri(currentUrl + "/ok");
+                //okResponse.Headers.Location = new Uri(currentUrl + "/ok");
+                okResponse.Headers.Location = new Uri("http://cn.tradehero.mobi/tradehub/live/loginload.html");
                 return okResponse;
             }
 
