@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
-using System.Net;
-using System.IO;
-using System.Web.Script.Serialization;
+//using System.Net;
+//using System.IO;
+//using System.Web.Script.Serialization;
 using System.Data.SqlTypes;
 
 namespace CFD_COMMON.Service
@@ -15,7 +15,7 @@ namespace CFD_COMMON.Service
     public class CardService
     {
         //卡片服务地址(目前还没实现)
-        private const string cardServiceUrl = "http://cfd-webapi.chinacloudapp.cn/api/card";
+        //private const string cardServiceUrl = "http://cfd-webapi.chinacloudapp.cn/api/card";
 
         public CFDEntities db { get; set; }
 
@@ -104,35 +104,36 @@ namespace CFD_COMMON.Service
                 db.SaveChanges();
             }
         }
-        /// <summary>
-        /// 异步发送交易历史列表到卡片服务 - 服务端还没实现。
-        /// </summary>
-        /// <param name="tradeHistoryList"></param>
-        public void PostAsync(List<AyondoTradeHistoryBase> tradeHistoryList)
-        {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(cardServiceUrl);
-            request.Method = "POST";
-            request.KeepAlive = true;
-            request.Timeout = 3000;
-            request.ContentType = "application/json;charset=utf-8";
-            byte[] binaryData = Encoding.UTF8.GetBytes((new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue }).Serialize(tradeHistoryList));
-            request.BeginGetRequestStream(new AsyncCallback(RequestStreamCallBack), new CardAsyncResult() { BinaryData = binaryData, Request = request });
-        }
 
-        public static void RequestStreamCallBack(IAsyncResult result)
-        {
-            HttpWebRequest request = ((CardAsyncResult)result.AsyncState).Request;
-            Stream reqStream = request.EndGetRequestStream(result);
-            reqStream.Write(((CardAsyncResult)result.AsyncState).BinaryData, 0, ((CardAsyncResult)result.AsyncState).BinaryData.Length);
-            reqStream.Close();
-            //这里不用获取返回值，所以CallBack的方法为空
-            request.BeginGetResponse(new AsyncCallback((obj) => { }), request);
-        }
+        ///// <summary>
+        ///// 异步发送交易历史列表到卡片服务 - 服务端还没实现。
+        ///// </summary>
+        ///// <param name="tradeHistoryList"></param>
+        //public void PostAsync(List<AyondoTradeHistoryBase> tradeHistoryList)
+        //{
+        //    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(cardServiceUrl);
+        //    request.Method = "POST";
+        //    request.KeepAlive = true;
+        //    request.Timeout = 3000;
+        //    request.ContentType = "application/json;charset=utf-8";
+        //    byte[] binaryData = Encoding.UTF8.GetBytes((new JavaScriptSerializer() { MaxJsonLength = Int32.MaxValue }).Serialize(tradeHistoryList));
+        //    request.BeginGetRequestStream(new AsyncCallback(RequestStreamCallBack), new CardAsyncResult() { BinaryData = binaryData, Request = request });
+        //}
+
+        //public static void RequestStreamCallBack(IAsyncResult result)
+        //{
+        //    HttpWebRequest request = ((CardAsyncResult)result.AsyncState).Request;
+        //    Stream reqStream = request.EndGetRequestStream(result);
+        //    reqStream.Write(((CardAsyncResult)result.AsyncState).BinaryData, 0, ((CardAsyncResult)result.AsyncState).BinaryData.Length);
+        //    reqStream.Close();
+        //    //这里不用获取返回值，所以CallBack的方法为空
+        //    request.BeginGetResponse(new AsyncCallback((obj) => { }), request);
+        //}
     }
 
-    class CardAsyncResult
-    {
-        public HttpWebRequest Request;
-        public byte[] BinaryData;
-    }
+    //class CardAsyncResult
+    //{
+    //    public HttpWebRequest Request;
+    //    public byte[] BinaryData;
+    //}
 }
