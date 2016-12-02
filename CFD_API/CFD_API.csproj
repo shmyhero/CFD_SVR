@@ -261,6 +261,7 @@
     <Compile Include="Controllers\Attributes\AdminAuth.cs" />
     <Compile Include="Controllers\Attributes\RequireHttpsAttribute.cs" />
     <Compile Include="Controllers\Attributes\RestrictByIp.cs" />
+    <Compile Include="Controllers\BannerController.cs" />
     <Compile Include="Controllers\CardController.cs" />
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\CompetitionController.cs" />
@@ -308,6 +309,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Banner\" />
     <Folder Include="Views\Card\" />
     <Folder Include="Views\Operation\" />
     <Folder Include="Views\Reward\" />
