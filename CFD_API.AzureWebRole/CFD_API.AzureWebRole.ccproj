@@ -33,6 +33,7 @@
   <!-- Items for the project -->
   <ItemGroup>
     <ServiceDefinition Include="ServiceDefinition.csdef" />
+    <ServiceConfiguration Include="ServiceConfiguration.HK.Cloud.cscfg" />
     <ServiceConfiguration Include="ServiceConfiguration.Cloud_Dev.cscfg" />
     <ServiceConfiguration Include="ServiceConfiguration.Local.cscfg" />
     <ServiceConfiguration Include="ServiceConfiguration.Cloud.cscfg" />
@@ -45,6 +46,7 @@
     <PublishProfile Include="Profiles\cfd-webapiProduction.azurePubxml" />
     <PublishProfile Include="Profiles\cfd-webapiProduction_Dev.azurePubxml" />
     <PublishProfile Include="Profiles\cfd-webapiStaging.azurePubxml" />
+    <PublishProfile Include="Profiles\cfd-webapiHKProd.azurePubxml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CFD_API\CFD_API.csproj">
