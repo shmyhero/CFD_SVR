@@ -391,7 +391,8 @@ namespace CFD_JOBS.Ayondo
 
                     #region Push notification
 
-                    if (user.AutoCloseAlert.HasValue && user.AutoCloseAlert.Value && !string.IsNullOrEmpty(user.deviceToken)
+                    if (!string.IsNullOrEmpty(user.deviceToken)//has device token
+                        && ((isLive ? user.AutoCloseAlert_Live : user.AutoCloseAlert) ?? false)//auto close alert is enabled
                         && DateTime.UtcNow - trade.TradeTime < TimeSpan.FromHours(1)//do not send push if it's already late
                         && (isLive && user.IsOnLive == true || !isLive && user.IsOnLive != true)//add to push list only when user is on the same environment as which this job is running on
                         )
