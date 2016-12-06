@@ -193,6 +193,7 @@ namespace CFD_API.Controllers
 //                sw.Write(s);
 //                sw.Flush();
 //                sw.Close();
+                httpWebRequest.ContentLength = 0;
 
                 var dtBegin = DateTime.UtcNow;
 
