@@ -482,20 +482,24 @@ namespace CFD_API.Controllers
                         closeAt = item.ClosedAt.Value,
                         closePrice = item.ClosedPrice.Value,
                         id = item.Id.ToString(),
-                        invest = item.InvestUSD.Value,
+                        invest = item.InvestUSD.Value, //先用USD的金额赋值，在后面如果对应的产品不为空，就用产品计算出对应的货币。
                         isLong = item.LongQty.HasValue,
                         leverage = item.Leverage,
                         openAt = item.CreateTime.Value,
                         openPrice = item.SettlePrice.Value,
                         pl = item.PL.Value
                     };
-                    
 
                     var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == item.SecurityId);
 
                     if (prodDef == null)
                     {
                         CFDGlobal.LogLine("cannot find product definition for sec id: " + item.SecurityId + " in history position reports of user id: " + UserId);
+                    }
+                    else
+                    {
+                        var tradeValue = dto.openPrice * prodDef.LotSize / prodDef.PLUnits * (item.LongQty ?? item.ShortQty);
+                        dto.invest = tradeValue / dto.leverage;
                     }
 
                     var security = Mapper.Map<SecurityDetailDTO>(prodDef);
