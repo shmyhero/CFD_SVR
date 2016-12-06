@@ -1055,33 +1055,36 @@ namespace AyondoTrade
 
         private void QueryMDS3Withdraw()
         {
-            var guid = Guid.NewGuid().ToString();
+            //var guid = Guid.NewGuid().ToString();
 
-            var m = new Message();
-            m.Header.SetField(new MsgType("MDS3"));
-            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
-            m.SetField(new Account(_account));
+            //var m = new Message();
+            //m.Header.SetField(new MsgType("MDS3"));
+            //m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+            //m.SetField(new Account(_account));
 
-            m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(ENUM_MDS_TransferType_MANUAL_WITHDRAWAL) });
+            //m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(ENUM_MDS_TransferType_MANUAL_WITHDRAWAL) });
 
-            m.SetField(new DecimalField(TAG_MDS_TransferAmount) { Obj = 1.23m });
+            //m.SetField(new DecimalField(TAG_MDS_TransferAmount) { Obj = 1.23m });
 
-            m.SetField(new StringField(TAG_MDS_TransferCurrency) { Obj = "USD" });
+            //m.SetField(new StringField(TAG_MDS_TransferCurrency) { Obj = "USD" });
 
-            //<field name="MDS_TransferLabel" required="N"/>
-            //<field name="MDS_SourceBalanceID" required="N"/>
-            m.SetField(new StringField(TAG_MDS_SourceBalanceID) { Obj = _balanceId });
+            ////<field name="MDS_TransferLabel" required="N"/>
+            ////<field name="MDS_SourceBalanceID" required="N"/>
+            //m.SetField(new StringField(TAG_MDS_SourceBalanceID) { Obj = _balanceId });
 
-            //<field name="MDS_TargetBalanceID" required="N"/>
-            //m.SetField(new StringField(TAG_MDS_TargetBalanceID) { Obj = _balanceId });
+            ////<field name="MDS_TargetBalanceID" required="N"/>
+            ////m.SetField(new StringField(TAG_MDS_TargetBalanceID) { Obj = _balanceId });
 
-            //<field name="MDS_Actor" required="N"/>
-            //<field name="MDS_CardType" required="N"/>
-            //<field name="MDS_CardAlias" required="N"/>
+            ////<field name="MDS_Actor" required="N"/>
+            ////<field name="MDS_CardType" required="N"/>
+            ////<field name="MDS_CardAlias" required="N"/>
 
-            SendMessage(m);
+            //SendMessage(m);
 
-            //return guid;
+            ////return guid;
+
+            AyondoTradeService svr = new AyondoTradeService();
+            svr.NewWithdraw("Rambo", "Windy911@163.com", 1.5M);
         }
 
         private void TestNewOrder()

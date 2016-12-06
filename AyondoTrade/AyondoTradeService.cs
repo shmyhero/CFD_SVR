@@ -863,7 +863,7 @@ namespace AyondoTrade
             string transferId = null;
             try
             {
-                transferId = SendTransferRequestAndWait(account, amount);
+                transferId = SendWithDrawRequestAndWait(account, amount);
             }
             catch (UserNotLoggedInException)
             {

@@ -1538,7 +1538,7 @@ namespace CFD_API.Controllers
             string transferId;
             using (var clientHttp = new AyondoTradeClient())
             {
-                transferId = clientHttp.NewWithdraw(user.AyondoUsername, user.AyondoPassword, amount);
+                transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, amount);
             }
 
             return transferId;
