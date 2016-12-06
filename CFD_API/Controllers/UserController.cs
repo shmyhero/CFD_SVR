@@ -1050,7 +1050,7 @@ namespace CFD_API.Controllers
 
         private const string GZT_ACCESS_ID = "shmhxx";
         private const string GZT_ACCESS_KEY = "SHMHAKQHSA";
-        private const string GZT_HOST = "http://124.192.161.110:8080/";
+        //private const string GZT_HOST = "http://124.192.161.110:8080/";
 
         [HttpPost]
         [Route("ocr")]

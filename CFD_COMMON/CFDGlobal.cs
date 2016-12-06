@@ -44,6 +44,9 @@ namespace CFD_COMMON
         public static string ASSET_CLASS_INDEX = "Stock Indices";
         public static string ASSET_CLASS_COMMODITY = "Commodities";
 
+        public const string AMS_HEADER_AUTH = "Bearer RDFFMzY2NDktMDlDRC00OTg4LUEwNjAtRUM0NDIxMTNDMDBCMDQ5QUU3NjgtRTUyMy00RkE0LTk5MTQtNTMwQUM1RjY5MDY5";
+        public const string AMS_HOST = "https://www.ayondo-ams.com/tradeherocn/";
+
         public static string OAUTH_TOKEN_PUBLIC_KEY = @"-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlkG4r0XGWG8DO2043seO
 aQnoA426WXTliwAUf9dG7idMyTEcR5jrAY4a2nZtFRj1cstDbxZuSP3Gm2TenDxq

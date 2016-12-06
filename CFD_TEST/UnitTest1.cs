@@ -359,9 +359,14 @@ namespace CFD_TEST
         [TestMethod]
         public void YunPianSMS()
         {
-            var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。"+
-                "券号：G1609191740235366 密码：FN6AVSND57D7" +
-                "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "15821399619");
+            //var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。"+
+            //    "券号：G1609191740235366 密码：FN6AVSND57D7" +
+            //    "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "15821399619");
+            //CFDGlobal.LogLine(sendSms);
+
+            var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。" +
+                "券号：st2J4ZF85798375C" +
+                "（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。", "13585617960");
             CFDGlobal.LogLine(sendSms);
         }
 
