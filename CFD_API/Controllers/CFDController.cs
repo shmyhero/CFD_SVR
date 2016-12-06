@@ -50,6 +50,10 @@ namespace CFD_API.Controllers
             this.db = db;
         }
 
+        protected CFDController()
+        {
+        }
+
         public int UserId
         {
             get
@@ -96,8 +100,7 @@ namespace CFD_API.Controllers
             }
         }
 
-        private const string AMS_HEADER_AUTH = "Bearer RDFFMzY2NDktMDlDRC00OTg4LUEwNjAtRUM0NDIxMTNDMDBCMDQ5QUU3NjgtRTUyMy00RkE0LTk5MTQtNTMwQUM1RjY5MDY5";
-        private const string AMS_HOST = "https://www.ayondo-ams.com/tradeherocn/";
+        private const string AMS_PROXY_HOST = "http://cfd-webapi.cloudapp.net/api/proxy/";
 
         private static ConcurrentDictionary<int, DateTime> _ayondoRegisteringUsers = new ConcurrentDictionary<int, DateTime>();
 
@@ -155,40 +158,41 @@ namespace CFD_API.Controllers
 
             if (isAvailable)
             {
-                var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "DemoAccount");
-                httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
+                var httpWebRequest =
+                    WebRequest.CreateHttp(AMS_PROXY_HOST + "DemoAccount" + "?username=" + username + "&password=" + password);
+                //httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
                 httpWebRequest.Method = "POST";
-                httpWebRequest.ContentType = "application/json; charset=UTF-8";
+                //httpWebRequest.ContentType = "application/json; charset=UTF-8";
                 httpWebRequest.Proxy = null;
-                var requestStream = httpWebRequest.GetRequestStream();
-                var sw = new StreamWriter(requestStream);
+//                var requestStream = httpWebRequest.GetRequestStream();
+//                var sw = new StreamWriter(requestStream);
 
-                //Escape the "{", "}" (by duplicating them) in the format string:
-                var json =
-                    @"{{
-'AddressCity': 'TestCity',
-'AddressCountry': 'CN',
-'AddressLine1': 'Teststr. 123',
-'AddressLine2': null,
-'AddressZip': '12345',
-'ClientIP': '127.0.0.1',
-'Currency': 'USD',
-'FirstName': 'User',
-'Gender': 'Male',
-'IsTestRecord': true,
-'Language': 'EN',
-'LastName': 'THCN',
-'Password': '{1}',
-'PhonePrimary': '0044 123445',
-'SalesRepGuid':null,
-'UserName': '{0}',
-'ProductType': 'CFD'
-}}";
+//                //Escape the "{", "}" (by duplicating them) in the format string:
+//                var json =
+//                    @"{{
+//'AddressCity': 'TestCity',
+//'AddressCountry': 'CN',
+//'AddressLine1': 'Teststr. 123',
+//'AddressLine2': null,
+//'AddressZip': '12345',
+//'ClientIP': '127.0.0.1',
+//'Currency': 'USD',
+//'FirstName': 'User',
+//'Gender': 'Male',
+//'IsTestRecord': true,
+//'Language': 'EN',
+//'LastName': 'THCN',
+//'Password': '{1}',
+//'PhonePrimary': '0044 123445',
+//'SalesRepGuid':null,
+//'UserName': '{0}',
+//'ProductType': 'CFD'
+//}}";
 
-                var s = string.Format(json, username, password);
-                sw.Write(s);
-                sw.Flush();
-                sw.Close();
+//                var s = string.Format(json, username, password);
+//                sw.Write(s);
+//                sw.Flush();
+//                sw.Close();
 
                 var dtBegin = DateTime.UtcNow;
 
@@ -198,8 +202,9 @@ namespace CFD_API.Controllers
 
                 var str = sr.ReadToEnd();
                 var ts = DateTime.UtcNow - dtBegin;
-                CFDGlobal.LogInformation("AMS demo called. Time: " + ts.TotalMilliseconds + "ms Url: " +
-                                         httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+                CFDGlobal.LogInformation("AMS demo proxy called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                         httpWebRequest.RequestUri + " Response: " + str //+ "Request:" + s
+                                         );
 
                 var jObject = JObject.Parse(str);
 
@@ -223,8 +228,9 @@ namespace CFD_API.Controllers
         {
             var accountType = isLive ? "Live" : "Demo";
 
-            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "check-username?AccountType="+ accountType+"&UserName=" + username);
-            httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
+            var httpWebRequest =
+                WebRequest.CreateHttp(AMS_PROXY_HOST + "check-username?AccountType=" + accountType + "&UserName=" + username);
+            //httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
             httpWebRequest.Proxy = null;
 
             var dtBegin = DateTime.UtcNow;
@@ -235,7 +241,7 @@ namespace CFD_API.Controllers
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS check-username called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
+            CFDGlobal.LogInformation("AMS check-username proxy called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
 
             var jObject = JObject.Parse(str);
             return jObject;
@@ -243,8 +249,8 @@ namespace CFD_API.Controllers
 
         protected static JObject AMSLiveAccount(LiveSignupFormDTO form, User user, UserInfo userInfo)
         {
-            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "live-account");
-            httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account");
+            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json; charset=UTF-8";
             httpWebRequest.Proxy = null;
@@ -325,8 +331,8 @@ namespace CFD_API.Controllers
 
         protected static JObject AMSBindBankCard(LiveUserBankCardFormDTO form)
         {
-            var httpWebRequest = WebRequest.CreateHttp(AMS_HOST + "reference-account");
-            httpWebRequest.Headers["Authorization"] = AMS_HEADER_AUTH;
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "reference-account");
+            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json; charset=UTF-8";
             httpWebRequest.Proxy = null;
