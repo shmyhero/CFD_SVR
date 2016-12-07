@@ -1016,17 +1016,28 @@ namespace CFD_API.Controllers
         
         [HttpGet]
         [Route("deposit/id")]
+        [Route("live/deposit/id")]
         [BasicAuth]
         public string GetDepositTransferId(decimal amount)
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             string transferId;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
-                transferId = clientHttp.NewDeposit(user.AyondoUsername, user.AyondoPassword, amount);
+                try
+                {
+                    transferId = clientHttp.NewDeposit(
+                        IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword,
+                        amount);
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
             }
 
             return transferId;
