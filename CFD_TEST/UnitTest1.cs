@@ -365,8 +365,8 @@ namespace CFD_TEST
             //CFDGlobal.LogLine(sendSms);
 
             var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。" +
-                "券号：st3J8VC85799068O" +
-                "（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。", "13818076317");
+                "券号：st5K2UB85799758C" +
+                "（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。", "13601751330");
             CFDGlobal.LogLine(sendSms);
         }
 

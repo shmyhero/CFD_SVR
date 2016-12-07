@@ -326,7 +326,9 @@ namespace CFD_API.Controllers
             if (klines.Count == 0)
                 return new List<KLineDTO>();
 
-            var result = klines.GetRange(klines.Count - 100, klines.Count);
+            //get 100 records at max
+            var beginIndex = klines.Count - 100;
+            var result = klines.GetRange(beginIndex < 0 ? 0 : beginIndex, klines.Count - 1);
 
             return result.Select(o => new KLineDTO()
             {

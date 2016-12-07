@@ -500,14 +500,14 @@ namespace CFD_API.Controllers
                     {
                         var tradeValue = dto.openPrice * prodDef.LotSize / prodDef.PLUnits * (item.LongQty ?? item.ShortQty);
                         dto.invest = tradeValue / dto.leverage;
+
+                        var security = Mapper.Map<SecurityDetailDTO>(prodDef);
+                        HideSecInfo(security);
+
+                        dto.security = security;
+
+                        result.Add(dto);
                     }
-
-                    var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                    HideSecInfo(security);
-
-                    dto.security = security;
-
-                    result.Add(dto);
                 });
             }
             #endregion
@@ -516,7 +516,7 @@ namespace CFD_API.Controllers
             List<long> positionIdList = result.Select(o => long.Parse(o.id)).ToList();
             var posList = (from u in db.UserCards
                           where positionIdList.Contains(u.PositionId)
-                          orderby u.ClosedAt descending
+                          //orderby u.ClosedAt descending
                           select u.PositionId.ToString()).ToList();
 
             result.ForEach(item =>

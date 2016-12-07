@@ -48,7 +48,7 @@ namespace AyondoTrade
         PositionReport NewTakeOrder(string username, string password, int securityId, decimal price,string nettingPositionId);
 
         [OperationContract]
-        [FaultContract(typeof (OrderRejectedFault))]
+        [FaultContract(typeof(OrderRejectedFault))]
         [FaultContract(typeof(OAuthLoginRequiredFault))]
         PositionReport ReplaceOrder(string username, string password, int securityId, string orderId, decimal price, string nettingPositionId);
 
@@ -74,6 +74,7 @@ namespace AyondoTrade
         string LoginOAuth(string username, string oauthToken);
 
         [OperationContract]
+        [FaultContract(typeof(OAuthLoginRequiredFault))]
         string NewDeposit(string username, string password, decimal amount);
 
         [OperationContract]
