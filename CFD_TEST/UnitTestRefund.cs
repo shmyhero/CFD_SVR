@@ -43,7 +43,7 @@ namespace CFD_TEST
             string auth = "Basic 2030_a1a4961928344332be8346e4cc289b0f";
             #endregion
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://api.typhoontechnology.hk/api/user/live/refaccount");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://api.typhoontechnology.hk/api/user/live/refaccount");
             try
             {
 
