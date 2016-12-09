@@ -39,6 +39,7 @@ namespace CFD_API.Controllers
                           into x
                           from y in x.DefaultIfEmpty()
                           where u.UserId == this.UserId
+                          orderby u.CreatedAt descending
                           select new CardDTO()
                           {
                               cardId = u.Id,
