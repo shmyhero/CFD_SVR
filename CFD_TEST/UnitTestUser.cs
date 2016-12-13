@@ -85,5 +85,40 @@ namespace CFD_TEST
                 request.Abort();
             }
         }
+
+
+        [TestMethod]
+        public void GetDepositTransferID()
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/user/live/deposit/id?amount=1");
+            try
+            {
+                request.ContentType = "application/json";
+                request.Method = "GET";
+                request.Headers.Add("Authorization", "Basic 8_f5c5e882e897462584dc00c16356c975");
+                request.Timeout = int.MaxValue;
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream streamReceive = response.GetResponseStream();
+                Encoding encoding = Encoding.UTF8;
+
+                StreamReader streamReader = new StreamReader(streamReceive, encoding);
+                string strResult = streamReader.ReadToEnd();
+                Console.WriteLine(strResult);
+                return;
+            }
+            catch (WebException webEx)
+            {
+                throw new WebException("");
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+            finally
+            {
+                request.Abort();
+            }
+        }
     }
 }
