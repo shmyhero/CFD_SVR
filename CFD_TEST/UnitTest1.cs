@@ -365,8 +365,8 @@ namespace CFD_TEST
             //CFDGlobal.LogLine(sendSms);
 
             var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。" +
-                "券号：st5K2UB85799758C" +
-                "（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。", "13601751330");
+                "券号：st3J8SE85802515V" +
+                "（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。", "18801611812");
             CFDGlobal.LogLine(sendSms);
         }
 
@@ -536,6 +536,12 @@ namespace CFD_TEST
             //    user = db.Users.FirstOrDefault(o => o.Id == 3218);
             //    pos = XiaDan_SheZhiYing(user, 34864, false);
             //}
+
+            //英国100
+            user = db.Users.FirstOrDefault(o => o.Id == 3221);
+            pos = XiaDan_SheZhiYing(user, 34854, true, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 3222);
+            pos = XiaDan_SheZhiYing(user, 34854, false, 100);
 
             ////欧元对英镑
             //for (int i = 0; i < 1; i++)
