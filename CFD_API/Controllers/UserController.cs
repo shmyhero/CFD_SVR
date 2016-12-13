@@ -1540,7 +1540,7 @@ namespace CFD_API.Controllers
         [HttpPost]
         [Route("live/withdraw")]
         [BasicAuth]
-        public string WithDraw(decimal amount)
+        public string WithDraw(LiveUserRefundDTO form)
         {
             var user = GetUser();
 
@@ -1549,7 +1549,7 @@ namespace CFD_API.Controllers
             string transferId;
             using (var clientHttp = new AyondoTradeClient())
             {
-                transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, amount);
+                transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, form.Amount);
             }
 
             return transferId;

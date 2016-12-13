@@ -315,6 +315,11 @@ namespace CFD_API.DTO
         public string NameOfBank { get; set; }
     }
 
+    public class LiveUserRefundDTO
+    {
+        public decimal Amount;
+    }
+
     public class BankCardUpdateDTO
     {
         public string GUID { get; set; }

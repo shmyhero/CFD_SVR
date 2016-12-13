@@ -80,6 +80,51 @@ namespace CFD_TEST
 
         }
 
+        public void WithDraw()
+        {
+            LiveUserRefundDTO dto = new LiveUserRefundDTO();
+            dto.Amount = 1.00M;
+            byte[] binaryData = Encoding.UTF8.GetBytes(GetJSON<LiveUserRefundDTO>(dto));
+
+            string auth = "Basic 2030_a1a4961928344332be8346e4cc289b0f";
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://api.typhoontechnology.hk/api/user/live/withdraw");
+            try
+            {
+
+                request.ContentType = "application/json";
+                request.Method = "POST";
+                request.Headers.Add("Authorization", auth);
+                request.ContentLength = binaryData.Length;
+                request.Timeout = int.MaxValue;
+                Stream reqstream = request.GetRequestStream();
+                reqstream.Write(binaryData, 0, binaryData.Length);
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream streamReceive = response.GetResponseStream();
+                Encoding encoding = Encoding.UTF8;
+
+                StreamReader streamReader = new StreamReader(streamReceive, encoding);
+                string strResult = streamReader.ReadToEnd();
+                Console.WriteLine(strResult);
+                reqstream.Close();
+                return;
+            }
+            catch (WebException webEx)
+            {
+                throw new WebException("操作超时");
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+            finally
+            {
+                request.Abort();
+            }
+        }
+
+
         public static string GetJSON<T>(T jsonObj)
         {
             DataContractJsonSerializer ds = new DataContractJsonSerializer(typeof(T));
