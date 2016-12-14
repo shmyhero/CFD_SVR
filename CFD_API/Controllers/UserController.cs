@@ -1517,7 +1517,9 @@ namespace CFD_API.Controllers
             }
 
             LiveUserBankCardFormDTO form = Convert2AyondoForm(originalForm);
-            var jObject = AMSBindBankCard(form);
+            //首次绑定银行卡，用POST。 如果银行卡已存在，更新用PUT
+            string method = string.IsNullOrEmpty(user.BankCardNumber) ? "POST" : "PUT";
+            var jObject = AMSBindBankCard(form, method);
             if (jObject["Error"] != null)
             {
                 return new ResultDTO

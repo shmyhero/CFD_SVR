@@ -330,11 +330,11 @@ namespace CFD_API.Controllers
             return jObject;
         }
 
-        protected static JObject AMSBindBankCard(LiveUserBankCardFormDTO form)
+        protected static JObject AMSBindBankCard(LiveUserBankCardFormDTO form, string method = "POST")
         {
             var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "reference-account");
             httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
-            httpWebRequest.Method = "POST";
+            httpWebRequest.Method = method;
             httpWebRequest.ContentType = "application/json; charset=UTF-8";
             httpWebRequest.Proxy = null;
             httpWebRequest.Timeout = int.MaxValue;
