@@ -367,8 +367,8 @@ namespace CFD_TEST
             //CFDGlobal.LogLine(sendSms);
 
             var sendSms = YunPianMessenger.SendSms("【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。" +
-                "券号：st3J8SE85802515V" +
-                "（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。", "18801611812");
+                "券号：st4M2SE85803209P" +
+                "（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。", "13601751330");
             CFDGlobal.LogLine(sendSms);
         }
 
@@ -561,7 +561,7 @@ namespace CFD_TEST
 
         private static PositionDTO SheZhiYing(User user, PositionDTO pos)
         {
-            var takePx = pos.isLong ? pos.settlePrice * 1.0075m : pos.settlePrice * 0.9925m;
+            var takePx = pos.isLong ? pos.settlePrice * 1.0115m : pos.settlePrice * 0.9885m;
 
             string jsonData = "{\"posId\":" + pos.id + ",\"securityId\":" + pos.security.id + ",\"price\":"+ takePx+"}";
             var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position/order/take");
