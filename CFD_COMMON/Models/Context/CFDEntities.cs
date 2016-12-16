@@ -16,6 +16,7 @@ namespace CFD_COMMON.Models.Context
 
         public virtual DbSet<AyondoSecurity> AyondoSecurities { get; set; }
         public virtual DbSet<AyondoTradeHistory> AyondoTradeHistories { get; set; }
+        public virtual DbSet<AyondoTransferHistory> AyondoTransferHistories { get; set; }
         public virtual DbSet<Banner> Banners { get; set; }
         public virtual DbSet<Banner2> Banners2 { get; set; }
         public virtual DbSet<Bookmark> Bookmarks { get; set; }
@@ -76,6 +77,19 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<AyondoTradeHistory>()
                 .Property(e => e.TakeProfit)
+                .HasPrecision(18, 8);
+
+
+            modelBuilder.Entity<AyondoTransferHistory>()
+                .Property(e => e.Amount)
+                .HasPrecision(18, 8);
+
+            modelBuilder.Entity<AyondoTransferHistory>()
+                .Property(e => e.Quantity)
+                .HasPrecision(18, 8);
+
+            modelBuilder.Entity<AyondoTransferHistory>()
+                .Property(e => e.FinancingRate)
                 .HasPrecision(18, 8);
 
 

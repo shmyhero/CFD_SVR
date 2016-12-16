@@ -81,6 +81,11 @@ namespace CFD_JOBS
                     AyondoTradeHistoryImport.Run(true);
                 }
 
+                if (args.Contains("-AyondoTransferHistory"))
+                {
+                    AyondoTransferHistoryImport.Run();
+                }
+
                 if (args.Contains("-Competition"))
                 {
                     Competition.Run();
