@@ -137,4 +137,19 @@ namespace CFD_API.DTO
         public string DeveloperMessage { get; set; }
         public string ErrorCode { get; set; }
     }
+
+    public class BankDTO
+    {
+        public string cname { get; set; }
+        public string logo { get; set; }
+    }
+
+    public class AreaDTO
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string ShortName { get; set; }
+    }
 }

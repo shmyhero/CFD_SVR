@@ -131,9 +131,11 @@
     <Compile Include="Models\Context\CFDHistoryEntitiesFactory.cs" />
     <Compile Include="Models\Context\CFDHistoryEntities.cs" />
     <Compile Include="Models\Entities\ApiHit.cs" />
+    <Compile Include="Models\Entities\Area.cs" />
     <Compile Include="Models\Entities\AyondoTradeHistory.cs" />
     <Compile Include="Models\Entities\AyondoTradeHistory_Live.cs" />
     <Compile Include="Models\Entities\AyondoTransferHistory.cs" />
+    <Compile Include="Models\Entities\Bank.cs" />
     <Compile Include="Models\Entities\Bookmark_Live.cs" />
     <Compile Include="Models\Entities\Card.cs" />
     <Compile Include="Models\Entities\Competition.cs" />

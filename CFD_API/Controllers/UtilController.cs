@@ -996,5 +996,33 @@ namespace CFD_API.Controllers
             return new ResultDTO(true);
         }
 
+        [HttpGet]
+        [Route("banks")]
+        public List<BankDTO> GetBanks()
+        {
+            var banks = db.Banks.Where(o => o.ExpiredAt.HasValue && o.ExpiredAt.Value == SqlDateTime.MaxValue.Value).Select(o => new BankDTO() {
+                cname = o.CName, logo = o.Logo
+            });
+
+            return banks.ToList();
+        }
+
+        [HttpGet]
+        [Route("area")]
+        public List<AreaDTO> GetAreas(int id)
+        {
+            List<AreaDTO> areas = null;
+
+            if(id==0)
+            {
+                areas = db.Areas.Where(o => o.AreaLevel == 1).OrderBy(o=>o.Sort).Select(o => new AreaDTO { Id = o.Id, Name = o.Name, ShortName = o.ShortName }).ToList();
+            }
+            else
+            {
+                areas = db.Areas.Where(o => o.ParentID == id).OrderBy(o => o.Sort).Select(o => new AreaDTO { Id = o.Id, Name = o.Name, ShortName = o.ShortName }).ToList();
+            }
+
+            return areas;
+        }
     }
 }
