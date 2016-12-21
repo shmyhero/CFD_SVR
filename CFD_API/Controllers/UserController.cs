@@ -1568,6 +1568,26 @@ namespace CFD_API.Controllers
             return transferId;
         }
 
+        [HttpGet]
+        [Route("live/info")]
+        [BasicAuth]
+        public LiveUserInfoDTO GetUserInfo()
+        {
+            var userInfo = db.UserInfos.FirstOrDefault(o=>o.UserId == UserId);
+
+            if (userInfo == null)
+                return null;
+
+            LiveUserInfoDTO dto = new LiveUserInfoDTO() {
+                 firstName = userInfo.FirstName,
+                 lastName = userInfo.LastName,
+                 identityID = userInfo.IdCode
+            };
+
+            return dto;
+        }
+
+
         /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式
         /// </summary>

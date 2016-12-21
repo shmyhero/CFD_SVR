@@ -37,6 +37,13 @@ namespace CFD_API.DTO
         Rejected = 3,
     }
 
+    public class LiveUserInfoDTO
+    {
+        public string lastName { get; set; }
+        public string firstName { get; set; }
+        public string identityID { get; set; }
+    }
+
     public struct BankCardUpdateStatus
     {
         public static string Approved = "Approved";

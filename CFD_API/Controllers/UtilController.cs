@@ -1013,13 +1013,13 @@ namespace CFD_API.Controllers
         {
             List<AreaDTO> areas = null;
 
-            if(id==0)
+            if(id < 0)
             {
-                areas = db.Areas.Where(o => o.AreaLevel == 1).OrderBy(o=>o.Sort).Select(o => new AreaDTO { Id = o.Id, Name = o.Name, ShortName = o.ShortName }).ToList();
+                areas = db.Areas.Select(o => new AreaDTO { Id = o.Id, ParentId = o.ParentID, Name = o.Name, ShortName = o.ShortName }).ToList();
             }
             else
             {
-                areas = db.Areas.Where(o => o.ParentID == id).OrderBy(o => o.Sort).Select(o => new AreaDTO { Id = o.Id, Name = o.Name, ShortName = o.ShortName }).ToList();
+                areas = db.Areas.Where(o => o.ParentID == id).OrderBy(o => o.Sort).Select(o => new AreaDTO { Id = o.Id, ParentId = o.ParentID, Name = o.Name, ShortName = o.ShortName }).ToList();
             }
 
             return areas;
