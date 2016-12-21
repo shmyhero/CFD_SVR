@@ -296,10 +296,10 @@ namespace CFD_API.DTO
         public string Guid { get; set; }
         public string NameOfBank { get; set; }
         /// <summary>
-        /// 转到WeCollect之后，就不再需要SwiftCode了
+        /// 转到WeCollect之后，就不再需要SwiftCode，银行地址了
         /// </summary>
         //public string SwiftCode { get; set; }
-        public string AddressOfBank { get; set; }
+        //public string AddressOfBank { get; set; }
         /// <summary>
         /// 支行
         /// </summary>

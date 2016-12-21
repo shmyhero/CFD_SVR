@@ -1582,7 +1582,7 @@ namespace CFD_API.Controllers
             //银行名称、银行地址、SWIFT CODE、收款人姓名、收款人账号
             SolidBrush sbrush = new SolidBrush(Color.Black);
             g.DrawString(originalForm.NameOfBank, font, sbrush, new PointF(50, 65));
-            g.DrawString(originalForm.AddressOfBank, font, sbrush, new PointF(50, 170));
+            //g.DrawString(originalForm.AddressOfBank, font, sbrush, new PointF(50, 170));
             //g.DrawString(originalForm.SwiftCode, font, sbrush, new PointF(50, 275));
             g.DrawString(originalForm.AccountHolder, font, sbrush, new PointF(50, 380));
             g.DrawString(originalForm.AccountNumber, font, sbrush, new PointF(50, 485));
@@ -1600,7 +1600,6 @@ namespace CFD_API.Controllers
             LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO()
             {
                 AccountHolder = originalForm.AccountHolder,
-                
                 AccountNumber = originalForm.AccountNumber,
                 NameOfBank = originalForm.NameOfBank,
                 BankStatementContent = imgBase64,
