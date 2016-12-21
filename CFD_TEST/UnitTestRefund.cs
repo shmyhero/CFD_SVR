@@ -35,9 +35,12 @@ namespace CFD_TEST
             dto.AccountHolder = "胡海平";
             dto.AccountNumber = "1217 3699 8011 0345 268";
             dto.AddressOfBank = "上海市淮海中路200号";
-            dto.Guid = "a15a7422-aba7-11e6-80d9-002590d644df";
-            dto.NameOfBank = "China Construction Bank";
-            dto.SwiftCode = "PCBCCNBJSHX";
+            //dto.Guid = "a15a7422-aba7-11e6-80d9-002590d644df";
+            dto.NameOfBank = "建设银行";
+            dto.Branch = "建设银行上海分行";
+            dto.Province = "上海";
+            dto.City = "上海";
+            //dto.SwiftCode = "PCBCCNBJSHX";
             byte[] binaryData = Encoding.UTF8.GetBytes(GetJSON<LiveUserBankCardOriginalFormDTO>(dto));
 
             string auth = "Basic 2030_a1a4961928344332be8346e4cc289b0f";

@@ -1507,6 +1507,13 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
+            var userInfo = db.UserInfos.FirstOrDefault(o=>o.UserId == user.Id);
+            if(userInfo == null)
+            {
+                CFDGlobal.LogInformation("ReferenceAccount: User has no personal info");
+                return new ResultDTO(false) { message = "该用户没有对用的身份信息" };
+            }
+
             //LIVE account is Created or Pending
             var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
 
@@ -1516,7 +1523,11 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false);
             }
 
+            //前端拿不到这个参数
+            originalForm.Guid = user.AyLiveAccountGuid;
+
             LiveUserBankCardFormDTO form = Convert2AyondoForm(originalForm);
+            form.IdentityID = userInfo.IdCode;
             //首次绑定银行卡，用POST。 如果银行卡已存在，更新用PUT
             string method = string.IsNullOrEmpty(user.BankCardNumber) ? "POST" : "PUT";
             var jObject = AMSBindBankCard(form, method);
@@ -1572,7 +1583,7 @@ namespace CFD_API.Controllers
             SolidBrush sbrush = new SolidBrush(Color.Black);
             g.DrawString(originalForm.NameOfBank, font, sbrush, new PointF(50, 65));
             g.DrawString(originalForm.AddressOfBank, font, sbrush, new PointF(50, 170));
-            g.DrawString(originalForm.SwiftCode, font, sbrush, new PointF(50, 275));
+            //g.DrawString(originalForm.SwiftCode, font, sbrush, new PointF(50, 275));
             g.DrawString(originalForm.AccountHolder, font, sbrush, new PointF(50, 380));
             g.DrawString(originalForm.AccountNumber, font, sbrush, new PointF(50, 485));
 
@@ -1586,13 +1597,18 @@ namespace CFD_API.Controllers
             ms.Close();
             string imgBase64 = Convert.ToBase64String(arr);
 
-            LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO() {
+            LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO()
+            {
                 AccountHolder = originalForm.AccountHolder,
+                
                 AccountNumber = originalForm.AccountNumber,
                 NameOfBank = originalForm.NameOfBank,
                 BankStatementContent = imgBase64,
                 BankStatementFileName = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
-                Guid = originalForm.Guid
+                Guid = originalForm.Guid,
+                Branch = originalForm.Branch,
+                Province = originalForm.Province,
+                City = originalForm.City
             };
 
             return form;

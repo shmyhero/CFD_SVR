@@ -295,13 +295,29 @@ namespace CFD_API.DTO
         /// </summary>
         public string Guid { get; set; }
         public string NameOfBank { get; set; }
-        public string SwiftCode { get; set; }
+        /// <summary>
+        /// 转到WeCollect之后，就不再需要SwiftCode了
+        /// </summary>
+        //public string SwiftCode { get; set; }
         public string AddressOfBank { get; set; }
+        /// <summary>
+        /// 支行
+        /// </summary>
+        public string Branch { get; set; }
+        /// <summary>
+        /// 省
+        /// </summary>
+        public string Province { get; set; }
+        /// <summary>
+        /// 市
+        /// </summary>
+        public string City { get; set; }
     }
 
     public class LiveUserBankCardFormDTO
     {
         public string AccountHolder { get; set; }
+        public string IdentityID { get; set; }
         public string BankStatementContent { get; set; }
         //public string BankStatementContentStr { get; set; }
         public string BankStatementContentType { get { return "image/jpeg"; } }
@@ -313,6 +329,18 @@ namespace CFD_API.DTO
         /// </summary>
         public string AccountNumber { get; set; }
         public string NameOfBank { get; set; }
+        /// <summary>
+        /// 支行
+        /// </summary>
+        public string Branch { get; set; }
+        /// <summary>
+        /// 省
+        /// </summary>
+        public string Province { get; set; }
+        /// <summary>
+        /// 市
+        /// </summary>
+        public string City { get; set; }
     }
 
     public class LiveUserRefundDTO
