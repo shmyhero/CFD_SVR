@@ -524,6 +524,35 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("live/balance/refundable")]
+        [BasicAuth]
+        /// <summary>
+        /// 扣除手续费之后的可提现余额
+        /// </summary>
+        /// <param name="ignoreCache"></param>
+        /// <returns></returns>
+        public decimal GetRefundableBalance(bool ignoreCache = false)
+        {
+            var balance = GetBalance(ignoreCache);
+            Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundFee");
+            if(refundSetting != null)
+            {
+                //最小手续费
+                decimal minimum = JObject.Parse(refundSetting.Value)["min"].Value<decimal>();
+                //按百分比计算的手续费
+                decimal percentage = JObject.Parse(refundSetting.Value)["rate"].Value<decimal>() * balance.available;
+                //手续费按大的算
+                decimal maxRefundable = minimum > percentage ? (balance.available - minimum) : (balance.available - percentage);
+
+                return maxRefundable > 0? maxRefundable : 0;
+            }
+            else
+            {
+                return balance.available;
+            }
+        }
+
+        [HttpGet]
         [Route("plReport2")]
         [Route("live/plReport2")]
         [BasicAuth]

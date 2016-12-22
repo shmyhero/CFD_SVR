@@ -155,6 +155,7 @@
     <Compile Include="Models\Entities\LikeHistory.cs" />
     <Compile Include="Models\Entities\Message.cs" />
     <Compile Include="Models\Entities\Message_Live.cs" />
+    <Compile Include="Models\Entities\Misc.cs" />
     <Compile Include="Models\Entities\Model1.cs" />
     <Compile Include="Models\Entities\NewPositionHistory.cs" />
     <Compile Include="Models\Entities\NewPositionHistory_live.cs" />
