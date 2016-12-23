@@ -1024,5 +1024,12 @@ namespace CFD_API.Controllers
 
             return areas;
         }
+
+        [HttpGet]
+        [Route("fxrate")]
+        public decimal FxRate(string fxType)
+        {
+            return 6.95M;
+        }
     }
 }

@@ -67,9 +67,16 @@ namespace CFD_API.Controllers
             //verify this login
             var dtValidSince = DateTime.UtcNow - VERIFY_CODE_PERIOD;
             var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
+            var testAccountSetting = db.Miscs.FirstOrDefault(o => o.Key == "TestAccount");
+
+            List<string> testAccounts = new List<string>();
+            if(testAccountSetting != null)
+            {
+                testAccounts = testAccountSetting.Value.Split(';').ToList();
+            }
 
             //auth success
-            if (Phone.IsTrustedPhone(form.phone) || verifyCodes.Any())
+            if (Phone.IsTrustedPhone(form.phone) || verifyCodes.Any() || testAccounts.Contains(form.phone)) //这批号码是专门给Ayondo用的，因为他们收不到验证码。
             {
                 var user = db.Users.FirstOrDefault(o => o.Phone == form.phone);
 
@@ -108,8 +115,8 @@ namespace CFD_API.Controllers
                 }
                 else //phone exists
                 {
-                    user.Token = UserService.NewToken();
-                    db.SaveChanges();
+                    //user.Token = UserService.NewToken();
+                    //db.SaveChanges();
 
                     result.success = true;
                     result.isNewUser = false;
@@ -207,8 +214,8 @@ namespace CFD_API.Controllers
             }
             else //openid exists
             {
-                user.Token = UserService.NewToken();
-                db.SaveChanges();
+                //user.Token = UserService.NewToken();
+                //db.SaveChanges();
 
                 result.success = true;
                 result.isNewUser = false;
@@ -1609,7 +1616,7 @@ namespace CFD_API.Controllers
             var userInfo = (from x in db.Users 
                            join y in db.UserInfos on x.Id equals y.UserId
                            where x.Id == UserId
-                           select new { y.FirstName, y.LastName, y.IdCode,x.BankName, x.Branch,x.Province,x.City }).FirstOrDefault();
+                           select new { y.FirstName, y.LastName, y.IdCode,x.BankCardNumber, x.BankName, x.Branch,x.Province,x.City }).FirstOrDefault();
 
             if(userInfo == null)
             {
@@ -1620,6 +1627,7 @@ namespace CFD_API.Controllers
                  firstName = userInfo.FirstName,
                  lastName = userInfo.LastName,
                  identityID = userInfo.IdCode,
+                 bankCardNumber = userInfo.BankCardNumber,
                  bankName = userInfo.BankName,
                  branch = userInfo.Branch,
                  province = userInfo.Province,
