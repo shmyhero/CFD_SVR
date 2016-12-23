@@ -544,7 +544,7 @@ namespace CFD_API.Controllers
                 //手续费按大的算
                 decimal maxRefundable = minimum > percentage ? (balance.available - minimum) : (balance.available - percentage);
 
-                return maxRefundable > 0? maxRefundable : 0;
+                return maxRefundable > 0? Math.Round(maxRefundable,2) : 0;
             }
             else
             {
@@ -1570,6 +1570,10 @@ namespace CFD_API.Controllers
             }
 
             user.BankCardNumber = form.AccountNumber;
+            user.BankName = form.NameOfBank;
+            user.Branch = form.Branch;
+            user.Province = form.Province;
+            user.City = form.City;
             if (jObject["ReferenceAccountGuid"] != null)
             {
                 user.ReferenceAccountGuid = jObject["ReferenceAccountGuid"].Value<string>();
@@ -1602,15 +1606,24 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public LiveUserInfoDTO GetUserInfo()
         {
-            var userInfo = db.UserInfos.FirstOrDefault(o=>o.UserId == UserId);
+            var userInfo = (from x in db.Users 
+                           join y in db.UserInfos on x.Id equals y.UserId
+                           where x.Id == UserId
+                           select new { y.FirstName, y.LastName, y.IdCode,x.BankName, x.Branch,x.Province,x.City }).FirstOrDefault();
 
-            if (userInfo == null)
+            if(userInfo == null)
+            {
                 return null;
+            }
 
             LiveUserInfoDTO dto = new LiveUserInfoDTO() {
                  firstName = userInfo.FirstName,
                  lastName = userInfo.LastName,
-                 identityID = userInfo.IdCode
+                 identityID = userInfo.IdCode,
+                 bankName = userInfo.BankName,
+                 branch = userInfo.Branch,
+                 province = userInfo.Province,
+                 city = userInfo.City
             };
 
             return dto;

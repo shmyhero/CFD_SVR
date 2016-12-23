@@ -72,6 +72,15 @@ namespace CFD_COMMON.Models.Entities
         public string BankCardRejectReason { get; set; }
 
         [StringLength(50)]
+        public string BankName { get; set; }
+        [StringLength(50)]
+        public string Branch { get; set; }
+        [StringLength(50)]
+        public string Province { get; set; }
+        [StringLength(50)]
+        public string City { get; set; }
+
+        [StringLength(50)]
         public string ReferenceAccountGuid { get; set; }
 
         public bool? AutoCloseAlert_Live { get; set; }
