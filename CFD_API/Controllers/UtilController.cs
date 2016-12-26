@@ -29,6 +29,7 @@ using Org.BouncyCastle.OpenSsl;
 using CFD_API.Controllers.Attributes;
 using CFD_API.Caching;
 using CFD_COMMON.Models.Cached;
+using Newtonsoft.Json.Linq;
 
 namespace CFD_API.Controllers
 {
@@ -1029,7 +1030,13 @@ namespace CFD_API.Controllers
         [Route("fxrate")]
         public decimal FxRate(string fxType)
         {
-            return 6.95M;
+            decimal fxRate = 6.95M;
+            switch(fxType)
+            {
+                case "USDCNY": fxRate = 6.95M; break;
+                case "CNYUSD": fxRate = 0.144M; break;
+            }
+            return fxRate;
         }
 
         /// <summary>
@@ -1045,6 +1052,26 @@ namespace CFD_API.Controllers
                 return refundSetting.Value;
             else
                 return "3";
+        }
+
+        /// <summary>
+        /// 入金设置
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("deposit/setting")]
+        public DepositSettingDTO GetDepositSetting ()
+        {
+            Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "Deposit");
+            if (refundSetting != null)
+            {
+                var setting = JObject.Parse(refundSetting.Value);
+                return new DepositSettingDTO() { minimum = decimal.Parse(setting["min"].Value<string>()), fxRate = FxRate("CNYUSD") };
+            }
+            else
+            {
+                return new DepositSettingDTO { minimum = 100M, fxRate = FxRate("CNYUSD") };
+            }
         }
     }
 }

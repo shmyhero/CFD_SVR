@@ -14,4 +14,10 @@ namespace CFD_API.DTO
         public string date { get; set; }
         public decimal amount { get; set; }
     }
+
+    public class DepositSettingDTO
+    {
+        public decimal minimum { get; set; }
+        public decimal fxRate { get; set; }
+    }
 }

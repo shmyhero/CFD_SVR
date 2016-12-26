@@ -1590,6 +1590,29 @@ namespace CFD_API.Controllers
             return new ResultDTO(true);
         }
 
+        /// <summary>
+        /// 解绑银行卡，把相关信息置空
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("live/unbind")]
+        [BasicAuth]
+        public ResultDTO UnBind()
+        {
+            var user = GetUser();
+            user.BankCardNumber = string.Empty;
+            user.BankCardStatus = string.Empty;
+            user.BankCardRejectReason = string.Empty;
+            user.BankName = string.Empty;
+            user.Branch = string.Empty;
+            user.Province = string.Empty;
+            user.City = string.Empty;
+            user.ReferenceAccountGuid = string.Empty;
+            db.SaveChanges();
+
+            return new ResultDTO(true);
+        }
+
         [HttpPost]
         [Route("live/withdraw")]
         [BasicAuth]
