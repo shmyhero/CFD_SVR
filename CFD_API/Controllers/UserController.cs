@@ -1639,6 +1639,24 @@ namespace CFD_API.Controllers
             return dto;
         }
 
+        /// <summary>
+        /// 出入金历史纪录
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("live/transfers")]
+        [BasicAuth]
+        public List<TransferDTO> GetTransferHistory()
+        {
+            List<TransferDTO> transferHistory = new List<TransferDTO>();
+            for(int x=0; x<10; x++)
+            {
+                transferHistory.Add(new TransferDTO() { amount=100, date="2016-12-26 12:00:00", transferType="入金" });
+            }
+
+            return transferHistory;
+        }
+
 
         /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式

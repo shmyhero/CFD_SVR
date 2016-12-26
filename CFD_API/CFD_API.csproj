@@ -285,6 +285,7 @@
     <Compile Include="DTO\SignalRDTO\PositionDTO.cs" />
     <Compile Include="DTO\SignalRDTO\QuoteFeed.cs" />
     <Compile Include="DTO\TickDTO.cs" />
+    <Compile Include="DTO\TransferDTO.cs" />
     <Compile Include="DTO\UserDTO.cs" />
     <Compile Include="DTO\UtilDTO.cs" />
     <Compile Include="Global.asax.cs">
