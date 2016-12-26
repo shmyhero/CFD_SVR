@@ -1031,5 +1031,20 @@ namespace CFD_API.Controllers
         {
             return 6.95M;
         }
+
+        /// <summary>
+        /// 出金页面的预计到账时间
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("refundETA")]
+        public string refundETA()
+        {
+            Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundETA");
+            if (refundSetting != null)
+                return refundSetting.Value;
+            else
+                return "3";
+        }
     }
 }

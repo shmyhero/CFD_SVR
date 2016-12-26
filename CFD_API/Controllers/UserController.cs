@@ -521,42 +521,42 @@ namespace CFD_API.Controllers
                 }
             }
 
+            #region 获取可提现余额以及备注
+            decimal maxRefundable = 0;
+            string refundComment = "出金将收取0元手续费";
+            if(IsLiveUrl)
+            {
+                Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundFee");
+                Misc refundCommentSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundFeeComment");
+                decimal available = balance - marginUsed;
+
+                if (refundSetting != null)
+                {
+                    //最小手续费
+                    decimal minimum = JObject.Parse(refundSetting.Value)["min"].Value<decimal>();
+                    //按百分比计算的手续费
+                    decimal percentage = JObject.Parse(refundSetting.Value)["rate"].Value<decimal>() * available;
+                    //手续费按大的算
+                    maxRefundable = minimum > percentage ? (available - minimum) : (available - percentage);
+                }
+
+                if (refundCommentSetting != null)
+                {
+                    refundComment = refundCommentSetting.Value;
+                }
+
+            }
+            #endregion
+
             return new BalanceDTO()
             {
                 id = user.Id,
                 balance = balance,
                 total = balance + totalUPL,
-                available = balance - marginUsed
+                available = balance - marginUsed,
+                refundable = maxRefundable > 0 ? Math.Round(maxRefundable, 2) : 0,
+                comment = refundComment
             };
-        }
-
-        [HttpGet]
-        [Route("live/balance/refundable")]
-        [BasicAuth]
-        /// <summary>
-        /// 扣除手续费之后的可提现余额
-        /// </summary>
-        /// <param name="ignoreCache"></param>
-        /// <returns></returns>
-        public decimal GetRefundableBalance(bool ignoreCache = false)
-        {
-            var balance = GetBalance(ignoreCache);
-            Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundFee");
-            if(refundSetting != null)
-            {
-                //最小手续费
-                decimal minimum = JObject.Parse(refundSetting.Value)["min"].Value<decimal>();
-                //按百分比计算的手续费
-                decimal percentage = JObject.Parse(refundSetting.Value)["rate"].Value<decimal>() * balance.available;
-                //手续费按大的算
-                decimal maxRefundable = minimum > percentage ? (balance.available - minimum) : (balance.available - percentage);
-
-                return maxRefundable > 0? Math.Round(maxRefundable,2) : 0;
-            }
-            else
-            {
-                return balance.available;
-            }
         }
 
         [HttpGet]

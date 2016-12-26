@@ -65,8 +65,18 @@ namespace CFD_API.DTO
         public decimal total { get; set; }
 
         public decimal available { get; set; }
-    }
 
+        /// <summary>
+        /// 可提现余额
+        /// </summary>
+        public decimal refundable { get; set; }
+
+        /// <summary>
+        /// 提现说明
+        /// </summary>
+        public string comment { get; set; }
+    }
+    
     public class PLReportDTO
     {
         //public decimal indexInvest { get; set; }
