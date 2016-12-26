@@ -1615,8 +1615,9 @@ namespace CFD_API.Controllers
         {
             var userInfo = (from x in db.Users 
                            join y in db.UserInfos on x.Id equals y.UserId
+                           join z in db.Banks on x.BankName equals z.CName
                            where x.Id == UserId
-                           select new { y.FirstName, y.LastName, y.IdCode,x.BankCardNumber, x.BankName, x.Branch,x.Province,x.City }).FirstOrDefault();
+                           select new { y.FirstName, y.LastName, y.IdCode,x.BankCardNumber, x.BankName, z.Logo, x.Branch,x.Province,x.City }).FirstOrDefault();
 
             if(userInfo == null)
             {
@@ -1628,6 +1629,7 @@ namespace CFD_API.Controllers
                  lastName = userInfo.LastName,
                  identityID = userInfo.IdCode,
                  bankCardNumber = userInfo.BankCardNumber,
+                 bankIcon = userInfo.Logo,
                  bankName = userInfo.BankName,
                  branch = userInfo.Branch,
                  province = userInfo.Province,

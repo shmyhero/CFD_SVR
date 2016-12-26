@@ -44,6 +44,7 @@ namespace CFD_API.DTO
         public string identityID { get; set; }
         public string bankCardNumber { get; set; }
         public string bankName { get; set; }
+        public string bankIcon { get; set; }
         public string branch { get; set; }
         public string province { get; set; }
         public string city { get; set; }
