@@ -1565,7 +1565,10 @@ namespace CFD_API.Controllers
             LiveUserBankCardFormDTO form = Convert2AyondoForm(originalForm);
             form.IdentityID = userInfo.IdCode;
             //首次绑定银行卡，用POST。 如果银行卡已存在，更新用PUT
-            string method = string.IsNullOrEmpty(user.BankCardNumber) ? "POST" : "PUT";
+            //string method = string.IsNullOrEmpty(user.BankCardNumber) ? "POST" : "PUT";
+            //按照Ayondo的文档，如果更新的话用PUT，但测试下来PUT会报错，还是用POST
+            string method = "POST";
+
             var jObject = AMSBindBankCard(form, method);
             if (jObject["Error"] != null)
             {
@@ -1623,7 +1626,7 @@ namespace CFD_API.Controllers
             CheckAndCreateAyondoDemoAccount(user);
 
             string transferId;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(true))
             {
                 transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, form.Amount);
             }
