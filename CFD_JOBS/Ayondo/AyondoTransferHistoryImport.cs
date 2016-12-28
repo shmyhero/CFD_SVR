@@ -21,7 +21,7 @@ namespace CFD_JOBS.Ayondo
     public class AyondoTransferHistoryImport
     {
         private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan MaxDuration = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan MaxDuration = TimeSpan.FromMinutes(30);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -74,6 +74,11 @@ namespace CFD_JOBS.Ayondo
 
                     CFDGlobal.LogLine("Fetching data " + dtStart + " ~ " + dtEnd);
 
+                    var url = CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost" + (isLive ? "_Live" : ""))
+                              + (isLive ? "live" : "demo") + "/reports/tradehero/cn/transferhistory?start="
+                              + tsStart + "&end=" + tsEnd;
+                    CFDGlobal.LogLine("url: " + url);
+
                     var dtDownloadStart = DateTime.UtcNow;
                     var downloadString = webClient.DownloadString(
                         CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost"+(isLive?"_Live":"")) 
@@ -81,6 +86,8 @@ namespace CFD_JOBS.Ayondo
                         + tsStart + "&end=" + tsEnd);
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
+
+                    if (downloadString == "error") throw new Exception("API returned \"error\"");
 
                     var lines = downloadString.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
 
@@ -130,7 +137,9 @@ namespace CFD_JOBS.Ayondo
                                 var isAyondo = bool.Parse(arr[14]);
                                 var clientClassification = arr[15];
                                 var username = arr[16];
-                                var financingRate = decimal.Parse(arr[17], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
+                                var financingRate = arr[17] == ""
+                                    ? (decimal?)null
+                                    : decimal.Parse(arr[17], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
                                 var transactionId = Convert.ToInt64(arr[18]);
                                 var tradingAccountId = Convert.ToInt64(arr[19]);
                                 var assetClass = arr[20];
@@ -138,7 +147,28 @@ namespace CFD_JOBS.Ayondo
 
                                 var tradeHistory = new AyondoTransferHistory()
                                 {
-                                    
+                                    TransferType = transferType,
+                                    AccountId = accountId,
+                                    FirstName = firstName,
+                                    LastName = lastName,
+                                    Amount = amount,
+                                    Ccy = currency,
+                                    Timestamp = timestamp.AddHours(-8),
+                                    ApprovalTime = approvalTime.AddHours(-8),
+                                    WhiteLabel = whiteLabel,
+                                    ProductName = productName,
+                                    BaseCcy = baseCurrency,
+                                    QuoteCcy = quoteCurrency,
+                                    Quantity = units,
+                                    InstrumentType = instrumentType,
+                                    IsAyondo = isAyondo,
+                                    ClientClassification = clientClassification,
+                                    Username = username,
+                                    FinancingRate = financingRate,
+                                    TransactionId = transactionId,
+                                    TradingAccountId = tradingAccountId,
+                                    AssetClass = assetClass,
+                                    PositionId = posId,
                                 };
 
                                 //if (tradeHistory.TradeTime <= dbMaxCreateTime)
@@ -150,8 +180,7 @@ namespace CFD_JOBS.Ayondo
                             //update history table
                             if (newTransferHistories.Count > 0)
                             {
-                                
-                                    db.AyondoTransferHistories.AddRange(newTransferHistories);//TODO
+                                db.AyondoTransferHistories.AddRange(newTransferHistories);//TODO
 
                                 CFDGlobal.LogLine("saving transfer histories...");
                                 db.SaveChanges();

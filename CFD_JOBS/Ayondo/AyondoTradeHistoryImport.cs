@@ -106,13 +106,17 @@ namespace CFD_JOBS.Ayondo
 
                     CFDGlobal.LogLine("Fetching data " + dtStart + " ~ " + dtEnd);
 
+                    var url = CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost" + (isLive ? "_Live" : ""))
+                              + (isLive ? "live" : "demo") + "/reports/tradehero/cn/tradehistory?start="
+                              + tsStart + "&end=" + tsEnd;
+                    CFDGlobal.LogLine("url: " + url);
+
                     var dtDownloadStart = DateTime.UtcNow;
-                    var downloadString = webClient.DownloadString(
-                        CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost"+(isLive?"_Live":"")) 
-                        + (isLive?"live":"demo") + "/reports/tradehero/cn/tradehistory?start="
-                        + tsStart + "&end=" + tsEnd);
+                    var downloadString = webClient.DownloadString(url);
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
+
+                    if (downloadString == "error") throw new Exception("API returned \"error\"");
 
                     var lines = downloadString.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
 
@@ -161,7 +165,7 @@ namespace CFD_JOBS.Ayondo
                                     : decimal.Parse(arr[13], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);//1.0E-6
                                 decimal? takeProfit = arr[14] == "" 
                                     ? (decimal?) null 
-                                    : decimal.Parse(arr[14], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint);
+                                    : decimal.Parse(arr[14], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
                                 var createTime = DateTime.ParseExact(arr[15], CFDGlobal.AYONDO_DATETIME_MASK,
                                     CultureInfo.CurrentCulture,
                                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
