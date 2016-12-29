@@ -428,7 +428,7 @@ namespace CFD_JOBS.Ayondo
                     #region 生成卡片
                     try
                     {
-                        if(!isLive)
+                        if(isLive)
                         {
                             cardService.DeliverCard(trade, positionHistory, user.UserId, allCards);
                         }
