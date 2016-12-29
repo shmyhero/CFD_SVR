@@ -514,8 +514,8 @@ namespace CFD_API.Controllers
 
             //拿到平仓记录的PositionId, 与卡牌表中的PositionId做比较。 然后更新平仓记录的HasCard数据
             List<long> positionIdList = result.Select(o => long.Parse(o.id)).ToList();
-            var posList = (from u in db.UserCards
-                          where positionIdList.Contains(u.PositionId)
+            var posList = (from u in db.UserCards_Live
+                           where positionIdList.Contains(u.PositionId)
                           //orderby u.ClosedAt descending
                           select u.PositionId.ToString()).ToList();
 
@@ -808,12 +808,11 @@ namespace CFD_API.Controllers
                 pl = result.PL,
             };
 
-            if (!IsLiveUrl) //目前只在模拟盘有卡牌
+            if (IsLiveUrl) //只在实盘有卡牌
             {
                 //Ayondo返回的Report里面不包含Invest和开仓价格，要从数据库里面拿
-                //todo: 先从Demo库拿，以后要考虑Live、Demo分开
                 long posID = long.Parse(form.posId);
-                var position = db.NewPositionHistories.FirstOrDefault(o => o.Id == posID);
+                var position = db.NewPositionHistory_live.FirstOrDefault(o => o.Id == posID);
 
                 if (position != null)
                 {
@@ -846,7 +845,7 @@ namespace CFD_API.Controllers
                             themeColor = card.ThemeColor
                         };
 
-                        UserCard uc = new UserCard()
+                        UserCard_Live uc = new UserCard_Live()
                         {
                             UserId = this.UserId,
                             CardId = card.Id,
@@ -871,7 +870,7 @@ namespace CFD_API.Controllers
                             IsShared = false,
                             IsPaid = false
                         };
-                        db.UserCards.Add(uc);
+                        db.UserCards_Live.Add(uc);
                         db.SaveChanges();
 
                         posDTO.card.cardId = uc.Id;

@@ -34,7 +34,7 @@ namespace CFD_API.Controllers
             CardCollectionDTO coll = new CardCollectionDTO();
 
             //这里的cardId用UserCard的ID，而不是Card.ID
-            var myCards = from u in db.UserCards
+            var myCards = from u in db.UserCards_Live
                           join c in db.Cards on u.CardId equals c.Id
                           into x
                           from y in x.DefaultIfEmpty()
@@ -90,7 +90,7 @@ namespace CFD_API.Controllers
         [Route("{id}")]
         public CardDTO GetCard(int id)
         {
-            var cardDTO = (from u in db.UserCards
+            var cardDTO = (from u in db.UserCards_Live
                            join c in db.Cards on u.CardId equals c.Id
                            into x
                            from y in x.DefaultIfEmpty()
@@ -134,7 +134,7 @@ namespace CFD_API.Controllers
 
             if (authUserId!=0 && cardDTO != null && cardDTO.isNew.Value)
             {
-                UserCard card = db.UserCards.Where(item => item.Id == id).FirstOrDefault();
+                UserCard_Live card = db.UserCards_Live.Where(item => item.Id == id).FirstOrDefault();
                 if (card != null)
                 {
                     card.IsNew = false;
@@ -150,7 +150,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO ShareCard(int id)
         {
-            UserCard uc = db.UserCards.Where(o => o.Id == id && o.UserId == this.UserId).FirstOrDefault();
+            UserCard_Live uc = db.UserCards_Live.Where(o => o.Id == id && o.UserId == this.UserId).FirstOrDefault();
             if (uc != null)
             {
                 uc.IsShared = true;
@@ -176,7 +176,7 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false) { message = "您已赞过该卡片" };
             }
 
-            UserCard uc = db.UserCards.Where(o => o.Id == id).FirstOrDefault();
+            UserCard_Live uc = db.UserCards_Live.Where(o => o.Id == id).FirstOrDefault();
             if (uc != null)
             {
                 uc.Likes = uc.Likes.HasValue ? uc.Likes + 1 : 1;
@@ -239,7 +239,7 @@ namespace CFD_API.Controllers
 
             if (userId == 0)
             {
-                topCards = (from u in db.UserCards
+                topCards = (from u in db.UserCards_Live
                             join c in db.Cards on u.CardId equals c.Id
                             into x
                             from y in x.DefaultIfEmpty()
@@ -274,7 +274,7 @@ namespace CFD_API.Controllers
             }
             else
             {
-                topCards = (from u in db.UserCards
+                topCards = (from u in db.UserCards_Live
                             join c in db.Cards on u.CardId equals c.Id
                             into x
                             from y in x.DefaultIfEmpty()

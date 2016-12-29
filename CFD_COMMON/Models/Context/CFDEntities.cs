@@ -41,6 +41,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
         public virtual DbSet<UserCard> UserCards { get; set; }
+        
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserAlert> UserAlerts { get; set; }
         public virtual DbSet<UserInfo> UserInfos { get; set; }
@@ -53,6 +54,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<NewPositionHistory_live> NewPositionHistory_live { get; set; }
         public virtual DbSet<Message_Live> Message_Live { get; set; }
         public virtual DbSet<UserAlert_Live> UserAlert_Live { get; set; }
+        public virtual DbSet<UserCard_Live> UserCards_Live { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -172,6 +174,22 @@ namespace CFD_COMMON.Models.Context
                 .HasPrecision(18, 5);
 
             modelBuilder.Entity<UserCard>()
+                .Property(e => e.SettlePrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserCard_Live>()
+               .Property(e => e.Qty)
+               .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserCard_Live>()
+                .Property(e => e.Invest)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserCard_Live>()
+                .Property(e => e.TradePrice)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserCard_Live>()
                 .Property(e => e.SettlePrice)
                 .HasPrecision(18, 5);
 

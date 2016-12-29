@@ -5,9 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CFD_COMMON.Models.Entities
 {
-    [Table("UserCard")]
-    public class UserCard
-    {
+    public class UserCardBase {
         [Key]
         public int Id { get; set; }
 
@@ -73,5 +71,14 @@ namespace CFD_COMMON.Models.Entities
         public DateTime? CreatedAt { get; set; }
 
         public DateTime? Expiration { get; set; }
+    }
+
+    /// <summary>
+    /// 模拟盘的用户卡片
+    /// </summary>
+    [Table("UserCard")]
+    public class UserCard : UserCardBase
+    {
+        
     }
 }

@@ -168,6 +168,7 @@
     <Compile Include="Models\Entities\UserAlert.cs" />
     <Compile Include="Models\Entities\UserAyondo.cs" />
     <Compile Include="Models\Entities\UserCard.cs" />
+    <Compile Include="Models\Entities\UserCard_Live.cs" />
     <Compile Include="Models\Entities\UserInfo.cs" />
     <Compile Include="Models\Entities\Version.cs" />
     <Compile Include="Models\Entities\VerifyCode.cs" />

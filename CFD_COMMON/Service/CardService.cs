@@ -77,7 +77,7 @@ namespace CFD_COMMON.Service
             var card = GetCard(trade.PL.Value, plRatePercent.Value, allCards);
             if (card != null)
             {
-                UserCard uc = new UserCard()
+                UserCard_Live uc = new UserCard_Live()
                 {
                     UserId = userID,
                     CardId = card.Id,
@@ -100,7 +100,7 @@ namespace CFD_COMMON.Service
                     IsShared = false,
                     IsPaid = false
                 };
-                db.UserCards.Add(uc);
+                db.UserCards_Live.Add(uc);
                 db.SaveChanges();
             }
         }
