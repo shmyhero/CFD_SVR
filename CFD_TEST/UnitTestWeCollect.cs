@@ -20,9 +20,9 @@ namespace CFD_TEST
             //9a56bc7a-bacb-11e6-a5cc-0211eb00a4cc
             //eccef492-babf-11e6-8b97-0211eb00a4cc
             //79c0a634-bacf-11e6-a3f5-0211eb00a4cc
-            string merchantId = "79c0a634-bacf-11e6-a3f5-0211eb00a4cc";
-            string url = string.Format("http://fxrate.wecollect.com/service/getrate?symbol={0}&merchantid={1}",symbol,merchantId);
-
+            string merchantId = "f1b70fe0-9d87-11e5-b682-0211eb00a4cc";
+            //string url = string.Format("http://fxrate.wecollect.com/service/getrate?symbol={0}&merchantid={1}",symbol,merchantId);
+            string url = "http://fxrate.wecollect.com/service/getrate?symbol=USDCNY&merchantid=f1b70fe0-9d87-11e5-b682-0211eb00a4cc";
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             try
             {

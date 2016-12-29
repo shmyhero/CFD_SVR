@@ -66,7 +66,7 @@ namespace CFD_API.Controllers
 
             if (myCards != null)
             {
-                var cache = WebCache.GetInstance(IsLiveUrl);
+                var cache = WebCache.GetInstance(true);
                 coll.cards = myCards.ToList();
                 coll.cards.ForEach(cardDTO => {
                     var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == cardDTO.stockID);
@@ -121,8 +121,8 @@ namespace CFD_API.Controllers
 
             if (cardDTO == null)
                 return null;
-
-            var cache = WebCache.GetInstance(IsLiveUrl);
+            //实盘才有卡片
+            var cache = WebCache.GetInstance(true);
             var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == cardDTO.stockID);
             if(prodDef != null)
             {
@@ -307,8 +307,8 @@ namespace CFD_API.Controllers
                                 liked = db.LikeHistories.Any(o => o.UserId == userId && o.UserCardId == u.Id)
                             }).Take(6).ToList();
             }
-
-            var cache = WebCache.GetInstance(IsLiveUrl);
+            //实盘才有卡片
+            var cache = WebCache.GetInstance(true);
         
             topCards.ForEach(cardDTO =>
             {
@@ -364,7 +364,7 @@ namespace CFD_API.Controllers
         private decimal GetLastPrice(ProdDef prodDef)
         {
 
-            var quotes = WebCache.GetInstance(IsLiveUrl).Quotes.Where(o => o.Id == prodDef.Id).ToList();
+            var quotes = WebCache.GetInstance(true).Quotes.Where(o => o.Id == prodDef.Id).ToList();
             //var prodDefs = redisProdDefClient.GetByIds(ids);
             var quote = quotes.FirstOrDefault(o => o.Id == prodDef.Id);
             if (quote != null)
