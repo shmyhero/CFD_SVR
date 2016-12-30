@@ -115,8 +115,8 @@ namespace CFD_API.Controllers
                 }
                 else //phone exists
                 {
-                    //user.Token = UserService.NewToken();
-                    //db.SaveChanges();
+                    user.Token = UserService.NewToken();
+                    db.SaveChanges();
 
                     result.success = true;
                     result.isNewUser = false;
@@ -214,8 +214,8 @@ namespace CFD_API.Controllers
             }
             else //openid exists
             {
-                //user.Token = UserService.NewToken();
-                //db.SaveChanges();
+                user.Token = UserService.NewToken();
+                db.SaveChanges();
 
                 result.success = true;
                 result.isNewUser = false;
