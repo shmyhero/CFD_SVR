@@ -323,8 +323,8 @@ namespace CFD_API.Controllers
             int count = topCards.Count();
             if (count < 3) //优先补黄金
             {
-                //从Demo的产品列表中取黄金
-                var prodDef = WebCache.GetInstance(false).ProdDefs.FirstOrDefault(o => o.Id == 34821);
+                //从实盘的产品列表中取黄金
+                var prodDef = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(o => o.Id == 35990);
                 if (prodDef != null)
                 {
                     decimal last = GetLastPrice(prodDef);
@@ -335,13 +335,13 @@ namespace CFD_API.Controllers
                         preClose = Quotes.GetClosePrice(prodDef),
                         rate = (last - Quotes.GetClosePrice(prodDef)) / Quotes.GetClosePrice(prodDef) *100,
                         stockName = "黄金",
-                        stockID = 34821
+                        stockID = 35990
                     });
                 }
 
                 if (count < 2) //再补白银
                 {
-                    prodDef = WebCache.GetInstance(false).ProdDefs.FirstOrDefault(o => o.Id == 34847);
+                    prodDef = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(o => o.Id == 35996);
                     if (prodDef != null)
                     {
                         decimal last = GetLastPrice(prodDef);
@@ -352,7 +352,7 @@ namespace CFD_API.Controllers
                             preClose = Quotes.GetClosePrice(prodDef),
                             rate = (last - Quotes.GetClosePrice(prodDef)) / Quotes.GetClosePrice(prodDef) * 100,
                             stockName = "白银",
-                            stockID = 34847
+                            stockID = 35996
                         });
                     }
                 }

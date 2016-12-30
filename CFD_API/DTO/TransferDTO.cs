@@ -19,5 +19,7 @@ namespace CFD_API.DTO
     {
         public decimal minimum { get; set; }
         public decimal fxRate { get; set; }
+
+        public List<BankDTO> banks {get;set;}
     }
 }

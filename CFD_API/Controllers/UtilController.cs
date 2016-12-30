@@ -1001,7 +1001,7 @@ namespace CFD_API.Controllers
         [Route("banks")]
         public List<BankDTO> GetBanks()
         {
-            var banks = db.Banks.Where(o => o.ExpiredAt.HasValue && o.ExpiredAt.Value == SqlDateTime.MaxValue.Value).Select(o => new BankDTO() {
+            var banks = db.Banks.Where(o => o.ExpiredAt.HasValue && o.ExpiredAt.Value == SqlDateTime.MaxValue.Value).OrderBy(o=>o.Order).Select(o => new BankDTO() {
                 cname = o.CName, logo = o.Logo
             });
 
@@ -1063,14 +1063,17 @@ namespace CFD_API.Controllers
         public DepositSettingDTO GetDepositSetting ()
         {
             Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "Deposit");
+
+            var Banks = GetBanks();
+
             if (refundSetting != null)
             {
                 var setting = JObject.Parse(refundSetting.Value);
-                return new DepositSettingDTO() { minimum = decimal.Parse(setting["min"].Value<string>()), fxRate = FxRate("CNYUSD") };
+                return new DepositSettingDTO() { minimum = decimal.Parse(setting["min"].Value<string>()), fxRate = FxRate("CNYUSD"), banks = Banks };
             }
             else
             {
-                return new DepositSettingDTO { minimum = 100M, fxRate = FxRate("CNYUSD") };
+                return new DepositSettingDTO { minimum = 100M, fxRate = FxRate("CNYUSD"), banks = Banks };
             }
         }
     }
