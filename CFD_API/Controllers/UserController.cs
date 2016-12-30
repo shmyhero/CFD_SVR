@@ -1645,23 +1645,26 @@ namespace CFD_API.Controllers
                             into t1
                             from t2 in t1.DefaultIfEmpty()
                             where x.Id == UserId
-                           select new { y.FirstName, y.LastName, y.IdCode, x.BankCardNumber, x.BankName, Logo = t2 == null? "" : t2.Logo, x.Branch,x.Province,x.City }).FirstOrDefault();
+                           select new { y.FirstName, y.LastName, y.IdCode, x.BankCardNumber, x.BankName, x.BankCardStatus, x.BankCardRejectReason, Logo = t2 == null? "" : t2.Logo, x.Branch,x.Province,x.City }).FirstOrDefault();
 
             if(userInfo == null)
             {
                 return null;
             }
 
-            LiveUserInfoDTO dto = new LiveUserInfoDTO() {
-                 firstName = userInfo.FirstName,
-                 lastName = userInfo.LastName,
-                 identityID = userInfo.IdCode,
-                 bankCardNumber = userInfo.BankCardNumber,
-                 bankIcon = userInfo.Logo,
-                 bankName = userInfo.BankName,
-                 branch = userInfo.Branch,
-                 province = userInfo.Province,
-                 city = userInfo.City
+            LiveUserInfoDTO dto = new LiveUserInfoDTO()
+            {
+                firstName = userInfo.FirstName,
+                lastName = userInfo.LastName,
+                identityID = userInfo.IdCode,
+                bankCardNumber = userInfo.BankCardNumber,
+                bankIcon = userInfo.Logo,
+                bankName = userInfo.BankName,
+                bankCardStatus = userInfo.BankCardStatus,
+                bankCardRejectReason = userInfo.BankCardRejectReason,
+                branch = userInfo.Branch,
+                province = userInfo.Province,
+                city = userInfo.City
             };
 
             return dto;

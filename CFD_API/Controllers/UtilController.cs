@@ -967,14 +967,16 @@ namespace CFD_API.Controllers
 
             if (authorization == null || authorization.Parameter == null || authorization.Parameter != LIFECYCLE_CALLBACK_AUTH_TOKEN)
             {
-                CFDGlobal.LogInformation("update reference account: invalid token");
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "invalid auth token"));
+                CFDGlobal.LogWarning("update reference account: invalid token");
+                //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "invalid auth token"));
+                return new ResultDTO(false);
             }
 
             if (string.IsNullOrEmpty(form.GUID))
             {
-                CFDGlobal.LogInformation("update reference account: GUID is null");
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "GUID is null"));
+                CFDGlobal.LogWarning("update reference account: GUID is null");
+                //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "GUID is null"));
+                return new ResultDTO(false);
             }
 
             CFDGlobal.LogInformation("reference account: GUID:" + form.GUID);
@@ -982,8 +984,9 @@ namespace CFD_API.Controllers
             var user = db.Users.FirstOrDefault(o => o.ReferenceAccountGuid == form.GUID);
             if (user == null)
             {
-                CFDGlobal.LogInformation("update reference account: can't find user by given reference account guid:" + form.GUID);
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "can't find user by guid"));
+                CFDGlobal.LogWarning("update reference account: can't find user by given reference account guid:" + form.GUID);
+                //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "can't find user by guid"));
+                return new ResultDTO(false);
             }
             user.BankCardStatus = form.Status;
 
