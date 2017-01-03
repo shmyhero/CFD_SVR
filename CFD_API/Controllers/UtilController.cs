@@ -30,6 +30,7 @@ using CFD_API.Controllers.Attributes;
 using CFD_API.Caching;
 using CFD_COMMON.Models.Cached;
 using Newtonsoft.Json.Linq;
+using System.Configuration;
 
 namespace CFD_API.Controllers
 {
@@ -1033,13 +1034,53 @@ namespace CFD_API.Controllers
         [Route("fxrate")]
         public decimal FxRate(string fxType)
         {
-            decimal fxRate = 6.95M;
+            decimal fxRate = getWeCollectFxRate();
             switch(fxType)
             {
-                case "USDCNY": fxRate = 6.95M; break;
-                case "CNYUSD": fxRate = 0.144M; break;
+                case "USDCNY": break;
+                case "CNYUSD": fxRate = 1 / fxRate; break;
             }
             return fxRate;
+        }
+
+        private decimal getWeCollectFxRate()
+        {
+            string url = string.Format("{0}getrate?symbol=USDCNY&merchantid={1}", ConfigurationManager.AppSettings["WecollectAPI"], ConfigurationManager.AppSettings["WecollectMerchantID"]);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            try
+            {
+                request.ContentType = "application/json";
+                request.Method = "GET";
+                request.Timeout = int.MaxValue;
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream streamReceive = response.GetResponseStream();
+                Encoding encoding = Encoding.UTF8;
+
+                StreamReader streamReader = new StreamReader(streamReceive, encoding);
+                string strResult = streamReader.ReadToEnd();
+                var jsonObj = JObject.Parse(strResult);
+                int status = jsonObj["status"].Value<int>();
+                if(status != 0)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+                }
+                decimal rate = jsonObj["rate"].Value<JObject>()["USDCNY"].Value<decimal>();
+                Console.WriteLine(strResult);
+                return rate;
+            }
+            catch (WebException webEx)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+            }
+            catch (Exception ex)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+            }
+            finally
+            {
+                request.Abort();
+            }
         }
 
         /// <summary>

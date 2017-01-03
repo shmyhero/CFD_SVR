@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +37,9 @@ namespace CFD_TEST
 
                 StreamReader streamReader = new StreamReader(streamReceive, encoding);
                 string strResult = streamReader.ReadToEnd();
+                var jsonObj = JObject.Parse(strResult);
+                int status = jsonObj["status"].Value<int>();
+                decimal rate = jsonObj["rate"].Value<JObject>()["USDCNY"].Value<decimal>();
                 Console.WriteLine(strResult);
                 return;
             }
