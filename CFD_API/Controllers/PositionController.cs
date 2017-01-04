@@ -552,7 +552,7 @@ namespace CFD_API.Controllers
         [HttpPost]
         [Route("")]
         [Route("live")]
-        [BasicAuth]
+        [BasicAuth2]
         public PositionDTO NewPosition(NewPositionFormDTO form)
         {
             var user = GetUser();

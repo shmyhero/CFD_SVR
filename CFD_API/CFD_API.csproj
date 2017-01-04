@@ -256,6 +256,7 @@
     <Compile Include="Caching\WebCache.cs" />
     <Compile Include="Caching\WebCacheInstance.cs" />
     <Compile Include="Controllers\Attributes\ApiHitRecord.cs" />
+    <Compile Include="Controllers\Attributes\BasicAuth2.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />
     <Compile Include="Controllers\Attributes\ElmahFilter.cs" />
     <Compile Include="Controllers\Attributes\AdminAuth.cs" />
@@ -285,6 +286,7 @@
     <Compile Include="DTO\SignalRDTO\PositionDTO.cs" />
     <Compile Include="DTO\SignalRDTO\QuoteFeed.cs" />
     <Compile Include="DTO\TickDTO.cs" />
+    <Compile Include="DTO\TimeStampDTO.cs" />
     <Compile Include="DTO\TransferDTO.cs" />
     <Compile Include="DTO\UserDTO.cs" />
     <Compile Include="DTO\UtilDTO.cs" />

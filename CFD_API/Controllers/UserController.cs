@@ -31,6 +31,7 @@ using AyondoTrade.FaultModel;
 using EntityFramework.Extensions;
 using Newtonsoft.Json;
 using ServiceStack.Text;
+using System.Data.SqlTypes;
 
 namespace CFD_API.Controllers
 {
@@ -1688,6 +1689,18 @@ namespace CFD_API.Controllers
             return transferHistory;
         }
 
+        [HttpGet]
+        [Route("live/timestamp")]
+        [BasicAuth]
+        public TimeStampDTO GetTimeStamp()
+        {
+            long timeStamp = DateTime.Now.ToUnixTime();
+            int nonce = new Random(DateTime.Now.Millisecond).Next(0, 100000);
+
+            db.TimeStampNonces.Add(new TimeStampNonce() { TimeStamp = timeStamp, Nonce = nonce, UserID = this.UserId, CreatedAt = DateTime.UtcNow, Expiration = SqlDateTime.MaxValue.Value });
+            db.SaveChanges();
+            return new TimeStampDTO() { timeStamp = timeStamp, nonce = nonce };
+        }
 
         /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式
