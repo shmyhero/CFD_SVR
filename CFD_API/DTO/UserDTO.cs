@@ -27,6 +27,7 @@ namespace CFD_API.DTO
         public string liveUsername { get; set; }
         public string liveEmail { get; set; }
         public bool autoCloseAlert_Live { get; set; }
+        public string bankCardStatus { get; set; }
     }
 
     public enum UserLiveStatus
@@ -50,6 +51,9 @@ namespace CFD_API.DTO
         public string branch { get; set; }
         public string province { get; set; }
         public string city { get; set; }
+
+        public DateTime? lastWithdrawAt { get; set; }
+        public decimal? lastWithdraw { get; set; }
     }
 
     public struct BankCardUpdateStatus

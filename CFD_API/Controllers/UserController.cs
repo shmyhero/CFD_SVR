@@ -280,6 +280,7 @@ namespace CFD_API.Controllers
                 userDto.liveAccRejReason = GetUserLiveAccountRejectReason(user.AyLiveAccountStatus);
             userDto.liveUsername = user.AyLiveUsername;
             userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
+            userDto.bankCardStatus = user.BankCardStatus;
 
             return userDto;
         }
@@ -1632,6 +1633,9 @@ namespace CFD_API.Controllers
                 transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, form.Amount);
             }
 
+            db.TransferHistorys.Add(new TransferHistory() { TransferType="Withdraw",Amount=form.Amount, UserID=this.UserId, CreatedAt = DateTime.Now });
+            db.SaveChanges();
+
             return transferId;
         }
 
@@ -1653,6 +1657,8 @@ namespace CFD_API.Controllers
                 return null;
             }
 
+            var lastWithdrawRecord = db.TransferHistorys.OrderByDescending(o=>o.CreatedAt).FirstOrDefault(o => (o.UserID == UserId && o.TransferType == "Withdraw"));
+
             LiveUserInfoDTO dto = new LiveUserInfoDTO()
             {
                 firstName = userInfo.FirstName,
@@ -1665,7 +1671,9 @@ namespace CFD_API.Controllers
                 bankCardRejectReason = userInfo.BankCardRejectReason,
                 branch = userInfo.Branch,
                 province = userInfo.Province,
-                city = userInfo.City
+                city = userInfo.City,
+                lastWithdraw = lastWithdrawRecord == null? decimal.Zero : lastWithdrawRecord.Amount,
+                lastWithdrawAt = lastWithdrawRecord == null ? null : lastWithdrawRecord.CreatedAt,
             };
 
             return dto;

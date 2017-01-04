@@ -41,6 +41,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
         public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
+        public virtual DbSet<TransferHistory> TransferHistorys { get; set; }
         public virtual DbSet<UserCard> UserCards { get; set; }
         
         public virtual DbSet<User> Users { get; set; }
@@ -153,6 +154,9 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.Ask)
                 .HasPrecision(18, 5);
 
+            modelBuilder.Entity<TransferHistory>()
+                .Property(e => e.Amount)
+                .HasPrecision(18, 5);
 
             modelBuilder.Entity<UserAlert>()
                 .Property(e => e.HighPrice)
