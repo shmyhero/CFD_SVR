@@ -366,8 +366,8 @@ namespace CFD_TEST
             //    "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "15821399619");
             //CFDGlobal.LogLine(sendSms);
 
-            List<string> mobiles = new List<string>() { "13764349804", "13601751330", "13167106958" };
-            List<string> coupons = new List<string>() { "st7M8UA85806197U", "st9K4VA85806422P", "st9L4YC85806659G" };
+            List<string> mobiles = new List<string>() { "13167106958", "18616605876", "13316985122" };
+            List<string> coupons = new List<string>() { "st7N4ZE85812403T", "st9M9VH85812636S", "st7N4QA85812862M" };
             string format = "【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。券号：{0}（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。";
             
             for(int x=0; x<3; x++)
