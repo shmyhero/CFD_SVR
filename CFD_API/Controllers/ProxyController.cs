@@ -7,6 +7,8 @@ using System.Net.Http;
 using System.Web.Http;
 using CFD_COMMON;
 using Newtonsoft.Json.Linq;
+using CFD_API.DTO;
+using Newtonsoft.Json;
 
 namespace CFD_API.Controllers
 {
@@ -86,6 +88,48 @@ namespace CFD_API.Controllers
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
             var jObject = JObject.Parse(str);
+            return jObject;
+        }
+
+        [HttpPost]
+        [Route("refaccount")]
+        public JObject ReferenctAccount(LiveUserBankCardFormDTO form)
+        {
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "reference-account");
+            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+            httpWebRequest.Timeout = int.MaxValue;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+            var s = JsonConvert.SerializeObject(form);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS reference-account called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var jObject = JObject.Parse(str);
+
             return jObject;
         }
     }

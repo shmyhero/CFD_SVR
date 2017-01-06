@@ -18,6 +18,7 @@ using CFD_COMMON.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
+using System.Text;
 
 namespace CFD_API.Controllers
 {
@@ -332,41 +333,29 @@ namespace CFD_API.Controllers
 
         protected static JObject AMSBindBankCard(LiveUserBankCardFormDTO form, string method = "POST")
         {
-            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "reference-account");
-            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
+            byte[] binaryData = Encoding.UTF8.GetBytes(JObject.FromObject(form).ToString());
+            var httpWebRequest =
+                WebRequest.CreateHttp(AMS_PROXY_HOST + "refaccount");
+            httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = method;
-            httpWebRequest.ContentType = "application/json; charset=UTF-8";
-            httpWebRequest.Proxy = null;
             httpWebRequest.Timeout = int.MaxValue;
-            var requestStream = httpWebRequest.GetRequestStream();
-            var sw = new StreamWriter(requestStream);
-            var s = JsonConvert.SerializeObject(form);
-            sw.Write(s);
-            sw.Flush();
-            sw.Close();
+            httpWebRequest.Proxy = null;
+
+            httpWebRequest.ContentLength = binaryData.Length;
+            Stream reqstream = httpWebRequest.GetRequestStream();
+            reqstream.Write(binaryData, 0, binaryData.Length);
 
             var dtBegin = DateTime.UtcNow;
 
-            WebResponse webResponse;
-            try
-            {
-                webResponse = httpWebRequest.GetResponse();
-            }
-            catch (WebException e)
-            {
-                webResponse = e.Response;
-            }
-
+            var webResponse = httpWebRequest.GetResponse();
             var responseStream = webResponse.GetResponseStream();
             var sr = new StreamReader(responseStream);
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS reference-account called. Time: " + ts.TotalMilliseconds + "ms Url: " +
-                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+            CFDGlobal.LogInformation("AMS reference account proxy called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
 
             var jObject = JObject.Parse(str);
-
             return jObject;
         }
     }
