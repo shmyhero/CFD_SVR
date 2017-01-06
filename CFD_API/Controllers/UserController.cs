@@ -1633,7 +1633,7 @@ namespace CFD_API.Controllers
                 transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, form.Amount);
             }
 
-            db.TransferHistorys.Add(new TransferHistory() { TransferType="Withdraw",Amount=form.Amount, UserID=this.UserId, CreatedAt = DateTime.Now });
+            db.TransferHistorys.Add(new TransferHistory() { TransferType="Withdraw",Amount=form.Amount, UserID=this.UserId, BankCard=user.BankCardNumber, CreatedAt = DateTime.Now });
             db.SaveChanges();
 
             return transferId;
@@ -1657,7 +1657,7 @@ namespace CFD_API.Controllers
                 return null;
             }
 
-            var lastWithdrawRecord = db.TransferHistorys.OrderByDescending(o=>o.CreatedAt).FirstOrDefault(o => (o.UserID == UserId && o.TransferType == "Withdraw"));
+            var lastWithdrawRecord = db.TransferHistorys.OrderByDescending(o=>o.CreatedAt).FirstOrDefault(o => (o.UserID == UserId && o.TransferType == "Withdraw" && o.BankCard == userInfo.BankCardNumber));
 
             LiveUserInfoDTO dto = new LiveUserInfoDTO()
             {

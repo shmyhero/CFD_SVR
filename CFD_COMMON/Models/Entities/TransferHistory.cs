@@ -17,6 +17,8 @@ namespace CFD_COMMON.Models.Entities
 
         public int UserID { get; set; }
 
+        public string BankCard { get; set; }
+
         public DateTime? CreatedAt { get; set; }
     }
 }
