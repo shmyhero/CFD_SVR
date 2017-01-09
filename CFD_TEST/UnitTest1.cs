@@ -588,6 +588,7 @@ namespace CFD_TEST
         {
             string jsonData = "{\"securityId\":" + secId + ",\"isLong\":"+ isLong.ToString().ToLower()+",\"invest\":100,\"leverage\":"+leverage+"}";
             var request = HttpWebRequest.Create("http://cfd-webapi.chinacloudapp.cn/api/position");
+            //var request = HttpWebRequest.Create("http://localhost:11033/api/position?ignorePriceDelay=true");
             request.Headers["Authorization"] = string.Format("Basic {0}_{1}", user.Id, user.Token);
             request.Method = "post";
             request.ContentType = "application/json";
@@ -596,7 +597,17 @@ namespace CFD_TEST
             Stream requestStream = request.GetRequestStream();
             requestStream.Write(datas, 0, datas.Length);
 
-            var responseStream = request.GetResponse().GetResponseStream();
+            WebResponse response;
+            try
+            {
+                response = request.GetResponse();
+            }
+            catch (WebException e)
+            {
+                response = e.Response;
+                CFDGlobal.LogException(e);
+            }
+            var responseStream = response.GetResponseStream();
             var readToEnd = new StreamReader(responseStream).ReadToEnd();
             var dto = JsonConvert.DeserializeObject<PositionDTO>(readToEnd);
 
