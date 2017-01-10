@@ -321,7 +321,8 @@ namespace CFD_API.Controllers
             });
 
             int count = topCards.Count();
-            if (count < 3) //优先补黄金
+            //count==0时不用补
+            if (count < 3 && count > 0) //优先补黄金
             {
                 //从实盘的产品列表中取黄金
                 var prodDef = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(o => o.Id == 35990);
