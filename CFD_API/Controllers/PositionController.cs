@@ -553,7 +553,7 @@ namespace CFD_API.Controllers
         [Route("")]
         [Route("live")]
         [BasicAuth2]
-        public PositionDTO NewPosition(NewPositionFormDTO form)
+        public PositionDTO NewPosition(NewPositionFormDTO form, bool ignorePriceDelay = false)
         {
             var user = GetUser();
 
@@ -582,7 +582,9 @@ namespace CFD_API.Controllers
             decimal tradeValueCcy2 = FX.ConvertByOutrightMidPrice(tradeValueUSD, "USD", prodDef.Ccy2, cache.ProdDefs, cache.Quotes);
 
             var quote = cache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
-            if(Quotes.IsPriceDown(cache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+
+            //price
+            if(!ignorePriceDelay && Quotes.IsPriceDown(cache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
                         __(TransKey.PRICEDOWN)));
