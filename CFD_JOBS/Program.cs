@@ -120,6 +120,11 @@ namespace CFD_JOBS
                     TickChartWorker.Run(true);
                 }
 
+                if (args.Contains("-RemittanceReport"))
+                {
+                    RemittanceReport.Run();
+                }
+
                 return 0;
             }
             catch (Exception ex)

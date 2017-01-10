@@ -111,6 +111,7 @@
     <Compile Include="Ayondo\AyondoOldProdCleanup.cs" />
     <Compile Include="Ayondo\AyondoTransferHistoryImport.cs" />
     <Compile Include="Ayondo\AyondoTradeHistoryImport.cs" />
+    <Compile Include="Ayondo\RemittanceReport.cs" />
     <Compile Include="StockAlert.cs" />
     <Compile Include="RedisToDbWorker.cs" />
     <Compile Include="TickChartWorker.cs" />
@@ -134,6 +135,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <None Include="Template\WeCollect_Remittance_Template.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AyondoTrade\AyondoTrade.csproj">
@@ -150,6 +154,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
