@@ -40,6 +40,8 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<PriceDownInterval> PriceDownIntervals { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
+        public virtual DbSet<Reward> Rewards { get; set; }
+        public virtual DbSet<RewardTransfer> RewardTransfers { get; set; }
         public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
         public virtual DbSet<TransferHistory> TransferHistorys { get; set; }
         public virtual DbSet<UserCard> UserCards { get; set; }

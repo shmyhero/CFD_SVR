@@ -270,6 +270,7 @@ namespace CFD_API.Controllers
                     UserId = UserId,
                 };
                 db.DemoRegisterRewards.Add(reward);
+                RewardService.AddTotalReward(UserId, RewardService.REWARD_DEMO_REG, db);
                 db.SaveChanges();
 
                 userDto.rewardAmount = reward.Amount;

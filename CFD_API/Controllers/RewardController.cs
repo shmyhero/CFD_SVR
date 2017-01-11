@@ -175,21 +175,11 @@ namespace CFD_API.Controllers
             decimal totalDailySignReward = db.DailySigns
                 .Where(o => o.UserId == UserId && !o.IsPaid.Value)
                 .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
-            //List <DailySign> dailySignList = db.DailySigns.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value).ToList();
-            //if(dailySignList != null && dailySignList.Count > 0)
-            //{
-            //    totalDailySignReward = dailySignList.Sum(item => item.Amount);
-            //}
 
             //reward for daily demo trasaction
             var totalDemoTransactionReward = db.DailyTransactions
                 .Where(o => o.UserId == UserId && !o.IsPaid.Value)
                 .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
-            //List<DailyTransaction> dailyTransactionsList = db.DailyTransactions.Where(item => item.UserId == this.UserId && item.IsPaid.HasValue && !item.IsPaid.Value).ToList();
-            //if(dailyTransactionsList.Count > 0)
-            //{
-            //    totalDemoTransactionReward = dailyTransactionsList.Sum(item => item.Amount);
-            //}
 
             var totalCard = db.UserCards_Live.Where(o => (!o.IsPaid.HasValue || !o.IsPaid.Value) && o.UserId == UserId).Select(o => o.Reward).DefaultIfEmpty(0).Sum();
 
@@ -198,6 +188,56 @@ namespace CFD_API.Controllers
             decimal demoRegisterReward = reward == null ? 0 : reward.Amount;
 
             return new RewardDTO() { demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward }; //totalDailySignReward + totalDemoTransactionReward + demoRegisterReward;
+        }
+
+        [HttpGet]
+        [Route("total")]
+        [BasicAuth]
+        public TotalRewardDTO GetTotalReward()
+        {
+            var reward = db.Rewards.FirstOrDefault(o => o.UserID == UserId);
+            if (reward == null)
+            {
+                return new TotalRewardDTO() { total = 0, paid = 0 };
+            }
+            else
+            {
+                return new TotalRewardDTO() { total = reward.Total, paid = reward.Paid };
+            }
+        }
+
+        private static object transferLock = new object();
+        /// <summary>
+        /// 鼓励金转到实盘账户
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("transfer/{amount}")]
+        [BasicAuth]
+        public ResultDTO Transfer(decimal amount)
+        {
+            lock (transferLock)
+            {
+                var reward = db.Rewards.FirstOrDefault(o => o.UserID == UserId);
+                if (reward == null)
+                {
+                    return new ResultDTO() { success = false, message = "鼓励金为空" };
+                }
+                else if ((reward.Total - reward.Paid) < amount)
+                {
+                    return new ResultDTO() { success = false, message = "剩余鼓励金不足" };
+                }
+                else if (amount < 0)
+                {
+                    return new ResultDTO() { success = false, message = "金额不能为负" };
+                }
+
+                reward.Paid += amount;
+                RewardTransfer transfer = new RewardTransfer() { UserID = UserId, Amount = amount, CreatedAt = DateTime.UtcNow };
+                db.RewardTransfers.Add(transfer);
+                db.SaveChanges();
+            }
+            return new ResultDTO() { success = true };
         }
 
         [HttpGet]

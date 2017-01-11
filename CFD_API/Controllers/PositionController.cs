@@ -873,6 +873,7 @@ namespace CFD_API.Controllers
                             IsPaid = false
                         };
                         db.UserCards_Live.Add(uc);
+                        RewardService.AddTotalReward(UserId, card.Reward.HasValue? card.Reward.Value : 0, db);
                         db.SaveChanges();
 
                         posDTO.card.cardId = uc.Id;
