@@ -23,5 +23,13 @@ namespace CFD_COMMON.Models.Entities
         [Column(Order = 1)]
         [StringLength(20)]
         public string AndroidLatestStr { get; set; }
+
+        public int? IOSMinInt { get; set; }
+
+        public int? AndroidMinInt { get; set; }
+
+        public int? IOSPkgSize { get; set; }
+
+        public int? AndroidPkgSize { get; set; }
     }
 }
