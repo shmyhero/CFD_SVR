@@ -21,6 +21,8 @@ namespace CFD_JOBS.Ayondo
     public class AyondoTransferHistoryImport
     {
         private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan HistoryInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan HistoryIdentifier = TimeSpan.FromHours(2);
         private static readonly TimeSpan MaxDuration = TimeSpan.FromMinutes(30);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
@@ -153,8 +155,8 @@ namespace CFD_JOBS.Ayondo
                                     LastName = lastName,
                                     Amount = amount,
                                     Ccy = currency,
-                                    Timestamp = timestamp.AddHours(-8),
-                                    ApprovalTime = approvalTime.AddHours(-8),
+                                    Timestamp = timestamp.AddHours(-8),//api returning UTC+8
+                                    ApprovalTime = approvalTime.AddHours(-8),//api returning UTC+8
                                     WhiteLabel = whiteLabel,
                                     ProductName = productName,
                                     BaseCcy = baseCurrency,
@@ -197,7 +199,11 @@ namespace CFD_JOBS.Ayondo
                 }
 
                 CFDGlobal.LogLine("");
-                Thread.Sleep(Interval);
+
+                if (_lastEndTime != null && DateTime.UtcNow - _lastEndTime < HistoryIdentifier)
+                    Thread.Sleep(Interval);
+                else
+                    Thread.Sleep(HistoryInterval);
             }
         }
     }

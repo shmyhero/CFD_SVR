@@ -52,6 +52,7 @@ namespace CFD_COMMON.Models.Context
         //public virtual DbSet<UserAyondo> UserAyondos { get; set; }
 
         public virtual DbSet<AyondoTradeHistory_Live> AyondoTradeHistory_Live { get; set; }
+        public virtual DbSet<AyondoTransferHistory_Live> AyondoTransferHistory_Live { get; set; }
         public virtual DbSet<Bookmark_Live> Bookmark_Live { get; set; }
         public virtual DbSet<NewPositionHistory_live> NewPositionHistory_live { get; set; }
         public virtual DbSet<Message_Live> Message_Live { get; set; }

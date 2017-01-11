@@ -78,6 +78,11 @@ namespace CFD_API.Controllers
 
             //var dbSecurities = db.AyondoSecurities.Where(o => secIds.Contains(o.Id)).ToList();
 
+            var posIDs = result.Select(o => Convert.ToInt64(o.PosMaintRptID)).ToList();
+            var transferHistories = IsLiveUrl
+                ? db.AyondoTransferHistory_Live.Where(o => o.PositionId.HasValue && posIDs.Contains(o.PositionId.Value)).ToList().Select(o => o as AyondoTransferHistoryBase).ToList()
+                : db.AyondoTransferHistories.Where(o => o.PositionId.HasValue && posIDs.Contains(o.PositionId.Value)).ToList().Select(o => o as AyondoTransferHistoryBase).ToList();
+
             var cache = WebCache.GetInstance(IsLiveUrl);
 
             var positionDtos = result.Select(delegate(PositionReport report)
@@ -108,7 +113,15 @@ namespace CFD_API.Controllers
                 }
 
                 var posDTO = MapPositionReportToPositionDTO(report);
+
+                //security
                 posDTO.security = security;
+
+                //transferHistory
+                var financings = transferHistories.Where(o => o.PositionId.ToString() == posDTO.id && o.TransferType == "Financing").ToList();
+                var dividends = transferHistories.Where(o => o.PositionId.ToString() == posDTO.id && o.TransferType == "Dividend").ToList();
+                if (financings.Count > 0) posDTO.financingSum = financings.Sum(o => o.Amount);
+                if (dividends.Count > 0) posDTO.dividendSum = dividends.Sum(o => o.Amount);
 
                 //default fx rate for client calculation
                 if (prodDef.Ccy2 != "USD")
