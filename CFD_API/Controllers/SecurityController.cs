@@ -118,8 +118,8 @@ namespace CFD_API.Controllers
         public List<SecurityDTO> GetBookmarkList(int page = 1, int perPage = 20)
         {
             var bookmarkIDs = IsLiveUrl
-                ? db.Bookmark_Live.Where(o => o.UserId == UserId).OrderByDescending(o => o.DisplayOrder).Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList()
-                : db.Bookmarks.Where(o => o.UserId == UserId).OrderByDescending(o => o.DisplayOrder).Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList();
+                ? db.Bookmark_Live.Where(o => o.UserId == UserId).OrderBy(o => o.DisplayOrder).Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList()
+                : db.Bookmarks.Where(o => o.UserId == UserId).OrderBy(o => o.DisplayOrder).Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList();
 
             //var prodDefs = RedisClient.As<ProdDef>().GetByIds(bookmarkIDs);
             var prodDefs = GetActiveProdsByIdsKeepOrder(bookmarkIDs, IsLiveUrl);
