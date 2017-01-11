@@ -101,6 +101,7 @@ namespace CFD_COMMON.Service
                     IsPaid = false
                 };
                 db.UserCards_Live.Add(uc);
+                RewardService.AddTotalReward(userID, card.Reward.HasValue? card.Reward.Value : 0, db);
                 db.SaveChanges();
             }
         }

@@ -44,9 +44,9 @@ namespace CFD_COMMON.Service
                 ? db.Bookmark_Live.Where(o => o.UserId == userId).ToList().Select(o => o as BookmarkBase).ToList()
                 : db.Bookmarks.Where(o => o.UserId == userId).ToList().Select(o => o as BookmarkBase).ToList();
 
-            int? maxDisplayOrder = myBookmarks.Max(o => o.DisplayOrder);
+            int? minDisplayOrder = myBookmarks.Min(o => o.DisplayOrder);
 
-            var order = maxDisplayOrder.HasValue ? maxDisplayOrder + 1 : 1;
+            var order = minDisplayOrder.HasValue ? minDisplayOrder - 1 : 1;
 
             foreach (var secId in secIds)
             {
@@ -57,14 +57,14 @@ namespace CFD_COMMON.Service
                         {
                             UserId = userId,
                             AyondoSecurityId = secId,
-                            DisplayOrder = order++ //setting display order
+                            DisplayOrder = order-- //setting display order
                         });
                     else
                         db.Bookmarks.Add(new Bookmark
                         {
                             UserId = userId,
                             AyondoSecurityId = secId,
-                            DisplayOrder = order++ //setting display order
+                            DisplayOrder = order-- //setting display order
                         });
                 }
             }

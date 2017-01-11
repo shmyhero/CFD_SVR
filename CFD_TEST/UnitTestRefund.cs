@@ -3,8 +3,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CFD_API.DTO;
 using System.Runtime.Serialization.Json;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Net;
+using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_TEST
 {
@@ -140,5 +143,33 @@ namespace CFD_TEST
                 return json;
             }
         }
+        [TestMethod]
+        public void InitTransferHistory()
+        {
+            var db = CFDEntities.Create();
+            var userIDs = db.DemoRegisterRewards.Select( o=> new {o.UserId }).Distinct().ToList();
+            userIDs.ForEach(id => {
+
+                decimal dailySignTotal = 0;
+                if(db.DailySigns.Any(o => o.UserId == id.UserId))
+                    dailySignTotal = db.DailySigns.Where(o => o.UserId == id.UserId).Sum(o => o.Amount);
+
+                decimal dailyTransactionTotal = 0;
+                if(db.DailyTransactions.Any(o => o.UserId == id.UserId))
+                    dailyTransactionTotal = db.DailyTransactions.Where(o => o.UserId == id.UserId).Sum(o => o.Amount);
+                var demoRegist = 20;
+
+                decimal? cardTotal = 0;
+                if(db.UserCards_Live.Any(o => o.UserId == id.UserId))
+                    cardTotal = db.UserCards_Live.Where(o => o.UserId == id.UserId).Sum(o => o.Reward);
+
+                Reward reward = new Reward() { UserID = id.UserId, Total = dailySignTotal+ dailyTransactionTotal+ demoRegist+ cardTotal.Value ,
+                     Paid=0
+                };
+                db.Rewards.Add(reward);
+            });
+
+            db.SaveChanges();
+        } 
     }
 }

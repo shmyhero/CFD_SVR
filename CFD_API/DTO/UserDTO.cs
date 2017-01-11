@@ -166,6 +166,12 @@ namespace CFD_API.DTO
         public decimal demoRegister { get; set; }
     }
 
+    public class TotalRewardDTO
+    {
+        public decimal? total { get; set; }
+        public decimal? paid { get; set; }
+    }
+
     public class MessageDTO {
         public int id { get; set; }
 

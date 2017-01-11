@@ -68,8 +68,8 @@ namespace CFD_COMMON.Service
                     if (newCheckIn != null)
                     {
                         dbIsol.DailySigns.Add(newCheckIn);
+                        AddTotalReward(userId, newCheckIn.Amount, dbIsol);
                         dbIsol.SaveChanges();
-
                         result = true;
                     }
                     else
@@ -112,6 +112,7 @@ namespace CFD_COMMON.Service
                                 };
 
                                 dbIsol.DailyTransactions.Add(newTrade);
+                                AddTotalReward(userId, REWARD_DEMO_TRADE, dbIsol);
                                 dbIsol.SaveChanges();
 
                                 result = true;
@@ -138,6 +139,20 @@ namespace CFD_COMMON.Service
                 return CHECK_IN_DAY_6_TO_10;
 
             return CHECK_IN_DAY_11_TO_X;
+        }
+
+        public static void AddTotalReward(int userId, decimal amount, CFDEntities db)
+        {
+           var reward = db.Rewards.FirstOrDefault(o => o.UserID == userId);
+            if(reward != null)
+            {
+                reward.Total += amount;
+            }
+            else
+            {
+                Reward newReward = new Reward() { UserID = userId, Total = amount, Paid = 0 };
+                db.Rewards.Add(newReward);
+            }
         }
     }
 }
