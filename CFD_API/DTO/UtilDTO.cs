@@ -34,6 +34,24 @@ namespace CFD_API.DTO
         public int androidMinInt { get; set; }
         public int iOSPkgSize { get; set; }
         public int androidPkgSize { get; set; }
+        public string iOSAppUrl { get; set; }
+    }
+
+    public class VersionIOSDTO
+    {
+        public int iOSLatestInt { get; set; }
+        public string iOSLatestStr { get; set; }
+        public int iOSMinInt { get; set; }
+        public int iOSPkgSize { get; set; }
+        public string iOSAppUrl { get; set; }
+    }
+
+    public class VersionAndroidDTO
+    {
+        public int androidLatestInt { get; set; }
+        public string androidLatestStr { get; set; }
+        public int androidMinInt { get; set; }
+        public int androidPkgSize { get; set; }
     }
 
     public class SimpleBannerDTO

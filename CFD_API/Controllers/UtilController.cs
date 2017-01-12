@@ -50,6 +50,24 @@ namespace CFD_API.Controllers
             return Mapper.Map<VersionDTO>(version);
         }
 
+        [HttpGet]
+        [Route("version/ios")]
+        public VersionIOSDTO GetVersionIOS()
+        {
+            var version = db.Versions.FirstOrDefault();
+
+            return Mapper.Map<VersionIOSDTO>(version);
+        }
+
+        [HttpGet]
+        [Route("version/android")]
+        public VersionAndroidDTO GetVersionAndroid()
+        {
+            var version = db.Versions.FirstOrDefault();
+
+            return Mapper.Map<VersionAndroidDTO>(version);
+        }
+
         [Route("sendCode")]
         [HttpPost]
         //[RequireHttps]

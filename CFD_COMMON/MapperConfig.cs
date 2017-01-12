@@ -18,6 +18,9 @@ namespace CFD_COMMON
             cfg.CreateMap<AyondoTradeHistoryBase, AyondoTradeHistory>();
             cfg.CreateMap<AyondoTradeHistoryBase, AyondoTradeHistory_Live>();
 
+            cfg.CreateMap<AyondoTransferHistoryBase, AyondoTransferHistory>();
+            cfg.CreateMap<AyondoTransferHistoryBase, AyondoTransferHistory_Live>();
+
             cfg.CreateMap<MessageBase, Message>();
             cfg.CreateMap<MessageBase, Message_Live>();
 

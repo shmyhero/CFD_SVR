@@ -31,5 +31,8 @@ namespace CFD_COMMON.Models.Entities
         public int? IOSPkgSize { get; set; }
 
         public int? AndroidPkgSize { get; set; }
+
+        [StringLength(200)]
+        public string IOSAppUrl { get; set; }
     }
 }
