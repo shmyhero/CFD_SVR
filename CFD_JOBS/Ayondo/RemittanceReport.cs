@@ -19,6 +19,7 @@ using System.Text;
 using System.IO;
 using System.Data.OleDb;
 using System.Net.Mail;
+using Newtonsoft.Json.Linq;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -34,8 +35,8 @@ namespace CFD_JOBS.Ayondo
                 {
                     var start = DateTime.UtcNow;
                     var end = DateTime.UtcNow.AddMinutes(5);
-                    //下午5点作为发送时间
-                    var timeToSend = DateTime.SpecifyKind(new DateTime(start.Year, start.Month, start.Day, 17, 0, 0), DateTimeKind.Utc);
+                    //上海的下午5点、UTC上午9点作为发送时间
+                    var timeToSend = DateTime.SpecifyKind(new DateTime(start.Year, start.Month, start.Day, 9, 0, 0), DateTimeKind.Utc);
                     if (start < timeToSend && end >= timeToSend)
                     {
                         string fileName = "Remittance/" + timeToSend.ToString("yyyy-MM-dd") + ".xls";
@@ -45,6 +46,7 @@ namespace CFD_JOBS.Ayondo
                         }
                         ExcelExport excel = new ExcelExport();
                         List<ExportItem> exporItems = new List<ExportItem>();
+                        string refundMailSetting = string.Empty;
                         using (var db = CFDEntities.Create())
                         {
                             DateTime yesterDay = timeToSend.AddDays(-1);
@@ -62,10 +64,12 @@ namespace CFD_JOBS.Ayondo
                                               IdCardNo = u2.IdCode,
                                               Amount = t.Amount
                                           }).ToList();
+
+                            refundMailSetting = db.Miscs.FirstOrDefault(o => o.Key == "RefundMail").Value;
                         }
                         excel.ExportItems = exporItems;
                         excel.Export(fileName);
-                        SendMail(fileName);
+                        SendMail(fileName, refundMailSetting);
                     }
                 }
                 catch (Exception e)
@@ -77,28 +81,42 @@ namespace CFD_JOBS.Ayondo
             }
         }
 
-        public static void SendMail(string fileName)
+        public static void SendMail(string fileName, string refundSetting)
         {
-            string receiver = "david.qi@tradehero.mobi;ivan@tradehero.mobi;andy@tradehero.mobi";
-            //string receiver = "992990831@qq.com";
+            string from = JObject.Parse(refundSetting)["from"].Value<string>();
+            string to = JObject.Parse(refundSetting)["to"].Value<string>();
+            string cc = JObject.Parse(refundSetting)["cc"].Value<string>();
+            string smtp = JObject.Parse(refundSetting)["smtp"].Value<string>();
+            string account = JObject.Parse(refundSetting)["account"].Value<string>();
+            string password = JObject.Parse(refundSetting)["password"].Value<string>();
+
             try
             {
                 var attach = new Attachment(fileName);
 
-                MailMessage mm = new MailMessage("13601836534@163.com", "992990831@qq.com");
-                if (!string.IsNullOrEmpty(receiver))
+                MailMessage mm = new MailMessage();
+                mm.From = new MailAddress(from);
+                if (!string.IsNullOrEmpty(to))
                 {
-                    foreach (string to in receiver.Split(';'))
+                    foreach (string t in to.Split(';'))
                     {
-                        mm.To.Add(to);
+                        mm.To.Add(t);
                     }
                 }
-                //mm.Bcc.Add("992990831@qq.com");
+
+                if (!string.IsNullOrEmpty(cc))
+                {
+                    foreach (string c in cc.Split(';'))
+                    {
+                        mm.CC.Add(c);
+                    }
+                }
+
                 mm.Attachments.Add(attach);
                 mm.Subject = "Daily Remittance Report";
                 mm.Body = "Please find the enclosed. This mail is sent automatically. ";
-                SmtpClient sc = new SmtpClient("smtp.163.com");
-                sc.Credentials = new NetworkCredential("13601836534", "Andy1982");
+                SmtpClient sc = new SmtpClient(smtp);
+                sc.Credentials = new NetworkCredential(account, password);
 
                 sc.Send(mm);
             }
