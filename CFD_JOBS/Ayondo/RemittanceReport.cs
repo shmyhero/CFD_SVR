@@ -18,6 +18,7 @@ using System.Data.SqlTypes;
 using System.Text;
 using System.IO;
 using System.Data.OleDb;
+using System.Net.Mail;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -64,6 +65,7 @@ namespace CFD_JOBS.Ayondo
                         }
                         excel.ExportItems = exporItems;
                         excel.Export(fileName);
+                        SendMail(fileName);
                     }
                 }
                 catch (Exception e)
@@ -72,6 +74,37 @@ namespace CFD_JOBS.Ayondo
                 }
 
                 Thread.Sleep(Interval);
+            }
+        }
+
+        public static void SendMail(string fileName)
+        {
+            string receiver = "david.qi@tradehero.mobi;ivan@tradehero.mobi;andy@tradehero.mobi";
+            //string receiver = "992990831@qq.com";
+            try
+            {
+                var attach = new Attachment(fileName);
+
+                MailMessage mm = new MailMessage("13601836534@163.com", "992990831@qq.com");
+                if (!string.IsNullOrEmpty(receiver))
+                {
+                    foreach (string to in receiver.Split(';'))
+                    {
+                        mm.To.Add(to);
+                    }
+                }
+                //mm.Bcc.Add("992990831@qq.com");
+                mm.Attachments.Add(attach);
+                mm.Subject = "Daily Remittance Report";
+                mm.Body = "Please find the enclosed. This mail is sent automatically. ";
+                SmtpClient sc = new SmtpClient("smtp.163.com");
+                sc.Credentials = new NetworkCredential("13601836534", "Andy1982");
+
+                sc.Send(mm);
+            }
+            catch (Exception ex)
+            {
+                CFDGlobal.LogException(ex);
             }
         }
     }
