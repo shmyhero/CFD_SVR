@@ -134,6 +134,7 @@
     <Compile Include="Models\Entities\Area.cs" />
     <Compile Include="Models\Entities\AyondoTradeHistory.cs" />
     <Compile Include="Models\Entities\AyondoTradeHistory_Live.cs" />
+    <Compile Include="Models\Entities\AyondoTransferHistory_Live.cs" />
     <Compile Include="Models\Entities\AyondoTransferHistory.cs" />
     <Compile Include="Models\Entities\Bank.cs" />
     <Compile Include="Models\Entities\Bookmark_Live.cs" />

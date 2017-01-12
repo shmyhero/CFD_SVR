@@ -27,6 +27,9 @@ namespace CFD_API.DTO
         public decimal? takePx { get; set; }
         public string takeOID { get; set; }
 
+        public decimal? financingSum { get; set; }
+        public decimal? dividendSum { get; set; }
+
         public SecurityDetailDTO fxOutright { get; set; }
 
         public CardDTO card { get; set; }

@@ -6,8 +6,7 @@ namespace CFD_COMMON.Models.Entities
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("AyondoTransferHistory")]
-    public partial class AyondoTransferHistory
+    public class AyondoTransferHistoryBase
     {
         public long Id { get; set; }
 
@@ -28,7 +27,6 @@ namespace CFD_COMMON.Models.Entities
         public string Ccy { get; set; }
 
         public DateTime? Timestamp { get; set; }
-
         public DateTime? ApprovalTime { get; set; }
 
         [StringLength(50)]
@@ -57,14 +55,17 @@ namespace CFD_COMMON.Models.Entities
         public string Username { get; set; }
 
         public decimal? FinancingRate { get; set; }
-
         public long? TransactionId { get; set; }
-
         public long? TradingAccountId { get; set; }
 
         [StringLength(50)]
         public string AssetClass { get; set; }
 
         public long? PositionId { get; set; }
+    }
+
+    [Table("AyondoTransferHistory")]
+    public partial class AyondoTransferHistory : AyondoTransferHistoryBase
+    {
     }
 }
