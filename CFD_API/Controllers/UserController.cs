@@ -1651,7 +1651,7 @@ namespace CFD_API.Controllers
                             into t1
                             from t2 in t1.DefaultIfEmpty()
                             where x.Id == UserId
-                           select new { y.FirstName, y.LastName, y.IdCode, x.BankCardNumber, x.BankName, x.BankCardStatus, x.BankCardRejectReason, Logo = t2 == null? "" : t2.Logo, x.Branch,x.Province,x.City }).FirstOrDefault();
+                           select new { y.FirstName, y.LastName, y.IdCode, x.BankCardNumber, x.BankName, x.BankCardStatus, x.BankCardRejectReason, Icon = t2 == null? "" : t2.Icon, x.Branch,x.Province,x.City }).FirstOrDefault();
 
             if(userInfo == null)
             {
@@ -1666,7 +1666,7 @@ namespace CFD_API.Controllers
                 lastName = userInfo.LastName,
                 identityID = userInfo.IdCode,
                 bankCardNumber = userInfo.BankCardNumber,
-                bankIcon = userInfo.Logo,
+                bankIcon = userInfo.Icon,
                 bankName = userInfo.BankName,
                 bankCardStatus = userInfo.BankCardStatus,
                 bankCardRejectReason = userInfo.BankCardRejectReason,

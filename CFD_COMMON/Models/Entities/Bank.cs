@@ -18,6 +18,7 @@ namespace CFD_COMMON.Models.Entities
         public string EName { get; set; }
 
         public string Logo { get; set; }
+        public string Icon { get; set; }
 
         public int Order { get; set; }
 
