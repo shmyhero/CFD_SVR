@@ -1084,18 +1084,25 @@ namespace CFD_API.Controllers
         }
 
         /// <summary>
-        /// 出金页面的预计到账时间
+        /// 出金设置，包括了最小费用金额，费用百分比和出金预期时间
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("refundETA")]
-        public string refundETA()
+        [Route("refund/setting")]
+        public RefundSettingDTO refundETA()
         {
             Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundETA");
+
             if (refundSetting != null)
-                return refundSetting.Value;
+            {
+                var setting = JObject.Parse(refundSetting.Value);
+                return new RefundSettingDTO() { eta = setting["eta"].Value<int>(), charge = new RefundChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
+            }
             else
-                return "3";
+            {
+                return new RefundSettingDTO { eta = 3, charge = new RefundChargeDTO() { minimum = 0, rate = 0 } };
+            }
+
         }
 
         /// <summary>
@@ -1113,7 +1120,7 @@ namespace CFD_API.Controllers
             if (refundSetting != null)
             {
                 var setting = JObject.Parse(refundSetting.Value);
-                return new DepositSettingDTO() { minimum = decimal.Parse(setting["min"].Value<string>()), fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
+                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
             }
             else
             {

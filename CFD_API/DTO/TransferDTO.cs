@@ -30,4 +30,16 @@ namespace CFD_API.DTO
         public decimal minimum { get; set; }
         public decimal rate { get; set; }
     }
+
+    public class RefundSettingDTO
+    {
+        public RefundChargeDTO charge { get; set; }
+        public int eta { get; set; }
+    }
+
+    public class RefundChargeDTO
+    {
+        public decimal minimum { get; set; }
+        public decimal rate { get; set; }
+    }
 }
