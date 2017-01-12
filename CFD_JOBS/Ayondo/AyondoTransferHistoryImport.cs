@@ -41,10 +41,12 @@ namespace CFD_JOBS.Ayondo
 
                     if (_lastEndTime == null) //first time started
                     {
-                        AyondoTransferHistory lastDbRecord;
+                        AyondoTransferHistoryBase lastDbRecord;
                         using (var db = CFDEntities.Create())//find last record in db
                         {
-                            lastDbRecord = db.AyondoTransferHistories.OrderByDescending(o => o.Id).FirstOrDefault();//TODO:
+                            lastDbRecord = isLive
+                                ? (AyondoTransferHistoryBase)db.AyondoTransferHistory_Live.OrderByDescending(o => o.Id).FirstOrDefault()
+                                : (AyondoTransferHistoryBase)db.AyondoTransferHistories.OrderByDescending(o => o.Id).FirstOrDefault();
                         }
 
                         if (lastDbRecord == null || lastDbRecord.Timestamp == null) //db is empty
@@ -98,7 +100,7 @@ namespace CFD_JOBS.Ayondo
                         //.Where(o => o.Last() == "NA") //DeviceType == NA
                         .ToList();
 
-                    var newTransferHistories = new List<AyondoTransferHistory>();
+                    var newTransferHistories = new List<AyondoTransferHistoryBase>();
 
                     if (lineArrays.Count == 0)
                     {
@@ -147,7 +149,7 @@ namespace CFD_JOBS.Ayondo
                                 var assetClass = arr[20];
                                 var posId = Convert.ToInt64(arr[21]);
 
-                                var tradeHistory = new AyondoTransferHistory()
+                                var tradeHistory = new AyondoTransferHistoryBase()
                                 {
                                     TransferType = transferType,
                                     AccountId = accountId,
@@ -182,7 +184,10 @@ namespace CFD_JOBS.Ayondo
                             //update history table
                             if (newTransferHistories.Count > 0)
                             {
-                                db.AyondoTransferHistories.AddRange(newTransferHistories);//TODO
+                                if(isLive)
+                                    db.AyondoTransferHistory_Live.AddRange(newTransferHistories.Select(o => Mapper.Map<AyondoTransferHistory_Live>(o)));
+                                else
+                                    db.AyondoTransferHistories.AddRange(newTransferHistories.Select(o => Mapper.Map<AyondoTransferHistory>(o)));
 
                                 CFDGlobal.LogLine("saving transfer histories...");
                                 db.SaveChanges();
@@ -200,9 +205,9 @@ namespace CFD_JOBS.Ayondo
 
                 CFDGlobal.LogLine("");
 
-                if (_lastEndTime != null && DateTime.UtcNow - _lastEndTime < HistoryIdentifier)
+                if (_lastEndTime != null && DateTime.UtcNow - _lastEndTime < HistoryIdentifier) //normal import
                     Thread.Sleep(Interval);
-                else
+                else //history import
                     Thread.Sleep(HistoryInterval);
             }
         }

@@ -18,6 +18,8 @@ namespace CFD_API
                 //var r = new Random();
 
                 cfg.CreateMap<Version, VersionDTO>();
+                cfg.CreateMap<Version, VersionIOSDTO>();
+                cfg.CreateMap<Version, VersionAndroidDTO>();
 
                 cfg.CreateMap<User, UserDTO>();
 
