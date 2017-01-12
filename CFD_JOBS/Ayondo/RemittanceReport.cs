@@ -204,7 +204,7 @@ namespace CFD_JOBS.Ayondo
                 {
                     ExportItems.ForEach(item =>
                     {
-                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')", item.BeneficiaryName, item.BeneficiaryAccountNo,item.IdCardNo, item.BankBranch, item.Province, item.City, item.IdCardNo,item.Currency, item.Amount);
+                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')", item.BeneficiaryName, item.BeneficiaryAccountNo,item.BankName, item.BankBranch, item.Province, item.City, item.IdCardNo,item.Currency, item.Amount);
                         ole_cmd.ExecuteNonQuery();
                     });
                 }
