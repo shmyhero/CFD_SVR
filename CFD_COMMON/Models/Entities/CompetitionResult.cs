@@ -37,6 +37,6 @@ namespace CFD_COMMON.Models.Entities
 
         public decimal? PL { get; set; }
 
-        //public virtual User User { get; set; }
+        public virtual User User { get; set; }
     }
 }

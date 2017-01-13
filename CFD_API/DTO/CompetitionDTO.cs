@@ -16,6 +16,7 @@ namespace CFD_API.DTO
     {
         public int? userId { get; set; }
         public string nickname { get; set; }
+        public string picUrl { get; set; }
         public int? positionCount { get; set; }
         public decimal? invest { get; set; }
         public decimal? pl { get; set; }

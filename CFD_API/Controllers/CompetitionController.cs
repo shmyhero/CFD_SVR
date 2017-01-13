@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -67,11 +68,17 @@ namespace CFD_API.Controllers
             var date = db.CompetitionResults.OrderByDescending(o => o.Date).Select(o => o.Date).FirstOrDefault();
 
             var competitionResults =
-                db.CompetitionResults.Where(o => o.CompetitionId == id && o.Date == date)
+                db.CompetitionResults.Include(o => o.User).Where(o => o.CompetitionId == id && o.Date == date)
                     .OrderBy(o => o.Rank)
                     .Take(10)
                     .ToList()
-                    .Select(o => Mapper.Map<CompetitionResultDTO>(o))
+                    .Select(o =>
+                    {
+                        var dto = Mapper.Map<CompetitionResultDTO>(o);
+                        dto.nickname = o.User.Nickname;
+                        dto.picUrl = o.User.PicUrl;
+                        return dto;
+                    })
                     .ToList();
 
             return competitionResults;
@@ -85,13 +92,18 @@ namespace CFD_API.Controllers
             var date = db.CompetitionResults.OrderByDescending(o => o.Date).Select(o => o.Date).FirstOrDefault();
 
             var competitionResult =
-                db.CompetitionResults.FirstOrDefault(
+                db.CompetitionResults.Include(o=>o.User).FirstOrDefault(
                     o => o.CompetitionId == id && o.Date == date && o.UserId == userId);
 
             if (competitionResult == null)
                 return new CompetitionResultDTO() {};
             else
-                return Mapper.Map<CompetitionResultDTO>(competitionResult);
+            {
+                var dto = Mapper.Map<CompetitionResultDTO>(competitionResult);
+                dto.nickname = competitionResult.User.Nickname;
+                dto.picUrl = competitionResult.User.PicUrl;
+                return dto;
+            }
         }
 
         [HttpGet]
