@@ -540,6 +540,19 @@ namespace CFD_API.Controllers
                 }
             });
 
+            //financing/dividends
+            var posIDs = result.Select(o => Convert.ToInt64(o.id)).ToList();
+            var transferHistories = IsLiveUrl
+                ? db.AyondoTransferHistory_Live.Where(o => o.PositionId.HasValue && posIDs.Contains(o.PositionId.Value)).ToList().Select(o => o as AyondoTransferHistoryBase).ToList()
+                : db.AyondoTransferHistories.Where(o => o.PositionId.HasValue && posIDs.Contains(o.PositionId.Value)).ToList().Select(o => o as AyondoTransferHistoryBase).ToList();
+            result.ForEach(posDTO =>
+            {
+                var financings = transferHistories.Where(o => o.PositionId.ToString() == posDTO.id && o.TransferType == "Financing").ToList();
+                var dividends = transferHistories.Where(o => o.PositionId.ToString() == posDTO.id && o.TransferType == "Dividend").ToList();
+                if (financings.Count > 0) posDTO.financingSum = financings.Sum(o => o.Amount);
+                if (dividends.Count > 0) posDTO.dividendSum = dividends.Sum(o => o.Amount);
+            });
+
             return result.OrderByDescending(o => o.closeAt).ToList();
         }
 

@@ -49,6 +49,9 @@ namespace CFD_API.DTO
 
         public decimal pl { get; set; }
 
+        public decimal? financingSum { get; set; }
+        public decimal? dividendSum { get; set; }
+
         public bool hasCard { get; set; }
 
         public DateTime openAt { get; set; }
