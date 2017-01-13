@@ -7,8 +7,7 @@
       <Setting name="StorageConnectionString" value="BlobEndpoint=https://cfdstoragedev.blob.core.chinacloudapi.cn/;AccountName=cfdstoragedev;AccountKey=iv2GsBkYOIe8rEo2lqtD8gDIuND04m8mZ5tQBo27ja00APaMOCDrIr1YOzPysYH6yxdpX8/VyAHXbPVCwtPWfA==" />
       <!--<Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />-->
       <Setting name="CFDEntities" value="data source=10.0.0.12;initial catalog=CFD_Dev;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
-      <!--<Setting name="redisConnectionString" value="Password88__@10.0.0.15:6379" />-->
-      <Setting name="redisConnectionString" value="Password88__@10.0.0.21:6399" />
+      <Setting name="redisConnectionString" value="Password88__@10.0.0.17:6399" />
       <Setting name="redisConnectionString_Live" value="Password88__@10.0.0.24:6379" />
       <Setting name="YunPianApiKey" value="faf57dcccf1bff886c1ee4626bf1db28" />
       <Setting name="YunPianTemplateId" value="1392151" />
