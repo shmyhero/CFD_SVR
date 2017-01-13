@@ -562,7 +562,7 @@ namespace CFD_API.Controllers
             var idsExistingProducts = WebCache.GetInstance(IsLiveUrl).ProdDefs.Where(o => ids.Contains(o.Id)).Select(o => o.Id).ToList();
 
             var securityService = new SecurityService(db);
-            securityService.AddBookmarks(UserId, idsExistingProducts, IsLiveUrl);
+            securityService.PrependBookmarks(UserId, idsExistingProducts, IsLiveUrl);
 
             return new ResultDTO {success = true};
         }
@@ -580,7 +580,7 @@ namespace CFD_API.Controllers
 
             var securityService = new SecurityService(db);
             securityService.DeleteBookmarks(UserId, IsLiveUrl);
-            securityService.AddBookmarks(UserId, ids, IsLiveUrl);
+            securityService.AppendBookmarks(UserId, ids, IsLiveUrl);
 
             //delete stock alerts NOT IN id list
             if (IsLiveUrl)

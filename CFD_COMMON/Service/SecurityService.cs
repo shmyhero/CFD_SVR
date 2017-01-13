@@ -31,13 +31,9 @@ namespace CFD_COMMON.Service
             //no need to db.savechanges()
         }
 
-        public void AddBookmarks(int userId, IList<int> secIds, bool isLive)
+        public void AppendBookmarks(int userId, IList<int> secIds, bool isLive)
         {
             if (secIds.Count == 0) return;
-
-            ////remove non-exist securities
-            //var allSecIds = db.AyondoSecurities.Select(o => o.Id).ToList();
-            //secIds = secIds.Where(o => allSecIds.Contains(o)).ToList();
 
             //get my current bookmarks
             var myBookmarks = isLive
@@ -47,6 +43,42 @@ namespace CFD_COMMON.Service
             int? maxDisplayOrder = myBookmarks.Max(o => o.DisplayOrder);
 
             var order = maxDisplayOrder.HasValue ? maxDisplayOrder + 1 : 1;
+
+            foreach (var secId in secIds)
+            {
+                if (myBookmarks.All(o => o.AyondoSecurityId != secId)) //skip if already existed
+                {
+                    if (isLive)
+                        db.Bookmark_Live.Add(new Bookmark_Live()
+                        {
+                            UserId = userId,
+                            AyondoSecurityId = secId,
+                            DisplayOrder = order++ //setting display order
+                        });
+                    else
+                        db.Bookmarks.Add(new Bookmark
+                        {
+                            UserId = userId,
+                            AyondoSecurityId = secId,
+                            DisplayOrder = order++ //setting display order
+                        });
+                }
+            }
+            db.SaveChanges();
+        }
+
+        public void PrependBookmarks(int userId, IList<int> secIds, bool isLive)
+        {
+            if (secIds.Count == 0) return;
+
+            //get my current bookmarks
+            var myBookmarks = isLive
+                ? db.Bookmark_Live.Where(o => o.UserId == userId).ToList().Select(o => o as BookmarkBase).ToList()
+                : db.Bookmarks.Where(o => o.UserId == userId).ToList().Select(o => o as BookmarkBase).ToList();
+
+            int? minDisplayOrder = myBookmarks.Min(o => o.DisplayOrder);
+
+            var order = minDisplayOrder.HasValue ? minDisplayOrder - secIds.Count : 1;
 
             foreach (var secId in secIds)
             {
