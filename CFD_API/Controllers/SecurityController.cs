@@ -558,24 +558,8 @@ namespace CFD_API.Controllers
         public ResultDTO AddBookmark(string securityIds)
         {
             var ids = securityIds.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(o => Convert.ToInt32(o)).Where(o => o > 0).Distinct().ToList();
-            //传过来的顺序是从上到小（显示顺序），变成从下到上后再做保存。
-            List<int> orderedIds = new List<int>();
-            ids.ForEach(id =>
-            {
-                orderedIds.Insert(0, id);
-            });
 
-            List<int> idsExistingProducts = new List<int>();
-            var instance = WebCache.GetInstance(IsLiveUrl);
-            orderedIds.ForEach(id => {
-                if(WebCache.GetInstance(IsLiveUrl).ProdDefs.Any(o => o.Id == id))
-                {
-                    idsExistingProducts.Add(id);
-                }
-            });
-            //如果直接用下面这个方法会按Prod的顺序排序，比如传进来的是34854,34821,34847
-            //调了下面的方法就变成了34854,34847,34821
-            //var idsExistingProducts = WebCache.GetInstance(IsLiveUrl).ProdDefs.Where(o => ids.Contains(o.Id)).Select(o => o.Id).ToList();
+            var idsExistingProducts = WebCache.GetInstance(IsLiveUrl).ProdDefs.Where(o => ids.Contains(o.Id)).Select(o => o.Id).ToList();
 
             var securityService = new SecurityService(db);
             securityService.AddBookmarks(UserId, idsExistingProducts, IsLiveUrl);
@@ -596,21 +580,13 @@ namespace CFD_API.Controllers
 
             var securityService = new SecurityService(db);
             securityService.DeleteBookmarks(UserId, IsLiveUrl);
-
-            //传过来的顺序是从上到小（显示顺序），变成从下到上后再做保存。
-            List<int> orderedIds = new List<int>();
-            ids.ForEach(id =>
-            {
-                orderedIds.Insert(0, id);
-            });
-
-            securityService.AddBookmarks(UserId, orderedIds, IsLiveUrl);
+            securityService.AddBookmarks(UserId, ids, IsLiveUrl);
 
             //delete stock alerts NOT IN id list
             if (IsLiveUrl)
-                db.UserAlert_Live.Where(o => o.UserId == UserId && !orderedIds.Contains(o.SecurityId)).Delete();
+                db.UserAlert_Live.Where(o => o.UserId == UserId && !ids.Contains(o.SecurityId)).Delete();
             else
-                db.UserAlerts.Where(o => o.UserId == UserId && !orderedIds.Contains(o.SecurityId)).Delete();
+                db.UserAlerts.Where(o => o.UserId == UserId && !ids.Contains(o.SecurityId)).Delete();
 
             return new ResultDTO {success = true};
         }
