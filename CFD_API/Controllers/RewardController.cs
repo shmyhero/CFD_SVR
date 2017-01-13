@@ -195,15 +195,12 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public TotalRewardDTO GetTotalReward()
         {
-            var reward = db.Rewards.FirstOrDefault(o => o.UserID == UserId);
-            if (reward == null)
-            {
-                return new TotalRewardDTO() { total = 0, paid = 0 };
-            }
-            else
-            {
-                return new TotalRewardDTO() { total = reward.Total, paid = reward.Paid };
-            }
+            //所有记录下的交易金
+            var reward = GetTotalUnpaidReward();
+            //所有已经被转的交易金
+            var transfer = db.RewardTransfers.Where(o => o.UserID == UserId).Sum(o => o.Amount);
+
+            return new TotalRewardDTO() { total = reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction, paid = transfer };
         }
 
         private static object transferLock = new object();
@@ -218,12 +215,12 @@ namespace CFD_API.Controllers
         {
             lock (transferLock)
             {
-                var reward = db.Rewards.FirstOrDefault(o => o.UserID == UserId);
+                var reward = GetTotalReward();
                 if (reward == null)
                 {
                     return new ResultDTO() { success = false, message = "鼓励金为空" };
                 }
-                else if ((reward.Total - reward.Paid) < amount)
+                else if ((reward.total - reward.paid) < amount)
                 {
                     return new ResultDTO() { success = false, message = "剩余鼓励金不足" };
                 }
@@ -232,7 +229,6 @@ namespace CFD_API.Controllers
                     return new ResultDTO() { success = false, message = "金额不能为负" };
                 }
 
-                reward.Paid += amount;
                 RewardTransfer transfer = new RewardTransfer() { UserID = UserId, Amount = amount, CreatedAt = DateTime.UtcNow };
                 db.RewardTransfers.Add(transfer);
                 db.SaveChanges();
