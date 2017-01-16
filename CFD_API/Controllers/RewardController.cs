@@ -198,7 +198,7 @@ namespace CFD_API.Controllers
             //所有记录下的交易金
             var reward = GetTotalUnpaidReward();
             //所有已经被转的交易金
-            var transfer = db.RewardTransfers.Where(o => o.UserID == UserId).Sum(o => o.Amount);
+            var transfer = db.RewardTransfers.Where(o => o.UserID == UserId).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
 
             return new TotalRewardDTO() { total = reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction, paid = transfer };
         }
