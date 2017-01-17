@@ -10,7 +10,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2027-06-06T23:59:59.0000000+08:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
       <Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
-      <Setting name="redisConnectionString" value="Password88__@cfd-redis1.chinacloudapp.cn:6399" />
+      <!--<Setting name="redisConnectionString" value="Password88__@cfd-redis1.chinacloudapp.cn:6399" />-->
       <Setting name="ayondoFixTradeCfgFilePath" value="AyondoTrade.cfg" />
       <Setting name="ayondoFixTradeUsername" value="thcntrade" />
       <Setting name="ayondoFixTradePassword" value="d093gos3j" />

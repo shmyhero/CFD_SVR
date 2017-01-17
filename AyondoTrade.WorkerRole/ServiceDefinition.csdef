@@ -4,7 +4,7 @@
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
       <Setting name="CFDEntities" />
-      <Setting name="redisConnectionString" />
+      <!--<Setting name="redisConnectionString" />-->
 
       <Setting name="ayondoFixTradeCfgFilePath" />
       <Setting name="ayondoFixTradeUsername" />

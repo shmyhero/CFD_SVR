@@ -99,12 +99,16 @@ B+cg+7Ook/4zS/atXL1iig1dVkgTRhBcRJvr1tJBwV52raHXTNzYJ9KPU4jvXb2H
         {
             var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString");
 
+            if (redisConStr == null) return null;
+
             return new PooledRedisClientManager(100, 2, redisConStr);
         }
 
         private static IRedisClientsManager GetNewPooledRedisClientManager_Live()
         {
             var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString_Live");
+
+            if (redisConStr == null) return null;
 
             return new PooledRedisClientManager(100, 2, redisConStr);
         }
@@ -121,6 +125,9 @@ B+cg+7Ook/4zS/atXL1iig1dVkgTRhBcRJvr1tJBwV52raHXTNzYJ9KPU4jvXb2H
         public static IRedisClientsManager GetNewBasicRedisClientManager()
         {
             var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString");
+
+            if (redisConStr == null) return null;
+
             return new BasicRedisClientManager(redisConStr);
         }
 
