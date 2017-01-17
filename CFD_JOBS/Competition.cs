@@ -112,27 +112,24 @@ namespace CFD_JOBS
                                             }
 
                                             var userPositions = new List<CompetitionUserPosition>();
-                                            
-                                            //Trade History表没有Leverage
-                                            //因为Trade History表没有Leverage，所以只能用NewHistory表
-                                            var allPositions = (from n in db.NewPositionHistories
-                                                                            where n.UserId == competitionUser.UserId
-                                                                            && n.CreateTime >= startDateUtc && n.CreateTime < endDateUtc
-                                                                            select new 
-                                                                            {
-                                                                                PosMaintRptID = n.Id.ToString(),
-                                                                                SecurityID = n.SecurityId.Value.ToString(),
-                                                                                SettlPrice = n.SettlePrice.Value,
-                                                                                LongQty = n.LongQty,
-                                                                                ShortQty = n.ShortQty,
-                                                                                Leverage = n.Leverage,
-                                                                                PL = n.PL,
-                                                                                Invest = n.InvestUSD,
-                                                                                ClosedAt = n.ClosedAt
-                                                                            }).ToList();
 
-                                            var yesterdayOpenedPositions = allPositions.Where(o => o.ClosedAt == null);
-                                            var closedPositions = allPositions.Where(o => o.ClosedAt.HasValue);
+                                            IList<PositionReport> openPositions;
+                                            IList<PositionReport> historyReports;
+                                            using (var clientHttp = new AyondoTradeClient())
+                                            {
+                                                openPositions = clientHttp.GetPositionReport(
+                                                    competitionUser.User.AyondoUsername, competitionUser.User.AyondoPassword);
+                                                historyReports =
+                                                    clientHttp.GetPositionHistoryReport(competitionUser.User.AyondoUsername,
+                                                        competitionUser.User.AyondoPassword, startDateUtc,
+                                                        endDateUtc.AddMilliseconds(-1), true, false);
+                                            }
+
+                                            //yesterday created open positions
+                                            var yesterdayOpenedPositions =
+                                                openPositions.Where(
+                                                    o => o.CreateTime >= startDateUtc && o.CreateTime < endDateUtc)
+                                                    .ToList();
 
                                             foreach (var position in yesterdayOpenedPositions)
                                             {
@@ -151,12 +148,13 @@ namespace CFD_JOBS
                                                     UserId = competitionUser.UserId,
                                                 };
 
-                                                var tradeValue = position.SettlPrice * prodDef.LotSize / prodDef.PLUnits *
+                                                //invest
+                                                var tradeValue = position.SettlPrice*prodDef.LotSize/prodDef.PLUnits*
                                                                  (position.LongQty ?? position.ShortQty);
                                                 var invest =
                                                     FX.ConvertByOutrightMidPrice(tradeValue.Value, prodDef.Ccy2, "USD",
                                                         prodDefs,
-                                                        quotes) / position.Leverage.Value;
+                                                        quotes)/position.Leverage.Value;
                                                 competitionUserPosition.Invest = invest;
 
                                                 //upl
@@ -165,8 +163,8 @@ namespace CFD_JOBS
                                                 if (quote != null)
                                                 {
                                                     var upl = position.LongQty.HasValue
-                                                        ? tradeValue.Value * (quote.Bid / position.SettlPrice - 1)
-                                                        : tradeValue.Value * (1 - quote.Offer / position.SettlPrice);
+                                                        ? tradeValue.Value*(quote.Bid/position.SettlPrice - 1)
+                                                        : tradeValue.Value*(1 - quote.Offer/position.SettlPrice);
                                                     uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", prodDefs,
                                                         quotes);
                                                 }
@@ -175,9 +173,19 @@ namespace CFD_JOBS
                                                 userPositions.Add(competitionUserPosition);
                                             }
 
-                                            foreach (var position in closedPositions)
+                                            var groupByPositions = historyReports.GroupBy(o => o.PosMaintRptID);
+
+                                            foreach (var group in groupByPositions)
                                             {
-                                                var secId = Convert.ToInt32(position.SecurityID);
+                                                var posId = Convert.ToInt64(group.Key);
+                                                var reports = group.ToList();
+
+                                                if (reports.Count < 2) continue;
+
+                                                var openReport = reports.OrderBy(o => o.CreateTime).First();
+                                                var closeReport = reports.OrderBy(o => o.CreateTime).Last();
+
+                                                var secId = Convert.ToInt32(openReport.SecurityID);
 
                                                 var prodDef = prodDefs.FirstOrDefault(o => o.Id == secId);
                                                 if (prodDef == null) continue;
@@ -185,16 +193,27 @@ namespace CFD_JOBS
                                                 var competitionUserPosition = new CompetitionUserPosition()
                                                 {
                                                     CompetitionId = 1,
-                                                    PositionId = Convert.ToInt64(position.PosMaintRptID),
+                                                    PositionId = posId,
                                                     Date = startDateCN,
                                                     SecurityId = secId,
                                                     SecurityName = Translator.GetCName(prodDef.Name),
                                                     UserId = competitionUser.UserId,
                                                 };
-                                              
-                                                competitionUserPosition.Invest = position.Invest;
 
-                                                competitionUserPosition.PL = position.PL;
+                                                //invest
+                                                var tradeValue = openReport.SettlPrice*prodDef.LotSize/prodDef.PLUnits*
+                                                                 (openReport.LongQty ?? openReport.ShortQty);
+                                                var tradeValueUSD = tradeValue;
+                                                if (prodDef.Ccy2 != "USD")
+                                                    tradeValueUSD = FX.ConvertByOutrightMidPrice(tradeValue.Value,
+                                                        prodDef.Ccy2,
+                                                        "USD", prodDefs, quotes);
+                                                var invest = tradeValueUSD.Value/openReport.Leverage.Value;
+                                                competitionUserPosition.Invest = invest;
+
+                                                //pl
+                                                var pl = closeReport.PL.Value;
+                                                competitionUserPosition.PL = pl;
 
                                                 userPositions.Add(competitionUserPosition);
                                             }
@@ -239,7 +258,7 @@ namespace CFD_JOBS
                                         }
 
                                         db.CompetitionResults.AddRange(orderedResults);
-                                        //db.SaveChanges();
+                                        db.SaveChanges();
                                     }
                                 }
 
