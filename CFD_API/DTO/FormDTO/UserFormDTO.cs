@@ -1,4 +1,6 @@
-﻿namespace CFD_API.DTO.Form
+﻿using System;
+
+namespace CFD_API.DTO.Form
 {
     public class SignupByPhoneFormDTO
     {
@@ -31,5 +33,20 @@
         public string phone { get; set; }
         public string message { get; set; }
         public string deepLink { get; set; }
+    }
+
+    public class RewardTransferSearchDTO
+    {
+        public string startTime;
+        public string endTime;
+    }
+
+    public class RewardTransferDTO
+    {
+        public string liveAccount;
+        public string liveAccountID;
+        public string name;
+        public decimal amount;
+        public DateTime date;
     }
 }

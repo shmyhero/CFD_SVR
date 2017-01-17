@@ -6,9 +6,10 @@ using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
+using System.Web.Http;
 
 namespace CFD_API.Controllers
 {
@@ -57,6 +58,29 @@ namespace CFD_API.Controllers
             var response = push.PushBatch(list);
             result.message = response;
             return result;
+        }
+
+        [HttpPost]
+        [Route("reward/transfer")]
+        [AdminAuth]
+        public List<RewardTransferDTO> GetRewardTransferHistory(RewardTransferSearchDTO form)
+        {
+            if (form == null || string.IsNullOrEmpty(form.startTime) || string.IsNullOrEmpty(form.startTime))
+            {
+                return null;
+            }
+
+            DateTime startTime = DateTime.Parse(form.startTime);
+            DateTime endTime = DateTime.Parse(form.endTime);
+
+            var rewardTransferHistory = (from x in db.RewardTransfers
+                                         join y in db.Users on x.UserID equals y.Id
+                                         join z in db.UserInfos on y.Id equals z.UserId
+                                         into t1
+                                         from t2 in t1.DefaultIfEmpty()
+                                         where x.CreatedAt>startTime && x.CreatedAt < endTime
+                                         select new RewardTransferDTO() { liveAccount = y.AyLiveUsername, liveAccountID = y.AyLiveAccountId.HasValue? y.AyLiveAccountId.Value.ToString() : string.Empty, name = t2.LastName + t2.FirstName, amount = x.Amount, date = x.CreatedAt }).ToList();
+            return rewardTransferHistory;
         }
     }
 }
