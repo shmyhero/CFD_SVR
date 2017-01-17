@@ -112,6 +112,7 @@
     <Compile Include="Ayondo\AyondoTransferHistoryImport.cs" />
     <Compile Include="Ayondo\AyondoTradeHistoryImport.cs" />
     <Compile Include="Ayondo\RemittanceReport.cs" />
+    <Compile Include="Competition2.cs" />
     <Compile Include="StockAlert.cs" />
     <Compile Include="RedisToDbWorker.cs" />
     <Compile Include="TickChartWorker.cs" />
