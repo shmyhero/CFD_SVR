@@ -98,9 +98,9 @@ namespace CFD_JOBS.Ayondo
                     //        dtStart = _lastEndTime.Value.AddMilliseconds(1); //fetch data since last fetch
                     //    }
                     //}
-
-                    var tsStart = dtStart.ToUnixTimeMs();
-                    var tsEnd = dtEnd.ToUnixTimeMs();
+                   
+                    var tsStart = dtStart.ToUnixTimeMs();//DateTime.SpecifyKind(DateTime.Parse("2017-01-18 8:07:49.767"), DateTimeKind.Utc).ToUnixTimeMs();
+                    var tsEnd = dtEnd.ToUnixTimeMs();//DateTime.SpecifyKind(DateTime.Parse("2017-01-18 8:09:49.767"), DateTimeKind.Utc).ToUnixTimeMs();
 
                     var webClient = new WebClient();
 
@@ -346,8 +346,9 @@ namespace CFD_JOBS.Ayondo
                     var user = users.FirstOrDefault(o => (isLive ? o.AyLiveAccountId : o.AyondoAccountId) == trade.AccountId);
                   
                     if(user == null) continue;
-                    
+
                     #region save Message
+                    CFDGlobal.LogLine("Start saving message for user:" + user.UserId);
                     //针对每一个position id，只保存一次message
                     if (!messageSaved.ContainsKey(trade.PositionId.Value))
                     {
@@ -394,7 +395,9 @@ namespace CFD_JOBS.Ayondo
                     #endregion
 
                     #region Push notification
-
+                    CFDGlobal.LogLine("Start pushing for user:" + user.UserId);
+                    CFDGlobal.LogLine(string.Format("Device Token:{0}; IsLive:{1}; AutoCloseAlert_Live:{2};AutoCloseAlert:{3};IsOnLive:{4};TradeTime:{5};",
+                        user.deviceToken, isLive, user.AutoCloseAlert_Live, user.AutoCloseAlert, user.IsOnLive, trade.TradeTime.HasValue? trade.TradeTime.Value.ToString("yyyy-MM-dd hh:mm:ss"): "--"));
                     if (!string.IsNullOrEmpty(user.deviceToken)//has device token
                         && ((isLive ? user.AutoCloseAlert_Live : user.AutoCloseAlert) ?? false)//auto close alert is enabled
                         && DateTime.UtcNow - trade.TradeTime < TimeSpan.FromHours(1)//do not send push if it's already late
