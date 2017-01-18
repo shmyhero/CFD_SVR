@@ -96,7 +96,13 @@ namespace CFD_API.Controllers
                     o => o.CompetitionId == id && o.Date == date && o.UserId == userId);
 
             if (competitionResult == null)
-                return new CompetitionResultDTO() {};
+            {
+                var competitionUser = db.CompetitionUsers.Include(o=>o.User).FirstOrDefault(o => o.UserId == id);
+                var dto = new CompetitionResultDTO();
+                dto.nickname = competitionUser.User.Nickname;
+                dto.picUrl = competitionUser.User.PicUrl;
+                return dto;
+            }
             else
             {
                 var dto = Mapper.Map<CompetitionResultDTO>(competitionResult);
