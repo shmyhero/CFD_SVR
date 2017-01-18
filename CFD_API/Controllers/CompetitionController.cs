@@ -97,7 +97,7 @@ namespace CFD_API.Controllers
 
             if (competitionResult == null)
             {
-                var competitionUser = db.CompetitionUsers.Include(o=>o.User).FirstOrDefault(o => o.UserId == id);
+                var competitionUser = db.CompetitionUsers.Include(o=>o.User).FirstOrDefault(o => o.UserId == userId);
                 var dto = new CompetitionResultDTO();
                 dto.nickname = competitionUser.User.Nickname;
                 dto.picUrl = competitionUser.User.PicUrl;
