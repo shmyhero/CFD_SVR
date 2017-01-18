@@ -43,7 +43,7 @@ namespace CFD_JOBS
             //List<User> users = new List<User>();
             //users.Add(new User() { Id=2031, Token= "b58b17d610c747d5a03356b03565719d" });
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4; i++)
             {
                 foreach (var user in users)
                 {
@@ -267,48 +267,48 @@ namespace CFD_JOBS
             var user = (User)obj;
 
             var dt = DateTime.UtcNow;
-            while (DateTime.UtcNow - dt < TimeSpan.FromMinutes(2)) //////////////////test for how long
+            while (DateTime.UtcNow - dt < TimeSpan.FromSeconds(300)) //////////////////test for how long
             {
                 Thread.Sleep(GetRandomIdleTime());
-                var request = HttpWebRequest.Create(CFD_HOST + "api/security/stock/topGainer?perPage=999");
+                var request = HttpWebRequest.Create(CFD_HOST + "api/security/" + GetEnvUrl() + "stock/topGainer?perPage=999");
                 var topGainer = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/security/index?perPage=999");
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + GetEnvUrl() + "index?perPage=999");
                 var index = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/security/fx?perPage=999");
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + GetEnvUrl() + "fx?perPage=999");
                 var fx = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/security/futures?perPage=999");
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + GetEnvUrl() + "futures?perPage=999");
                 var futures = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/security/byIds/34821,34804,34768,34858,34847,34817,34763,34864");
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + GetEnvUrl() + "byIds/34821,34804,34768,34858,34847,34817,34763,34864");
                 var byIds = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
                 request = HttpWebRequest.Create(CFD_HOST + "api/banner");
                 var banner = GetResponseJArray(GetResponseString(request));
 
-                var secId = 34804; //fx
+                var secId = GetSecId(); //fx
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + secId);
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + GetEnvUrl() + "" + secId);
                 var security = GetResponseJObject(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/security/byPopularity");
+                request = HttpWebRequest.Create(CFD_HOST + "api/security/" + GetEnvUrl() + "byPopularity");
                 var securities = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/today");
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + GetEnvUrl() + "" + secId + "/tick/today");
                 var tick = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/week");
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + GetEnvUrl() + "" + secId + "/tick/week");
                 tick = GetResponseJArray(GetResponseString(request));
 
                 //Thread.Sleep(GetRandomIdleTime());
@@ -320,31 +320,38 @@ namespace CFD_JOBS
                 //tick = GetResponseJArray(GetResponseString(request));
 
                 Thread.Sleep(GetRandomIdleTime());
-                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/tick/2h");
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + GetEnvUrl() + "" + secId + "/tick/2h");
                 tick = GetResponseJArray(GetResponseString(request));
 
-                //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/kline/5m");
-                //var kline = GetResponseJArray(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + GetEnvUrl() + "" + secId + "/kline/5m");
+                var kline = GetResponseJArray(GetResponseString(request));
 
-                //Thread.Sleep(GetRandomIdleTime());
-                //request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + secId + "/kline/day");
-                //kline = GetResponseJArray(GetResponseString(request));
+                Thread.Sleep(GetRandomIdleTime());
+                request = HttpWebRequest.Create(CFD_HOST + "api/quote/" + GetEnvUrl() + "" + secId + "/kline/day");
+                kline = GetResponseJArray(GetResponseString(request));
 
 
                 ////持仓
-                ////Thread.Sleep(GetRandomIdleTime());
-                //var request = HttpWebRequest.Create(CFD_HOST + "api/position/open");
+                //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create(CFD_HOST + "api/position/open");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //var open = GetResponseJArray(GetResponseString(request));
 
                 ////平仓
+                //Thread.Sleep(GetRandomIdleTime());
                 //request = HttpWebRequest.Create(CFD_HOST + "api/position/closed");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
-                //closed = GetResponseJArray(GetResponseString(request));
+                //var closed = GetResponseJArray(GetResponseString(request));
+
+                ////balance
                 //Thread.Sleep(GetRandomIdleTime());
+                //request = HttpWebRequest.Create(CFD_HOST + "api/user/plReport");
+                //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
+                //var balance = GetResponseJObject(GetResponseString(request));
 
                 ////统计
+                //Thread.Sleep(GetRandomIdleTime());
                 //request = HttpWebRequest.Create(CFD_HOST + "api/user/plReport");
                 //request.Headers["Authorization"] = "Basic " + user.Id + "_" + user.Token;
                 //var plReport = GetResponseJArray(GetResponseString(request));
@@ -363,6 +370,18 @@ namespace CFD_JOBS
             //测试
             //TestWCF();
 
+        }
+
+        private int GetSecId()
+        {
+            //return 34804;
+            return 35982;
+        }
+
+        private string GetEnvUrl()
+        {
+            //return "";
+            return "live/";
         }
 
         /// <summary>
@@ -472,7 +491,7 @@ namespace CFD_JOBS
         private TimeSpan GetRandomIdleTime()
         {
             var r = new Random();
-            return TimeSpan.FromSeconds(r.Next(1, 5)); //1~x second
+            return TimeSpan.FromSeconds(r.Next(1, 6)); //1~5 second
         }
 
         private JToken GetRandomElement(JArray arr)
