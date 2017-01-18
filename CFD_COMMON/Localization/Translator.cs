@@ -53,6 +53,8 @@
                 return "杠杆高于最大限制";
             if (ayondoText == "Server detected error: Trading not permitted outside of market hours")
                 return "闭市时间不能交易";
+            if (ayondoText == "Server detected error: This product can currently only be traded via the phone. Please call the dealing desk")
+                return "该产品暂时无法交易";
             if (ayondoText == "Server detected error: The target position is pending close")
                 return "该仓位正在被系统自动关闭中";
             if (ayondoText == "No Position")
