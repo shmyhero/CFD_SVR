@@ -314,31 +314,29 @@ namespace CFD_API.Controllers
         [Route("live/{securityId}/kline/day")]
         public List<KLineDTO> GetDayKLine(int securityId)
         {
-            IRedisList<KLine> klines;
             using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
             {
                 var redisKLineClient = redisClient.As<KLine>();
                 //var redisProdDefClient = redisClient.As<ProdDef>();
 
-                klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(KLineSize.Day) + securityId];
+                var klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(KLineSize.Day) + securityId];
+
+                if (klines.Count == 0)
+                    return new List<KLineDTO>();
+
+                //get 100 records at max
+                var beginIndex = klines.Count - 100;
+                var result = klines.GetRange(beginIndex < 0 ? 0 : beginIndex, klines.Count - 1);
+
+                return result.Select(o => new KLineDTO()
+                {
+                    close = o.Close,
+                    high = o.High,
+                    low = o.Low,
+                    open = o.Open,
+                    time = o.Time
+                }).OrderBy(o => o.time).ToList();
             }
-
-            if (klines.Count == 0)
-                return new List<KLineDTO>();
-
-            //get 100 records at max
-            var beginIndex = klines.Count - 100;
-            var result = klines.GetRange(beginIndex < 0 ? 0 : beginIndex, klines.Count - 1);
-
-            return result.Select(o => new KLineDTO()
-            {
-                close = o.Close,
-                high = o.High,
-                low = o.Low,
-                open = o.Open,
-                time = o.Time
-            }).OrderBy(o => o.time).ToList();
-
         }
 
         /// <summary>
