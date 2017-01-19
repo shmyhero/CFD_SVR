@@ -98,7 +98,6 @@ namespace CFD_JOBS.Ayondo
                     //        dtStart = _lastEndTime.Value.AddMilliseconds(1); //fetch data since last fetch
                     //    }
                     //}
-                   
                     var tsStart = dtStart.ToUnixTimeMs();//DateTime.SpecifyKind(DateTime.Parse("2017-01-18 8:07:49.767"), DateTimeKind.Utc).ToUnixTimeMs();
                     var tsEnd = dtEnd.ToUnixTimeMs();//DateTime.SpecifyKind(DateTime.Parse("2017-01-18 8:09:49.767"), DateTimeKind.Utc).ToUnixTimeMs();
 
@@ -305,7 +304,7 @@ namespace CFD_JOBS.Ayondo
                             join d in db.Devices on u.Id equals d.userId
                             into x from y in x.DefaultIfEmpty()
                             where ayondoAccountIds.Contains(isLive ? u.AyLiveAccountId.Value : u.AyondoAccountId.Value) //&& u.AutoCloseAlert.HasValue && u.AutoCloseAlert.Value
-                               select new {y.deviceToken, UserId = u.Id, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive   };
+                               select new {y.deviceToken, UserId = u.Id, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive, y.UpdateTime   };
 
                 var users = query.ToList();
 
@@ -343,7 +342,7 @@ namespace CFD_JOBS.Ayondo
                     if (positionHistory == null)
                         continue;
 
-                    var user = users.FirstOrDefault(o => (isLive ? o.AyLiveAccountId : o.AyondoAccountId) == trade.AccountId);
+                    var user = users.OrderByDescending(o=>o.UpdateTime).FirstOrDefault(o => (isLive ? o.AyLiveAccountId : o.AyondoAccountId) == trade.AccountId);
                   
                     if(user == null) continue;
 
