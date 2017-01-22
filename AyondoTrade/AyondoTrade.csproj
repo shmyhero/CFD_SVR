@@ -93,6 +93,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Spatial, Version=5.6.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -109,6 +110,7 @@
     <Compile Include="AyondoFixTradeApp.cs" />
     <Compile Include="AyondoTradeClient.cs" />
     <Compile Include="AyondoTradeService.cs" />
+    <Compile Include="Cache\CFDCacheManager2.cs" />
     <Compile Include="Cache\CFDCacheManager.cs" />
     <Compile Include="FaultModel\OrderRejectedFault.cs" />
     <Compile Include="FaultModel\OAuthLoginRequiredFault.cs" />
