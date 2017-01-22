@@ -383,8 +383,8 @@ namespace CFD_TEST
             //    "（请在格瓦拉生活网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以格瓦拉平台为准）。", "15821399619");
             //CFDGlobal.LogLine(sendSms);
 
-            List<string> mobiles = new List<string>() { "13585501565", "13167106958", "13764349804" };
-            List<string> coupons = new List<string>() { "st8FKT11310071JQ", "st9FLV11310094MR", "st6FLS11310117KY" };
+            List<string> mobiles = new List<string>() { "15821399619", "13818744925", "13764349804" };
+            List<string> coupons = new List<string>() { "st3GKX11310140MR", "st6ELV11310163JY", "st4CKW11310186JQ" };
             string format = "【盈交易】陛下，您在盈交易平台“比收益”活动中名列前茅，奉上影券1张，请查收。券号：{0}（请在蜘蛛电影app或蜘蛛网官网兑换使用，全国通兑，2D和3D场次均可使用，具体使用规则以蜘蛛网官网为准）。";
             
             for(int x=0; x<3; x++)
@@ -626,6 +626,7 @@ namespace CFD_TEST
             requestStream.Write(datas, 0, datas.Length);
 
             WebResponse response;
+            bool isFaulted = false;
             try
             {
                 response = request.GetResponse();
@@ -634,9 +635,17 @@ namespace CFD_TEST
             {
                 response = e.Response;
                 CFDGlobal.LogException(e);
+                isFaulted = true;
             }
             var responseStream = response.GetResponseStream();
             var readToEnd = new StreamReader(responseStream).ReadToEnd();
+
+            if (isFaulted)
+            {
+                CFDGlobal.LogLine(readToEnd);
+                throw new Exception(readToEnd);
+            }
+
             var dto = JsonConvert.DeserializeObject<PositionDTO>(readToEnd);
 
             var dto2 = SheZhiYing(user, dto);
