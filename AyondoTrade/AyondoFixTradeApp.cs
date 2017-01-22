@@ -583,7 +583,7 @@ namespace AyondoTrade
                         }
                     }
                 }
-                else //after replace Stop/Take or new Stop/Take
+                else //after replace/new/cancel Stop/Take
                 {
                     var posMaintRptID = report.GetString(Tags.PosMaintRptID);
 
