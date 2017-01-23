@@ -15,8 +15,6 @@ using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using System.Data.SqlTypes;
-using System.IO;
-using System.Text;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -104,30 +102,16 @@ namespace CFD_JOBS.Ayondo
                     var tsEnd = dtEnd.ToUnixTimeMs();//DateTime.SpecifyKind(DateTime.Parse("2017-01-18 8:09:49.767"), DateTimeKind.Utc).ToUnixTimeMs();
 
                     var webClient = new WebClient();
-                    
 
                     CFDGlobal.LogLine("Fetching data " + dtStart + " ~ " + dtEnd);
 
                     var url = CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost" + (isLive ? "_Live" : ""))
                               + (isLive ? "live" : "demo") + "/reports/tradehero/cn/tradehistory?start="
                               + tsStart + "&end=" + tsEnd;
-
-                    url = "http://stunnel-live.cloudapp.net:14535/live/reports/tradehero/cn/tradehistory?start=1484900954247&end=1484901015057";
                     CFDGlobal.LogLine("url: " + url);
 
                     var dtDownloadStart = DateTime.UtcNow;
-
-                    HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(url);
-                    webRequest.Timeout = int.MaxValue;
-                    HttpWebResponse response = (HttpWebResponse)webRequest.GetResponse();
-                    Stream streamReceive = response.GetResponseStream();
-                    Encoding encoding = Encoding.UTF8;
-
-                    StreamReader streamReader = new StreamReader(streamReceive, encoding);
-                    string downloadString = streamReader.ReadToEnd();
-
-                    //string downloadString = webClient.DownloadString(url);
-
+                    var downloadString = webClient.DownloadString(url);
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
 
@@ -258,7 +242,7 @@ namespace CFD_JOBS.Ayondo
                                     }
 
                                     CFDGlobal.LogLine("updating position close time/price/pl...");
-                                    //db.SaveChanges();
+                                    db.SaveChanges();
                                 }
                             }
 
@@ -271,7 +255,7 @@ namespace CFD_JOBS.Ayondo
                                     db.AyondoTradeHistories.AddRange(newTradeHistories.Select(o => Mapper.Map<AyondoTradeHistory>(o)));
 
                                 CFDGlobal.LogLine("saving trade histories...");
-                                //db.SaveChanges();
+                                db.SaveChanges();
                             }
                         }
                     }
@@ -403,7 +387,7 @@ namespace CFD_JOBS.Ayondo
                         else
                             db.Messages.Add(msg as Message);
 
-                        //db.SaveChanges();
+                        db.SaveChanges();
 
                         messageSaved.Add(trade.PositionId.Value, msg.Id);
                     }
