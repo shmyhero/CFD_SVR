@@ -111,23 +111,10 @@ namespace CFD_JOBS.Ayondo
                     var url = CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost" + (isLive ? "_Live" : ""))
                               + (isLive ? "live" : "demo") + "/reports/tradehero/cn/tradehistory?start="
                               + tsStart + "&end=" + tsEnd;
-
-                    url = "http://stunnel-live.cloudapp.net:14535/live/reports/tradehero/cn/tradehistory?start=1484900954247&end=1484901015057";
                     CFDGlobal.LogLine("url: " + url);
 
                     var dtDownloadStart = DateTime.UtcNow;
-
-                    HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(url);
-                    webRequest.Timeout = int.MaxValue;
-                    HttpWebResponse response = (HttpWebResponse)webRequest.GetResponse();
-                    Stream streamReceive = response.GetResponseStream();
-                    Encoding encoding = Encoding.UTF8;
-
-                    StreamReader streamReader = new StreamReader(streamReceive, encoding);
-                    string downloadString = streamReader.ReadToEnd();
-
-                    //string downloadString = webClient.DownloadString(url);
-
+                    var downloadString = webClient.DownloadString(url);
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
 
