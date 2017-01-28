@@ -6,7 +6,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="BlobEndpoint=https://cfdstorage.blob.core.chinacloudapi.cn/;QueueEndpoint=https://cfdstorage.queue.core.chinacloudapi.cn/;TableEndpoint=https://cfdstorage.table.core.chinacloudapi.cn/;AccountName=cfdstorage;AccountKey=8RxDUBSev10Z2LjeAx/HQvLcl9zkQvhw5Lh/dGgMcYhPPiBizuWOT37JDh283i98Rf2TpnE9WuDL2LpMh1QJ4w==" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="true" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="tradehero" />
-      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEBJODzZsray8SHPT3hdpUnswDQYJKoZIhvcNAQEBBQAEggEAHNd0dZYKlAoQoBZu9RDp5HyayOSVTpKfFBLQc2IpbK1M6iJRNlumqOC3GOnwh6d3SqYK/ueuOPjCY9GS4cy8nISAe+xd6qJr2qgIDvuSusYooXATiemI7x17eYKGAnquyOYjWPp1yY+l1+xEPE18cA1yR41K9AKHOiqiVpnAbomaovlvPoSbOkwc/FXLh4lYcC3E1EA2HK6KgEo65s06b52YtTtMzOHj5Y2kpbQ1pHt9rmu/VwJLAJWGsZNTAd7BNeXFm4Auuc66FKTjr0F9se/zauplIF7lUvESZfo+b2lBKa8o9bhgc1ly92YT2wyYAL4W/ZHDgJy6dM/U5pmqTzAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECPgGqDu9Crz5gBAXvpfMvU1rTE3JvF6+ahbF" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCECFxdnlI69OIRkPV4v94dKMwDQYJKoZIhvcNAQEBBQAEggEAZzyH+bNaQZZeFoq6TZQsu6iz+7dmWMrHMDWhkHAguu0IKm+p6KCpS2lO4n4BNeTZjS/xgr/9iZnsUQA5WAutgq209Msn5lYlCwYCN9ZygPOL7EYAe5HqxsC8Sj+sLRavLZRbenz96OMAUmbXfeEo7bK1QrgQ6WI/U5plVUWFHhTm0IRh+oTIPcV344ZKf3S4F7wUIVzJE54pcxwfvZVrp4fRSlDBW/Gi1Z27Us5oTpYegdFvCHDfiJLyVKmySwlRt/lBeEHAyN6HuigNmatrh8hg0PcJRFe1uCLN/UIgWBwm/7YzHFNDNADt1//FyspTKbvi5/bIB4LurUfzMbSh1jAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECNVwtUXY5l1ygBBt6+TAza4niNY9633zGXbX" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2027-06-06T23:59:59.0000000+08:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
       <Setting name="CFDEntities" value="data source=10.0.0.22;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
@@ -16,7 +16,7 @@
       <Setting name="ayondoFixTradePassword" value="slifj439r4" />
     </ConfigurationSettings>
     <Certificates>
-      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="07079B77B9734EA864BC7E413FA0C2E761DD65DF" thumbprintAlgorithm="sha1" />
+      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="32F9713637F350223C210E2662BDBB28E30DB484" thumbprintAlgorithm="sha1" />
     </Certificates>
   </Role>
   <NetworkConfiguration>

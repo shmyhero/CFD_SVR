@@ -130,6 +130,10 @@ namespace CFD_JOBS.Ayondo
             }
             else if (msgType == "MDS2")
             {
+                /*other new fields:
+                MDS_SFACTOR: This is the slippage factor for a product.  It is a value used in margin calculations.
+                */
+
                 //CFDGlobal.LogLine(message.ToString());
                 //CFDGlobal.LogLine(GetMessageString(message));
 

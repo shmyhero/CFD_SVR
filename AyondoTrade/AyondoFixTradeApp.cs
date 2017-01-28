@@ -484,24 +484,10 @@ namespace AyondoTrade
 
         public void OnMessage(PositionReport report, SessionID session)
         {
-            //return;
-
-            //CFDGlobal.LogLine("OnMessage:PositionReport: " + GetMessageString(report, true, true));
-
-            //var groupTags = report.GetGroupTags();
-            //var noPositionsGroup = new PositionReport.NoPositionsGroup();
-            //var @group2 = report.GetGroup(1, noPositionsGroup);
-
-            //var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
-            //report.GetGroup(1, noPositionsGroup);
-
-            //var groupTags = report.GetGroupTags();
-            //var indexOf = groupTags.IndexOf(Tags.NoPositions);
-            //report.GetGroup(indexOf+1, noPositionsGroup);
-
-            //throw new Exception("");
-
-            //save result to dictionary
+            /*other new fields:
+            The first field (MDS_DELTA)  indicates the change in position size being reported.  This is important in cases where a single trade nets against one or more positions.
+            The second field (MDS_GUARSL) indicates if the stop loss price is guaranteed.  This is useful information for the client and if a factor in margin calculations.
+            */
 
             var posReqId = report.PosReqID.Obj;
             if (posReqId == "Unsolicited") //not from positionreport request
