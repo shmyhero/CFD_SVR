@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
@@ -17,21 +18,13 @@ namespace AyondoTrade
     internal sealed class CFDCacheManager
     {
         private static readonly Lazy<CFDCacheManager> instance = new Lazy<CFDCacheManager>(() => new CFDCacheManager());
-        /// <summary>
-        /// Key:Account
-        /// Value:OpenPositions for an account
-        /// </summary>
-        private static ConcurrentDictionary<string, List<PositionReport>> openPositionList = new ConcurrentDictionary<string, List<PositionReport>>();
-        /// <summary>
-        /// Key:Account
-        /// Value:ClosedPositions for an account
-        /// </summary>
-        private static ConcurrentDictionary<string, List<PositionReport>> closedPositionList = new ConcurrentDictionary<string, List<PositionReport>>();
-        /// <summary>
-        /// Key: Account
-        /// Value: Balance
-        /// </summary>
-        private static ConcurrentDictionary<string, decimal?> balanceList = new ConcurrentDictionary<string, decimal?>();
+
+        private static ObjectCache cfdCache = MemoryCache.Default;
+        //所有Cache都在两小时后过期
+        private static CacheItemPolicy policy = new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(7200) };
+        private const string openPositionCachePrefix = "OpenPosition_";
+        private const string closedPositionCachePrefix = "ClosedPosition_";
+        private const string balancePrefix = "Balance_";
 
         private static bool isEnabled = true;
 
@@ -40,18 +33,24 @@ namespace AyondoTrade
         private CFDCacheManager()
         {
         }
-      
+
         public void UserLogin(string account)
         {
             Task.Factory.StartNew(
                 () => {
                     CFDGlobal.LogLine(string.Format("Cache - UserLogin ({0})", account));
 
-                    if (!openPositionList.ContainsKey(account))
+                    //if (!openPositionList.ContainsKey(account))
+                    //{
+                    //    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
+
+                    //    openPositionList.TryAdd(account, null);
+                    //}
+                    if (!cfdCache.Contains(openPositionCachePrefix + account))
                     {
                         CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
 
-                        openPositionList.TryAdd(account, null);
+                        cfdCache.Set(openPositionCachePrefix + account, new List<PositionReport>(), policy);
                     }
                 });
         }
@@ -62,17 +61,27 @@ namespace AyondoTrade
                 () => {
                     CFDGlobal.LogLine(string.Format("Cache - UserLogout ({0})", account));
 
-                    if (openPositionList.ContainsKey(account))
+                    //if (openPositionList.ContainsKey(account))
+                    //{
+                    //    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) removed from open/closed position list", account));
+
+                    //    List<PositionReport> posList = null;
+                    //    openPositionList.TryRemove(account, out posList);
+
+                    //    closedPositionList.TryRemove(account, out posList);
+
+                    //    decimal? balance = 0;
+                    //    balanceList.TryRemove(account, out balance);
+                    //}
+                    if (cfdCache.Contains(openPositionCachePrefix + account))
                     {
                         CFDGlobal.LogLine(string.Format("Cache - Account ({0}) removed from open/closed position list", account));
 
-                        List<PositionReport> posList = null;
-                        openPositionList.TryRemove(account, out posList);
+                        cfdCache.Remove(openPositionCachePrefix + account);
 
-                        closedPositionList.TryRemove(account, out posList);
+                        cfdCache.Remove(closedPositionCachePrefix + account);
 
-                        decimal? balance = 0;
-                        balanceList.TryRemove(account, out balance);
+                        cfdCache.Remove(balancePrefix + account);
                     }
                 });
         }
@@ -86,14 +95,16 @@ namespace AyondoTrade
                 () => {
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Query Open PositionReport", account));
 
-                    if (openPositionList.ContainsKey(account))
-                    {
-                        openPositionList[account] = positions.ToList();
-                    }
-                    else
-                    {
-                        openPositionList.TryAdd(account, positions.ToList());
-                    }
+                    //if (openPositionList.ContainsKey(account))
+                    //{
+                    //    openPositionList[account] = positions.ToList();
+                    //}
+                    //else
+                    //{
+                    //    openPositionList.TryAdd(account, positions.ToList());
+                    //}
+
+                    cfdCache.Set(openPositionCachePrefix + account, positions, policy);
                 });
         }
 
@@ -102,9 +113,15 @@ namespace AyondoTrade
             if (!isEnabled)
                 return null;
 
-            if (openPositionList.ContainsKey(account))
+            //if (openPositionList.ContainsKey(account))
+            //{
+            //    return openPositionList[account];
+            //}
+            if (cfdCache.Contains(openPositionCachePrefix + account))
             {
-                return openPositionList[account];
+                var positions = cfdCache[openPositionCachePrefix + account] as IList<PositionReport>;
+                if (positions == null || positions.Count == 0)
+                    return null;
             }
 
             return null;
@@ -121,13 +138,27 @@ namespace AyondoTrade
                 () => {
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) received a new Position", account));
 
-                    PositionReport target = openPositionList[account].FirstOrDefault(item =>
+                    //PositionReport target = openPositionList[account].FirstOrDefault(item =>
+                    //item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue());
+                    //if (target != null)
+                    //{
+                    //    openPositionList[account].Remove(target);
+                    //}
+                    //openPositionList[account].Add(position);
+                    if (!cfdCache.Contains(openPositionCachePrefix + account))
+                        return;
+
+                    if (cfdCache[openPositionCachePrefix + account] == null)
+                        return;
+
+                    var positionList = cfdCache[openPositionCachePrefix + account] as IList<PositionReport>;
+                    PositionReport target = positionList.FirstOrDefault(item =>
                     item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue());
                     if (target != null)
                     {
-                        openPositionList[account].Remove(target);
+                        positionList.Remove(target);
                     }
-                    openPositionList[account].Add(position);
+                    positionList.Add(position);
                 });
         }
 
@@ -142,27 +173,48 @@ namespace AyondoTrade
                 () => {
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) received an updated Position", account));
 
-                    if (!openPositionList.ContainsKey(account))
+                    //if (!openPositionList.ContainsKey(account))
+                    //{
+                    //    return;
+                    //}
+
+                    //PositionReport posToUpdate = openPositionList[account].FirstOrDefault(item =>
+                    //        item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue());
+                    //if (posToUpdate != null) //update stop/take px order. at current stage, replace whole position
+                    //{
+                    //    int index = openPositionList[account].IndexOf(posToUpdate);
+                    //    openPositionList[account].RemoveAt(index);
+                    //    openPositionList[account].Insert(index, position);
+                    //    //if (position.Any(o => o.Key == Tags.StopPx))
+                    //    //{
+                    //    //    posToUpdate.SetField(new DecimalField(Tags.StopPx) { Obj = position.GetDecimal(Tags.StopPx) });
+                    //    //}
+
+                    //    //if (position.Any(o => o.Key == Global.FixApp.TAG_TakePx))
+                    //    //{
+                    //    //    posToUpdate.SetField(new DecimalField(Global.FixApp.TAG_TakePx) { Obj = position.GetDecimal(Global.FixApp.TAG_TakePx) });
+                    //    //}
+                    //}
+
+                    if (!cfdCache.Contains(openPositionCachePrefix + account))
                     {
                         return;
                     }
 
-                    PositionReport posToUpdate = openPositionList[account].FirstOrDefault(item =>
+                    if (cfdCache[openPositionCachePrefix + account] == null)
+                    {
+                        return;
+                    }
+
+                    var positionList = cfdCache[openPositionCachePrefix + account] as IList<PositionReport>;
+
+                    PositionReport posToUpdate = positionList.FirstOrDefault(item =>
                             item.PosMaintRptID.getValue() == position.PosMaintRptID.getValue());
                     if (posToUpdate != null) //update stop/take px order. at current stage, replace whole position
                     {
-                        int index = openPositionList[account].IndexOf(posToUpdate);
-                        openPositionList[account].RemoveAt(index);
-                        openPositionList[account].Insert(index, position);
-                        //if (position.Any(o => o.Key == Tags.StopPx))
-                        //{
-                        //    posToUpdate.SetField(new DecimalField(Tags.StopPx) { Obj = position.GetDecimal(Tags.StopPx) });
-                        //}
-
-                        //if (position.Any(o => o.Key == Global.FixApp.TAG_TakePx))
-                        //{
-                        //    posToUpdate.SetField(new DecimalField(Global.FixApp.TAG_TakePx) { Obj = position.GetDecimal(Global.FixApp.TAG_TakePx) });
-                        //}
+                        int index = positionList.IndexOf(posToUpdate);
+                        positionList.RemoveAt(index);
+                        positionList.Insert(index, position);
                     }
                 });
         }
@@ -173,35 +225,67 @@ namespace AyondoTrade
                 () => {
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) closed a Position", account));
 
+                    ////if position not exist in open list, remove closed list. force closed list to refresh from Ayondo
+                    //if (!openPositionList.ContainsKey(account) || openPositionList[account] == null)
+                    //{
+                    //    List<PositionReport> list = null;
+                    //    closedPositionList.TryRemove(account, out list);
+                    //    return;
+                    //}
+
+                    ////not found in open list - should not happen
+                    //if (!openPositionList[account].Any(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue()))
+                    //{
+                    //    return;
+                    //}
+
+                    //PositionReport openPosition = openPositionList[account].FirstOrDefault(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue());
+                    //if (openPosition == null)
+                    //{
+                    //    return;
+                    //}
+
+                    ////remove from open list
+                    //openPositionList[account].Remove(openPosition);
+
+                    ////close list is not empty
+                    //if (closedPositionList.ContainsKey(account))
+                    //{
+                    //    closedPositionList[account].Add(openPosition);
+                    //    //add closed position to closed list
+                    //    closedPositionList[account].Add(closedPosition);
+                    //}
+
                     //if position not exist in open list, remove closed list. force closed list to refresh from Ayondo
-                    if (!openPositionList.ContainsKey(account) || openPositionList[account] == null)
+                    if (!cfdCache.Contains(openPositionCachePrefix + account) || cfdCache[openPositionCachePrefix + account] == null)
                     {
-                        List<PositionReport> list = null;
-                        closedPositionList.TryRemove(account, out list);
+                        cfdCache.Remove(closedPositionCachePrefix + account);
                         return;
                     }
 
                     //not found in open list - should not happen
-                    if (!openPositionList[account].Any(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue()))
+                    List<PositionReport> openList = cfdCache[openPositionCachePrefix + account] as List<PositionReport>;
+                    if (!openList.Any(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue()))
                     {
                         return;
                     }
 
-                    PositionReport openPosition = openPositionList[account].FirstOrDefault(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue());
+                    PositionReport openPosition = openList.FirstOrDefault(item => item.PosMaintRptID.getValue() == closedPosition.PosMaintRptID.getValue());
                     if (openPosition == null)
                     {
                         return;
                     }
-                    
+
                     //remove from open list
-                    openPositionList[account].Remove(openPosition);
-                    
+                    openList.Remove(openPosition);
+
                     //close list is not empty
-                    if (closedPositionList.ContainsKey(account))
+                    if (cfdCache.Contains(closedPositionCachePrefix + account))
                     {
-                        closedPositionList[account].Add(openPosition);
+                        List<PositionReport> closedList = cfdCache[closedPositionCachePrefix + account] as List<PositionReport>;
+                        closedList.Add(openPosition);
                         //add closed position to closed list
-                        closedPositionList[account].Add(closedPosition);
+                        closedList.Add(closedPosition);
                     }
                 });
         }
@@ -217,14 +301,16 @@ namespace AyondoTrade
                 () => {
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) query Closed Position List", account));
 
-                    if (closedPositionList.ContainsKey(account))
-                    {
-                        closedPositionList[account] = positions.ToList();
-                    }
-                    else
-                    {
-                        closedPositionList.TryAdd(account, positions.ToList());
-                    }
+                    //if (closedPositionList.ContainsKey(account))
+                    //{
+                    //    closedPositionList[account] = positions.ToList();
+                    //}
+                    //else
+                    //{
+                    //    closedPositionList.TryAdd(account, positions.ToList());
+                    //}
+
+                    cfdCache.Set(closedPositionCachePrefix + account, positions, policy);
                 });
         }
 
@@ -233,9 +319,14 @@ namespace AyondoTrade
             if (!isEnabled)
                 return null;
 
-            if (closedPositionList.ContainsKey(account))
+            //if (closedPositionList.ContainsKey(account))
+            //{
+            //    return closedPositionList[account];
+            //}
+
+            if (cfdCache.Contains(closedPositionCachePrefix + account))
             {
-                return closedPositionList[account];
+                return cfdCache[closedPositionCachePrefix + account] as IList<PositionReport>;
             }
 
             return null;
@@ -247,14 +338,16 @@ namespace AyondoTrade
                 () => {
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) set balance: {1}", account, balance));
 
-                    if (balanceList.ContainsKey(account))
-                    {
-                        balanceList[account] = balance;
-                    }
-                    else
-                    {
-                        balanceList.TryAdd(account, balance);
-                    }
+                    //if (balanceList.ContainsKey(account))
+                    //{
+                    //    balanceList[account] = balance;
+                    //}
+                    //else
+                    //{
+                    //    balanceList.TryAdd(account, balance);
+                    //}
+
+                    cfdCache.Set(balancePrefix + account, balance, policy);
                 });
         }
 
@@ -265,9 +358,18 @@ namespace AyondoTrade
             if (!isEnabled)
                 return false;
 
-            if (balanceList.ContainsKey(account))
+            //if (balanceList.ContainsKey(account))
+            //{
+            //    balance = balanceList[account].HasValue? balanceList[account].Value : default(decimal);
+            //    return true;
+            //}
+            //else
+            //{
+            //    return false;
+            //}
+            if (cfdCache.Contains(balancePrefix + account))
             {
-                balance = balanceList[account].HasValue? balanceList[account].Value : default(decimal);
+                balance = (decimal)cfdCache[balancePrefix + account];
                 return true;
             }
             else
@@ -287,21 +389,35 @@ namespace AyondoTrade
         /// <param name="account"></param>
         public void ClearCache(string account)
         {
-            List<PositionReport> list = null;
-            if(openPositionList.ContainsKey(account))
+            //List<PositionReport> list = null;
+            //if(openPositionList.ContainsKey(account))
+            //{
+            //    openPositionList.TryRemove(account, out list);
+            //}
+
+            //if(closedPositionList.ContainsKey(account))
+            //{
+            //    closedPositionList.TryRemove(account, out list);
+            //}
+
+            //decimal? balance = 0;
+            //if(balanceList.ContainsKey(account))
+            //{
+            //    balanceList.TryRemove(account, out balance);
+            //}
+            if (cfdCache.Contains(openPositionCachePrefix + account))
             {
-                openPositionList.TryRemove(account, out list);
+                cfdCache.Remove(openPositionCachePrefix + account);
             }
 
-            if(closedPositionList.ContainsKey(account))
+            if (cfdCache.Contains(closedPositionCachePrefix + account))
             {
-                closedPositionList.TryRemove(account, out list);
+                cfdCache.Remove(closedPositionCachePrefix + account);
             }
 
-            decimal? balance = 0;
-            if(balanceList.ContainsKey(account))
+            if (cfdCache.Contains(balancePrefix + account))
             {
-                balanceList.TryRemove(account, out balance);
+                cfdCache.Remove(balancePrefix + account);
             }
         }
 
@@ -310,9 +426,11 @@ namespace AyondoTrade
         /// </summary>
         public void ClearCache()
         {
-            openPositionList.Clear();
-            closedPositionList.Clear();
-            balanceList.Clear();
+            var allKeys = cfdCache.Select(c => c.Key).ToList();
+            allKeys.ForEach(key =>
+            {
+                cfdCache.Remove(key);
+            });
         }
 
         public string PrintStatusHtml(string account, string userName)
@@ -323,136 +441,27 @@ namespace AyondoTrade
                 account = "139121848962";
             }
 
-            if(balanceList.ContainsKey(account))
+            if (cfdCache.Contains(balancePrefix + account))
             {
                 sb.Append("<pre>");
-                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Balance:{1}</span><hr/>", userName, balanceList[account].HasValue? balanceList[account] : 0));
+                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Balance:{1}</span><hr/>", userName, (decimal)cfdCache[balancePrefix + account]));
                 sb.Append("</pre>");
             }
 
-            if (openPositionList.ContainsKey(account))
+            if (cfdCache.Contains(openPositionCachePrefix + account))
             {
                 sb.Append("<pre>");
                 sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Open Position List:</span><hr/>", userName));
-                sb.Append(GeneratePositionTable(openPositionList[account]));
+                sb.Append(GeneratePositionTable(cfdCache[openPositionCachePrefix + account] as List<PositionReport>));
                 sb.Append("</pre>");
             }
 
-            if (closedPositionList.ContainsKey(account))
+            if (cfdCache.Contains(closedPositionCachePrefix + account))
             {
                 sb.Append("<pre>");
                 sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Closed Position List:</span><hr/>", userName));
-                sb.Append(GeneratePositionTable(closedPositionList[account]));
+                sb.Append(GeneratePositionTable(cfdCache[closedPositionCachePrefix + account] as List<PositionReport>));
                 sb.Append("</pre>");
-            }
-
-            return sb.ToString();
-        }
-
-        public string PrintStatus(string account)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("------------------------Print Cache Start------------------------");
-            var noPositionsGroup = new PositionMaintenanceRequest.NoPositionsGroup();
-
-            if (string.IsNullOrEmpty(account))
-            {
-                foreach (KeyValuePair<string, List<PositionReport>> pair in openPositionList )
-                {
-                    sb.AppendLine("Account:" + pair.Key);
-                    sb.AppendLine(string.Format("Open Positions ({0}):", pair.Value == null? 0 : pair.Value.Count));
-
-                    if (pair.Value == null)
-                        continue;
-
-                    foreach (PositionReport pr in pair.Value)
-                    {
-                        pr.GetGroup(1, noPositionsGroup);
-                        decimal? ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null;
-                        decimal? LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?)null;
-
-                        decimal? StopPx = pr.Any(o => o.Key == Tags.StopPx) ? pr.GetDecimal(Tags.StopPx) : (decimal?)null;
-                        decimal? TakePx = pr.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? pr.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?)null;
-                        decimal? Leverage = pr.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? pr.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?)null;
-
-                        string Text = pr.Text.Obj;
-                        sb.AppendLine(string.Format("Account:{0};PosMaintID:{6}; SettlePrice:{1};LongQty:{2};ShortQty{3};StopPx:{4};TakePx{5}",
-                            pr.Account, pr.SettlPrice, LongQty, ShortQty, StopPx, TakePx,pr.PosMaintRptID));
-                    }
-                }
-                foreach (KeyValuePair<string, List<PositionReport>> pair in closedPositionList)
-                {
-                    sb.AppendLine("Account:" + pair.Key);
-                    sb.AppendLine(string.Format("Closed Positions ({0}):", pair.Value == null ? 0 : pair.Value.Count));
-
-                    if (pair.Value == null)
-                        continue;
-
-                    foreach (PositionReport pr in pair.Value)
-                    {
-                        pr.GetGroup(1, noPositionsGroup);
-                        decimal? ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null;
-                        decimal? LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?)null;
-
-                        decimal? StopPx = pr.Any(o => o.Key == Tags.StopPx) ? pr.GetDecimal(Tags.StopPx) : (decimal?)null;
-                        decimal? TakePx = pr.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? pr.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?)null;
-                        decimal? Leverage = pr.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? pr.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?)null;
-                        string Text = pr.Text.Obj;
-                        sb.AppendLine(string.Format("Account:{0};SettlePrice:{1};LongQty:{2};ShortQty{3};StopPx:{4};TakePx{5}",
-                            pr.Account, pr.SettlPrice, LongQty, ShortQty, StopPx, TakePx));
-                    }
-                }
-
-                sb.AppendLine("------------------------Print Cache End------------------------");
-            }
-            else
-            {
-                sb.AppendLine("------------------------Print Cache Start------------------------");
-                if (openPositionList.ContainsKey(account) && openPositionList[account] != null)
-                {
-                    sb.AppendLine(string.Format("Open Positions ({0}):", openPositionList[account] == null ? 0 : openPositionList[account].Count));
-                    foreach (PositionReport pr in openPositionList[account])
-                    {
-                        pr.GetGroup(1, noPositionsGroup);
-                        decimal? ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null;
-                        decimal? LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?)null;
-
-                        decimal? StopPx = pr.Any(o => o.Key == Tags.StopPx) ? pr.GetDecimal(Tags.StopPx) : (decimal?)null;
-                        decimal? TakePx = pr.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? pr.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?)null;
-                        decimal? Leverage = pr.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? pr.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?)null;
-                        string Text = pr.Text.Obj;
-                        sb.AppendLine(string.Format("Account:{0};SettlePrice:{1};LongQty:{2};ShortQty{3};StopPx:{4};TakePx{5}",
-                            pr.Account, pr.SettlPrice, LongQty, ShortQty, StopPx, TakePx));
-                    }
-                }
-                else
-                {
-                    sb.AppendLine("Open Positions (0)");
-                }
-
-                if (closedPositionList.ContainsKey(account) && closedPositionList[account] != null)
-                {
-                    sb.AppendLine(string.Format("Closed Positions ({0}):", closedPositionList[account] == null ? 0 : closedPositionList[account].Count));
-                    foreach (PositionReport pr in openPositionList[account])
-                    {
-                        pr.GetGroup(1, noPositionsGroup);
-                        decimal? ShortQty = noPositionsGroup.Any(o => o.Key == Tags.ShortQty) ? noPositionsGroup.ShortQty.Obj : (decimal?)null;
-                        decimal? LongQty = noPositionsGroup.Any(o => o.Key == Tags.LongQty) ? noPositionsGroup.LongQty.Obj : (decimal?)null;
-
-                        decimal? StopPx = pr.Any(o => o.Key == Tags.StopPx) ? pr.GetDecimal(Tags.StopPx) : (decimal?)null;
-                        decimal? TakePx = pr.Any(o => o.Key == Global.FixApp.TAG_TakePx) ? pr.GetDecimal(Global.FixApp.TAG_TakePx) : (decimal?)null;
-                        decimal? Leverage = pr.Any(o => o.Key == Global.FixApp.TAG_Leverage) ? pr.GetDecimal(Global.FixApp.TAG_Leverage) : (decimal?)null;
-                        string Text = pr.Text.Obj;
-                        sb.AppendLine(string.Format("Account:{0};SettlePrice:{1};LongQty:{2};ShortQty{3};StopPx:{4};TakePx{5}",
-                            pr.Account, pr.SettlPrice, LongQty, ShortQty, StopPx, TakePx));
-                    }
-                }
-                else
-                {
-                    sb.AppendLine("Closed Positions (0)");
-                }
-
-                sb.AppendLine("------------------------Print Cache End------------------------");
             }
 
             return sb.ToString();
@@ -467,7 +476,7 @@ namespace AyondoTrade
             foreach (PositionReport pos in posList)
             {
                 sb.Append("<pre>");
-                sb.Append(Global.FixApp.GetMessageString(pos).Replace("\r\n", "<br/>")); 
+                sb.Append(Global.FixApp.GetMessageString(pos).Replace("\r\n", "<br/>"));
                 sb.Append("</pre>");
             }
 
