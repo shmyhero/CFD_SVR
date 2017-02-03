@@ -111,6 +111,7 @@
     <Compile Include="AyondoTradeClient.cs" />
     <Compile Include="AyondoTradeService.cs" />
     <Compile Include="Cache\CFDCacheManager.cs" />
+    <Compile Include="Cache\FIXUser.cs" />
     <Compile Include="FaultModel\OrderRejectedFault.cs" />
     <Compile Include="FaultModel\OAuthLoginRequiredFault.cs" />
     <Compile Include="Global.cs" />

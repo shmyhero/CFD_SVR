@@ -3291,6 +3291,8 @@
       <field name="Leverage" required="N"/>
       <field name="MDS_SetSize" required="N"/>
       <field name="MDS_SetIndex" required="N"/>
+      <field name="MDS_DELTA" required="N"/>
+      <field name="MDS_GUARSL" reuired="N"/>
     </message>
     <message name="AssignmentReport" msgtype="AW" msgcat="app">
       <field name="AsgnRptID" required="Y"/>
@@ -3725,6 +3727,7 @@
       <field name="MDS_SetSize" required="N"/>
       <field name="MDS_SetIndex" required="N"/>
       <field name="UnsolicitedIndicator" required="N"/>
+      <field name="MDS_SFACTOR" required="N"/>
     </message>
     <message name="MDSTransferRequest" msgtype="MDS3" msgcat="app">
       <field name="MDS_RequestID" required="Y"/>
@@ -4631,6 +4634,9 @@
     <field number="7949" name="MDS_GSMD" type="FLOAT"/>
     <field number="7950" name="MDS_GSMS" type="FLOAT"/>
     <field number="7951" name="MDS_OAUTH" type="STRING"/>
+    <field number="7952" name="MDS_DELTA" type="FLOAT"/>
+    <field number="7953" name="MDS_GUARSL" type="BOOLEAN"/>
+    <field number="7954" name="MDS_SFACTOR" type="FLOAT"/>
 
     <field number="8000" name="AuxTime" type="UTCTIMESTAMP" />
     <field number="100" name="ExDestination" type="EXCHANGE"/>
