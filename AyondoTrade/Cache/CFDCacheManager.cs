@@ -21,7 +21,8 @@ namespace AyondoTrade
 
         private static ObjectCache cfdCache = MemoryCache.Default;
         //所有Cache都在两小时后过期
-        private static CacheItemPolicy policy = new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(7200) };
+        private static int absoluteExpiration = 7200;
+        
         private const string openPositionCachePrefix = "OpenPosition_";
         private const string closedPositionCachePrefix = "ClosedPosition_";
         private const string balancePrefix = "Balance_";
@@ -49,8 +50,8 @@ namespace AyondoTrade
                     if (!cfdCache.Contains(openPositionCachePrefix + account))
                     {
                         CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
-
-                        cfdCache.Set(openPositionCachePrefix + account, new List<PositionReport>(), policy);
+                        cfdCache.Set(openPositionCachePrefix + account, new List<PositionReport>(), new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(absoluteExpiration) });
+                        CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added finished", account));
                     }
                 });
         }
@@ -93,8 +94,7 @@ namespace AyondoTrade
         {
             Task.Factory.StartNew(
                 () => {
-                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Query Open PositionReport", account));
-
+                    
                     //if (openPositionList.ContainsKey(account))
                     //{
                     //    openPositionList[account] = positions.ToList();
@@ -103,16 +103,31 @@ namespace AyondoTrade
                     //{
                     //    openPositionList.TryAdd(account, positions.ToList());
                     //}
+                    try
+                    {
+                        CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Set Open PositionReport, Pos Count:{1}", account, positions == null ? 0 : positions.Count));
+                        cfdCache.Set(openPositionCachePrefix + account, positions, new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(absoluteExpiration) });
+                        CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Set Open PositionReport, finished", account, positions == null ? 0 : positions.Count));
+                    }
+                    catch(Exception ex)
+                    {
+                        CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Set Open PositionReport, exception: {1}", account, ex.Message));
+                    }
 
-                    cfdCache.Set(openPositionCachePrefix + account, positions, policy);
+
                 });
         }
 
         public IList<PositionReport> GetOpenPosition(string account)
         {
+         
             if (!isEnabled)
+            {
+                CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Get Open Position, but cache disabled", account));
                 return null;
+            }
 
+            
             //if (openPositionList.ContainsKey(account))
             //{
             //    return openPositionList[account];
@@ -121,7 +136,19 @@ namespace AyondoTrade
             {
                 var positions = cfdCache[openPositionCachePrefix + account] as IList<PositionReport>;
                 if (positions == null || positions.Count == 0)
+                {
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Get Open PositionReport, Pos Count:0", account));
+
                     return null;
+                }
+                else
+                {
+                    return positions;
+                }
+            }
+            else
+            {
+                CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Get Open PositionReport, Not exist in cache", account));
             }
 
             return null;
@@ -310,7 +337,7 @@ namespace AyondoTrade
                     //    closedPositionList.TryAdd(account, positions.ToList());
                     //}
 
-                    cfdCache.Set(closedPositionCachePrefix + account, positions, policy);
+                    cfdCache.Set(closedPositionCachePrefix + account, positions, new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(absoluteExpiration) });
                 });
         }
 
@@ -347,7 +374,7 @@ namespace AyondoTrade
                     //    balanceList.TryAdd(account, balance);
                     //}
 
-                    cfdCache.Set(balancePrefix + account, balance, policy);
+                    cfdCache.Set(balancePrefix + account, balance, new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(absoluteExpiration) });
                 });
         }
 
@@ -443,6 +470,8 @@ namespace AyondoTrade
 
             if (cfdCache.Contains(balancePrefix + account))
             {
+                CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Print Balance", account));
+
                 sb.Append("<pre>");
                 sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Balance:{1}</span><hr/>", userName, (decimal)cfdCache[balancePrefix + account]));
                 sb.Append("</pre>");
@@ -450,6 +479,8 @@ namespace AyondoTrade
 
             if (cfdCache.Contains(openPositionCachePrefix + account))
             {
+                CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Print Open Position", account));
+
                 sb.Append("<pre>");
                 sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Open Position List:</span><hr/>", userName));
                 sb.Append(GeneratePositionTable(cfdCache[openPositionCachePrefix + account] as List<PositionReport>));
@@ -458,6 +489,8 @@ namespace AyondoTrade
 
             if (cfdCache.Contains(closedPositionCachePrefix + account))
             {
+                CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Print Closed Position", account));
+
                 sb.Append("<pre>");
                 sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Closed Position List:</span><hr/>", userName));
                 sb.Append(GeneratePositionTable(cfdCache[closedPositionCachePrefix + account] as List<PositionReport>));
