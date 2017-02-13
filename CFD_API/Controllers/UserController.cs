@@ -1071,6 +1071,9 @@ namespace CFD_API.Controllers
                         IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
                         IsLiveUrl ? null : user.AyondoPassword,
                         amount);
+
+                    db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = transferId, CreatedAt = DateTime.Now });
+                    db.SaveChanges();
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
@@ -1079,6 +1082,31 @@ namespace CFD_API.Controllers
             }
 
             return transferId;
+        }
+
+        /// <summary>
+        /// 根据transferId获取用户的姓名、邮箱
+        /// </summary>
+        /// <param name="transferId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("live/deposit/userinfo")]
+        public string GetUserInfoByTransferId(string transferId)
+        {
+            string format = "{{'first_name':'{0}', 'last_name':'{1}', 'email':'{2}'}}";
+            var query = from u in db.UserInfos
+                        join d in db.DepositHistories on u.UserId equals d.UserID
+                        into x
+                        from y in x.DefaultIfEmpty()
+                        where y.TransferID == transferId
+                        select new { u.FirstName, u.LastName, u.Email };
+            var userInfo = query.FirstOrDefault();
+            if(userInfo != null)
+            {
+                return string.Format(format, userInfo.FirstName, userInfo.LastName, userInfo.Email);
+            }
+
+            return string.Format(format, string.Empty, string.Empty, string.Empty);
         }
 
         [HttpGet]

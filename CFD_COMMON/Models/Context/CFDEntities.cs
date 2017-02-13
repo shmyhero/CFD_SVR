@@ -29,6 +29,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<DailySign> DailySigns { get; set; }
         public virtual DbSet<DailyTransaction> DailyTransactions { get; set; }
         public virtual DbSet<DemoRegisterReward> DemoRegisterRewards { get; set; }
+        public virtual DbSet<DepositHistory> DepositHistories { get; set; }
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Headline> Headlines { get; set; }
