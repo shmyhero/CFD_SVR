@@ -1716,12 +1716,22 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<TransferDTO> GetTransferHistory()
         {
-            List<TransferDTO> transferHistory = new List<TransferDTO>();
-            for(int x=0; x<10; x++)
-            {
-                transferHistory.Add(new TransferDTO() { amount=100, date="2016-12-26 12:00:00", transferType="入金" });
-            }
+            var transfers = db.TransferHistorys.Where(t => t.UserID == UserId).ToList();
 
+            List<TransferDTO> transferHistory = new List<TransferDTO>();
+            transfers.ForEach(t => {
+                string transferType = string.Empty;
+                switch(t.TransferType)
+                {
+                    case "Deposit":
+                        transferType = "入金"; break;
+                    case "Withdraw":
+                        transferType = "出金"; break;
+                    default: transferType = "其他"; break;
+                }
+                transferHistory.Add(new TransferDTO() { amount = t.Amount, date = t.CreatedAt.HasValue? t.CreatedAt.Value.ToString("yyyy-MM-dd hh:mm:ss") : string.Empty, transferType = transferType });
+            });
+         
             return transferHistory;
         }
 
