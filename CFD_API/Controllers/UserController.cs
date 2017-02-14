@@ -1086,6 +1086,7 @@ namespace CFD_API.Controllers
 
         /// <summary>
         /// 根据transferId获取用户的姓名、邮箱
+        /// TODO: to be deleted @1.1.11
         /// </summary>
         /// <param name="transferId"></param>
         /// <returns></returns>
