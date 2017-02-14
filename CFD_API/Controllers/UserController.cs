@@ -1091,22 +1091,23 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("live/deposit/userinfo")]
+        [AdminAuth]
         public string GetUserInfoByTransferId(string transferId)
         {
-            string format = "{{'first_name':'{0}', 'last_name':'{1}', 'email':'{2}'}}";
+            string format = "{{'first_name':'{0}', 'last_name':'{1}', 'email':'{2}', 'addr':'{3}'}}";
             var query = from u in db.UserInfos
                         join d in db.DepositHistories on u.UserId equals d.UserID
                         into x
                         from y in x.DefaultIfEmpty()
                         where y.TransferID == transferId
-                        select new { u.FirstName, u.LastName, u.Email };
+                        select new { u.FirstName, u.LastName, u.Email, u.Addr };
             var userInfo = query.FirstOrDefault();
             if(userInfo != null)
             {
-                return string.Format(format, userInfo.FirstName, userInfo.LastName, userInfo.Email);
+                return string.Format(format, userInfo.FirstName, userInfo.LastName, userInfo.Email, userInfo.Addr);
             }
 
-            return string.Format(format, string.Empty, string.Empty, string.Empty);
+            return string.Format(format, string.Empty, string.Empty, string.Empty, string.Empty);
         }
 
         [HttpGet]
