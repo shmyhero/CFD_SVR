@@ -120,6 +120,11 @@ namespace CFD_COMMON.Models.Context
                 .HasPrecision(18, 5);
 
 
+            modelBuilder.Entity<DepositHistory>()
+                .Property(e => e.ClaimAmount)
+                .HasPrecision(18, 5);
+
+
             modelBuilder.Entity<NewPositionHistory>()
                 .Property(e => e.SettlePrice)
                 .HasPrecision(18, 8);
@@ -157,9 +162,11 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.Ask)
                 .HasPrecision(18, 5);
 
+
             modelBuilder.Entity<TransferHistory>()
                 .Property(e => e.Amount)
                 .HasPrecision(18, 5);
+
 
             modelBuilder.Entity<UserAlert>()
                 .Property(e => e.HighPrice)

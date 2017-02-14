@@ -1072,7 +1072,7 @@ namespace CFD_API.Controllers
                         IsLiveUrl ? null : user.AyondoPassword,
                         amount);
 
-                    db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = transferId, CreatedAt = DateTime.Now });
+                    db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = transferId, CreatedAt = DateTime.Now, ClaimAmount = amount});
                     db.SaveChanges();
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
@@ -1091,7 +1091,6 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("live/deposit/userinfo")]
-        [AdminAuth]
         public string GetUserInfoByTransferId(string transferId)
         {
             string format = "{{'first_name':'{0}', 'last_name':'{1}', 'email':'{2}', 'addr':'{3}'}}";
