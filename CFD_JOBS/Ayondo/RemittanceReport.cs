@@ -56,6 +56,7 @@ namespace CFD_JOBS.Ayondo
                                           where t.CreatedAt > yesterDay && t.CreatedAt <= timeToSend && t.TransferType == "Withdraw"
                                           select new ExportItem() {
                                               BeneficiaryName = u2.LastName + u2.FirstName,
+                                              UserName = u.AyLiveUsername,
                                               BeneficiaryAccountNo = u.BankCardNumber,
                                               Province = u.Province,
                                               City = u.City,
@@ -131,6 +132,7 @@ namespace CFD_JOBS.Ayondo
     {
         //持卡人
         public string BeneficiaryName;
+        public string UserName;
         public string BeneficiaryAccountNo;
         public string BankName;
         public string BankBranch;
@@ -204,7 +206,7 @@ namespace CFD_JOBS.Ayondo
                 {
                     ExportItems.ForEach(item =>
                     {
-                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')", item.BeneficiaryName, item.BeneficiaryAccountNo,item.BankName, item.BankBranch, item.Province, item.City, item.IdCardNo,item.Currency, item.Amount);
+                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')", item.BeneficiaryName, item.UserName, item.BeneficiaryAccountNo,item.BankName, item.BankBranch, item.Province, item.City, item.IdCardNo,item.Currency, item.Amount);
                         ole_cmd.ExecuteNonQuery();
                     });
                 }
