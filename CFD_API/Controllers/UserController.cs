@@ -1654,7 +1654,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            CheckAndCreateAyondoDemoAccount(user);
+            //CheckAndCreateAyondoDemoAccount(user);
 
             string transferId;
             using (var clientHttp = new AyondoTradeClient(true))
