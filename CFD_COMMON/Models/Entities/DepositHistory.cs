@@ -10,7 +10,10 @@ namespace CFD_COMMON.Models.Entities
     {
         [Key]
         public int Id { get; set; }
+
+        //todo: string-->bigint
         public string TransferID { get; set; }
+
         public int UserID { get; set; }
         public DateTime? CreatedAt { get; set; }
 
