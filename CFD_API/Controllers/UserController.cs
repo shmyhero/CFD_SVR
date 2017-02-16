@@ -1654,7 +1654,8 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            //CheckAndCreateAyondoDemoAccount(user);
+            if(user.BankCardStatus!= "Approved")
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_APPROVED_BANK_CARD)));
 
             string transferId;
             using (var clientHttp = new AyondoTradeClient(true))
@@ -1662,7 +1663,15 @@ namespace CFD_API.Controllers
                 transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, form.Amount);
             }
 
-            db.TransferHistorys.Add(new TransferHistory() { TransferType="Withdraw",Amount=form.Amount, UserID=this.UserId, BankCard=user.BankCardNumber, CreatedAt = DateTime.Now });
+            //db.TransferHistorys.Add(new TransferHistory() { TransferType="Withdraw",Amount=form.Amount, UserID=this.UserId, BankCard=user.BankCardNumber, CreatedAt = DateTime.Now });
+            db.WithdrawalHistories.Add(new WithdrawalHistory()
+            {
+                RequestAmount = form.Amount,
+                UserId = UserId,
+                TransferId = Convert.ToInt64(transferId),
+                CreateAt = DateTime.UtcNow,
+                BankCardNumber = user.BankCardNumber,
+            });
             db.SaveChanges();
 
             return transferId;

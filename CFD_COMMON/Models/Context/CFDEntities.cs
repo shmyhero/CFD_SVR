@@ -52,6 +52,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<VerifyCode> VerifyCodes { get; set; }
         public virtual DbSet<Entities.Version> Versions { get; set; }
         //public virtual DbSet<UserAyondo> UserAyondos { get; set; }
+        public virtual DbSet<WithdrawalHistory> WithdrawalHistories { get; set; }
 
         public virtual DbSet<AyondoTradeHistory_Live> AyondoTradeHistory_Live { get; set; }
         public virtual DbSet<AyondoTransferHistory_Live> AyondoTransferHistory_Live { get; set; }
@@ -211,6 +212,12 @@ namespace CFD_COMMON.Models.Context
             modelBuilder.Entity<UserInfo>()
                 .Property(e => e.FaceCheckSimilarity)
                 .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<WithdrawalHistory>()
+                .Property(e => e.RequestAmount)
+                .HasPrecision(18, 5);
+
 
             //modelBuilder.Entity<AyondoSecurity>()
             //    .Property(e => e.Bid)

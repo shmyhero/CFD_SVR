@@ -12,10 +12,13 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<Version> Versions { get; set; }
+        public virtual DbSet<WithdrawalHistory> WithdrawalHistories { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<WithdrawalHistory>()
+                .Property(e => e.RequestAmount)
+                .HasPrecision(18, 5);
         }
     }
 }

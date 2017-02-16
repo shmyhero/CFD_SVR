@@ -40,6 +40,8 @@ namespace CFD_COMMON.Localization
         LIVE_ACC_REJ_AbortedByExpiry,
         LIVE_ACC_REJ_AbortedByPolicy,
 
+        NO_APPROVED_BANK_CARD,
+
         PRICEDOWN
     }
 }

@@ -39,6 +39,8 @@ namespace CFD_COMMON.Localization
             { TransKey.LIVE_ACC_REJ_AbortedByExpiry, "实盘注册申请已过期" },
             { TransKey.LIVE_ACC_REJ_AbortedByPolicy, "实盘注册申请被中止" },
 
+            { TransKey.NO_APPROVED_BANK_CARD, "未绑定银行卡" },
+
             { TransKey.PRICEDOWN, "当前价格中断,无法交易" },
         };
         

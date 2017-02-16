@@ -179,6 +179,7 @@
     <Compile Include="Models\Entities\VerifyCode.cs" />
     <Compile Include="Models\Cached\ProdDef.cs" />
     <Compile Include="Models\Cached\Quote.cs" />
+    <Compile Include="Models\Entities\WithdrawalHistory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service\CardService.cs" />
     <Compile Include="Service\RewardService.cs" />
