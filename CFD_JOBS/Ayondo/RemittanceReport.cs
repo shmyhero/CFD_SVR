@@ -50,10 +50,10 @@ namespace CFD_JOBS.Ayondo
                         using (var db = CFDEntities.Create())
                         {
                             DateTime yesterDay = timeToSend.AddDays(-1);
-                            exporItems = (from t in db.TransferHistorys
-                                          join u in db.Users on t.UserID equals u.Id
+                            exporItems = (from t in db.WithdrawalHistories
+                                          join u in db.Users on t.UserId equals u.Id
                                           join u2 in db.UserInfos on u.Id equals u2.UserId
-                                          where t.CreatedAt > yesterDay && t.CreatedAt <= timeToSend && t.TransferType == "Withdraw"
+                                          where t.CreateAt > yesterDay && t.CreateAt <= timeToSend
                                           select new ExportItem() {
                                               BeneficiaryName = u2.LastName + u2.FirstName,
                                               UserName = u.AyLiveUsername,
@@ -63,7 +63,7 @@ namespace CFD_JOBS.Ayondo
                                               BankName = u.BankName,
                                               BankBranch = u.Branch,
                                               IdCardNo = u2.IdCode,
-                                              Amount = t.Amount
+                                              Amount = t.RequestAmount.HasValue ? t.RequestAmount.Value : 0
                                           }).ToList();
 
                             refundMailSetting = db.Miscs.FirstOrDefault(o => o.Key == "RefundMail").Value;
