@@ -1072,8 +1072,11 @@ namespace CFD_API.Controllers
                         IsLiveUrl ? null : user.AyondoPassword,
                         amount);
 
-                    db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = transferId, CreatedAt = DateTime.Now, ClaimAmount = amount});
-                    db.SaveChanges();
+                    if(IsLiveUrl)
+                    {
+                        db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = transferId, CreatedAt = DateTime.Now, ClaimAmount = amount });
+                        db.SaveChanges();
+                    }
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
