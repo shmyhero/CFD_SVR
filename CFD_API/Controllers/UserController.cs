@@ -1695,7 +1695,7 @@ namespace CFD_API.Controllers
                 return null;
             }
 
-            var lastWithdrawRecord = db.TransferHistorys.OrderByDescending(o=>o.CreatedAt).FirstOrDefault(o => (o.UserID == UserId && o.TransferType == "Withdraw" && o.BankCard == userInfo.BankCardNumber));
+            var lastWithdrawRecord = db.WithdrawalHistories.OrderByDescending(o=>o.CreateAt).FirstOrDefault(o => (o.UserId == UserId && o.BankCardNumber == userInfo.BankCardNumber));
 
             LiveUserInfoDTO dto = new LiveUserInfoDTO()
             {
@@ -1710,8 +1710,8 @@ namespace CFD_API.Controllers
                 branch = userInfo.Branch,
                 province = userInfo.Province,
                 city = userInfo.City,
-                lastWithdraw = lastWithdrawRecord == null? decimal.Zero : lastWithdrawRecord.Amount,
-                lastWithdrawAt = lastWithdrawRecord == null ? null : lastWithdrawRecord.CreatedAt,
+                lastWithdraw = lastWithdrawRecord == null? decimal.Zero : lastWithdrawRecord.RequestAmount,
+                lastWithdrawAt = lastWithdrawRecord == null ? null : lastWithdrawRecord.CreateAt,
             };
 
             return dto;
