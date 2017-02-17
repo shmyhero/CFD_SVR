@@ -1102,7 +1102,7 @@ namespace CFD_API.Controllers
                         join d in db.DepositHistories on u.UserId equals d.UserID
                         into x
                         from y in x.DefaultIfEmpty()
-                        where y.TransferID == transferId
+                        where y.TransferID == Convert.ToInt64(transferId)
                         select new { u.FirstName, u.LastName, u.Email, u.Addr };
             var userInfo = query.FirstOrDefault();
             if(userInfo != null)
