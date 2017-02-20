@@ -41,7 +41,7 @@ namespace CFD_API.Controllers
         [Route("DemoAccount")]
         public JObject DemoAccount(string username, string password)
         {
-            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "DemoAccount");
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "demo-account");
             httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json; charset=UTF-8";
@@ -52,23 +52,25 @@ namespace CFD_API.Controllers
             //Escape the "{", "}" (by duplicating them) in the format string:
             var json =
                 @"{{
-'AddressCity': 'TestCity',
-'AddressCountry': 'CN',
-'AddressLine1': 'Teststr. 123',
-'AddressLine2': null,
-'AddressZip': '12345',
-'ClientIP': '127.0.0.1',
-'Currency': 'USD',
-'FirstName': 'User',
-'Gender': 'Male',
-'IsTestRecord': true,
-'Language': 'EN',
-'LastName': 'THCN',
-'Password': '{1}',
-'PhonePrimary': '0044 123445',
-'SalesRepGuid':null,
-'UserName': '{0}',
-'ProductType': 'CFD'
+'addressCity': 'TestCity',
+'addressCountry': 'CN',
+'addressLine1': 'Teststr. 123',
+'addressLine2': '',
+'addressZip': '12345',
+'clientIP': '127.0.0.1',
+'currency': 'USD',
+'email': 'thcn_demo@tradehero.mobi',
+'firstname': 'User',
+'gender': 'Male',
+'isTestRecord': true,
+'language': 'EN',
+'lastname': 'THCN',
+'password': '{1}',
+'phonePrimary': '0044 123445',
+'phonePrimaryIso2': 'aa',
+'salesRepGuid':'',
+'username': '{0}',
+'productType': 'CFD'
 }}";
 
             var s = string.Format(json, username, password);

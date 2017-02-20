@@ -101,8 +101,6 @@ namespace CFD_API.Controllers
             }
         }
 
-        private const string AMS_PROXY_HOST = "http://cfd-webapi.cloudapp.net/api/proxy/";
-
         private static ConcurrentDictionary<int, DateTime> _ayondoRegisteringUsers = new ConcurrentDictionary<int, DateTime>();
 
         public void CreateAyondoDemoAccount(User user)
@@ -138,14 +136,14 @@ namespace CFD_API.Controllers
 
                 tryCount++;
 
-                if (jObject["Error"] != null)
+                if (jObject["error"] != null)
                 {
                     CFDGlobal.LogInformation("AMS check-username error: " + jObject["Error"].Value<string>());
                 }
                 else
                 {
-                    isAvailable = jObject["IsAvailable"].Value<bool>();
-                    bool isValid = jObject["IsValid"].Value<bool>();
+                    isAvailable = jObject["data"]["isAvailable"].Value<bool>();
+                    bool isValid = jObject["data"]["isValid"].Value<bool>();
 
                     if (!isAvailable || !isValid)
                     {
@@ -160,7 +158,7 @@ namespace CFD_API.Controllers
             if (isAvailable)
             {
                 var httpWebRequest =
-                    WebRequest.CreateHttp(AMS_PROXY_HOST + "DemoAccount" + "?username=" + username + "&password=" + password);
+                    WebRequest.CreateHttp(CFDGlobal.AMS_PROXY_HOST + "DemoAccount" + "?username=" + username + "&password=" + password);
                 //httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
                 httpWebRequest.Method = "POST";
                 //httpWebRequest.ContentType = "application/json; charset=UTF-8";
@@ -210,13 +208,13 @@ namespace CFD_API.Controllers
 
                 var jObject = JObject.Parse(str);
 
-                if (jObject["Error"] != null)
+                if (jObject["error"] != null)
                 {
                     CFDGlobal.LogWarning("AMS create account error: " + jObject["Error"].Value<string>() + " userId:" + user.Id + " ayondoUsername:" + username);
                 }
                 else
                 {
-                    var guid = jObject["Guid"].Value<string>();
+                    var guid = jObject["data"]["accountGuid"].Value<string>();
                     CFDGlobal.LogInformation("Ayondo user created: userId:" + user.Id + " username:" + username + " password:" + password + " guid:" + guid);
 
                     user.AyondoUsername = username;
@@ -231,7 +229,7 @@ namespace CFD_API.Controllers
             var accountType = isLive ? "Live" : "Demo";
 
             var httpWebRequest =
-                WebRequest.CreateHttp(AMS_PROXY_HOST + "check-username?AccountType=" + accountType + "&UserName=" + username);
+                WebRequest.CreateHttp(CFDGlobal.AMS_PROXY_HOST + "check-username?AccountType=" + accountType + "&UserName=" + username);
             //httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
             httpWebRequest.Proxy = null;
 
@@ -335,7 +333,7 @@ namespace CFD_API.Controllers
         {
             byte[] binaryData = Encoding.UTF8.GetBytes(JObject.FromObject(form).ToString());
             var httpWebRequest =
-                WebRequest.CreateHttp(AMS_PROXY_HOST + "refaccount");
+                WebRequest.CreateHttp(CFDGlobal.AMS_PROXY_HOST + "refaccount");
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = method;
             httpWebRequest.Timeout = int.MaxValue;

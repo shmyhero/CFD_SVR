@@ -1420,8 +1420,8 @@ namespace CFD_API.Controllers
         {
             var jObject = AMSCheckUsername(username, true);
 
-            var isAvailable = jObject["IsAvailable"].Value<bool>();
-            bool isValid = jObject["IsValid"].Value<bool>();
+            var isAvailable = jObject["data"]["isAvailable"].Value<bool>();
+            bool isValid = jObject["data"]["isValid"].Value<bool>();
 
             var result = new ResultDTO() {success = false};
 
