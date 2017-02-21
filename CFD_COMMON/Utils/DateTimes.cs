@@ -80,9 +80,16 @@ namespace CFD_COMMON.Utils
                    && t1.Year == t2.Year;
         }
 
-        public static DateTime GetStartTimeEvery5Minutes(DateTime dt)
+        /// <summary>
+        /// 获取给定时间段的开始时间，用除整的方式
+        /// 比如：12/5 = 2，2*5=10. 那么以5分钟为时间段的话，12分的开始时间就是10
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="period"></param>
+        /// <returns></returns>
+        public static DateTime GetStartTime(DateTime dt, int period = 5)
         {
-            return new DateTime(dt.Year,dt.Month,dt.Day,dt.Hour,dt.Minute/5*5,0,dt.Kind);
+            return new DateTime(dt.Year,dt.Month,dt.Day,dt.Hour,dt.Minute/ period * period, 0,dt.Kind);
         }
 
         public static DateTime GetHistoryQueryStartTime(DateTime endTime)

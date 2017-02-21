@@ -93,7 +93,7 @@ namespace CFD_JOBS.Ayondo
                         if (allQuotes.Count > 0)
                         {
                             var dtAyondoNow = allQuotes.Max(o => o.Time); //the time of the last message received from Ayondo
-                            var klineAyondoNow = DateTimes.GetStartTimeEvery5Minutes(dtAyondoNow);
+                            var klineAyondoNow = DateTimes.GetStartTime(dtAyondoNow);
 
                             var dtNow = DateTime.UtcNow;
                             var oneMinuteAgo = dtNow.AddMinutes(-1);
@@ -113,6 +113,9 @@ namespace CFD_JOBS.Ayondo
 
                                 UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FiveMinutes);
                                 UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.Day);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.OneMinute);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FifteenMinutes);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.SixtyMinutes);
                             }
 
                             CFDGlobal.LogLine("\t\t\t\tkline updated");
