@@ -294,7 +294,7 @@ namespace CFD_API.Controllers
         public List<KLineDTO> Get5mKLineHorizontal(int securityId)
         {
             //横屏状态下取两个交易日
-            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(48));
+            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(2*24));
         }
 
         [HttpGet]
@@ -303,7 +303,7 @@ namespace CFD_API.Controllers
         public List<KLineDTO> Get15mKLineHorizontal(int securityId)
         {
             //横屏状态下取三个交易日
-            return GetKLines(KLineSize.FifteenMinutes, securityId, TimeSpan.FromHours(72));
+            return GetKLines(KLineSize.FifteenMinutes, securityId, TimeSpan.FromHours(3*24));
         }
 
         [HttpGet]
@@ -313,15 +313,6 @@ namespace CFD_API.Controllers
         {
             //横屏状态下取12个交易日
             return GetKLines(KLineSize.FifteenMinutes, securityId, TimeSpan.FromHours(12 * 24));
-        }
-
-        [HttpGet]
-        [Route("{securityId}/kline/day/horizontal")]
-        [Route("live/{securityId}/kline/day/horizontal")]
-        public List<KLineDTO> GetDayKLineHorizontal(int securityId)
-        {
-            //横屏状态取2个月，60天
-            return GetKLines(KLineSize.Day, securityId, TimeSpan.FromDays(60));
         }
         #endregion
 
