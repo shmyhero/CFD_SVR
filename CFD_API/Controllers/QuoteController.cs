@@ -318,7 +318,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("{securityId}/kline/day/horizontal")]
         [Route("live/{securityId}/kline/day/horizontal")]
-        public List<KLineDTO> GetDayKLine(int securityId)
+        public List<KLineDTO> GetDayKLineHorizontal(int securityId)
         {
             //横屏状态取2个月，60天
             return GetKLines(KLineSize.Day, securityId, TimeSpan.FromDays(60));
