@@ -14,6 +14,7 @@ using CFD_COMMON.Models.Entities;
 
 namespace CFD_API.Controllers
 {
+    //todo: Admin Auth required!
     public class AdminController : CFDController
     {
         public AdminController(CFDEntities db, IMapper mapper) : base(db, mapper)
