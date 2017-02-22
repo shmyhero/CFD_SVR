@@ -10,12 +10,6 @@ namespace CFD_COMMON.Utils
 {
     public class KLines
     {
-        private const int CLEAR_HISTORY_WHEN_SIZE_5m = 12 * 24 * 10; //xx days' most possible count
-        private const int CLEAR_HISTORY_TO_SIZE_5m = 12 * 24 * 7; //xx days' most possible count
-
-        private const int CLEAR_HISTORY_WHEN_SIZE_1d = 22*12;
-        private const int CLEAR_HISTORY_TO_SIZE_1d = 22*6;
-
         public static string GetKLineListNamePrefix(KLineSize kLineSize)
         {
             DescriptionAttribute attr = GetAttribute<DescriptionAttribute>(kLineSize);
@@ -63,31 +57,31 @@ namespace CFD_COMMON.Utils
 
     public enum KLineSize
     {
-        [Description("kile1m:")]
+        [Description("kline1m:")]
         [Period(1)]
-        [ClearWhen(60 * 8)] //1分钟K线，需要显示4小时
-        [ClearTo(60 * 4)]
+        [ClearWhen(60 * 16)] //1分钟K线，需要显示4小时
+        [ClearTo(60 * 8)]
         OneMinute,
 
-        [Description("kile5m:")]
+        [Description("kline5m:")]
         [Period(5)]
         [ClearWhen(12 * 24 * 10)] //5分钟K线，需要显示2个交易日
         [ClearTo(12 * 24 * 7)]
         FiveMinutes,
 
-        [Description("kile15m:")]
+        [Description("kline15m:")]
         [Period(15)]
-        [ClearWhen(4 * 24 * 6)] //15分钟K线，需要显示3个交易日
-        [ClearTo(4 * 24 * 3)]
+        [ClearWhen(4 * 24 * 12)] //15分钟K线，需要显示3个交易日
+        [ClearTo(4 * 24 * 6)]
         FifteenMinutes,
 
-        [Description("kile60m:")]
+        [Description("kline60m:")]
         [Period(60)]
-        [ClearWhen(1 * 24 * 24)] //60分钟K线，需要显示12个交易日
-        [ClearTo(1 * 24 * 12)]
+        [ClearWhen(1 * 24 * 48)] //60分钟K线，需要显示12个交易日
+        [ClearTo(1 * 24 * 24)]
         SixtyMinutes,
 
-        [Description("kile1d:")]
+        [Description("kline1d:")]
         [ClearWhen(22 * 12)] //60分钟K线，需要显示12个交易日
         [ClearTo(22 * 6)]
         Day

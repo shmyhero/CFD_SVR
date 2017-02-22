@@ -278,35 +278,60 @@ namespace CFD_API.Controllers
             return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
 
+        #region 横屏K线
+        [HttpGet]
+        [Route("{securityId}/kline/1m")]
+        [Route("live/{securityId}/kline/1m/horizontal")]
+        public List<KLineDTO> Get1mKLine(int securityId)
+        {
+            //横屏状态下取4小时
+            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(4));
+        }
+
+        [HttpGet]
+        [Route("{securityId}/kline/5m")]
+        [Route("live/{securityId}/kline/5m/horizontal")]
+        public List<KLineDTO> Get5mKLineHorizontal(int securityId)
+        {
+            //横屏状态下取两个交易日
+            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(48));
+        }
+
+        [HttpGet]
+        [Route("{securityId}/kline/15m")]
+        [Route("live/{securityId}/kline/15m/horizontal")]
+        public List<KLineDTO> Get15mKLineHorizontal(int securityId)
+        {
+            //横屏状态下取三个交易日
+            return GetKLines(KLineSize.FifteenMinutes, securityId, TimeSpan.FromHours(72));
+        }
+
+        [HttpGet]
+        [Route("{securityId}/kline/60m")]
+        [Route("live/{securityId}/kline/60m/horizontal")]
+        public List<KLineDTO> Get60mKLineHorizontal(int securityId)
+        {
+            //横屏状态下取12个交易日
+            return GetKLines(KLineSize.FifteenMinutes, securityId, TimeSpan.FromHours(12 * 24));
+        }
+
+        [HttpGet]
+        [Route("{securityId}/kline/day/horizontal")]
+        [Route("live/{securityId}/kline/day/horizontal")]
+        public List<KLineDTO> GetDayKLine(int securityId)
+        {
+            //横屏状态取2个月，60天
+            return GetKLines(KLineSize.Day, securityId, TimeSpan.FromDays(60));
+        }
+        #endregion
+
+        #region 竖屏K线
         [HttpGet]
         [Route("{securityId}/kline/5m")]
         [Route("live/{securityId}/kline/5m")]
         public List<KLineDTO> Get5mKLine(int securityId)
         {
-            List<KLine> klines;
-            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
-            {
-                var redisKLineClient = redisClient.As<KLine>();
-                //var redisProdDefClient = redisClient.As<ProdDef>();
-
-                klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(KLineSize.FiveMinutes) + securityId].GetAll();
-            }
-
-            if (klines.Count == 0)
-                return new List<KLineDTO>();
-
-            var lastKLineTime = klines.Last().Time;
-
-            var result = klines.Where(o => lastKLineTime - o.Time <= TimeSpan.FromHours(12));
-
-            return result.Select(o => new KLineDTO()
-            {
-                close = o.Close,
-                high = o.High,
-                low = o.Low,
-                open = o.Open,
-                time = o.Time
-            }).OrderBy(o => o.time).ToList();
+            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(12));
         }
 
         [HttpGet]
@@ -338,6 +363,7 @@ namespace CFD_API.Controllers
                 }).OrderBy(o => o.time).ToList();
             }
         }
+        #endregion
 
         /// <summary>
         /// todo: for test use only
@@ -389,6 +415,32 @@ namespace CFD_API.Controllers
             }).ToList();
 
             return results;
+        }
+
+        private List<KLineDTO> GetKLines(KLineSize klineSize, int securityId, TimeSpan timeSpan)
+        {
+            List<KLine> klines;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisKLineClient = redisClient.As<KLine>();
+                klines = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(klineSize) + securityId].GetAll();
+            }
+
+            if (klines.Count == 0)
+                return new List<KLineDTO>();
+
+            var lastKLineTime = klines.Last().Time;
+
+            var result = klines.Where(o => lastKLineTime - o.Time <= timeSpan);
+
+            return result.Select(o => new KLineDTO()
+            {
+                close = o.Close,
+                high = o.High,
+                low = o.Low,
+                open = o.Open,
+                time = o.Time
+            }).OrderBy(o => o.time).ToList();
         }
 
         public class QuoteTemp : Quote
