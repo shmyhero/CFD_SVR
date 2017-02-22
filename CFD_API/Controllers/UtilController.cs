@@ -171,171 +171,6 @@ namespace CFD_API.Controllers
             return result;
         }
 
-        [HttpGet]
-        [Route("feedback")]
-        public List<FeedBackFormDTO_Pic> GetAllFeedBacks()
-        {
-            List<Feedback> feedbacks = db.Feedbacks.OrderByDescending(o => o.Id).Take(20).ToList();
-
-            List<FeedBackFormDTO_Pic> feedBackDTO = new List<FeedBackFormDTO_Pic>();
-            feedbacks.ForEach(
-                    o =>
-                    {
-                        List<string> photos = new List<string>();
-                        if(!string.IsNullOrEmpty(o.PicUrl))
-                        {
-                            photos.AddRange(o.PicUrl.Split(';').ToList().Where(url => !string.IsNullOrEmpty(url)));
-                            for (int x = 0; x < photos.Count; x++)
-                            {
-                                photos[x] = CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER_URL + photos[x];
-                            }
-                        }
-
-                        feedBackDTO.Add(new FeedBackFormDTO_Pic()
-                        {
-                            id = o.Id,
-                            phone = o.Phone,
-                            text = o.Text,
-                            photos = photos
-                        });
-                    }
-                );
-
-            return feedBackDTO;
-        }
-
-        [HttpGet]
-        [Route("feedback/anonymous")]
-        public List<FeedBackFormDTO_Pic> GetAnonymousFeedBacks()
-        {
-            List<Feedback> feedbacks = db.Feedbacks.OrderByDescending(o => o.Id).Where(x=>string.IsNullOrEmpty(x.Phone)).Take(20).ToList();
-
-            List<FeedBackFormDTO_Pic> feedBackDTO = new List<FeedBackFormDTO_Pic>();
-            feedbacks.ForEach(
-                    o =>
-                    {
-                        List<string> photos = new List<string>();
-                        if (!string.IsNullOrEmpty(o.PicUrl))
-                        {
-                            photos.AddRange(o.PicUrl.Split(';').ToList().Where(url => !string.IsNullOrEmpty(url)));
-                            for (int x = 0; x < photos.Count; x++)
-                            {
-                                photos[x] = CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER_URL + photos[x];
-                            }
-                        }
-
-                        feedBackDTO.Add(new FeedBackFormDTO_Pic()
-                        {
-                            id = o.Id,
-                            phone = o.Phone,
-                            text = o.Text,
-                            photos = photos
-                        });
-                    }
-                );
-
-            return feedBackDTO;
-        }
-
-        [HttpGet]
-        [Route("nextfeedback/{id}")]
-        public List<FeedBackFormDTO_Pic> NextFeedBack(int id)
-        {
-            List<Feedback> feedbacks = db.Feedbacks.Where(o=>o.Id < id).OrderByDescending(o => o.Time).Take(20).ToList();
-
-            List<FeedBackFormDTO_Pic> feedBackDTO = new List<FeedBackFormDTO_Pic>();
-            feedbacks.ForEach(
-                    o =>
-                    {
-                        List<string> photos = new List<string>();
-                        if (!string.IsNullOrEmpty(o.PicUrl))
-                        {
-                            photos.AddRange(o.PicUrl.Split(';').ToList().Where(url => !string.IsNullOrEmpty(url)));
-                            for (int x = 0; x < photos.Count; x++)
-                            {
-                                photos[x] = CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER_URL + photos[x];
-                            }
-                        }
-
-                        feedBackDTO.Add(new FeedBackFormDTO_Pic()
-                        {
-                            id = o.Id,
-                            phone = o.Phone,
-                            text = o.Text,
-                            photos = photos
-                        });
-                    }
-                );
-
-            return feedBackDTO;
-        }
-
-        [HttpGet]
-        [Route("nextfeedback/anonymous/{id}")]
-        public List<FeedBackFormDTO_Pic> NextAnonymousFeedBack(int id)
-        {
-            List<Feedback> feedbacks = db.Feedbacks.Where(o => o.Id < id && string.IsNullOrEmpty(o.Phone)).OrderByDescending(o => o.Time).Take(20).ToList();
-
-            List<FeedBackFormDTO_Pic> feedBackDTO = new List<FeedBackFormDTO_Pic>();
-            feedbacks.ForEach(
-                    o =>
-                    {
-                        List<string> photos = new List<string>();
-                        if (!string.IsNullOrEmpty(o.PicUrl))
-                        {
-                            photos.AddRange(o.PicUrl.Split(';').ToList().Where(url => !string.IsNullOrEmpty(url)));
-                            for (int x = 0; x < photos.Count; x++)
-                            {
-                                photos[x] = CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER_URL + photos[x];
-                            }
-                        }
-
-                        feedBackDTO.Add(new FeedBackFormDTO_Pic()
-                        {
-                            id = o.Id,
-                            phone = o.Phone,
-                            text = o.Text,
-                            photos = photos
-                        });
-                    }
-                );
-
-            return feedBackDTO;
-        }
-
-        [HttpGet]
-        [Route("feedback/phone/{number}")]
-        public List<FeedBackFormDTO_Pic> GetFeedBacksByPhone(string number)
-        {
-            List<Feedback> feedbacks = db.Feedbacks.Where(x=>x.Phone.Contains(number)).OrderByDescending(o => o.Id).Take(20).ToList();
-
-            List<FeedBackFormDTO_Pic> feedBackDTO = new List<FeedBackFormDTO_Pic>();
-            feedbacks.ForEach(
-                    o =>
-                    {
-                        List<string> photos = new List<string>();
-                        if (!string.IsNullOrEmpty(o.PicUrl))
-                        {
-                            photos.AddRange(o.PicUrl.Split(';').ToList().Where(url => !string.IsNullOrEmpty(url)));
-                            for (int x = 0; x < photos.Count; x++)
-                            {
-                                photos[x] = CFDGlobal.FEEDBACK_PIC_BLOC_CONTAINER_URL + photos[x];
-                            }
-                        }
-
-                        feedBackDTO.Add(new FeedBackFormDTO_Pic()
-                        {
-                            id = o.Id,
-                            phone = o.Phone,
-                            text = o.Text,
-                            photos = photos
-                        });
-                    }
-                );
-
-            return feedBackDTO;
-        }
-
         //public async Task<Dictionary<string, string>> NewFeedbackPicture()
         //{
         //    if (!Request.Content.IsMimeMultipartContent())
@@ -373,117 +208,6 @@ namespace CFD_API.Controllers
             StringBuilder sb = new StringBuilder();
             imgList.ForEach(url => { sb.Append(url); sb.Append(";"); });
             return sb.ToString();
-        }
-
-        [Route("operation/login")]
-        [HttpPost]
-        public string Login(OperationUserDTO userDTO)
-        {
-            int userType = 0;
-            int.TryParse(userDTO.Type, out userType);
-            OperationUser user = db.OperationUsers.FirstOrDefault(u => (u.UserName == userDTO.name) && (u.Password == userDTO.password) && (u.UserType == userType));
-
-            if(user != null)
-            {
-                return "true";
-            }
-            else
-            {
-                return Newtonsoft.Json.JsonConvert.SerializeObject(userDTO);
-            }
-        }
-
-        [HttpPost]
-        [Route("headline")]
-        public HttpResponseMessage PostHeadline(HeadlineDTO headLineDTO)
-        {
-            if(headLineDTO.id > 0) //update
-            {
-                UpdateHeadline(headLineDTO);
-            }
-            else//created
-            {
-                CreateHeadline(headLineDTO);
-            }
-            db.SaveChanges();
-
-            return Request.CreateResponse(HttpStatusCode.OK);
-        }
-
-        private void CreateHeadline(HeadlineDTO headLineDTO)
-        {
-            Headline headline = new Headline()
-            {
-                Header = headLineDTO.header,
-                Body = headLineDTO.body,
-                Color = headLineDTO.color,
-                CreatedAt = DateTime.UtcNow,
-                Expiration = SqlDateTime.MaxValue.Value
-            };
-
-            if(!string.IsNullOrEmpty(headLineDTO.image))
-            {
-                string picName = Guid.NewGuid().ToString("N");
-                Byte[] bytes = Convert.FromBase64String(headLineDTO.image);
-                Blob.UploadFromBytes(CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER, picName, bytes);
-
-                headline.ImgUrl = CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER_URL + picName;
-            }
-
-
-            db.Headlines.Add(headline);
-        }
-
-        private void UpdateHeadline(HeadlineDTO headLineDTO)
-        {
-            var headlines = db.Headlines.Where(item => item.Id == headLineDTO.id).ToList();
-            if(headlines != null && headlines.Count > 0)
-            {
-                var headline = headlines.FirstOrDefault();
-
-                if(!string.IsNullOrEmpty(headLineDTO.image))
-                {
-                    string picName = string.Empty;
-                    if (!string.IsNullOrEmpty(headline.ImgUrl)) //delete existing blob before upload
-                    {
-                        picName = headline.ImgUrl.Split('/').Last();
-                        Blob.DeleteBlob(CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER, picName);
-                    }
-
-                    if(string.IsNullOrEmpty(picName))
-                    {
-                        picName = Guid.NewGuid().ToString("N");
-                    }
-
-                    Byte[] bytes = Convert.FromBase64String(headLineDTO.image);
-                    Blob.UploadFromBytes(CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER, picName, bytes);
-
-                    headline.ImgUrl = CFDGlobal.HEADLINE_PIC_BLOB_CONTAINER_URL + picName;
-                }
-
-                headline.Header = headLineDTO.header;
-                headline.Body = headLineDTO.body;
-                headline.Color = headLineDTO.color;
-            }
-        }
-
-        [Route("headline/{id}")]
-        [HttpDelete]
-        public HttpResponseMessage DeleteHeadline(int id)
-        {
-            Headline headline = null;
-            var headlines = db.Headlines.Where(item => item.Id == id).ToList();
-            if (headlines != null && headlines.Count > 0)
-            {
-                headline = headlines.FirstOrDefault();
-            }
-            else
-            {
-                Request.CreateResponse(HttpStatusCode.OK);
-            }
-            headline.Expiration = DateTime.UtcNow;
-            db.SaveChanges();
-            return Request.CreateResponse(HttpStatusCode.OK);
         }
 
         [HttpGet]
@@ -682,50 +406,50 @@ namespace CFD_API.Controllers
             return headlinesGroup;
         }
 
-        /// <summary>
-        /// 无验证信息或验证信息错误时返回0，否则返回UserID
-        /// </summary>
-        /// <returns></returns>
-        public int GetUserID()
-        {
-            if(HttpContext.Current.Request.Headers.AllKeys.Contains("Authorization"))
-            {
-                string auth = HttpContext.Current.Request.Headers["Authorization"];
-                var authArray = auth.Split(' ');
-                if(authArray.Length !=2)
-                {
-                    return 0;
-                }
+        ///// <summary>
+        ///// 无验证信息或验证信息错误时返回0，否则返回UserID
+        ///// </summary>
+        ///// <returns></returns>
+        //public int GetUserID()
+        //{
+        //    if(HttpContext.Current.Request.Headers.AllKeys.Contains("Authorization"))
+        //    {
+        //        string auth = HttpContext.Current.Request.Headers["Authorization"];
+        //        var authArray = auth.Split(' ');
+        //        if(authArray.Length !=2)
+        //        {
+        //            return 0;
+        //        }
 
-                var tokenArray = authArray[1].Split('_');
-                if(tokenArray.Length != 2)
-                {
-                    return 0;
-                }
+        //        var tokenArray = authArray[1].Split('_');
+        //        if(tokenArray.Length != 2)
+        //        {
+        //            return 0;
+        //        }
 
-                string userIdStr = tokenArray[0];
-                int userId = 0;
-                int.TryParse(userIdStr, out userId);
+        //        string userIdStr = tokenArray[0];
+        //        int userId = 0;
+        //        int.TryParse(userIdStr, out userId);
 
-                return userId;
-            }
+        //        return userId;
+        //    }
 
-            return 0;
-        }
+        //    return 0;
+        //}
 
-        public decimal GetLastPrice(ProdDef prodDef)
-        {
+        //public decimal GetLastPrice(ProdDef prodDef)
+        //{
           
-            var quotes = WebCache.GetInstance(IsLiveUrl).Quotes.Where(o => o.Id == prodDef.Id).ToList();
-            //var prodDefs = redisProdDefClient.GetByIds(ids);
-            var quote = quotes.FirstOrDefault(o => o.Id == prodDef.Id);
-            if (quote != null)
-            {
-                return Quotes.GetLastPrice(quote);
-            }
+        //    var quotes = WebCache.GetInstance(IsLiveUrl).Quotes.Where(o => o.Id == prodDef.Id).ToList();
+        //    //var prodDefs = redisProdDefClient.GetByIds(ids);
+        //    var quote = quotes.FirstOrDefault(o => o.Id == prodDef.Id);
+        //    if (quote != null)
+        //    {
+        //        return Quotes.GetLastPrice(quote);
+        //    }
 
-            return 0;
-        }
+        //    return 0;
+        //}
 
         private const string SMS_Auth = "7AF1CCCC-DDB8-460A-A526-B204C91D316E";
         [HttpPost]
@@ -759,262 +483,6 @@ namespace CFD_API.Controllers
             YunPianMessenger.SendSms(form.message, form.mobile);
 
             return result;
-        }
-
-        [HttpGet]
-        [Route("demo/oauth")]
-        public HttpResponseMessage AyondoDemoOAuth()
-        {
-            var queryNameValuePairs = Request.GetQueryNameValuePairs();
-            //CFDGlobal.LogInformation(oauth_token+" "+state+" "+expires_in);
-
-            var currentUrl = Request.RequestUri.GetLeftPart(UriPartial.Path);
-
-            var errorResponse = Request.CreateResponse(HttpStatusCode.Redirect);
-            errorResponse.Headers.Location = new Uri(currentUrl + "/error");
-
-            var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
-            if (!string.IsNullOrWhiteSpace(error))
-            {
-                string log = queryNameValuePairs.Aggregate("Demo OAuth error: ",
-                    (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
-                CFDGlobal.LogInformation(log);
-
-                //return "ERROR";
-                return errorResponse;
-            }
-
-            var oauth_token = queryNameValuePairs.FirstOrDefault(o => o.Key == "oauth_token").Value;
-            if (!string.IsNullOrWhiteSpace(oauth_token))
-            {
-                var bytes = Convert.FromBase64String(oauth_token);
-
-                var decryptEngine = new Pkcs1Encoding(new RsaEngine());
-                using (var txtreader = new StringReader(CFDGlobal.OAUTH_TOKEN_PUBLIC_KEY))
-                {
-                    var keyParameter = (AsymmetricKeyParameter) new PemReader(txtreader).ReadObject();
-                    decryptEngine.Init(false, keyParameter);
-                }
-
-                var decrypted = Encoding.UTF8.GetString(decryptEngine.ProcessBlock(bytes, 0, bytes.Length));
-
-                var split = decrypted.Split(':');
-                var username1 = split[0];
-                var username2 = split[1]; //ayondo username
-                var expiry = split[2];
-                var checksum = split[3];
-
-                //// check if cfd userid and ayondo username are bound
-                //var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
-                //int userId;
-                //var tryParse = int.TryParse(state, out userId);
-
-                //if (!tryParse)
-                //{
-                //    CFDGlobal.LogInformation("oauth DEMO error: state tryParse to int32 failed " + state);
-                //    return errorResponse;
-                //}
-
-                //var user = db.Users.FirstOrDefault(o => o.Id == userId);
-                //if (user == null || user.AyondoUsername != username2)
-                //{
-                //    CFDGlobal.LogInformation("oauth DEMO error: cfd user id and ayondo demo username doesn't match "+ user.AyondoUsername + " " + username2);
-                //    return errorResponse;
-                //}
-
-                using (var client = new AyondoTradeClient())
-                {
-                    var account = client.LoginOAuth(username2, oauth_token);
-
-                    CFDGlobal.LogInformation("Demo OAuth logged in: " + username2 + " " + account);
-                }
-
-                //return "OK";
-                var okResponse = Request.CreateResponse(HttpStatusCode.Redirect);
-                okResponse.Headers.Location = new Uri(currentUrl + "/ok");
-                return okResponse;
-            }
-
-            return errorResponse;
-        }
-
-        [HttpGet]
-        [Route("demo/oauth/ok")]
-        public string AyondoDemoOAuthOK()
-        {
-            return "OK";
-        }
-
-        [HttpGet]
-        [Route("demo/oauth/error")]
-        public string AyondoDemoOAuthError()
-        {
-            return "ERROR";
-        }
-
-        [HttpGet]
-        [Route("live/oauth")]
-        public HttpResponseMessage AyondoLiveOAuth()
-        {
-            var queryNameValuePairs = Request.GetQueryNameValuePairs();
-            //CFDGlobal.LogInformation(oauth_token+" "+state+" "+expires_in);
-
-            var currentUrl = Request.RequestUri.GetLeftPart(UriPartial.Path);
-
-            var errorResponse = Request.CreateResponse(HttpStatusCode.Redirect);
-            //errorResponse.Headers.Location = new Uri(currentUrl + "/error");
-            errorResponse.Headers.Location = new Uri("http://cn.tradehero.mobi/tradehub/live/login.html?client_id=62d275a211&loginError=error");
-
-            var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
-            if (!string.IsNullOrWhiteSpace(error))
-            {
-                string log = queryNameValuePairs.Aggregate("Live OAuth error: ",
-                    (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
-                CFDGlobal.LogInformation(log);
-
-                //return "ERROR";
-                return errorResponse;
-            }
-
-            var oauth_token = queryNameValuePairs.FirstOrDefault(o => o.Key == "oauth_token").Value;
-
-            if (!string.IsNullOrWhiteSpace(oauth_token))
-            {
-                var bytes = Convert.FromBase64String(oauth_token);
-
-                var decryptEngine = new Pkcs1Encoding(new RsaEngine());
-                using (var txtreader = new StringReader(CFDGlobal.OAUTH_TOKEN_PUBLIC_KEY_Live))
-                {
-                    var keyParameter = (AsymmetricKeyParameter)new PemReader(txtreader).ReadObject();
-                    decryptEngine.Init(false, keyParameter);
-                }
-
-                var decrypted = Encoding.UTF8.GetString(decryptEngine.ProcessBlock(bytes, 0, bytes.Length));
-
-                var split = decrypted.Split(':');
-                var username1 = split[0];
-                var username2 = split[1];//ayondo username
-                var expiry = split[2];
-                var checksum = split[3];
-
-                //// check if cfd userid and ayondo username are bound
-                //var state = queryNameValuePairs.FirstOrDefault(o => o.Key == "state").Value;
-                //int userId;
-                //var tryParse = int.TryParse(state, out userId);
-
-                //if (!tryParse)
-                //{
-                //    CFDGlobal.LogInformation("oauth LIVE error: state tryParse to int32 failed " + state);
-                //    return errorResponse;
-                //}
-
-                //var user = db.Users.FirstOrDefault(o => o.Id == userId);
-                //if (user == null || user.AyLiveUsername != username2)
-                //{
-                //    CFDGlobal.LogInformation("oauth LIVE error: cfd user id and ayondo live username doesn't match "+ user.AyLiveUsername + " " + username2);
-                //    return errorResponse;
-                //}
-                
-                using (var client = new AyondoTradeClient(true))
-                {
-                    var account = client.LoginOAuth(username2, oauth_token);
-
-                    CFDGlobal.LogLine("Live OAuth login: " + username2 + " " + account);
-                }
-
-                //return "OK";
-                var okResponse = Request.CreateResponse(HttpStatusCode.Redirect);
-                //okResponse.Headers.Location = new Uri(currentUrl + "/ok");
-                okResponse.Headers.Location = new Uri("http://cn.tradehero.mobi/tradehub/live/loginload.html");
-                return okResponse;
-            }
-
-            return errorResponse;
-        }
-
-        [HttpGet]
-        [Route("live/oauth/ok")]
-        public string AyondoLiveOAuthOK()
-        {
-            return "OK";
-        }
-
-        [HttpGet]
-        [Route("live/oauth/error")]
-        public string AyondoLiveOAuthError()
-        {
-            return "ERROR";
-        }
-
-        [HttpPut]
-        [Route("live/lifecycle")]
-        public LifecycleCallbackDTO AyondoLiveAccountLifecycleCallback(LifecycleCallbackFormDTO form)
-        {
-            var authorization = Request.Headers.Authorization;
-
-            //if (authorization != null)
-            //    CFDGlobal.LogWarning("Lifecycle Callback header: " + authorization.Scheme + " " + authorization.Parameter);
-
-            if (authorization==null || authorization.Parameter == null || authorization.Parameter != CFDGlobal.AMS_CALLBACK_AUTH_TOKEN)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "invalid auth token"));
-
-            if (form != null)
-            {
-                CFDGlobal.LogWarning("Lifecycle Callback form: " + (form.Guid ?? "") + " " + (form.Status ?? ""));
-
-                if (!string.IsNullOrWhiteSpace(form.Guid) && !string.IsNullOrWhiteSpace(form.Status))
-                {
-                    var user = db.Users.FirstOrDefault(o => o.AyLiveAccountGuid == form.Guid);
-                    if (user != null)
-                    {
-                        user.AyLiveAccountStatus = form.Status;
-                        db.SaveChanges();
-                    }
-                }
-            }
-
-            return new LifecycleCallbackDTO();
-        }
-
-        [HttpPut]
-        [Route("live/UpdateReferenceAccount")]
-        public ResultDTO UpdateReferenceAccount(BankCardUpdateDTO form)
-        {
-            var authorization = Request.Headers.Authorization;
-
-            if (authorization == null || authorization.Parameter == null || authorization.Parameter != CFDGlobal.AMS_CALLBACK_AUTH_TOKEN)
-            {
-                CFDGlobal.LogWarning("update reference account: invalid token");
-                //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "invalid auth token"));
-                return new ResultDTO(false);
-            }
-
-            if (string.IsNullOrEmpty(form.GUID))
-            {
-                CFDGlobal.LogWarning("update reference account: GUID is null");
-                //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "GUID is null"));
-                return new ResultDTO(false);
-            }
-
-            CFDGlobal.LogInformation("reference account: GUID:" + form.GUID);
-
-            var user = db.Users.FirstOrDefault(o => o.ReferenceAccountGuid == form.GUID);
-            if (user == null)
-            {
-                CFDGlobal.LogWarning("update reference account: can't find user by given reference account guid:" + form.GUID);
-                //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "can't find user by guid"));
-                return new ResultDTO(false);
-            }
-            user.BankCardStatus = form.Status;
-
-            if (form.Status == BankCardUpdateStatus.Rejected)
-            {
-                user.BankCardRejectReason = form.RejectionType == "Other" ? form.RejectionInfo : form.RejectionType;
-            }
-
-            db.SaveChanges();
-
-            return new ResultDTO(true);
         }
     }
 }
