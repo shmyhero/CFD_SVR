@@ -278,6 +278,84 @@ namespace CFD_API.Controllers
             return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
 
+        #region 横屏折线图
+        [HttpGet]
+        [Route("{securityId}/tick/3month")]
+        [Route("live/{securityId}/tick/3month")]
+        public List<TickDTO> Get3MonthTicks(int securityId)
+        {
+            List<TickDTO> result;
+            //get from Redis
+            List<Tick> ticks;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisTickClient = redisClient.As<Tick>();
+                ticks = redisTickClient.Lists["tick1h:" + securityId].GetAll();
+            }
+
+            if (ticks.Count == 0)
+                result = new List<TickDTO>();
+            else
+            {
+                var lastTickTime = ticks.Last().Time;
+
+                var ticksMonth = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromDays(90));
+
+                result = ticksMonth.Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            }
+
+            //用1小时的Tick数据，每3小时取一个值
+            List<TickDTO> result3Month = new List<TickDTO>();
+            for (int count = 0; count < result.Count; count++)
+            {
+                if(count % 3 ==0)
+                {
+                    result3Month.Add(new TickDTO() { p = result[count].p, time = result[count].time });
+                }
+            }
+
+            return result3Month;
+        }
+
+        [HttpGet]
+        [Route("{securityId}/tick/6month")]
+        [Route("live/{securityId}/tick/6month")]
+        public List<TickDTO> Get6MonthTicks(int securityId)
+        {
+            List<TickDTO> result;
+            //get from Redis
+            List<Tick> ticks;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisTickClient = redisClient.As<Tick>();
+                ticks = redisTickClient.Lists["tick1h:" + securityId].GetAll();
+            }
+
+            if (ticks.Count == 0)
+                result = new List<TickDTO>();
+            else
+            {
+                var lastTickTime = ticks.Last().Time;
+
+                var ticksMonth = ticks.Where(o => lastTickTime - o.Time <= TimeSpan.FromDays(180));
+
+                result = ticksMonth.Select(o => Mapper.Map<TickDTO>(o)).ToList();
+            }
+
+            //用1小时的Tick数据，每6小时取一个值
+            List<TickDTO> result6Month = new List<TickDTO>();
+            for (int count = 0; count < result.Count; count++)
+            {
+                if (count % 6 == 0)
+                {
+                    result6Month.Add(new TickDTO() { p = result[count].p, time = result[count].time });
+                }
+            }
+
+            return result6Month;
+        }
+        #endregion
+
         #region 横屏K线
         [HttpGet]
         [Route("{securityId}/kline/1m/horizontal")]
@@ -285,7 +363,7 @@ namespace CFD_API.Controllers
         public List<KLineDTO> Get1mKLine(int securityId)
         {
             //横屏状态下取4小时
-            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(4));
+            return GetKLines(KLineSize.OneMinute, securityId, TimeSpan.FromHours(4));
         }
 
         [HttpGet]
@@ -312,7 +390,7 @@ namespace CFD_API.Controllers
         public List<KLineDTO> Get60mKLineHorizontal(int securityId)
         {
             //横屏状态下取12个交易日
-            return GetKLines(KLineSize.FifteenMinutes, securityId, TimeSpan.FromHours(12 * 24));
+            return GetKLines(KLineSize.SixtyMinutes, securityId, TimeSpan.FromHours(12 * 24));
         }
         #endregion
 

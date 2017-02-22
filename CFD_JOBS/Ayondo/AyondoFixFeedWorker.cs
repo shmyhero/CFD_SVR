@@ -93,7 +93,10 @@ namespace CFD_JOBS.Ayondo
                         if (allQuotes.Count > 0)
                         {
                             var dtAyondoNow = allQuotes.Max(o => o.Time); //the time of the last message received from Ayondo
-                            var klineAyondoNow = DateTimes.GetStartTime(dtAyondoNow);
+                            var klineAyondoNow1M = DateTimes.GetStartTime(dtAyondoNow, 1);
+                            var klineAyondoNow5M = DateTimes.GetStartTime(dtAyondoNow, 5);
+                            var klineAyondoNow15M = DateTimes.GetStartTime(dtAyondoNow, 15);
+                            var klineAyondoNow60M = DateTimes.GetStartTime(dtAyondoNow, 60);
 
                             var dtNow = DateTime.UtcNow;
                             var oneMinuteAgo = dtNow.AddMinutes(-1);
@@ -111,11 +114,11 @@ namespace CFD_JOBS.Ayondo
                                 if (prodDef.QuoteType == enmQuoteType.Closed) //recently closed
                                     quotesByProd = quotesByProd.Where(o => o.Time <= prodDef.LastClose.Value).ToList();
 
-                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FiveMinutes);
-                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.Day);
-                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.OneMinute);
-                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.FifteenMinutes);
-                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow, KLineSize.SixtyMinutes);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow5M, KLineSize.FiveMinutes);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow5M, KLineSize.Day);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow1M, KLineSize.OneMinute);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow15M, KLineSize.FifteenMinutes);
+                                UpdateKLine(quotesByProd, redisKLineClient, prodDef, klineAyondoNow60M, KLineSize.SixtyMinutes);
                             }
 
                             CFDGlobal.LogLine("\t\t\t\tkline updated");
