@@ -1087,31 +1087,31 @@ namespace CFD_API.Controllers
             return transferId;
         }
 
-        /// <summary>
-        /// 根据transferId获取用户的姓名、邮箱
-        /// TODO: to be deleted @1.1.11
-        /// </summary>
-        /// <param name="transferId"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("live/deposit/userinfo")]
-        public string GetUserInfoByTransferId(string transferId)
-        {
-            string format = "{{'first_name':'{0}', 'last_name':'{1}', 'email':'{2}', 'addr':'{3}'}}";
-            var query = from u in db.UserInfos
-                        join d in db.DepositHistories on u.UserId equals d.UserID
-                        into x
-                        from y in x.DefaultIfEmpty()
-                        where y.TransferID == Convert.ToInt64(transferId)
-                        select new { u.FirstName, u.LastName, u.Email, u.Addr };
-            var userInfo = query.FirstOrDefault();
-            if(userInfo != null)
-            {
-                return string.Format(format, userInfo.FirstName, userInfo.LastName, userInfo.Email, userInfo.Addr);
-            }
+        ///// <summary>
+        ///// 根据transferId获取用户的姓名、邮箱
+        ///// TODO: to be deleted @1.1.11
+        ///// </summary>
+        ///// <param name="transferId"></param>
+        ///// <returns></returns>
+        //[HttpGet]
+        //[Route("live/deposit/userinfo")]
+        //public string GetUserInfoByTransferId(string transferId)
+        //{
+        //    string format = "{{'first_name':'{0}', 'last_name':'{1}', 'email':'{2}', 'addr':'{3}'}}";
+        //    var query = from u in db.UserInfos
+        //                join d in db.DepositHistories on u.UserId equals d.UserID
+        //                into x
+        //                from y in x.DefaultIfEmpty()
+        //                where y.TransferID == Convert.ToInt64(transferId)
+        //                select new { u.FirstName, u.LastName, u.Email, u.Addr };
+        //    var userInfo = query.FirstOrDefault();
+        //    if(userInfo != null)
+        //    {
+        //        return string.Format(format, userInfo.FirstName, userInfo.LastName, userInfo.Email, userInfo.Addr);
+        //    }
 
-            return string.Format(format, string.Empty, string.Empty, string.Empty, string.Empty);
-        }
+        //    return string.Format(format, string.Empty, string.Empty, string.Empty, string.Empty);
+        //}
 
         [HttpGet]
         [Route("demo/logout")]
@@ -1632,7 +1632,7 @@ namespace CFD_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("live/unbind")]
+        [Route("live/withdraw/unbind")]
         [BasicAuth]
         public ResultDTO UnBind()
         {
@@ -1681,7 +1681,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("live/info")]
+        [Route("live/withdraw/info")]
         [BasicAuth]
         public LiveUserInfoDTO GetUserInfo()
         {
@@ -1691,7 +1691,11 @@ namespace CFD_API.Controllers
                             into t1
                             from t2 in t1.DefaultIfEmpty()
                             where x.Id == UserId
-                           select new { y.FirstName, y.LastName, y.IdCode, x.BankCardNumber, x.BankName, x.BankCardStatus, x.BankCardRejectReason, Icon = t2 == null? "" : t2.Icon, x.Branch,x.Province,x.City }).FirstOrDefault();
+                           select new
+                           {
+                               y.FirstName, y.LastName, y.IdCode, x.BankCardNumber, x.BankName, x.BankCardStatus, x.BankCardRejectReason, Icon = t2 == null? "" : t2.Icon, x.Branch,x.Province,x.City,
+                           y.Addr
+                           }).FirstOrDefault();
 
             if(userInfo == null)
             {
@@ -1715,6 +1719,8 @@ namespace CFD_API.Controllers
                 city = userInfo.City,
                 lastWithdraw = lastWithdrawRecord == null? decimal.Zero : lastWithdrawRecord.RequestAmount,
                 lastWithdrawAt = lastWithdrawRecord == null ? null : lastWithdrawRecord.CreateAt,
+
+                addr = userInfo.Addr,
             };
 
             return dto;
@@ -1884,6 +1890,5 @@ namespace CFD_API.Controllers
 
             return false;
         }
-
     }
 }

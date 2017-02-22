@@ -265,6 +265,7 @@
     <Compile Include="Controllers\BannerController.cs" />
     <Compile Include="Controllers\CardController.cs" />
     <Compile Include="Controllers\CFDController.cs" />
+    <Compile Include="Controllers\CommonController.cs" />
     <Compile Include="Controllers\CompetitionController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
     <Compile Include="Controllers\OperationController.cs" />

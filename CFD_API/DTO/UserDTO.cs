@@ -52,6 +52,8 @@ namespace CFD_API.DTO
         public string province { get; set; }
         public string city { get; set; }
 
+        public string addr { get; set; }
+
         public DateTime? lastWithdrawAt { get; set; }
         public decimal? lastWithdraw { get; set; }
     }
