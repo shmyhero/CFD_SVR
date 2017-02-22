@@ -23,7 +23,7 @@ namespace CFD_COMMON
             ? null
             : CloudStorageAccount.Parse(GetConfigurationSetting("StorageConnectionString")).BlobEndpoint.AbsoluteUri;
 
-        public static string USER_PIC_BLOB_CONTAINER="user-picture";
+        public static string USER_PIC_BLOB_CONTAINER = "user-picture";
         public static string USER_PIC_BLOB_CONTAINER_URL = BLOG_ENDPOINT + USER_PIC_BLOB_CONTAINER+"/";
 
         public static string HEADLINE_PIC_BLOB_CONTAINER = "headline-img";
@@ -46,7 +46,9 @@ namespace CFD_COMMON
 
         public static readonly string AMS_HEADER_AUTH = GetConfigurationSetting("AMSHeaderAuth");
         public static readonly string AMS_HOST = GetConfigurationSetting("AMSHost");
+        public static readonly string AMS_ORIGIN = GetConfigurationSetting("AMSOrigin");
         public static readonly string AMS_PROXY_HOST = GetConfigurationSetting("AMSProxyHost");
+        public const string AMS_CALLBACK_AUTH_TOKEN = "Tj3Id8N7mG6Dyi9Pl1Se4b7dNMik9N0sz1V5sM8cT3we8x9PoqcW3N7dV61cD5J2Ur3Qjf8yTd3EG0UX3";
 
         public static string OAUTH_TOKEN_PUBLIC_KEY = @"-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlkG4r0XGWG8DO2043seO

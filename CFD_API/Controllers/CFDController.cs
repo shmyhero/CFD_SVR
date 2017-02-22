@@ -249,55 +249,97 @@ namespace CFD_API.Controllers
 
         protected static JObject AMSLiveAccount(LiveSignupFormDTO form, User user, UserInfo userInfo)
         {
-            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account");
+            //Create Application
+            var initResult = AMSLiveAccountInitiate();
+            var accountGuid = initResult["data"]["accountGuid"].Value<string>();
+
+            //Mifid Test
+            var mifidResult = DoMifidTest(accountGuid, form);
+            var mifidGuid = mifidResult["data"]["mifidGuid"].Value<string>();
+            var rulesetId = mifidResult["data"]["rulesetId"].Value<string>();
+            var appropriatenessScore = mifidResult["data"]["appropriatenessScore"].Value<decimal>();
+            var appropriatenessResolution = mifidResult["data"]["appropriatenessResolution"].Value<string>();
+
+            CFDGlobal.LogInformation("MiFID result: account " + accountGuid + " mifid " + mifidGuid + " ruleset " +
+                                     rulesetId + " score " + appropriatenessScore + " resolution " +
+                                     appropriatenessResolution);
+
+            //Complete Application
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account/" + accountGuid + "/complete");
             httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
-            httpWebRequest.Method = "POST";
+            httpWebRequest.Method = "PUT";
             httpWebRequest.ContentType = "application/json; charset=UTF-8";
             httpWebRequest.Proxy = null;
             var requestStream = httpWebRequest.GetRequestStream();
             var sw = new StreamWriter(requestStream);
 
             var amsForm = new AMSLiveUserCreateFormDTO();
-            amsForm.AddressCity = "TestCity";
-            amsForm.AddressCountry = "CN";
-            amsForm.AddressLine1 = form.addr;
-            amsForm.AddressLine2 = null;
-            amsForm.AddressZip = "12345";
-            amsForm.ClientIP = "127.0.0.1";
-            amsForm.Currency = "USD";
-            amsForm.FirstName = userInfo.FirstName;// form.firstName;
-            amsForm.Gender = form.gender ? "Male" : "Female";
-            amsForm.IsTestRecord = false;
-            amsForm.Language = "CN";
-            amsForm.LastName = userInfo.LastName;// form.lastName;
-            amsForm.Password = form.password;
-            amsForm.PhonePrimary = user.Phone;
-            amsForm.SalesRepGuid = null;
-            amsForm.UserName = form.username;
-            amsForm.AnnualIncome = form.annualIncome;
-            amsForm.DateOfBirth = form.birthday.Replace('.', '-');
-            amsForm.Email = form.email;
-            amsForm.EmploymentStatus = form.empStatus;
-            amsForm.HasAttendedTraining = false;
-            amsForm.HasOtherQualification = form.hasOtherQualif;
-            amsForm.HasProfessionalExperience = false;// form.hasProExp;
-            amsForm.InvestmentPortfolio = form.investPct;
-            amsForm.IsIDVerified = true;
-            amsForm.JobTitle = "JobTitle";
+            //amsForm.AddressCity = "TestCity";
+            //amsForm.AddressCountry = "CN";
+            //amsForm.AddressLine1 = form.addr;
+            //amsForm.AddressLine2 = null;
+            //amsForm.AddressZip = "12345";
+            //amsForm.ClientIP = "127.0.0.1";
+            //amsForm.Currency = "USD";
+            //amsForm.FirstName = userInfo.FirstName;// form.firstName;
+            //amsForm.Gender = form.gender ? "Male" : "Female";
+            //amsForm.IsTestRecord = false;
+            //amsForm.Language = "CN";
+            //amsForm.LastName = userInfo.LastName;// form.lastName;
+            //amsForm.Password = form.password;
+            //amsForm.PhonePrimary = user.Phone;
+            //amsForm.SalesRepGuid = null;
+            //amsForm.UserName = form.username;
+            //amsForm.AnnualIncome = form.annualIncome;
+            //amsForm.DateOfBirth = form.birthday.Replace('.', '-');
+            //amsForm.Email = form.email;
+            //amsForm.EmploymentStatus = form.empStatus;
+            //amsForm.HasAttendedTraining = false;
+            //amsForm.HasOtherQualification = form.hasOtherQualif;
+            //amsForm.HasProfessionalExperience = false;// form.hasProExp;
+            //amsForm.InvestmentPortfolio = form.investPct;
+            //amsForm.IsIDVerified = true;
+            //amsForm.JobTitle = "JobTitle";
 
-            string strProducts = string.Empty;
-            if (form.expDeriv) strProducts += "Exchange Traded Derivatives,";
-            if (form.expOTCDeriv) strProducts += "OTC Derivatives,";
-            if (form.expShareBond) strProducts += "Shares and Bonds,";
-            if (strProducts.Length > 0) strProducts.Substring(0, strProducts.Length - 1);
-            amsForm.LeveragedProducts = strProducts;
+            //string strProducts = string.Empty;
+            //if (form.expDeriv) strProducts += "Exchange Traded Derivatives,";
+            //if (form.expOTCDeriv) strProducts += "OTC Derivatives,";
+            //if (form.expShareBond) strProducts += "Shares and Bonds,";
+            //if (strProducts.Length > 0) strProducts.Substring(0, strProducts.Length - 1);
+            //amsForm.LeveragedProducts = strProducts;
 
-            amsForm.Nationality = "CN";
-            amsForm.NetWorth = form.netWorth > 100 ? 100 : form.netWorth;//form.netWorth;
-            amsForm.Nickname = user.Nickname;
-            amsForm.NumberOfMarginTrades = form.investFrq;
-            amsForm.PhonePrimaryCountryCode = "CN";
-            amsForm.SubscribeTradeNotifications = false;
+            //amsForm.Nationality = "CN";
+            //amsForm.NetWorth = form.netWorth > 100 ? 100 : form.netWorth;//form.netWorth;
+            //amsForm.Nickname = user.Nickname;
+            //amsForm.NumberOfMarginTrades = form.investFrq;
+            //amsForm.PhonePrimaryCountryCode = "CN";
+            //amsForm.SubscribeTradeNotifications = false;
+
+            amsForm.addressCountry = "CN";
+            amsForm.addressLine1 = form.addr;
+            amsForm.currency = "USD";
+            amsForm.dateOfBirth = form.birthday.Replace('.', '-');
+            amsForm.email = form.email;
+            amsForm.employmentStatus = form.empStatus;
+            amsForm.firstname = userInfo.FirstName;
+            amsForm.gender = form.gender ? "Male" : "Female";
+            amsForm.isIdVerified = true;
+            amsForm.isTestRecord = false;
+            amsForm.language = "CN";
+            amsForm.lastname = userInfo.LastName;
+            amsForm.nationality = "CN";
+            amsForm.nickname = user.Nickname;
+            amsForm.password = form.password;
+            amsForm.phonePrimary = user.Phone;
+            amsForm.phonePrimaryIso2 = "CN";
+            amsForm.sourceOfFunds = "savings";
+            amsForm.subscribeOffers = false;
+            amsForm.subscribeTradeNotifications = false;
+            amsForm.username = form.username;
+
+            amsForm.mifidGuid = mifidGuid;
+
+            amsForm.origin = CFDGlobal.AMS_ORIGIN;
 
             var s = JsonConvert.SerializeObject(amsForm); //string.Format(json, username, password);
             sw.Write(s);
@@ -321,8 +363,150 @@ namespace CFD_API.Controllers
 
             var str = sr.ReadToEnd();
             var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("AMS live called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+            CFDGlobal.LogInformation("AMS live live-account/complete called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var jObject = JObject.Parse(str);
+
+            return jObject;
+        }
+
+        private static JObject AMSLiveAccountInitiate()
+        {
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account");
+            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+
+            var amsForm = new AMSLiveUserCreateFormDTO();
+
+            var s = JsonConvert.SerializeObject(amsForm, new JsonSerializerSettings() {NullValueHandling = NullValueHandling.Ignore}); //string.Format(json, username, password);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS live live-account called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var jObject = JObject.Parse(str);
+
+            return jObject;
+        }
+
+        private static JObject DoMifidTest(string accountGuid, LiveSignupFormDTO form)
+        {
+            var mifidInfo = GetMifidInfo();
+
+            var rulesetId = mifidInfo["recommendedRulesetId"].Value<string>();
+
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "mifid-test/" + accountGuid + "/" + rulesetId);
+            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+
+            var mifidForm = new AMSLiveUserMifidFormDTO();
+            mifidForm.hasAttendedTraining = form.hasTraining;
+            mifidForm.hasDemoAccount = form.hasDemoAcc;
+            mifidForm.hasOtherQualification = form.hasOtherQualif;
+            mifidForm.hasProfessionalExperience = form.hasProExp;
+
+            mifidForm.hasTradedHighLev = form.hasTradedHighLev;
+            mifidForm.hasTradedMidLev = form.hasTradedMidLev;
+            mifidForm.hasTradedNoLev = form.hasTradedNoLev;
+            mifidForm.highLevBalance = form.highLevBalance;
+            mifidForm.highLevFrq = form.highLevFrq;
+            mifidForm.highLevRisk = form.highLevRisk;
+            mifidForm.midLevBalance = form.midLevBalance;
+            mifidForm.midLevFrq = form.midLevFrq;
+            mifidForm.midLevRisk = form.midLevRisk;
+            mifidForm.noLevBalance = form.noLevBalance;
+            mifidForm.noLevFrq = form.noLevFrq;
+            mifidForm.noLevRisk = form.noLevRisk;
+
+            mifidForm.investments = form.investments;
+            mifidForm.monthlyNetIncome = form.monthlyIncome;
+            mifidForm.otherQualification = form.otherQualif;
+
+            var s = JsonConvert.SerializeObject(mifidForm, new JsonSerializerSettings() {NullValueHandling = NullValueHandling.Ignore}); //string.Format(json, username, password);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS live mifid-test called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var jObject = JObject.Parse(str);
+
+            return jObject;
+        }
+
+        private static JObject GetMifidInfo()
+        {
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "mifid-info");
+            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
+            httpWebRequest.Method = "GET";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS live mifid-info called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str );
 
             var jObject = JObject.Parse(str);
 

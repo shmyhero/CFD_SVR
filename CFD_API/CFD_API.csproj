@@ -263,6 +263,7 @@
     <Compile Include="Controllers\Attributes\RequireHttpsAttribute.cs" />
     <Compile Include="Controllers\Attributes\RestrictByIp.cs" />
     <Compile Include="Controllers\BannerController.cs" />
+    <Compile Include="Controllers\CallbackController.cs" />
     <Compile Include="Controllers\CardController.cs" />
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\CommonController.cs" />

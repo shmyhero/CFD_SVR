@@ -275,43 +275,109 @@ namespace CFD_API.DTO
         public bool expShareBond { get; set; }
 
         //public string ocrTransId { get; set; }
+
+        public string sourceOfFunds { get; set; }
+        public string employerName { get; set; }
+        public string employerSector { get; set; }
+        public string empPosition { get; set; }
+        public int monthlyIncome { get; set; }
+        public int investments { get; set; }
+        public bool hasTraining { get; set; }
+        public bool hasDemoAcc { get; set; }
+        public string[] otherQualif { get; set; }
+        public bool hasTradedHighLev { get; set; }
+        public bool hasTradedMidLev { get; set; }
+        public bool hasTradedNoLev { get; set; }
+        public int highLevBalance { get; set; }
+        public int highLevFrq { get; set; }
+        public int highLevRisk { get; set; }
+        public int midLevBalance { get; set; }
+        public int midLevFrq { get; set; }
+        public int midLevRisk { get; set; }
+        public int noLevBalance { get; set; }
+        public int noLevFrq { get; set; }
+        public int noLevRisk { get; set; }
     }
 
     public class AMSLiveUserCreateFormDTO
     {
-        public string AddressCity { get; set; }
-        public string AddressCountry { get; set; }
-        public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string AddressZip { get; set; }
-        public string ClientIP { get; set; }
-        public string Currency { get; set; }
-        public string FirstName { get; set; }
-        public string Gender { get; set; }
-        public bool IsTestRecord { get; set; }
-        public string Language { get; set; }
-        public string LastName { get; set; }
-        public string Password { get; set; }
-        public string PhonePrimary { get; set; }
-        public string SalesRepGuid { get; set; }
-        public string UserName { get; set; }
-        public int AnnualIncome { get; set; }
-        public string DateOfBirth { get; set; }
-        public string Email { get; set; }
-        public string EmploymentStatus { get; set; }
-        public bool HasAttendedTraining { get; set; }
-        public bool HasOtherQualification { get; set; }
-        public bool HasProfessionalExperience { get; set; }
-        public int InvestmentPortfolio { get; set; }
-        public bool IsIDVerified { get; set; }
-        public string JobTitle { get; set; }
-        public string LeveragedProducts { get; set; }
-        public string Nationality { get; set; }
-        public int NetWorth { get; set; }
-        public string Nickname { get; set; }
-        public int NumberOfMarginTrades { get; set; }
-        public string PhonePrimaryCountryCode { get; set; }
-        public bool SubscribeTradeNotifications { get; set; }
+        public string origin;
+
+        //public string addressCity { get; set; }
+        /// <summary>
+        /// https://en.wikipedia.org/wiki/ISO_3166-1
+        /// </summary>
+        public string addressCountry { get; set; }
+        public string addressLine1 { get; set; }
+        //public string AddressLine2 { get; set; }
+        //public string AddressZip { get; set; }
+        //public string ClientIP { get; set; }
+        public string currency { get; set; }
+        /// <summary>
+        /// YYYY-MM-DD
+        /// </summary>
+        public string dateOfBirth { get; set; }
+        public string email { get; set; }
+        public string employmentStatus { get; set; }
+        public string firstname { get; set; }
+        public string gender { get; set; }
+        public bool isIdVerified { get; set; }
+        public bool isTestRecord { get; set; }
+        public string language { get; set; }
+        public string lastname { get; set; }
+        public string mifidGuid { get; set; }
+        /// <summary>
+        /// https://en.wikipedia.org/wiki/ISO_3166-1
+        /// </summary>
+        public string nationality { get; set; }
+        public string nickname { get; set; }
+        public string password { get; set; }
+        public string phonePrimary { get; set; }
+        /// <summary>
+        /// https://en.wikipedia.org/wiki/ISO_3166-1
+        /// </summary>
+        public string phonePrimaryIso2 { get; set; }
+        public string sourceOfFunds { get; set; }
+        /// <summary>
+        /// Opt-in for marketing emails.
+        /// </summary>
+        public bool subscribeOffers { get; set; }
+        /// <summary>
+        /// Opt-in for trade notification emails.
+        /// </summary>
+        public bool subscribeTradeNotifications { get; set; }
+        public string username { get; set; }
+        //public string SalesRepGuid { get; set; }
+        //public int AnnualIncome { get; set; }
+        //public int InvestmentPortfolio { get; set; }
+        //public string JobTitle { get; set; }
+        //public string LeveragedProducts { get; set; }
+        //public int NetWorth { get; set; }
+        //public int NumberOfMarginTrades { get; set; }
+        //public string PhonePrimaryCountryCode { get; set; }
+    }
+
+    public class AMSLiveUserMifidFormDTO
+    {
+        public bool hasAttendedTraining { get; set; }
+        public bool hasDemoAccount { get; set; }
+        public bool hasOtherQualification { get; set; }
+        public bool hasProfessionalExperience { get; set; }
+        public int investments { get; set; }
+        public int monthlyNetIncome { get; set; }
+        public string[] otherQualification { get; set; }
+        public bool hasTradedHighLev { get; set; }
+        public bool hasTradedMidLev { get; set; }
+        public bool hasTradedNoLev { get; set; }
+        public int highLevBalance { get; set; }
+        public int highLevFrq { get; set; }
+        public int highLevRisk { get; set; }
+        public int midLevBalance { get; set; }
+        public int midLevFrq { get; set; }
+        public int midLevRisk { get; set; }
+        public int noLevBalance { get; set; }
+        public int noLevFrq { get; set; }
+        public int noLevRisk { get; set; }
     }
 
     /// <summary>

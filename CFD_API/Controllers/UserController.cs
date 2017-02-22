@@ -48,7 +48,7 @@ namespace CFD_API.Controllers
         }
 
         private static readonly TimeSpan VERIFY_CODE_PERIOD = TimeSpan.FromHours(1);
-        private const int NICKNAME_MAX_LENGTH=8;
+        private const int NICKNAME_MAX_LENGTH = 8;
 
         [HttpPost]
         //[RequireHttps]
@@ -1470,9 +1470,9 @@ namespace CFD_API.Controllers
 
             var jObject = AMSLiveAccount(form, user, userInfo);
 
-            if (jObject["Error"] != null)
+            if (jObject["error"] != null)
             {
-                var error = jObject["Error"].Value<string>();
+                var error = jObject["error"].Value<string>();
 
                 CFDGlobal.LogInformation("LIVE register error:" + error);
 
@@ -1483,7 +1483,7 @@ namespace CFD_API.Controllers
                 };
             }
 
-            var guid = jObject["Guid"].Value<string>();
+            var guid = jObject["data"]["accountGuid"].Value<string>();
 
             user.AyLiveUsername = form.username;
             user.AyLivePassword = form.password;

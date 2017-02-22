@@ -67,7 +67,7 @@ namespace CFD_API.Controllers
 'lastname': 'THCN',
 'password': '{1}',
 'phonePrimary': '0044 123445',
-'phonePrimaryIso2': 'aa',
+'phonePrimaryIso2': 'CN',
 'salesRepGuid':'',
 'username': '{0}',
 'productType': 'CFD'
