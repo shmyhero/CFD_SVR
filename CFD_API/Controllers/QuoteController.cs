@@ -280,7 +280,7 @@ namespace CFD_API.Controllers
 
         #region 横屏K线
         [HttpGet]
-        [Route("{securityId}/kline/1m")]
+        [Route("{securityId}/kline/1m/horizontal")]
         [Route("live/{securityId}/kline/1m/horizontal")]
         public List<KLineDTO> Get1mKLine(int securityId)
         {
@@ -289,7 +289,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("{securityId}/kline/5m")]
+        [Route("{securityId}/kline/5m/horizontal")]
         [Route("live/{securityId}/kline/5m/horizontal")]
         public List<KLineDTO> Get5mKLineHorizontal(int securityId)
         {
@@ -298,7 +298,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("{securityId}/kline/15m")]
+        [Route("{securityId}/kline/15m/horizontal")]
         [Route("live/{securityId}/kline/15m/horizontal")]
         public List<KLineDTO> Get15mKLineHorizontal(int securityId)
         {
@@ -307,7 +307,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("{securityId}/kline/60m")]
+        [Route("{securityId}/kline/60m/horizontal")]
         [Route("live/{securityId}/kline/60m/horizontal")]
         public List<KLineDTO> Get60mKLineHorizontal(int securityId)
         {
