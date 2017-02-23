@@ -321,6 +321,9 @@ namespace CFD_API.Controllers
             amsForm.dateOfBirth = form.birthday.Replace('.', '-');
             amsForm.email = form.email;
             amsForm.employmentStatus = form.empStatus;
+            amsForm.employerName = form.employerName;
+            amsForm.employerSector = form.employerSector;
+            amsForm.jobTitle = form.empPosition;
             amsForm.firstname = userInfo.FirstName;
             amsForm.gender = form.gender ? "Male" : "Female";
             amsForm.isIdVerified = true;
