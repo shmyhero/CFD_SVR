@@ -318,11 +318,14 @@ namespace CFD_API.DTO
         /// </summary>
         public string dateOfBirth { get; set; }
         public string email { get; set; }
+        public string employerName { get; set; }
+        public string employerSector { get; set; }
         public string employmentStatus { get; set; }
         public string firstname { get; set; }
         public string gender { get; set; }
         public bool isIdVerified { get; set; }
         public bool isTestRecord { get; set; }
+        public string jobTitle { get; set; }
         public string language { get; set; }
         public string lastname { get; set; }
         public string mifidGuid { get; set; }
