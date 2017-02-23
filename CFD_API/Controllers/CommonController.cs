@@ -59,7 +59,7 @@ namespace CFD_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("withdraw/setting")]
+        [Route("setting/withdraw")]
         public RefundSettingDTO refundETA()
         {
             Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundETA");
@@ -81,7 +81,7 @@ namespace CFD_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("deposit/setting")]
+        [Route("setting/deposit")]
         public DepositSettingDTO GetDepositSetting()
         {
             Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "Deposit");
