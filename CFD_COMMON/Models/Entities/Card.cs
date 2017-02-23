@@ -45,6 +45,11 @@ namespace CFD_COMMON.Models.Entities
 
         public decimal? Reward { get; set; }
 
+        /// <summary>
+        /// 大图标的标题
+        /// </summary>
+        public string Title { get; set; }
+
         public DateTime? CreatedAt { get; set; }
 
         public DateTime? Expiration { get; set; }

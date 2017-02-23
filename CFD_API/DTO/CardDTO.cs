@@ -30,6 +30,9 @@ namespace CFD_API.DTO
         public string stockName { get; set; }
         public string themeColor { get; set; }
 
+        public string title { get; set; }
+        public int cardType { get; set; }
+
         public decimal? pl { get; set; }
 
         public decimal? plRate { get; set; }

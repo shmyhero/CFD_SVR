@@ -870,7 +870,9 @@ namespace CFD_API.Controllers
                             tradeTime = position.CreateTime.Value,
                             ccy = prodDef == null ? string.Empty : prodDef.Ccy2,
                             stockName = prodDef == null ? string.Empty : Translator.GetCName(prodDef.Name),
-                            themeColor = card.ThemeColor
+                            themeColor = card.ThemeColor,
+                            cardType = card.CardType.HasValue ? card.CardType.Value : 0,
+                            title = card.Title
                         };
 
                         UserCard_Live uc = new UserCard_Live()
