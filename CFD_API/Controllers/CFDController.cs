@@ -224,7 +224,7 @@ namespace CFD_API.Controllers
             }
         }
 
-        protected static JObject AMSCheckUsername(string username, bool isLive = false)
+        protected static JToken AMSCheckUsername(string username, bool isLive = false)
         {
             var accountType = isLive ? "Live" : "Demo";
 
@@ -243,26 +243,26 @@ namespace CFD_API.Controllers
             var ts = DateTime.UtcNow - dtBegin;
             CFDGlobal.LogInformation("AMS check-username proxy called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
 
-            var jObject = JObject.Parse(str);
-            return jObject;
+            var result = JToken.Parse(str);
+            return result;
         }
 
-        protected static JObject AMSLiveAccount(LiveSignupFormDTO form, User user, UserInfo userInfo)
+        protected static JToken AMSLiveAccountComplete(string accountGuid, string mifidGuid, LiveSignupFormDTO form, User user, UserInfo userInfo)
         {
-            //Create Application
-            var initResult = AMSLiveAccountInitiate();
-            var accountGuid = initResult["data"]["accountGuid"].Value<string>();
+            ////Create Application
+            //var initResult = AMSLiveAccountInitiate();
+            //var accountGuid = initResult["data"]["accountGuid"].Value<string>();
 
-            //Mifid Test
-            var mifidResult = DoMifidTest(accountGuid, form);
-            var mifidGuid = mifidResult["data"]["mifidGuid"].Value<string>();
-            var rulesetId = mifidResult["data"]["rulesetId"].Value<string>();
-            var appropriatenessScore = mifidResult["data"]["appropriatenessScore"].Value<decimal>();
-            var appropriatenessResolution = mifidResult["data"]["appropriatenessResolution"].Value<string>();
+            ////Mifid Test
+            //var mifidResult = DoMifidTest(accountGuid, form);
+            //var mifidGuid = mifidResult["data"]["mifidGuid"].Value<string>();
+            //var rulesetId = mifidResult["data"]["rulesetId"].Value<string>();
+            //var appropriatenessScore = mifidResult["data"]["appropriatenessScore"].Value<decimal>();
+            //var appropriatenessResolution = mifidResult["data"]["appropriatenessResolution"].Value<string>();
 
-            CFDGlobal.LogInformation("MiFID result: account " + accountGuid + " mifid " + mifidGuid + " ruleset " +
-                                     rulesetId + " score " + appropriatenessScore + " resolution " +
-                                     appropriatenessResolution);
+            //CFDGlobal.LogInformation("MiFID result: account " + accountGuid + " mifid " + mifidGuid + " ruleset " +
+            //                         rulesetId + " score " + appropriatenessScore + " resolution " +
+            //                         appropriatenessResolution);
 
             //Complete Application
             var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account/" + accountGuid + "/complete");
@@ -332,7 +332,7 @@ namespace CFD_API.Controllers
             amsForm.password = form.password;
             amsForm.phonePrimary = user.Phone;
             amsForm.phonePrimaryIso2 = "CN";
-            amsForm.sourceOfFunds = "savings";
+            amsForm.sourceOfFunds = form.sourceOfFunds;
             amsForm.subscribeOffers = false;
             amsForm.subscribeTradeNotifications = false;
             amsForm.username = form.username;
@@ -366,12 +366,12 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("AMS live live-account/complete called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
-            var jObject = JObject.Parse(str);
+            var result = JToken.Parse(str);
 
-            return jObject;
+            return result;
         }
 
-        private static JObject AMSLiveAccountInitiate()
+        protected static JToken AMSLiveAccountInitiate()
         {
             var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account");
             httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
@@ -408,12 +408,12 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("AMS live live-account called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
-            var jObject = JObject.Parse(str);
+            var result = JToken.Parse(str);
 
-            return jObject;
+            return result;
         }
 
-        private static JObject DoMifidTest(string accountGuid, LiveSignupFormDTO form)
+        protected static JToken DoMifidTest(string accountGuid, LiveSignupFormDTO form)
         {
             var mifidInfo = GetMifidInfo();
 
@@ -448,7 +448,7 @@ namespace CFD_API.Controllers
 
             mifidForm.investments = form.investments;
             mifidForm.monthlyNetIncome = form.monthlyIncome;
-            mifidForm.otherQualification = form.otherQualif;
+            mifidForm.otherQualification = string.IsNullOrEmpty(form.otherQualif) ? null : form.otherQualif.Split(',');
 
             var s = JsonConvert.SerializeObject(mifidForm, new JsonSerializerSettings() {NullValueHandling = NullValueHandling.Ignore}); //string.Format(json, username, password);
             sw.Write(s);
@@ -475,12 +475,12 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("AMS live mifid-test called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
-            var jObject = JObject.Parse(str);
+            var result = JToken.Parse(str);
 
-            return jObject;
+            return result;
         }
 
-        private static JObject GetMifidInfo()
+        private static JToken GetMifidInfo()
         {
             var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "mifid-info");
             httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
@@ -508,9 +508,9 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("AMS live mifid-info called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str );
 
-            var jObject = JObject.Parse(str);
+            var result = JToken.Parse(str);
 
-            return jObject;
+            return result;
         }
 
         protected static JObject AMSBindBankCard(LiveUserBankCardFormDTO form, string method = "POST")

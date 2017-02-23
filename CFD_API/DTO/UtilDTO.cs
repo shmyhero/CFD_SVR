@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Newtonsoft.Json.Linq;
 
 namespace CFD_API.DTO
 {
@@ -18,6 +19,7 @@ namespace CFD_API.DTO
 
         public bool success { get; set; }
         public string message { get; set; }
+        public JToken error { get; set; }
     }
 
     public class VersionDTO

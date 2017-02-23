@@ -1463,27 +1463,42 @@ namespace CFD_API.Controllers
 
             //no OCR result
             var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
-            if (userInfo == null || userInfo.OcrTransId == null || userInfo.FaceCheckAt==null)
+            if (userInfo == null || userInfo.OcrTransId == null || userInfo.FaceCheckAt == null)
             {
                 return new ResultDTO(false);
             }
 
-            var jObject = AMSLiveAccount(form, user, userInfo);
+            //Create Application
+            var initResult = AMSLiveAccountInitiate();
+            var accountGuid = initResult["data"]["accountGuid"].Value<string>();
 
-            if (jObject["error"] != null)
+            //Mifid Test
+            var mifidResult = DoMifidTest(accountGuid, form);
+            var mifidGuid = mifidResult["data"]["mifidGuid"].Value<string>();
+            var rulesetId = mifidResult["data"]["rulesetId"].Value<string>();
+            var appropriatenessScore = mifidResult["data"]["appropriatenessScore"].Value<decimal>();
+            var appropriatenessResolution = mifidResult["data"]["appropriatenessResolution"].Value<string>();
+
+            CFDGlobal.LogInformation("MiFID result: account " + accountGuid + " mifid " + mifidGuid + " ruleset " +
+                                     rulesetId + " score " + appropriatenessScore + " resolution " +
+                                     appropriatenessResolution);
+
+            var json = AMSLiveAccountComplete(accountGuid, mifidGuid, form, user, userInfo);
+
+            if (json is JArray)
             {
-                var error = jObject["error"].Value<string>();
+                //var error = jObject["error"].Value<string>();
 
-                CFDGlobal.LogInformation("LIVE register error:" + error);
+                CFDGlobal.LogInformation("LIVE register error:" + json);
 
                 return new ResultDTO
                 {
-                    message = error,
+                    error = json,
                     success = false,
                 };
             }
 
-            var guid = jObject["data"]["accountGuid"].Value<string>();
+            var guid = json["data"]["accountGuid"].Value<string>();
 
             user.AyLiveUsername = form.username;
             user.AyLivePassword = form.password;
@@ -1512,6 +1527,33 @@ namespace CFD_API.Controllers
             userInfo.ExpOTCDeriv = form.expOTCDeriv;
             userInfo.ExpDeriv = form.expDeriv;
             userInfo.ExpShareBond = form.expShareBond;
+
+            userInfo.SourceOfFunds = form.sourceOfFunds;
+            userInfo.EmployerName = form.employerName;
+            userInfo.EmployerSector = form.employerSector;
+            userInfo.MonthlyIncome = form.monthlyIncome;
+            userInfo.Investments = form.investments;
+            userInfo.HasTraining = form.hasTraining;
+            userInfo.HasDemoAcc = form.hasDemoAcc;
+            userInfo.OtherQualif = form.otherQualif;
+            userInfo.HasTradedHighLev = form.hasTradedHighLev;
+            userInfo.HasTradedMidLev = form.hasTradedMidLev;
+            userInfo.HasTradedNoLev = form.hasTradedNoLev;
+            userInfo.HighLevBalance = form.highLevBalance;
+            userInfo.HighLevFrq = form.highLevFrq;
+            userInfo.HighLevRisk = form.highLevRisk;
+            userInfo.MidLevBalance = form.midLevBalance;
+            userInfo.MidLevFrq = form.midLevFrq;
+            userInfo.MidLevRisk = form.midLevRisk;
+            userInfo.NoLevBalance = form.noLevBalance;
+            userInfo.NoLevFrq = form.noLevFrq;
+            userInfo.NoLevRisk = form.noLevRisk;
+
+            userInfo.MifidGuid = mifidGuid;
+            userInfo.MifidRulesetId = rulesetId;
+            userInfo.AppropriatenessScore = appropriatenessScore;
+            userInfo.AppropriatenessResolution = appropriatenessResolution;
+
             db.SaveChanges();
 
             return new ResultDTO(true);

@@ -53,8 +53,8 @@ namespace CFD_COMMON.Models.Entities
 
         public DateTime? OcrCalledAt { get; set; }
 
-        //[StringLength(10)]
-        //public string RealName { get; set; }
+        [StringLength(10)]
+        public string RealName { get; set; }
 
         [StringLength(10)]
         public string FirstName { get; set; }
@@ -111,5 +111,60 @@ namespace CFD_COMMON.Models.Entities
         public bool? ExpDeriv { get; set; }
 
         public bool? ExpShareBond { get; set; }
+
+        [StringLength(50)]
+        public string SourceOfFunds { get; set; }
+
+        [StringLength(50)]
+        public string EmployerName { get; set; }
+
+        [StringLength(50)]
+        public string EmployerSector { get; set; }
+
+        public int? MonthlyIncome { get; set; }
+
+        public int? Investments { get; set; }
+
+        public bool? HasTraining { get; set; }
+
+        public bool? HasDemoAcc { get; set; }
+
+        [StringLength(50)]
+        public string OtherQualif { get; set; }
+
+        public bool? HasTradedHighLev { get; set; }
+
+        public bool? HasTradedMidLev { get; set; }
+
+        public bool? HasTradedNoLev { get; set; }
+
+        public int? HighLevBalance { get; set; }
+
+        public int? HighLevFrq { get; set; }
+
+        public int? HighLevRisk { get; set; }
+
+        public int? MidLevBalance { get; set; }
+
+        public int? MidLevFrq { get; set; }
+
+        public int? MidLevRisk { get; set; }
+
+        public int? NoLevBalance { get; set; }
+
+        public int? NoLevFrq { get; set; }
+
+        public int? NoLevRisk { get; set; }
+
+        [StringLength(50)]
+        public string MifidGuid { get; set; }
+
+        [StringLength(50)]
+        public string MifidRulesetId { get; set; }
+
+        public decimal? AppropriatenessScore { get; set; }
+
+        [StringLength(50)]
+        public string AppropriatenessResolution { get; set; }
     }
 }

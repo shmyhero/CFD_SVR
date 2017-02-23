@@ -209,8 +209,13 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.SettlePrice)
                 .HasPrecision(18, 5);
 
+
             modelBuilder.Entity<UserInfo>()
                 .Property(e => e.FaceCheckSimilarity)
+                .HasPrecision(18, 5);
+
+            modelBuilder.Entity<UserInfo>()
+                .Property(e => e.AppropriatenessScore)
                 .HasPrecision(18, 5);
 
 

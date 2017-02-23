@@ -284,7 +284,7 @@ namespace CFD_API.DTO
         public int investments { get; set; }
         public bool hasTraining { get; set; }
         public bool hasDemoAcc { get; set; }
-        public string[] otherQualif { get; set; }
+        public string otherQualif { get; set; }
         public bool hasTradedHighLev { get; set; }
         public bool hasTradedMidLev { get; set; }
         public bool hasTradedNoLev { get; set; }
