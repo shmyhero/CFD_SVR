@@ -516,7 +516,7 @@ namespace CFD_API.Controllers
             return result;
         }
 
-        protected static JObject AMSBindBankCard(LiveUserBankCardFormDTO form, string method = "POST")
+        protected static JToken AMSBindBankCard(LiveUserBankCardFormDTO form, string method = "POST")
         {
             byte[] binaryData = Encoding.UTF8.GetBytes(JObject.FromObject(form).ToString());
             var httpWebRequest =
@@ -540,7 +540,7 @@ namespace CFD_API.Controllers
             var ts = DateTime.UtcNow - dtBegin;
             CFDGlobal.LogInformation("AMS reference account proxy called. Time: " + ts.TotalMilliseconds + "ms Url: " + httpWebRequest.RequestUri + " Response: " + str);
 
-            var jObject = JObject.Parse(str);
+            var jObject = JToken.Parse(str);
             return jObject;
         }
     }

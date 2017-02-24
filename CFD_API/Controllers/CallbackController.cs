@@ -272,8 +272,8 @@ namespace CFD_API.Controllers
         }
 
         [HttpPut]
-        [Route("live/UpdateReferenceAccount")]
-        public ResultDTO UpdateReferenceAccount(BankCardUpdateDTO form)
+        [Route("Live/live-account/{accountGuid}/reference-account/{referenceAccountGuid}/status")]
+        public ResultDTO UpdateReferenceAccount(string accountGuid,string referenceAccountGuid,BankCardUpdateDTO form)
         {
             var authorization = Request.Headers.Authorization;
 
@@ -284,27 +284,27 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false);
             }
 
-            if (string.IsNullOrEmpty(form.GUID))
+            if (string.IsNullOrEmpty(referenceAccountGuid))
             {
                 CFDGlobal.LogWarning("update reference account: GUID is null");
                 //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "GUID is null"));
                 return new ResultDTO(false);
             }
 
-            CFDGlobal.LogInformation("reference account: GUID:" + form.GUID);
+            CFDGlobal.LogInformation("reference account: GUID:" + referenceAccountGuid);
 
-            var user = db.Users.FirstOrDefault(o => o.ReferenceAccountGuid == form.GUID);
+            var user = db.Users.FirstOrDefault(o => o.ReferenceAccountGuid == referenceAccountGuid);
             if (user == null)
             {
-                CFDGlobal.LogWarning("update reference account: can't find user by given reference account guid:" + form.GUID);
+                CFDGlobal.LogWarning("update reference account: can't find user by given reference account guid:" + referenceAccountGuid);
                 //throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "can't find user by guid"));
                 return new ResultDTO(false);
             }
-            user.BankCardStatus = form.Status;
+            user.BankCardStatus = form.status;
 
-            if (form.Status == BankCardUpdateStatus.Rejected)
+            if (form.status == BankCardUpdateStatus.Rejected)
             {
-                user.BankCardRejectReason = form.RejectionType == "Other" ? form.RejectionInfo : form.RejectionType;
+                user.BankCardRejectReason = form.rejectionType == "Other" ? form.rejectionInfo : form.rejectionType;
             }
 
             db.SaveChanges();

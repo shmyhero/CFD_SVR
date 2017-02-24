@@ -1645,24 +1645,24 @@ namespace CFD_API.Controllers
             //按照Ayondo的文档，如果更新的话用PUT，但测试下来PUT会报错，还是用POST
             string method = "POST";
 
-            var jObject = AMSBindBankCard(form, method);
-            if (jObject["Error"] != null)
+            var json = AMSBindBankCard(form, method);
+            if (json is JArray)
             {
                 return new ResultDTO
                 {
-                    message = jObject["Error"].Value<string>(),
+                    error = json,
                     success = false,
                 };
             }
 
-            user.BankCardNumber = form.AccountNumber;
-            user.BankName = form.NameOfBank;
+            user.BankCardNumber = form.accountNumber;
+            user.BankName = form.nameOfBank;
             user.Branch = form.Branch;
             user.Province = form.Province;
             user.City = form.City;
-            if (jObject["ReferenceAccountGuid"] != null)
+            if (json["data"]["referenceAccountGuid"] != null)
             {
-                user.ReferenceAccountGuid = jObject["ReferenceAccountGuid"].Value<string>();
+                user.ReferenceAccountGuid = json["data"]["referenceAccountGuid"].Value<string>();
             }
             db.SaveChanges();
 
@@ -1840,11 +1840,11 @@ namespace CFD_API.Controllers
 
             LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO()
             {
-                AccountHolder = originalForm.AccountHolder,
-                AccountNumber = originalForm.AccountNumber,
-                NameOfBank = originalForm.NameOfBank,
-                BankStatementContent = imgBase64,
-                BankStatementFileName = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
+                accountHolder = originalForm.AccountHolder,
+                accountNumber = originalForm.AccountNumber,
+                nameOfBank = originalForm.NameOfBank,
+                bankStatementContent = imgBase64,
+                bankStatementFileName = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
                 Guid = originalForm.Guid,
                 Branch = originalForm.Branch,
                 Province = originalForm.Province,

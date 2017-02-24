@@ -95,9 +95,9 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("refaccount")]
-        public JObject ReferenctAccount(LiveUserBankCardFormDTO form)
+        public JToken ReferenctAccount(LiveUserBankCardFormDTO form)
         {
-            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "reference-account");
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST+"live-account/"+ form.Guid+ "/reference-account");
             httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json; charset=UTF-8";
@@ -130,9 +130,9 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("AMS reference-account called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
-            var jObject = JObject.Parse(str);
+            var json = JToken.Parse(str);
 
-            return jObject;
+            return json;
         }
     }
 }
