@@ -427,7 +427,8 @@ namespace CFD_API.DTO
         public string bankStatementContent { get; set; }
         //public string BankStatementContentStr { get; set; }
         public string bankStatementContentType { get { return "image/jpeg"; } }
-        public string bankStatementFileName { get; set; }
+        public string bankStatementFilename { get; set; }
+        public string bic { get; set; }
         //Ayondo Live Account GUID
         public string Guid { get; set; }
         /// <summary>
