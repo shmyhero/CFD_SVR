@@ -30,6 +30,15 @@ namespace CFD_API.DTO
         public string bankCardStatus { get; set; }
     }
 
+    public class UserInfoDTO
+    {
+        //public int id { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
+        public string email { get; set; }
+        public string addr { get; set; }
+    }
+
     public enum UserLiveStatus
     {
         None = 0,
@@ -247,6 +256,8 @@ namespace CFD_API.DTO
 
     public class LiveSignupFormDTO
     {
+        public bool confirmMifidOverride { get; set; }
+
         public string username { get; set; }
         public string password { get; set; }
         public string email { get; set; }

@@ -48,11 +48,14 @@ namespace CFD_API
         public static void ConfigureJSONFormatter(HttpConfiguration config)
         {
             var json = config.Formatters.JsonFormatter;
+
             json.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
             json.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
             json.SerializerSettings.FloatParseHandling = FloatParseHandling.Decimal;
+
             var converters = json.SerializerSettings.Converters;
             //converters.Add(new IsoDateTimeConverter() {DateTimeFormat = "yyyy-MM-ddTHH:mm:ss"});
+
             config.Formatters.Remove(config.Formatters.XmlFormatter);
         }
 

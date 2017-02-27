@@ -253,7 +253,7 @@ namespace CFD_API.Controllers
         //[RequireHttps]
         [ActionName("me")]
         [BasicAuth]
-        public UserDTO GetMe(LoginFormDTO form)
+        public UserDTO GetMe()
         {
             var user = GetUser();
 
@@ -283,6 +283,20 @@ namespace CFD_API.Controllers
             userDto.bankCardStatus = user.BankCardStatus;
 
             return userDto;
+        }
+
+        [HttpGet]
+        [Route("me/detail")]
+        [BasicAuth]
+        public UserInfoDTO GetMyUserInfo()
+        {
+            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+
+            if (userInfo == null) return null;
+
+            var userInfoDto = Mapper.Map<UserInfoDTO>(userInfo);
+
+            return userInfoDto;
         }
 
         [HttpGet]
@@ -1482,6 +1496,10 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("MiFID result: account " + accountGuid + " mifid " + mifidGuid + " ruleset " +
                                      rulesetId + " score " + appropriatenessScore + " resolution " +
                                      appropriatenessResolution);
+
+            //When Mifid Test Failed
+            if (appropriatenessResolution == "Failed")
+                form.confirmMifidOverride = true;
 
             var json = AMSLiveAccountComplete(accountGuid, mifidGuid, form, user, userInfo);
 
