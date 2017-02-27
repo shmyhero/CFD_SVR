@@ -19,6 +19,7 @@ namespace CFD_API.DTO
         public decimal? last { get; set; }
 
         public bool? isOpen { get; set; }
+        public int? status { get; set; }
 
         public string eName { get; set; }
     }
