@@ -32,20 +32,72 @@ namespace CFD_TEST
     public class UnitTest1
     {
         [TestMethod]
+        public void AMS_ReferenceAccount()
+        {
+            LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO()
+            {
+                accountHolder = "test",
+                accountNumber = "test",
+                nameOfBank = "test",
+                bankStatementContent = "test",
+                bankStatementFilename = "test",
+                Guid = "test",
+                Branch = "test",
+                Province = "test",
+                City = "test"
+            };
+
+            var httpWebRequest = WebRequest.CreateHttp("https://lab1-www.ayondo-ams.com/tradeherocn/" + "live-account/2882e16b-a1a1-11e6-80d9-002590d644df/reference-account");
+            httpWebRequest.Headers["Authorization"] = "Bearer NkJDMUQzNkQtMzg2OS00NEZELUIzOUMtODQ4MkUzMTAyMTk0MzRBNDYyMkQtODQ1MC00MDA4LTlFRUUtMEIwRkFENzQ3QUY4";
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+            httpWebRequest.Timeout = int.MaxValue;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+            var s = JsonConvert.SerializeObject(form);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS reference-account called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var json = JToken.Parse(str);
+
+        }
+        [TestMethod]
         public void Test1()
         {
-            using (var db = CFDEntities.Create())
-            {
-                CFD_COMMON.Models.Entities.Message msg = new CFD_COMMON.Models.Entities.Message();
-                msg.Title = "测试";
-                msg.Body = "测试内容";
-                msg.CreatedAt = DateTime.UtcNow;
-                msg.IsReaded = false;
+            //using (var db = CFDEntities.Create())
+            //{
+            //    CFD_COMMON.Models.Entities.Message msg = new CFD_COMMON.Models.Entities.Message();
+            //    msg.Title = "测试";
+            //    msg.Body = "测试内容";
+            //    msg.CreatedAt = DateTime.UtcNow;
+            //    msg.IsReaded = false;
 
-                db.Messages.Add(msg);
-                db.SaveChanges();
-                int id = msg.Id;
-            } 
+            //    db.Messages.Add(msg);
+            //    db.SaveChanges();
+            //    int id = msg.Id;
+            //} 
         }
 
         [TestMethod]
@@ -652,5 +704,7 @@ namespace CFD_TEST
 
             return dto2;
         }
+
+        
     }
 }

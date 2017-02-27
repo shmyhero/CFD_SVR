@@ -1873,7 +1873,7 @@ namespace CFD_API.Controllers
                 accountNumber = originalForm.AccountNumber,
                 nameOfBank = originalForm.NameOfBank,
                 bankStatementContent = imgBase64,
-                bankStatementFileName = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
+                bankStatementFilename = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
                 Guid = originalForm.Guid,
                 Branch = originalForm.Branch,
                 Province = originalForm.Province,
