@@ -253,7 +253,7 @@ namespace CFD_API.Controllers
         //[RequireHttps]
         [ActionName("me")]
         [BasicAuth]
-        public UserDTO GetMe(LoginFormDTO form)
+        public UserDTO GetMe()
         {
             var user = GetUser();
 
@@ -283,6 +283,20 @@ namespace CFD_API.Controllers
             userDto.bankCardStatus = user.BankCardStatus;
 
             return userDto;
+        }
+
+        [HttpGet]
+        [Route("me/detail")]
+        [BasicAuth]
+        public UserInfoDTO GetMyUserInfo()
+        {
+            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+
+            if (userInfo == null) return null;
+
+            var userInfoDto = Mapper.Map<UserInfoDTO>(userInfo);
+
+            return userInfoDto;
         }
 
         [HttpGet]
