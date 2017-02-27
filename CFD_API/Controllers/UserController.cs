@@ -1070,7 +1070,7 @@ namespace CFD_API.Controllers
         [Route("deposit/id")]
         [Route("live/deposit/id")]
         [BasicAuth]
-        public string GetDepositTransferId(decimal amount)
+        public NewDepositDTO GetDepositTransferId(decimal amount)
         {
             var user = GetUser();
 
@@ -1085,12 +1085,6 @@ namespace CFD_API.Controllers
                         IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
                         IsLiveUrl ? null : user.AyondoPassword,
                         amount);
-
-                    if(IsLiveUrl)
-                    {
-                        db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = Convert.ToInt64(transferId), CreatedAt = DateTime.Now, ClaimAmount = amount });
-                        db.SaveChanges();
-                    }
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
@@ -1098,7 +1092,24 @@ namespace CFD_API.Controllers
                 }
             }
 
-            return transferId;
+            var result = new NewDepositDTO {transferId = transferId};
+
+            if(IsLiveUrl)
+            {
+                db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = Convert.ToInt64(transferId), CreatedAt = DateTime.Now, ClaimAmount = amount });
+                db.SaveChanges();
+
+                var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+                if (userInfo != null)
+                {
+                    result.firstName = userInfo.FirstName;
+                    result.lastName = userInfo.LastName;
+                    result.email = userInfo.Email;
+                    result.addr = userInfo.Addr;
+                }
+            }
+
+            return result;
         }
 
         ///// <summary>

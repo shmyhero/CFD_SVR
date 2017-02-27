@@ -39,6 +39,15 @@ namespace CFD_API.DTO
         public string addr { get; set; }
     }
 
+    public class NewDepositDTO
+    {
+        public string transferId { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
+        public string email { get; set; }
+        public string addr { get; set; }
+    }
+
     public enum UserLiveStatus
     {
         None = 0,
