@@ -1483,6 +1483,10 @@ namespace CFD_API.Controllers
                                      rulesetId + " score " + appropriatenessScore + " resolution " +
                                      appropriatenessResolution);
 
+            //When Mifid Test Failed
+            if (appropriatenessResolution == "Failed")
+                form.confirmMifidOverride = true;
+
             var json = AMSLiveAccountComplete(accountGuid, mifidGuid, form, user, userInfo);
 
             if (json is JArray)

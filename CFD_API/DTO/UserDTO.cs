@@ -247,6 +247,8 @@ namespace CFD_API.DTO
 
     public class LiveSignupFormDTO
     {
+        public bool confirmMifidOverride { get; set; }
+
         public string username { get; set; }
         public string password { get; set; }
         public string email { get; set; }
