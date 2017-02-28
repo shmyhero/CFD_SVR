@@ -1601,9 +1601,21 @@ namespace CFD_API.Controllers
             user.AyLiveAccountGuid = null;
             user.AyLiveAccountStatus = null;
             user.AyLiveAccountId = null;
+            //user.BankCardNumber = null;
+            //user.BankCardRejectReason = null;
+            //user.BankCardStatus = null;
+            //user.BankName = null;
+            //user.Branch = null;
+            //user.Province = null;
+            //user.City = null;
+            //user.ReferenceAccountGuid = null;
             db.SaveChanges();
 
-            var delete = db.UserInfos.Where(o => o.UserId == UserId).Delete();
+            db.UserInfos.Where(o => o.UserId == UserId).Delete();
+
+            //db.DepositHistories.Where(o => o.UserID == UserId).Delete();
+            //db.NewPositionHistory_live.Where(o => o.UserId == UserId).Delete();
+            //db.WithdrawalHistories.Where(o => o.UserId == UserId).Delete();
 
             return new ResultDTO(true);
         }
