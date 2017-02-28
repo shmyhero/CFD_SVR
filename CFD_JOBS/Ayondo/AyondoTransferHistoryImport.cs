@@ -18,12 +18,29 @@ using System.Data.SqlTypes;
 
 namespace CFD_JOBS.Ayondo
 {
+    public class TimedWebClient : WebClient
+    {
+        public int Timeout { get; set; }
+
+        public TimedWebClient()
+        {
+            this.Timeout = 60*60*1000;
+        }
+
+        protected override WebRequest GetWebRequest(Uri address)
+        {
+            var objWebRequest = base.GetWebRequest(address);
+            objWebRequest.Timeout = this.Timeout;
+            return objWebRequest;
+            //return base.GetWebRequest(address);
+        }
+    }
     public class AyondoTransferHistoryImport
     {
-        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(10);
         private static readonly TimeSpan HistoryInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan HistoryIdentifier = TimeSpan.FromHours(2);
-        private static readonly TimeSpan MaxDuration = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan MaxDuration = TimeSpan.FromMinutes(15);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -74,7 +91,7 @@ namespace CFD_JOBS.Ayondo
                     var tsStart = dtStart.ToUnixTimeMs();
                     var tsEnd = dtEnd.ToUnixTimeMs();
 
-                    var webClient = new WebClient();
+                    var webClient = new TimedWebClient();
 
                     CFDGlobal.LogLine("Fetching data " + dtStart + " ~ " + dtEnd);
 
