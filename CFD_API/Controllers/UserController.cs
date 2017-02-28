@@ -1674,25 +1674,48 @@ namespace CFD_API.Controllers
             //按照Ayondo的文档，如果更新的话用PUT，但测试下来PUT会报错，还是用POST
             string method = "POST";
 
-            var json = AMSBindBankCard(form, method);
-            if (json is JArray)
+            //var json = AMSBindBankCard(form, method);
+            //if (json is JArray)
+            //{
+            //    return new ResultDTO
+            //    {
+            //        error = json,
+            //        success = false,
+            //    };
+            //}
+
+            //user.BankCardNumber = form.accountNumber;
+            //user.BankName = form.nameOfBank;
+            //user.Branch = form.Branch;
+            //user.Province = form.Province;
+            //user.City = form.City;
+            //if (json["data"]["referenceAccountGuid"] != null)
+            //{
+            //    user.ReferenceAccountGuid = json["data"]["referenceAccountGuid"].Value<string>();
+            //}
+
+            //在Ayondo发布新接口之前，使用老接口的定义
+            var jObject = AMSBindBankCard(form, method);
+            if (jObject["Error"] != null)
             {
                 return new ResultDTO
                 {
-                    error = json,
+                    message = jObject["Error"].Value<string>(),
                     success = false,
                 };
             }
 
-            user.BankCardNumber = form.accountNumber;
-            user.BankName = form.nameOfBank;
+            user.BankCardNumber = form.AccountNumber;
+            user.BankName = form.NameOfBank;
             user.Branch = form.Branch;
             user.Province = form.Province;
             user.City = form.City;
-            if (json["data"]["referenceAccountGuid"] != null)
+            if (jObject["ReferenceAccountGuid"] != null)
             {
-                user.ReferenceAccountGuid = json["data"]["referenceAccountGuid"].Value<string>();
+                user.ReferenceAccountGuid = jObject["ReferenceAccountGuid"].Value<string>();
             }
+
+
             db.SaveChanges();
 
             return new ResultDTO(true);
@@ -1869,11 +1892,19 @@ namespace CFD_API.Controllers
 
             LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO()
             {
-                accountHolder = originalForm.AccountHolder,
-                accountNumber = originalForm.AccountNumber,
-                nameOfBank = originalForm.NameOfBank,
-                bankStatementContent = imgBase64,
-                bankStatementFilename = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
+                //accountHolder = originalForm.AccountHolder,
+                //accountNumber = originalForm.AccountNumber,
+                //nameOfBank = originalForm.NameOfBank,
+                //bankStatementContent = imgBase64,
+                //bankStatementFilename = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
+
+                //在Ayondo的更新发布前，使用老接口定义
+                AccountHolder = originalForm.AccountHolder,
+                AccountNumber = originalForm.AccountNumber,
+                NameOfBank = originalForm.NameOfBank,
+                BankStatementContent = imgBase64,
+                BankStatementFileName = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
+
                 Guid = originalForm.Guid,
                 Branch = originalForm.Branch,
                 Province = originalForm.Province,

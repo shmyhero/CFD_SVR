@@ -442,20 +442,36 @@ namespace CFD_API.DTO
 
     public class LiveUserBankCardFormDTO
     {
-        public string accountHolder { get; set; }
+        //public string accountHolder { get; set; }
+        //public string IdentityID { get; set; }
+        //public string bankStatementContent { get; set; }
+        ////public string BankStatementContentStr { get; set; }
+        //public string bankStatementContentType { get { return "image/jpeg"; } }
+        //public string bankStatementFilename { get; set; }
+        //public string bic { get; set; }
+        ////Ayondo Live Account GUID
+        //public string Guid { get; set; }
+        ///// <summary>
+        ///// Bank card number
+        ///// </summary>
+        //public string accountNumber { get; set; }
+        //public string nameOfBank { get; set; }
+
+        //在Ayondo的更新发布前，先使用老接口定义
+        public string AccountHolder { get; set; }
         public string IdentityID { get; set; }
-        public string bankStatementContent { get; set; }
+        public string BankStatementContent { get; set; }
         //public string BankStatementContentStr { get; set; }
-        public string bankStatementContentType { get { return "image/jpeg"; } }
-        public string bankStatementFilename { get; set; }
-        public string bic { get; set; }
+        public string BankStatementContentType { get { return "image/jpeg"; } }
+        public string BankStatementFileName { get; set; }
         //Ayondo Live Account GUID
         public string Guid { get; set; }
         /// <summary>
         /// Bank card number
         /// </summary>
-        public string accountNumber { get; set; }
-        public string nameOfBank { get; set; }
+        public string AccountNumber { get; set; }
+        public string NameOfBank { get; set; }
+
         /// <summary>
         /// 支行
         /// </summary>
@@ -477,9 +493,15 @@ namespace CFD_API.DTO
 
     public class BankCardUpdateDTO
     {
-        //public string GUID { get; set; }
-        public string status { get; set; }
-        public string rejectionInfo { get; set; }
-        public string rejectionType { get; set; }
+        ////public string GUID { get; set; }
+        //public string status { get; set; }
+        //public string rejectionInfo { get; set; }
+        //public string rejectionType { get; set; }
+
+        //在Ayondo发布更新之前，先使用老接口定义
+        public string GUID { get; set; }
+        public string Status { get; set; }
+        public string RejectionInfo { get; set; }
+        public string RejectionType { get; set; }
     }
 }

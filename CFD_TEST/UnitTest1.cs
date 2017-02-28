@@ -36,15 +36,15 @@ namespace CFD_TEST
         {
             LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO()
             {
-                accountHolder = "test",
-                accountNumber = "test",
-                nameOfBank = "test",
-                bankStatementContent = "test",
-                bankStatementFilename = "test",
-                Guid = "test",
-                Branch = "test",
-                Province = "test",
-                City = "test"
+                //accountHolder = "test",
+                //accountNumber = "test",
+                //nameOfBank = "test",
+                //bankStatementContent = "test",
+                //bankStatementFilename = "test",
+                //Guid = "test",
+                //Branch = "test",
+                //Province = "test",
+                //City = "test"
             };
 
             var httpWebRequest = WebRequest.CreateHttp("https://lab1-www.ayondo-ams.com/tradeherocn/" + "live-account/2882e16b-a1a1-11e6-80d9-002590d644df/reference-account");
