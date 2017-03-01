@@ -304,6 +304,8 @@ namespace CFD_API.Controllers
                                 pl = u.PL,
                                 plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
                                 themeColor = y.ThemeColor,
+                                title = y.Title,
+                                cardType = y.CardType.HasValue ? y.CardType.Value : 0,
                                 tradePrice = u.TradePrice,
                                 tradeTime = u.ClosedAt,
                                 userName = us.Nickname,

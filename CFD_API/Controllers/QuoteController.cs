@@ -26,6 +26,7 @@ namespace CFD_API.Controllers
         {
         }
 
+        #region 折线图
         //todo:for test only
         [HttpGet]
         [Route("{securityId}/tick")]
@@ -278,7 +279,6 @@ namespace CFD_API.Controllers
             return result.Select(o => Mapper.Map<TickDTO>(o)).ToList();
         }
 
-        #region 横屏折线图
         [HttpGet]
         [Route("{securityId}/tick/3month")]
         [Route("live/{securityId}/tick/3month")]
@@ -356,53 +356,39 @@ namespace CFD_API.Controllers
         }
         #endregion
 
-        #region 横屏K线
+        #region K线图
         [HttpGet]
-        [Route("{securityId}/kline/1m/horizontal")]
-        [Route("live/{securityId}/kline/1m/horizontal")]
+        [Route("{securityId}/kline/1m")]
+        [Route("live/{securityId}/kline/1m")]
         public List<KLineDTO> Get1mKLine(int securityId)
         {
-            //横屏状态下取4小时
             return GetKLines(KLineSize.OneMinute, securityId, TimeSpan.FromHours(4));
         }
 
         [HttpGet]
-        [Route("{securityId}/kline/5m/horizontal")]
-        [Route("live/{securityId}/kline/5m/horizontal")]
+        [Route("{securityId}/kline/5m")]
+        [Route("live/{securityId}/kline/5m")]
         public List<KLineDTO> Get5mKLineHorizontal(int securityId)
         {
-            //横屏状态下取两个交易日
             return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(2*24));
         }
 
         [HttpGet]
-        [Route("{securityId}/kline/15m/horizontal")]
-        [Route("live/{securityId}/kline/15m/horizontal")]
+        [Route("{securityId}/kline/15m")]
+        [Route("live/{securityId}/kline/15m")]
         public List<KLineDTO> Get15mKLineHorizontal(int securityId)
         {
-            //横屏状态下取三个交易日
             return GetKLines(KLineSize.FifteenMinutes, securityId, TimeSpan.FromHours(3*24));
         }
 
         [HttpGet]
-        [Route("{securityId}/kline/60m/horizontal")]
-        [Route("live/{securityId}/kline/60m/horizontal")]
+        [Route("{securityId}/kline/60m")]
+        [Route("live/{securityId}/kline/60m")]
         public List<KLineDTO> Get60mKLineHorizontal(int securityId)
         {
-            //横屏状态下取12个交易日
             return GetKLines(KLineSize.SixtyMinutes, securityId, TimeSpan.FromHours(12 * 24));
         }
-        #endregion
-
-        #region 竖屏K线
-        [HttpGet]
-        [Route("{securityId}/kline/5m")]
-        [Route("live/{securityId}/kline/5m")]
-        public List<KLineDTO> Get5mKLine(int securityId)
-        {
-            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(12));
-        }
-
+      
         [HttpGet]
         [Route("{securityId}/kline/day")]
         [Route("live/{securityId}/kline/day")]
