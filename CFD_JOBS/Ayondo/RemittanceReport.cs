@@ -36,7 +36,20 @@ namespace CFD_JOBS.Ayondo
                     var start = DateTime.UtcNow;
                     var end = DateTime.UtcNow.AddMinutes(5);
                     //上海的下午5点、UTC上午9点作为发送时间
-                    var timeToSend = DateTime.SpecifyKind(new DateTime(start.Year, start.Month, start.Day, 9, 0, 0), DateTimeKind.Utc);
+                    int timeToSendHour = 9;
+                    try
+                    {
+                        using (var db = CFDEntities.Create())
+                        {
+                            timeToSendHour = int.Parse(db.Miscs.FirstOrDefault(o => o.Key == "RefundMailTime").Value);
+                        }
+                    }
+                    catch
+                    {
+                        Console.WriteLine("读取发送时间失败");
+                    }
+                    
+                    var timeToSend = DateTime.SpecifyKind(new DateTime(start.Year, start.Month, start.Day, timeToSendHour, 0, 0), DateTimeKind.Utc);
                     if (start < timeToSend && end >= timeToSend)
                     {
                         string fileName = "Remittance/" + timeToSend.ToString("yyyy-MM-dd") + ".xls";
