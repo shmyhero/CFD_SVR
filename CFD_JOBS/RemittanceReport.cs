@@ -21,7 +21,7 @@ using System.Data.OleDb;
 using System.Net.Mail;
 using Newtonsoft.Json.Linq;
 
-namespace CFD_JOBS.Ayondo
+namespace CFD_JOBS
 {
     public class RemittanceReport
     {

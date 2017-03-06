@@ -109,9 +109,12 @@
     <Compile Include="Ayondo\AyondoFixTradeClient.cs" />
     <Compile Include="Ayondo\AyondoFixTradeWorker.cs" />
     <Compile Include="Ayondo\AyondoOldProdCleanup.cs" />
-    <Compile Include="Ayondo\AyondoTransferHistoryImport.cs" />
     <Compile Include="Ayondo\AyondoTradeHistoryImport.cs" />
-    <Compile Include="Ayondo\RemittanceReport.cs" />
+    <Compile Include="Ayondo\AyondoTransferHistoryImport.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="QuoteSnapshot.cs" />
+    <Compile Include="RemittanceReport.cs" />
     <Compile Include="Competition2.cs" />
     <Compile Include="StockAlert.cs" />
     <Compile Include="RedisToDbWorker.cs" />
