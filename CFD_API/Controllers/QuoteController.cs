@@ -370,7 +370,7 @@ namespace CFD_API.Controllers
         [Route("live/{securityId}/kline/5m")]
         public List<KLineDTO> Get5mKLineHorizontal(int securityId)
         {
-            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(2*24));
+            return GetKLines(KLineSize.FiveMinutes, securityId, TimeSpan.FromHours(24));
         }
 
         [HttpGet]
