@@ -110,9 +110,7 @@
     <Compile Include="Ayondo\AyondoFixTradeWorker.cs" />
     <Compile Include="Ayondo\AyondoOldProdCleanup.cs" />
     <Compile Include="Ayondo\AyondoTradeHistoryImport.cs" />
-    <Compile Include="Ayondo\AyondoTransferHistoryImport.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Ayondo\AyondoTransferHistoryImport.cs" />
     <Compile Include="QuoteSnapshot.cs" />
     <Compile Include="RemittanceReport.cs" />
     <Compile Include="Competition2.cs" />
