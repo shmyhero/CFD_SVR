@@ -129,6 +129,15 @@ namespace CFD_JOBS
                     RemittanceReport.Run();
                 }
 
+                if (args.Contains("-QuoteSnap"))
+                {
+                    QuoteSnapshot.Run(false);
+                }
+
+                if (args.Contains("-QuoteSnap_Live"))
+                {
+                    QuoteSnapshot.Run(true);
+                }
                 return 0;
             }
             catch (Exception ex)

@@ -41,6 +41,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<PriceDownInterval> PriceDownIntervals { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
+        public virtual DbSet<QuoteSnapshot> QuoteSnapshots { get; set; }
         public virtual DbSet<RewardTransfer> RewardTransfers { get; set; }
         public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
         //public virtual DbSet<TransferHistory> TransferHistorys { get; set; }
@@ -163,7 +164,13 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.Ask)
                 .HasPrecision(18, 5);
 
+            modelBuilder.Entity<QuoteSnapshot>()
+                .Property(e => e.Bid)
+                .HasPrecision(18, 5);
 
+            modelBuilder.Entity<QuoteSnapshot>()
+                .Property(e => e.Ask)
+                .HasPrecision(18, 5);
             //modelBuilder.Entity<TransferHistory>()
             //    .Property(e => e.Amount)
             //    .HasPrecision(18, 5);
