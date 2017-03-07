@@ -1494,25 +1494,45 @@ namespace CFD_API.Controllers
             }
 
             //Create Application
-            var initResult = AMSLiveAccountInitiate();
-            var accountGuid = initResult["data"]["accountGuid"].Value<string>();
+            if (user.AyLiveAccountGuid == null)
+            {
+                var initResult = AMSLiveAccountInitiate();
+                var accountGuid = initResult["data"]["accountGuid"].Value<string>();
+
+                user.AyLiveAccountGuid = accountGuid;
+                db.SaveChanges();
+            }
 
             //Mifid Test
-            var mifidResult = DoMifidTest(accountGuid, form);
+            var mifidResult = DoMifidTest(user.AyLiveAccountGuid, form);
+
+            if (mifidResult is JArray)
+            {
+                CFDGlobal.LogInformation("LIVE mifid test error:" + mifidResult);
+
+                return new ResultDTO
+                {
+                    error = mifidResult,
+                    success = false,
+                };
+            }
+
             var mifidGuid = mifidResult["data"]["mifidGuid"].Value<string>();
             var rulesetId = mifidResult["data"]["rulesetId"].Value<string>();
             var appropriatenessScore = mifidResult["data"]["appropriatenessScore"].Value<decimal>();
             var appropriatenessResolution = mifidResult["data"]["appropriatenessResolution"].Value<string>();
 
-            CFDGlobal.LogInformation("MiFID result: account " + accountGuid + " mifid " + mifidGuid + " ruleset " +
+            CFDGlobal.LogInformation("MiFID result: account " + user.AyLiveAccountGuid + " mifid " + mifidGuid + " ruleset " +
                                      rulesetId + " score " + appropriatenessScore + " resolution " +
                                      appropriatenessResolution);
 
             //When Mifid Test Failed
-            if (appropriatenessResolution == "Failed")
-                form.confirmMifidOverride = true;
+            if (appropriatenessResolution == "Failed" && form.confirmMifidOverride == null)
+            {
+                return new ResultDTO() {success = false, message = "MifidTestFailed"};
+            }
 
-            var json = AMSLiveAccountComplete(accountGuid, mifidGuid, form, user, userInfo);
+            var json = AMSLiveAccountComplete(user.AyLiveAccountGuid, mifidGuid, form, user, userInfo);
 
             if (json is JArray)
             {

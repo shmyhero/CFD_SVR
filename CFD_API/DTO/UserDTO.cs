@@ -265,7 +265,7 @@ namespace CFD_API.DTO
 
     public class LiveSignupFormDTO
     {
-        public bool confirmMifidOverride { get; set; }
+        public bool? confirmMifidOverride { get; set; }
 
         public string username { get; set; }
         public string password { get; set; }
@@ -274,7 +274,7 @@ namespace CFD_API.DTO
         //public string realName { get; set; }
         //public string firstName { get; set; }
         //public string lastName { get; set; }
-        public bool gender { get; set; }
+        public bool? gender { get; set; }
         public string birthday { get; set; }
         public string ethnic { get; set; }
         //public string idCode { get; set; }
@@ -282,17 +282,17 @@ namespace CFD_API.DTO
         public string issueAuth { get; set; }
         public string validPeriod { get; set; }
         
-        public int annualIncome { get; set; }
-        public int netWorth { get; set; }
-        public int investPct { get; set; }
+        public int? annualIncome { get; set; }
+        public int? netWorth { get; set; }
+        public int? investPct { get; set; }
         public string empStatus { get; set; }
-        public int investFrq { get; set; }
-        public bool hasProExp { get; set; }
-        public bool hasAyondoExp { get; set; }
-        public bool hasOtherQualif { get; set; }
-        public bool expOTCDeriv { get; set; }
-        public bool expDeriv { get; set; }
-        public bool expShareBond { get; set; }
+        public int? investFrq { get; set; }
+        public bool? hasProExp { get; set; }
+        public bool? hasAyondoExp { get; set; }
+        public bool? hasOtherQualif { get; set; }
+        public bool? expOTCDeriv { get; set; }
+        public bool? expDeriv { get; set; }
+        public bool? expShareBond { get; set; }
 
         //public string ocrTransId { get; set; }
 
@@ -300,27 +300,29 @@ namespace CFD_API.DTO
         public string employerName { get; set; }
         public string employerSector { get; set; }
         public string empPosition { get; set; }
-        public int monthlyIncome { get; set; }
-        public int investments { get; set; }
-        public bool hasTraining { get; set; }
-        public bool hasDemoAcc { get; set; }
+        public int? monthlyIncome { get; set; }
+        public int? investments { get; set; }
+        public bool? hasTraining { get; set; }
+        public bool? hasDemoAcc { get; set; }
         public string otherQualif { get; set; }
-        public bool hasTradedHighLev { get; set; }
-        public bool hasTradedMidLev { get; set; }
-        public bool hasTradedNoLev { get; set; }
-        public int highLevBalance { get; set; }
-        public int highLevFrq { get; set; }
-        public int highLevRisk { get; set; }
-        public int midLevBalance { get; set; }
-        public int midLevFrq { get; set; }
-        public int midLevRisk { get; set; }
-        public int noLevBalance { get; set; }
-        public int noLevFrq { get; set; }
-        public int noLevRisk { get; set; }
+        public bool? hasTradedHighLev { get; set; }
+        public bool? hasTradedMidLev { get; set; }
+        public bool? hasTradedNoLev { get; set; }
+        public int? highLevBalance { get; set; }
+        public int? highLevFrq { get; set; }
+        public int? highLevRisk { get; set; }
+        public int? midLevBalance { get; set; }
+        public int? midLevFrq { get; set; }
+        public int? midLevRisk { get; set; }
+        public int? noLevBalance { get; set; }
+        public int? noLevFrq { get; set; }
+        public int? noLevRisk { get; set; }
     }
 
     public class AMSLiveUserCreateFormDTO
     {
+        public bool? confirmMifidOverride { get; set; }
+
         public string origin;
 
         //public string addressCity { get; set; }
@@ -343,8 +345,8 @@ namespace CFD_API.DTO
         public string employmentStatus { get; set; }
         public string firstname { get; set; }
         public string gender { get; set; }
-        public bool isIdVerified { get; set; }
-        public bool isTestRecord { get; set; }
+        public bool? isIdVerified { get; set; }
+        public bool? isTestRecord { get; set; }
         public string jobTitle { get; set; }
         public string language { get; set; }
         public string lastname { get; set; }
@@ -364,11 +366,11 @@ namespace CFD_API.DTO
         /// <summary>
         /// Opt-in for marketing emails.
         /// </summary>
-        public bool subscribeOffers { get; set; }
+        public bool? subscribeOffers { get; set; }
         /// <summary>
         /// Opt-in for trade notification emails.
         /// </summary>
-        public bool subscribeTradeNotifications { get; set; }
+        public bool? subscribeTradeNotifications { get; set; }
         public string username { get; set; }
         //public string SalesRepGuid { get; set; }
         //public int AnnualIncome { get; set; }
@@ -382,25 +384,25 @@ namespace CFD_API.DTO
 
     public class AMSLiveUserMifidFormDTO
     {
-        public bool hasAttendedTraining { get; set; }
-        public bool hasDemoAccount { get; set; }
-        public bool hasOtherQualification { get; set; }
-        public bool hasProfessionalExperience { get; set; }
-        public int investments { get; set; }
-        public int monthlyNetIncome { get; set; }
+        public bool? hasAttendedTraining { get; set; }
+        public bool? hasDemoAccount { get; set; }
+        public bool? hasOtherQualification { get; set; }
+        public bool? hasProfessionalExperience { get; set; }
+        public int? investments { get; set; }
+        public int? monthlyNetIncome { get; set; }
         public string[] otherQualification { get; set; }
-        public bool hasTradedHighLev { get; set; }
-        public bool hasTradedMidLev { get; set; }
-        public bool hasTradedNoLev { get; set; }
-        public int highLevBalance { get; set; }
-        public int highLevFrq { get; set; }
-        public int highLevRisk { get; set; }
-        public int midLevBalance { get; set; }
-        public int midLevFrq { get; set; }
-        public int midLevRisk { get; set; }
-        public int noLevBalance { get; set; }
-        public int noLevFrq { get; set; }
-        public int noLevRisk { get; set; }
+        public bool? hasTradedHighLev { get; set; }
+        public bool? hasTradedMidLev { get; set; }
+        public bool? hasTradedNoLev { get; set; }
+        public int? highLevBalance { get; set; }
+        public int? highLevFrq { get; set; }
+        public int? highLevRisk { get; set; }
+        public int? midLevBalance { get; set; }
+        public int? midLevFrq { get; set; }
+        public int? midLevRisk { get; set; }
+        public int? noLevBalance { get; set; }
+        public int? noLevFrq { get; set; }
+        public int? noLevRisk { get; set; }
     }
 
     /// <summary>

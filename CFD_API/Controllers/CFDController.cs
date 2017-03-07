@@ -325,7 +325,7 @@ namespace CFD_API.Controllers
             amsForm.employerSector = form.employerSector;
             amsForm.jobTitle = form.empPosition;
             amsForm.firstname = userInfo.FirstName;
-            amsForm.gender = form.gender ? "Male" : "Female";
+            amsForm.gender = form.gender.Value ? "Male" : "Female";
             amsForm.isIdVerified = true;
             amsForm.isTestRecord = false;
             amsForm.language = "CN";
@@ -343,6 +343,8 @@ namespace CFD_API.Controllers
             amsForm.mifidGuid = mifidGuid;
 
             amsForm.origin = CFDGlobal.AMS_ORIGIN;
+
+            amsForm.confirmMifidOverride = form.confirmMifidOverride;
 
             var s = JsonConvert.SerializeObject(amsForm); //string.Format(json, username, password);
             sw.Write(s);
