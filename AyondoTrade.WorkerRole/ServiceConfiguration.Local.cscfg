@@ -6,7 +6,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="true" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="tradehero" />
-      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCECFxdnlI69OIRkPV4v94dKMwDQYJKoZIhvcNAQEBBQAEggEAZzyH+bNaQZZeFoq6TZQsu6iz+7dmWMrHMDWhkHAguu0IKm+p6KCpS2lO4n4BNeTZjS/xgr/9iZnsUQA5WAutgq209Msn5lYlCwYCN9ZygPOL7EYAe5HqxsC8Sj+sLRavLZRbenz96OMAUmbXfeEo7bK1QrgQ6WI/U5plVUWFHhTm0IRh+oTIPcV344ZKf3S4F7wUIVzJE54pcxwfvZVrp4fRSlDBW/Gi1Z27Us5oTpYegdFvCHDfiJLyVKmySwlRt/lBeEHAyN6HuigNmatrh8hg0PcJRFe1uCLN/UIgWBwm/7YzHFNDNADt1//FyspTKbvi5/bIB4LurUfzMbSh1jAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECNVwtUXY5l1ygBBt6+TAza4niNY9633zGXbX" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEGrbuMkRZeieTd8VdKmOI4swDQYJKoZIhvcNAQEBBQAEggEAjOBJqgVlGJXkz2tFsGtbhSR9BA8p5fPsNDyp+3YndLc8idynXbYjr0cLOe4F6GVQZ+r5dlK2p1XMsgvGk7CrVM/xbc7wJKwF5LwprPmB7BA6ILf/asMrZajNL9RryOMpt2YFhqleOXAYz/MUTbaw1a406TY/KZyRkx348Z2Zv5W5TkgOWo07o0JTFQF5IQo2kFCHOwKo2yG/Bz6Br+lyssHX77HUWZMu7UnIWTdGzhKBJmHkaJPNbUoTnJBBj/0hyCNp6hFM4e8ZLZ/H2tusz5YHjF5CxM8pXTdVlcrl6RsKIMTg+Q6mtAvagxYw7z9pjjUfvxQamK2on/NbZaigBzAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECAKyrOUKmsAqgBAKywKHg2Mq9/gnZQwZYFL0" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2027-06-06T23:59:59.0000000+08:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
       <Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
@@ -16,7 +16,7 @@
       <Setting name="ayondoFixTradePassword" value="d093gos3j" />
     </ConfigurationSettings>
     <Certificates>
-      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="32F9713637F350223C210E2662BDBB28E30DB484" thumbprintAlgorithm="sha1" />
+      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="AF4BD2500E7082319F2F37467CF4D7EBBD78899F" thumbprintAlgorithm="sha1" />
     </Certificates>
   </Role>
 </ServiceConfiguration>

@@ -345,6 +345,7 @@ namespace CFD_API.Controllers
             amsForm.origin = CFDGlobal.AMS_ORIGIN;
 
             amsForm.confirmMifidOverride = form.confirmMifidOverride;
+            amsForm.isPhoneVerified = true;
 
             var s = JsonConvert.SerializeObject(amsForm); //string.Format(json, username, password);
             sw.Write(s);
@@ -387,6 +388,9 @@ namespace CFD_API.Controllers
             var sw = new StreamWriter(requestStream);
 
             var amsForm = new AMSLiveUserCreateFormDTO();
+
+            amsForm.isTestRecord = false;
+            amsForm.language = "CN";
 
             var s = JsonConvert.SerializeObject(amsForm, new JsonSerializerSettings() {NullValueHandling = NullValueHandling.Ignore}); //string.Format(json, username, password);
             sw.Write(s);
