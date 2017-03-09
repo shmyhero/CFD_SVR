@@ -83,6 +83,7 @@ namespace CFD_TEST
             var json = JToken.Parse(str);
 
         }
+
         [TestMethod]
         public void Test1()
         {
@@ -256,8 +257,7 @@ namespace CFD_TEST
                 var users = query.ToList();
             }
         }
-
-
+        
         [TestMethod]
         public void ServiceStackJsonConfig()
         {

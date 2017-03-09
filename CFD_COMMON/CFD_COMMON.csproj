@@ -189,6 +189,7 @@
     <Compile Include="Utils\DateTimes.cs" />
     <Compile Include="Utils\Decimals.cs" />
     <Compile Include="Utils\DESUtil.cs" />
+    <Compile Include="Utils\Encryption.cs" />
     <Compile Include="Utils\Extensions\CollectionExtensions.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
     <Compile Include="Utils\FX.cs" />
