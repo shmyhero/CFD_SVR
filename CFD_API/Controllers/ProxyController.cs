@@ -97,7 +97,12 @@ namespace CFD_API.Controllers
         [Route("refaccount")]
         public JToken ReferenctAccount(LiveUserBankCardFormDTO form)
         {
-            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST+"live-account/"+ form.Guid+ "/reference-account");
+            if(!Request.Headers.Contains("accountGuid"))
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "missing account guid.")) ;
+            }
+            string accountGuid = Request.Headers.GetValues("accountGuid").FirstOrDefault();
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST+"live-account/"+ accountGuid + "/reference-account");
             httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json; charset=UTF-8";

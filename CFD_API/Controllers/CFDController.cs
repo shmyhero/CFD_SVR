@@ -520,13 +520,14 @@ namespace CFD_API.Controllers
             return result;
         }
 
-        protected static JToken AMSBindBankCard(LiveUserBankCardFormDTO form, string method = "POST")
+        protected static JToken AMSBindBankCard(LiveUserBankCardFormDTO form, string accountGuid, string method = "POST")
         {
             byte[] binaryData = Encoding.UTF8.GetBytes(JObject.FromObject(form).ToString());
             var httpWebRequest =
                 WebRequest.CreateHttp(CFDGlobal.AMS_PROXY_HOST + "refaccount");
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = method;
+            httpWebRequest.Headers.Add("accountGuid", accountGuid);
             httpWebRequest.Timeout = int.MaxValue;
             httpWebRequest.Proxy = null;
 

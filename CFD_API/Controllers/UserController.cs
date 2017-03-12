@@ -1700,34 +1700,22 @@ namespace CFD_API.Controllers
             originalForm.Guid = user.AyLiveAccountGuid;
 
             LiveUserBankCardFormDTO form = Convert2AyondoForm(originalForm);
-            form.IdentityID = userInfo.IdCode;
+            form.idCardNumber = userInfo.IdCode;
+
+            var bank = db.Banks.FirstOrDefault(b => b.CName == originalForm.NameOfBank);
+            if(bank == null)
+            {
+                CFDGlobal.LogInformation("ReferenceAccount: bank name is wrong:" + originalForm.NameOfBank);
+                return new ResultDTO(false) { message = "银行名称不存在" };
+            }
+            form.bic = bank.BIC;
+
             //首次绑定银行卡，用POST。 如果银行卡已存在，更新用PUT
             //string method = string.IsNullOrEmpty(user.BankCardNumber) ? "POST" : "PUT";
             //按照Ayondo的文档，如果更新的话用PUT，但测试下来PUT会报错，还是用POST
             string method = "POST";
 
-            //var json = AMSBindBankCard(form, method);
-            //if (json is JArray)
-            //{
-            //    return new ResultDTO
-            //    {
-            //        error = json,
-            //        success = false,
-            //    };
-            //}
-
-            //user.BankCardNumber = form.accountNumber;
-            //user.BankName = form.nameOfBank;
-            //user.Branch = form.Branch;
-            //user.Province = form.Province;
-            //user.City = form.City;
-            //if (json["data"]["referenceAccountGuid"] != null)
-            //{
-            //    user.ReferenceAccountGuid = json["data"]["referenceAccountGuid"].Value<string>();
-            //}
-
-            //在Ayondo发布新接口之前，使用老接口的定义
-            var jObject = AMSBindBankCard(form, method);
+            var jObject = AMSBindBankCard(form, user.AyLiveAccountGuid, method);
             if (jObject["Error"] != null)
             {
                 return new ResultDTO
@@ -1737,16 +1725,15 @@ namespace CFD_API.Controllers
                 };
             }
 
-            user.BankCardNumber = form.AccountNumber;
-            user.BankName = form.NameOfBank;
-            user.Branch = form.Branch;
-            user.Province = form.Province;
-            user.City = form.City;
+            user.BankCardNumber = form.accountNumber;
+            user.BankName = form.nameOfBank;
+            user.Branch = form.branch;
+            user.Province = form.province;
+            user.City = form.city;
             if (jObject["ReferenceAccountGuid"] != null)
             {
                 user.ReferenceAccountGuid = jObject["ReferenceAccountGuid"].Value<string>();
             }
-
 
             db.SaveChanges();
 
@@ -1924,23 +1911,16 @@ namespace CFD_API.Controllers
 
             LiveUserBankCardFormDTO form = new LiveUserBankCardFormDTO()
             {
-                //accountHolder = originalForm.AccountHolder,
-                //accountNumber = originalForm.AccountNumber,
-                //nameOfBank = originalForm.NameOfBank,
-                //bankStatementContent = imgBase64,
-                //bankStatementFilename = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
-
-                //在Ayondo的更新发布前，使用老接口定义
-                AccountHolder = originalForm.AccountHolder,
-                AccountNumber = originalForm.AccountNumber,
-                NameOfBank = originalForm.NameOfBank,
-                BankStatementContent = imgBase64,
-                BankStatementFileName = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
-
-                Guid = originalForm.Guid,
-                Branch = originalForm.Branch,
-                Province = originalForm.Province,
-                City = originalForm.City
+                accountHolder = originalForm.AccountHolder,
+                accountNumber = originalForm.AccountNumber,
+                nameOfBank = originalForm.NameOfBank,
+                bankStatementContent = imgBase64,
+                bankStatementFilename = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
+                iban = string.Empty,
+                info = originalForm.Info,
+                branch = originalForm.Branch,
+                province = originalForm.Province,
+                city = originalForm.City
             };
 
             return form;

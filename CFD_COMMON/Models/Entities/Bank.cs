@@ -19,6 +19,7 @@ namespace CFD_COMMON.Models.Entities
 
         public string Logo { get; set; }
         public string Icon { get; set; }
+        public string BIC { get; set; }
 
         public int Order { get; set; }
 
