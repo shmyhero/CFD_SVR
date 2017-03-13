@@ -422,7 +422,6 @@ namespace CFD_API.DTO
         /// <summary>
         /// Ayondo Live Account GUID
         /// </summary>
-        public string Guid { get; set; }
         public string NameOfBank { get; set; }
         public string Info { get; set; }
         /// <summary>

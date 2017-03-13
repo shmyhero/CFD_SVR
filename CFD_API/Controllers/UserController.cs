@@ -1696,9 +1696,6 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false);
             }
 
-            //前端拿不到这个参数
-            originalForm.Guid = user.AyLiveAccountGuid;
-
             LiveUserBankCardFormDTO form = Convert2AyondoForm(originalForm);
             form.idCardNumber = userInfo.IdCode;
 
@@ -1716,11 +1713,16 @@ namespace CFD_API.Controllers
             string method = "POST";
 
             var jObject = AMSBindBankCard(form, user.AyLiveAccountGuid, method);
-            if (jObject["Error"] != null)
+            //接口异常时返回示例如下:
+            //{"errorCode":"UNEXPECTED_ERROR","message":"XXXXXXXX","accountGuid":"22db2731-8ef5-4a73-beb6-690885b13cd2"}
+            //正常返回示例如下:
+            //{"data":{referenceAccountGuid:"22db2731-8ef5-4a73-beb6-690885b13cd2"}}
+            if (jObject["errorCode"] != null)
             {
+                CFDGlobal.LogInformation(string.Format("ReferenceAccount failed for '{0}', message:'{1}'", user.AyLiveAccountGuid, jObject["message"].Value<string>()));
                 return new ResultDTO
                 {
-                    message = jObject["Error"].Value<string>(),
+                    message = jObject["message"].Value<string>(),
                     success = false,
                 };
             }
@@ -1730,9 +1732,9 @@ namespace CFD_API.Controllers
             user.Branch = form.branch;
             user.Province = form.province;
             user.City = form.city;
-            if (jObject["ReferenceAccountGuid"] != null)
+            if (jObject["data"]["referenceAccountGuid"] != null)
             {
-                user.ReferenceAccountGuid = jObject["ReferenceAccountGuid"].Value<string>();
+                user.ReferenceAccountGuid = jObject["data"]["referenceAccountGuid"].Value<string>();
             }
 
             db.SaveChanges();
@@ -1916,8 +1918,8 @@ namespace CFD_API.Controllers
                 nameOfBank = originalForm.NameOfBank,
                 bankStatementContent = imgBase64,
                 bankStatementFilename = string.Format("bankstatement_{0}.jpg", originalForm.AccountHolder),
-                iban = string.Empty,
-                info = originalForm.Info,
+                iban = string.Empty,//该字段Ayondo文档说是optional的，但测下来必须有值。所以给个空值
+                info = string.Empty,//该字段Ayondo文档说是optional的，但测下来必须有值。所以给个空值
                 branch = originalForm.Branch,
                 province = originalForm.Province,
                 city = originalForm.City
