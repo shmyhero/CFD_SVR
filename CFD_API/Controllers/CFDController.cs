@@ -345,7 +345,7 @@ namespace CFD_API.Controllers
             amsForm.confirmMifidOverride = form.confirmMifidOverride;
             amsForm.isPhoneVerified = true;
 
-            var s = JsonConvert.SerializeObject(amsForm); //string.Format(json, username, password);
+            var s = JsonConvert.SerializeObject(amsForm, new JsonSerializerSettings() {NullValueHandling = NullValueHandling.Ignore}); //string.Format(json, username, password);
             sw.Write(s);
             sw.Flush();
             sw.Close();

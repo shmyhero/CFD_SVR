@@ -1508,7 +1508,7 @@ namespace CFD_API.Controllers
 
             if (mifidResult is JArray)
             {
-                CFDGlobal.LogInformation("LIVE mifid test error:" + mifidResult);
+                CFDGlobal.LogWarning("LIVE mifid test error:" + mifidResult);
 
                 return new ResultDTO
                 {
@@ -1538,7 +1538,7 @@ namespace CFD_API.Controllers
             {
                 //var error = jObject["error"].Value<string>();
 
-                CFDGlobal.LogInformation("LIVE register error:" + json);
+                CFDGlobal.LogWarning("LIVE register error:" + json);
 
                 return new ResultDTO
                 {
