@@ -12,17 +12,10 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<UserInfo> UserInfoes { get; set; }
+        public virtual DbSet<UserFollow> UserFollows { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UserInfo>()
-                .Property(e => e.FaceCheckSimilarity)
-                .HasPrecision(18, 5);
-
-            modelBuilder.Entity<UserInfo>()
-                .Property(e => e.AppropriatenessScore)
-                .HasPrecision(18, 5);
         }
     }
 }

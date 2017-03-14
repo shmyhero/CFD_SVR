@@ -46,7 +46,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
         //public virtual DbSet<TransferHistory> TransferHistorys { get; set; }
         public virtual DbSet<UserCard> UserCards { get; set; }
-        
+        public virtual DbSet<UserFollow> UserFollows { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserAlert> UserAlerts { get; set; }
         public virtual DbSet<UserInfo> UserInfos { get; set; }

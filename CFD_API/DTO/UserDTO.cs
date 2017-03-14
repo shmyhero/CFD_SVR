@@ -30,6 +30,13 @@ namespace CFD_API.DTO
         public string bankCardStatus { get; set; }
     }
 
+    public class FollowingDTO
+    {
+        public int id { get; set; }
+        public string nickname { get; set; }
+        public string picUrl { get; set; }
+    }
+
     public class UserInfoDTO
     {
         //public int id { get; set; }

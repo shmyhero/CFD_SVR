@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -1869,6 +1870,55 @@ namespace CFD_API.Controllers
             return new List<TransferDTO>();
         }
 
+        [HttpPut]
+        [Route("follow/{followingId}")]
+        [BasicAuth]
+        public ResultDTO SetFollowing(int followingId)
+        {
+            if (UserId == followingId)
+                return new ResultDTO(false);
+
+            var any = db.UserFollows.Any(o => o.UserId == UserId && o.FollowingId == followingId);
+
+            if (!any)
+            {
+                db.UserFollows.Add(new UserFollow() {UserId = UserId, FollowingId = followingId});
+                db.SaveChanges();
+            }
+
+            return new ResultDTO(true);
+        }
+
+        [HttpDelete]
+        [Route("follow/{followingId}")]
+        [BasicAuth]
+        public ResultDTO DeleteFollowing(int followingId)
+        {
+            if (UserId == followingId)
+                return new ResultDTO(false);
+
+            db.UserFollows.Where(o => o.UserId == UserId && o.FollowingId == followingId).Delete();
+
+            return new ResultDTO(true);
+        }
+
+        [HttpGet]
+        [Route("following")]
+        [BasicAuth]
+        public List<FollowingDTO> GetFollowingIds()
+        {
+            return
+                db.UserFollows.Include(o => o.Following)
+                    .Where(o => o.UserId == UserId)
+                    .ToList()
+                    .Select(o => new FollowingDTO()
+                    {
+                        id = o.Following.Id,
+                        nickname = o.Following.Nickname,
+                        picUrl = o.Following.PicUrl
+                    }).ToList();
+        }
+
         [HttpGet]
         [Route("{userId}/position/chart/plClosed")]
         [Route("{userId}/live/position/chart/plClosed")]
@@ -1878,12 +1928,12 @@ namespace CFD_API.Controllers
             //var jArray = new JArray();
 
             var dbList = IsLiveUrl
-                ? db.NewPositionHistory_live.Where(o => o.UserId == UserId && o.ClosedAt != null)
+                ? db.NewPositionHistory_live.Where(o => o.UserId == userId && o.ClosedAt != null)
                     .OrderBy(o => o.ClosedAt)
                     .ToList()
                     .Select(o => o as NewPositionHistoryBase)
                     .ToList()
-                : db.NewPositionHistories.Where(o => o.UserId == UserId && o.ClosedAt != null)
+                : db.NewPositionHistories.Where(o => o.UserId == userId && o.ClosedAt != null)
                     .OrderBy(o => o.ClosedAt)
                     .ToList()
                     .Select(o => o as NewPositionHistoryBase)
@@ -1929,17 +1979,17 @@ namespace CFD_API.Controllers
         [Route("{userId}/position/chart/plClosed/2w")]
         [Route("{userId}/live/position/chart/plClosed/2w")]
         [BasicAuth]
-        public List<PosChartDTO> PLChartClosed2w()
+        public List<PosChartDTO> PLChartClosed2w(int userId)
         {
             var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
 
             var dbList = IsLiveUrl
-                ? db.NewPositionHistory_live.Where(o => o.UserId == UserId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgo)
+                ? db.NewPositionHistory_live.Where(o => o.UserId == userId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgo)
                     .OrderBy(o => o.ClosedAt)
                     .ToList()
                     .Select(o => o as NewPositionHistoryBase)
                     .ToList()
-                : db.NewPositionHistories.Where(o => o.UserId == UserId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgo)
+                : db.NewPositionHistories.Where(o => o.UserId == userId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgo)
                     .OrderBy(o => o.ClosedAt)
                     .ToList()
                     .Select(o => o as NewPositionHistoryBase)
