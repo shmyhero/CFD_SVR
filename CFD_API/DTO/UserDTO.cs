@@ -12,11 +12,18 @@ namespace CFD_API.DTO
         public string token { get; set; }
     }
 
-    public class UserDTO
+    public class UserBaseDTO
     {
         public int id { get; set; }
         public string nickname { get; set; }
         public string picUrl { get; set; }
+    }
+
+    public class UserDTO : UserBaseDTO
+    {
+        //public int id { get; set; }
+        //public string nickname { get; set; }
+        //public string picUrl { get; set; }
         public string phone { get; set; }
         public bool autoCloseAlert { get; set; }
         public string weChatOpenId { get; set; }
@@ -30,11 +37,11 @@ namespace CFD_API.DTO
         public string bankCardStatus { get; set; }
     }
 
-    public class FollowingDTO
+    public class FollowingDTO : UserBaseDTO
     {
-        public int id { get; set; }
-        public string nickname { get; set; }
-        public string picUrl { get; set; }
+        //public int id { get; set; }
+        //public string nickname { get; set; }
+        //public string picUrl { get; set; }
     }
 
     public class UserInfoDTO
@@ -44,6 +51,15 @@ namespace CFD_API.DTO
         public string lastName { get; set; }
         public string email { get; set; }
         public string addr { get; set; }
+    }
+
+    public class UserDetailDTO : UserBaseDTO
+    {
+        public int followerCount { get; set; }
+        public decimal totalPl { get; set; }
+        public decimal avgPl { get; set; }
+        public decimal winRate { get; set; }
+        public List<CardDTO> cards { get; set; }
     }
 
     public class NewDepositDTO

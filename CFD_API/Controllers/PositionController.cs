@@ -1141,6 +1141,92 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("~/api/user/{userId}/detail")]
+        [Route("~/api/user/{userId}/live/detail")]
+        [BasicAuth]
+        public UserDetailDTO Get(int userId)
+        {
+            var user = db.Users.FirstOrDefault(o => o.Id == userId);
+
+            var positions = IsLiveUrl
+                ? db.NewPositionHistory_live.Where(o => o.UserId == userId && o.PL != null)
+                    .ToList()
+                    .Select(o => o as NewPositionHistoryBase)
+                    .ToList()
+                : db.NewPositionHistories.Where(o => o.UserId == userId && o.PL != null)
+                    .ToList()
+                    .Select(o => o as NewPositionHistoryBase)
+                    .ToList();
+
+            var isEmpty = positions.Count == 0;
+
+            var followingCount = db.UserFollows.Count(o => o.FollowingId == userId);
+
+            var result = new UserDetailDTO
+            {
+                id=userId,
+                nickname= user.Nickname,
+                picUrl = user.PicUrl,
+                avgPl = isEmpty?0: positions.Average(o=>o.PL.Value),
+                totalPl = isEmpty ? 0 : positions.Sum(o=>o.PL.Value),
+                winRate = isEmpty ? 0 : (decimal)positions.Count(o=>o.PL>0)/positions.Count,
+                followerCount = followingCount,
+             };
+
+            if (IsLiveUrl)
+            {
+                var cards = from u in db.UserCards_Live
+                    join c in db.Cards on u.CardId equals c.Id
+                        into x
+                    from y in x.DefaultIfEmpty()
+                    where u.UserId == userId//------------user id
+                            orderby u.CreatedAt descending
+                    select new CardDTO()
+                    {
+                        cardId = u.Id,
+                        //ccy = u.CCY,
+                        imgUrlBig = y.CardImgUrlBig,
+                        imgUrlMiddle = y.CardImgUrlMiddle,
+                        imgUrlSmall = y.CardImgUrlSmall,
+                        invest = u.Invest,
+                        isLong = u.IsLong,
+                        isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
+                        shared = !u.IsShared.HasValue ? false : u.IsShared.Value,
+                        leverage = u.Leverage,
+                        likes = u.Likes,
+                        reward = y.Reward,
+                        settlePrice = u.SettlePrice,
+                        //stockName = u.StockName,
+                        stockID = u.SecurityId,
+                        pl = u.PL,
+                        plRate = ((u.SettlePrice - u.TradePrice)/u.TradePrice*u.Leverage*100)*(u.IsLong.Value ? 1 : -1),
+                        themeColor = y.ThemeColor,
+                        title = y.Title,
+                        cardType = y.CardType.HasValue ? y.CardType.Value : 0,
+                        tradePrice = u.TradePrice,
+                        tradeTime = u.ClosedAt
+                    };
+
+                if (cards != null)
+                {
+                    var cache = WebCache.GetInstance(true);
+                    result.cards = cards.ToList();
+                    result.cards.ForEach(cardDTO =>
+                    {
+                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == cardDTO.stockID);
+                        if (prodDef != null)
+                        {
+                            cardDTO.ccy = prodDef.Ccy2;
+                            cardDTO.stockName = Translator.GetCName(prodDef.Name);
+                        }
+                    });
+                }
+            }
+
+            return result;
+        }
+
+        [HttpGet]
         [Route("printcache")]
         public string PrintCache(string username = "")
         {

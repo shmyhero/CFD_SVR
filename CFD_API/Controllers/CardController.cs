@@ -31,53 +31,40 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public CardCollectionDTO GetMyCards()
         {
-            return CardsByUserId(UserId);
-        }
-
-        [HttpGet]
-        [Route("~/api/user/{userId}/card")]
-        [BasicAuth]
-        public CardCollectionDTO GetCardsByUserId(int userId)
-        {
-            return CardsByUserId(userId);
-        }
-
-        private CardCollectionDTO CardsByUserId(int userId)
-        {
             CardCollectionDTO coll = new CardCollectionDTO();
 
             //这里的cardId用UserCard的ID，而不是Card.ID
             var myCards = from u in db.UserCards_Live
-                join c in db.Cards on u.CardId equals c.Id
-                    into x
-                from y in x.DefaultIfEmpty()
-                where u.UserId == this.UserId
-                orderby u.CreatedAt descending
-                select new CardDTO()
-                {
-                    cardId = u.Id,
-                    //ccy = u.CCY,
-                    imgUrlBig = y.CardImgUrlBig,
-                    imgUrlMiddle = y.CardImgUrlMiddle,
-                    imgUrlSmall = y.CardImgUrlSmall,
-                    invest = u.Invest,
-                    isLong = u.IsLong,
-                    isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
-                    shared = !u.IsShared.HasValue ? false : u.IsShared.Value,
-                    leverage = u.Leverage,
-                    likes = u.Likes,
-                    reward = y.Reward,
-                    settlePrice = u.SettlePrice,
-                    //stockName = u.StockName,
-                    stockID = u.SecurityId,
-                    pl = u.PL,
-                    plRate = ((u.SettlePrice - u.TradePrice)/u.TradePrice*u.Leverage*100)*(u.IsLong.Value ? 1 : -1),
-                    themeColor = y.ThemeColor,
-                    title = y.Title,
-                    cardType = y.CardType.HasValue ? y.CardType.Value : 0,
-                    tradePrice = u.TradePrice,
-                    tradeTime = u.ClosedAt
-                };
+                          join c in db.Cards on u.CardId equals c.Id
+                              into x
+                          from y in x.DefaultIfEmpty()
+                          where u.UserId == UserId
+                          orderby u.CreatedAt descending
+                          select new CardDTO()
+                          {
+                              cardId = u.Id,
+                              //ccy = u.CCY,
+                              imgUrlBig = y.CardImgUrlBig,
+                              imgUrlMiddle = y.CardImgUrlMiddle,
+                              imgUrlSmall = y.CardImgUrlSmall,
+                              invest = u.Invest,
+                              isLong = u.IsLong,
+                              isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
+                              shared = !u.IsShared.HasValue ? false : u.IsShared.Value,
+                              leverage = u.Leverage,
+                              likes = u.Likes,
+                              reward = y.Reward,
+                              settlePrice = u.SettlePrice,
+                              //stockName = u.StockName,
+                              stockID = u.SecurityId,
+                              pl = u.PL,
+                              plRate = ((u.SettlePrice - u.TradePrice) / u.TradePrice * u.Leverage * 100) * (u.IsLong.Value ? 1 : -1),
+                              themeColor = y.ThemeColor,
+                              title = y.Title,
+                              cardType = y.CardType.HasValue ? y.CardType.Value : 0,
+                              tradePrice = u.TradePrice,
+                              tradeTime = u.ClosedAt
+                          };
 
             if (myCards != null)
             {
