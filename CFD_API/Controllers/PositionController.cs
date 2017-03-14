@@ -21,6 +21,9 @@ using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 using System.Data.SqlTypes;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using ServiceStack.Common.Extensions;
 
 namespace CFD_API.Controllers
 {
@@ -1023,6 +1026,118 @@ namespace CFD_API.Controllers
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
             return posDTO;
+        }
+
+        [HttpGet]
+        [Route("chart/plClosed")]
+        [Route("live/chart/plClosed")]
+        [BasicAuth]
+        public List<PosChartDTO> PLChartClosed()
+        {
+            //var jArray = new JArray();
+
+            var dbList = IsLiveUrl
+                ? db.NewPositionHistory_live.Where(o => o.UserId == UserId && o.ClosedAt != null)
+                    .OrderBy(o => o.ClosedAt)
+                    .ToList()
+                    .Select(o => o as NewPositionHistoryBase)
+                    .ToList()
+                : db.NewPositionHistories.Where(o => o.UserId == UserId && o.ClosedAt != null)
+                    .OrderBy(o => o.ClosedAt)
+                    .ToList()
+                    .Select(o => o as NewPositionHistoryBase)
+                    .ToList();
+
+            if (dbList.Count == 0)
+                return new List<PosChartDTO>();
+
+            var result = dbList.GroupBy(o => o.ClosedAt.Value.AddHours(8).Date).Select(o => new PosChartDTO
+            {
+                date = o.Key,
+                //Count = o.Count(),
+                pl = o.Sum(p => p.PL.Value)
+            }).ToList();
+
+            #region fill-in all data points for client...
+
+            var beginDate = result.First().date;
+            var endDate = DateTimes.GetChinaToday();
+            var newResult = new List<PosChartDTO>();
+            decimal cumulativePL = 0;
+            for (DateTime d = beginDate; d <= endDate; d = d.AddDays(1))
+            {
+                if (d.DayOfWeek == DayOfWeek.Sunday) continue;
+
+                var data = result.FirstOrDefault(o => o.date == d);
+
+                if (data == null)
+                    newResult.Add(new PosChartDTO() {date = d, pl = cumulativePL});
+                else
+                {
+                    cumulativePL += data.pl;
+                    newResult.Add(new PosChartDTO() {date = d, pl = cumulativePL});
+                }
+            }
+
+            #endregion
+
+            return newResult;
+        }
+
+        [HttpGet]
+        [Route("chart/plClosed/2w")]
+        [Route("live/chart/plClosed/2w")]
+        [BasicAuth]
+        public List<PosChartDTO> PLChartClosed2w()
+        {
+            var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
+
+            var dbList = IsLiveUrl
+                ? db.NewPositionHistory_live.Where(o => o.UserId == UserId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgo)
+                    .OrderBy(o => o.ClosedAt)
+                    .ToList()
+                    .Select(o => o as NewPositionHistoryBase)
+                    .ToList()
+                : db.NewPositionHistories.Where(o => o.UserId == UserId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgo)
+                    .OrderBy(o => o.ClosedAt)
+                    .ToList()
+                    .Select(o => o as NewPositionHistoryBase)
+                    .ToList();
+
+            if (dbList.Count == 0)
+                return new List<PosChartDTO>();
+
+            var result = dbList.GroupBy(o => o.ClosedAt.Value.AddHours(8).Date).Select(o => new PosChartDTO
+            {
+                date = o.Key,
+                //Count = o.Count(),
+                pl = o.Sum(p => p.PL.Value)
+            }).ToList();
+
+            #region fill-in all data points for client...
+
+            var beginDate = twoWeeksAgo;
+            var endDate = DateTimes.GetChinaToday();
+            var newResult = new List<PosChartDTO>();
+            decimal cumulativePL = 0;
+            for (DateTime d = beginDate; d <= endDate; d = d.AddDays(1))
+            {
+                if (d.DayOfWeek == DayOfWeek.Sunday) continue;
+
+                var data = result.FirstOrDefault(o => o.date == d);
+
+                if (data == null)
+                    newResult.Add(new PosChartDTO() { date = d, pl = cumulativePL });
+                else
+                {
+                    cumulativePL += data.pl;
+                    newResult.Add(new PosChartDTO() { date = d, pl = cumulativePL });
+                }
+            }
+
+            #endregion
+
+            return newResult;
         }
 
         [HttpGet]

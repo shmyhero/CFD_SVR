@@ -85,4 +85,10 @@ namespace CFD_API.DTO
         public List<CardDTO> cards { get; set; }
         public bool hasNew { get; set; }
     }
+
+    public class PosChartDTO
+    {
+        public DateTime date { get; set; }
+        public decimal pl { get; set; }
+    }
 }
