@@ -1091,14 +1091,15 @@ namespace CFD_API.Controllers
         public List<PosChartDTO> PLChartClosed2w(int userId)
         {
             var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
+            var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
 
             var dbList = IsLiveUrl
-                ? db.NewPositionHistory_live.Where(o => o.UserId == userId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgo)
+                ? db.NewPositionHistory_live.Where(o => o.UserId == userId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
                     .OrderBy(o => o.ClosedAt)
                     .ToList()
                     .Select(o => o as NewPositionHistoryBase)
                     .ToList()
-                : db.NewPositionHistories.Where(o => o.UserId == userId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgo)
+                : db.NewPositionHistories.Where(o => o.UserId == userId && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
                     .OrderBy(o => o.ClosedAt)
                     .ToList()
                     .Select(o => o as NewPositionHistoryBase)
