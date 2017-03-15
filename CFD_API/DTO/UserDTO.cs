@@ -56,6 +56,7 @@ namespace CFD_API.DTO
     public class UserDetailDTO : UserBaseDTO
     {
         public int followerCount { get; set; }
+        public bool isFollowing { get; set; }
         public decimal totalPl { get; set; }
         public decimal avgPl { get; set; }
         public decimal winRate { get; set; }

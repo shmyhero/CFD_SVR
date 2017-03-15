@@ -1162,6 +1162,8 @@ namespace CFD_API.Controllers
 
             var followingCount = db.UserFollows.Count(o => o.FollowingId == userId);
 
+            var isFollowing = db.UserFollows.Any(o => o.UserId == UserId && o.FollowingId == userId);
+
             var result = new UserDetailDTO
             {
                 id=userId,
@@ -1171,6 +1173,7 @@ namespace CFD_API.Controllers
                 totalPl = isEmpty ? 0 : positions.Sum(o=>o.PL.Value),
                 winRate = isEmpty ? 0 : (decimal)positions.Count(o=>o.PL>0)/positions.Count,
                 followerCount = followingCount,
+                isFollowing= isFollowing,
              };
 
             if (IsLiveUrl)
