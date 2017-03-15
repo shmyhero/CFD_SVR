@@ -35,7 +35,7 @@ namespace CFD_API.Controllers
                     id = o.Key.Value,
 
                     posCount = o.Count(),
-                    winRate = o.Count(p => p.PL > 0) / o.Count(),
+                    winRate = (decimal)o.Count(p => p.PL > 0) / o.Count(),
                     roi = o.Sum(p => p.PL.Value) / o.Sum(p => p.InvestUSD.Value),
                 }).OrderByDescending(o=>o.roi).ToList();
 
