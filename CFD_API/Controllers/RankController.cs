@@ -39,27 +39,7 @@ namespace CFD_API.Controllers
                     roi = o.Sum(p => p.PL.Value) / o.Sum(p => p.InvestUSD.Value),
                 }).OrderByDescending(o=>o.roi).ToList();
 
-            var userIds = userDTOs.Select(o => o.id).ToList();
-            var users = db.Users.Where(o => userIds.Contains(o.Id)).ToList();
-
-            foreach (var userDto in userDTOs)
-            {
-                var user = users.First(o => o.Id == userDto.id);
-                userDto.nickname = user.Nickname;
-                userDto.picUrl = user.PicUrl;
-            }
-
-            //var userDTOs = positions.GroupBy(o => o.UserId).Select(o => new UserDTO()
-            //{
-            //    id = o.Key.Value,
-            //    nickname = o.First().User.Nickname,
-            //    picUrl = o.First().User.PicUrl,
-
-            //    posCount = o.Count(),
-            //    winRate = o.Count(p => p.PL > 0)/o.Count(),
-            //    roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
-            //}).OrderByDescending(o=>o.roi).ToList();
-
+            //move myself to the top
             var findIndex = userDTOs.FindIndex(o => o.id == UserId);
             if (findIndex > 0)
             {
@@ -77,13 +57,36 @@ namespace CFD_API.Controllers
                 userDTOs.Insert(0, new UserDTO()
                 {
                     id = me.Id,
-                    nickname = me.Nickname,
-                    picUrl = me.PicUrl,
+
                     posCount = 0,
                     roi = 0,
                     winRate = 0,
                 });
             }
+
+            //100 at max
+            userDTOs = userDTOs.Take(100).ToList();
+
+            //populate nickname/picUrl
+            var userIds = userDTOs.Select(o => o.id).ToList();
+            var users = db.Users.Where(o => userIds.Contains(o.Id)).ToList();
+            foreach (var userDto in userDTOs)
+            {
+                var user = users.First(o => o.Id == userDto.id);
+                userDto.nickname = user.Nickname;
+                userDto.picUrl = user.PicUrl;
+            }
+
+            //var userDTOs = positions.GroupBy(o => o.UserId).Select(o => new UserDTO()
+            //{
+            //    id = o.Key.Value,
+            //    nickname = o.First().User.Nickname,
+            //    picUrl = o.First().User.PicUrl,
+
+            //    posCount = o.Count(),
+            //    winRate = o.Count(p => p.PL > 0)/o.Count(),
+            //    roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
+            //}).OrderByDescending(o=>o.roi).ToList();
 
             return userDTOs;
 
