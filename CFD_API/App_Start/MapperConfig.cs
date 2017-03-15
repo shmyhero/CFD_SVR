@@ -21,8 +21,8 @@ namespace CFD_API
                 cfg.CreateMap<Version, VersionIOSDTO>();
                 cfg.CreateMap<Version, VersionAndroidDTO>();
 
-                cfg.CreateMap<User, UserDTO>();
-                cfg.CreateMap<UserInfo, UserInfoDTO>();
+                cfg.CreateMap<User, MeDTO>();
+                cfg.CreateMap<UserInfo, MyInfoDTO>();
 
                 cfg.CreateMap<AyondoSecurity, SecurityDTO>()
                     //.ForMember(dest => dest.last, opt => opt.MapFrom(src => Quotes.GetLastPrice(src)))

@@ -19,7 +19,7 @@ namespace CFD_API.DTO
         public string picUrl { get; set; }
     }
 
-    public class UserDTO : UserBaseDTO
+    public class MeDTO : UserBaseDTO
     {
         //public int id { get; set; }
         //public string nickname { get; set; }
@@ -37,14 +37,17 @@ namespace CFD_API.DTO
         public string bankCardStatus { get; set; }
     }
 
-    public class FollowingDTO : UserBaseDTO
+    public class UserDTO : UserBaseDTO
     {
         //public int id { get; set; }
         //public string nickname { get; set; }
         //public string picUrl { get; set; }
+        public decimal roi { get; set; }
+        public int posCount { get; set; }
+        public decimal winRate { get; set; }
     }
 
-    public class UserInfoDTO
+    public class MyInfoDTO
     {
         //public int id { get; set; }
         public string firstName { get; set; }

@@ -254,11 +254,11 @@ namespace CFD_API.Controllers
         //[RequireHttps]
         [ActionName("me")]
         [BasicAuth]
-        public UserDTO GetMe()
+        public MeDTO GetMe()
         {
             var user = GetUser();
 
-            var userDto = Mapper.Map<UserDTO>(user);
+            var userDto = Mapper.Map<MeDTO>(user);
 
             //TODO: only here to reward demo registration?
             //todo: transaction required!
@@ -289,13 +289,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("me/detail")]
         [BasicAuth]
-        public UserInfoDTO GetMyUserInfo()
+        public MyInfoDTO GetMyUserInfo()
         {
             var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
 
             if (userInfo == null) return null;
 
-            var userInfoDto = Mapper.Map<UserInfoDTO>(userInfo);
+            var userInfoDto = Mapper.Map<MyInfoDTO>(userInfo);
 
             return userInfoDto;
         }
@@ -1905,13 +1905,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("following")]
         [BasicAuth]
-        public List<FollowingDTO> GetFollowingIds()
+        public List<UserDTO> GetFollowingIds()
         {
             return
                 db.UserFollows.Include(o => o.Following)
                     .Where(o => o.UserId == UserId)
                     .ToList()
-                    .Select(o => new FollowingDTO()
+                    .Select(o => new UserDTO()
                     {
                         id = o.Following.Id,
                         nickname = o.Following.Nickname,
