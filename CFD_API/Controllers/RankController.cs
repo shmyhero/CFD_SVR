@@ -67,6 +67,23 @@ namespace CFD_API.Controllers
                 userDTOs.RemoveAt(findIndex);
                 userDTOs.Insert(0, me);
             }
+            else if (findIndex == 0)
+            {
+                //do nothing
+            }
+            else
+            {
+                var me = GetUser();
+                userDTOs.Insert(0, new UserDTO()
+                {
+                    id = me.Id,
+                    nickname = me.Nickname,
+                    picUrl = me.PicUrl,
+                    posCount = 0,
+                    roi = 0,
+                    winRate = 0,
+                });
+            }
 
             return userDTOs;
 
