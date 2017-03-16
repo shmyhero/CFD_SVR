@@ -1553,6 +1553,7 @@ namespace CFD_API.Controllers
             user.AyLiveUsername = form.username;
             user.AyLivePassword = form.password;
             user.AyLiveAccountGuid = guid;
+            user.AyLiveApplyAt = DateTime.UtcNow;
             db.SaveChanges();
 
             userInfo.Email = form.email;
@@ -1882,7 +1883,12 @@ namespace CFD_API.Controllers
 
             if (!any)
             {
-                db.UserFollows.Add(new UserFollow() {UserId = UserId, FollowingId = followingId});
+                db.UserFollows.Add(new UserFollow()
+                {
+                    UserId = UserId,
+                    FollowingId = followingId,
+                    FollowAt = DateTime.UtcNow
+                });
                 db.SaveChanges();
             }
 
@@ -1910,7 +1916,7 @@ namespace CFD_API.Controllers
             var result =
                 db.UserFollows.Include(o => o.Following)
                     .Where(o => o.UserId == UserId)
-                    .ToList()
+                    .OrderByDescending(o => o.FollowAt)
                     .Select(o => new UserDTO()
                     {
                         id = o.Following.Id,
@@ -1955,7 +1961,7 @@ namespace CFD_API.Controllers
                     }
                 }
 
-                result = result.OrderByDescending(o => o.roi).ToList();
+                //result = result.OrderByDescending(o => o.roi).ToList();
             }
 
             return result;

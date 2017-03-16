@@ -60,6 +60,8 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(50)]
         public string AyLiveAccountGuid { get; set; }
 
+        public DateTime? AyLiveApplyAt { get; set; }
+
         [StringLength(50)]
         public string AyLiveAccountStatus { get; set; }
 
