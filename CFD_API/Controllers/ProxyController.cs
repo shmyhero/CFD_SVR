@@ -68,7 +68,6 @@ namespace CFD_API.Controllers
 'password': '{1}',
 'phonePrimary': '0044 123445',
 'phonePrimaryIso2': 'CN',
-'salesRepGuid':'',
 'username': '{0}',
 'productType': 'CFD'
 }}";
