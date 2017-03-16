@@ -19,6 +19,8 @@ namespace CFD_COMMON.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int FollowingId { get; set; }
 
+        public DateTime? FollowAt { get; set; }
+
         public virtual User Following { get; set; }
     }
 }

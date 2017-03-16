@@ -1553,6 +1553,7 @@ namespace CFD_API.Controllers
             user.AyLiveUsername = form.username;
             user.AyLivePassword = form.password;
             user.AyLiveAccountGuid = guid;
+            user.AyLiveApplyAt = DateTime.UtcNow;
             db.SaveChanges();
 
             userInfo.Email = form.email;
@@ -1882,7 +1883,12 @@ namespace CFD_API.Controllers
 
             if (!any)
             {
-                db.UserFollows.Add(new UserFollow() {UserId = UserId, FollowingId = followingId});
+                db.UserFollows.Add(new UserFollow()
+                {
+                    UserId = UserId,
+                    FollowingId = followingId,
+                    FollowAt = DateTime.UtcNow
+                });
                 db.SaveChanges();
             }
 
@@ -1910,7 +1916,7 @@ namespace CFD_API.Controllers
             var result =
                 db.UserFollows.Include(o => o.Following)
                     .Where(o => o.UserId == UserId)
-                    .ToList()
+                    .OrderByDescending(o => o.FollowAt)
                     .Select(o => new UserDTO()
                     {
                         id = o.Following.Id,
@@ -1939,13 +1945,23 @@ namespace CFD_API.Controllers
 
                 foreach (var userDto in result)
                 {
-                    var data = datas.First(o => o.id == userDto.id);
-                    userDto.roi = data.roi;
-                    userDto.posCount = data.posCount;
-                    userDto.winRate = data.winRate;
+                    var data = datas.FirstOrDefault(o => o.id == userDto.id);
+
+                    if (data == null)//this guy has no data
+                    {
+                        userDto.roi = 0;
+                        userDto.posCount = 0;
+                        userDto.winRate = 0;
+                    }
+                    else
+                    {
+                        userDto.roi = data.roi;
+                        userDto.posCount = data.posCount;
+                        userDto.winRate = data.winRate;
+                    }
                 }
 
-                result = result.OrderByDescending(o => o.roi).ToList();
+                //result = result.OrderByDescending(o => o.roi).ToList();
             }
 
             return result;

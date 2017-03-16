@@ -341,6 +341,7 @@ namespace CFD_API.Controllers
             amsForm.mifidGuid = mifidGuid;
 
             amsForm.origin = CFDGlobal.AMS_ORIGIN;
+            amsForm.productType = "CFD";
 
             amsForm.confirmMifidOverride = form.confirmMifidOverride;
             amsForm.isPhoneVerified = true;

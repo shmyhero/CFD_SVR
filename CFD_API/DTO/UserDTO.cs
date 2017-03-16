@@ -351,7 +351,8 @@ namespace CFD_API.DTO
         public bool? confirmMifidOverride { get; set; }
         public bool? isPhoneVerified { get; set; }
 
-        public string origin;
+        public string origin { get; set; }
+        public string productType { get; set; }
 
         //public string addressCity { get; set; }
         /// <summary>
