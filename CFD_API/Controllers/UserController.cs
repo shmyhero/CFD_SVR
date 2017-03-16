@@ -1907,7 +1907,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<UserDTO> GetFollowingIds()
         {
-            return
+            var result =
                 db.UserFollows.Include(o => o.Following)
                     .Where(o => o.UserId == UserId)
                     .ToList()
@@ -1917,6 +1917,38 @@ namespace CFD_API.Controllers
                         nickname = o.Following.Nickname,
                         picUrl = o.Following.PicUrl
                     }).ToList();
+
+            if (result.Count > 0)
+            {
+                var userIds = result.Select(o => o.id).ToList();
+
+                var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
+                var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
+
+                var datas =
+                    db.NewPositionHistory_live.Where(
+                        o => userIds.Contains(o.UserId.Value) && o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
+                        .GroupBy(o => o.UserId).Select(o => new UserDTO()
+                        {
+                            id = o.Key.Value,
+
+                            posCount = o.Count(),
+                            winRate = (decimal) o.Count(p => p.PL > 0)/o.Count(),
+                            roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
+                        }).ToList();
+
+                foreach (var userDto in result)
+                {
+                    var data = datas.First(o => o.id == userDto.id);
+                    userDto.roi = data.roi;
+                    userDto.posCount = data.posCount;
+                    userDto.winRate = data.winRate;
+                }
+
+                result = result.OrderByDescending(o => o.roi).ToList();
+            }
+
+            return result;
         }
 
         [HttpGet]
