@@ -1939,10 +1939,20 @@ namespace CFD_API.Controllers
 
                 foreach (var userDto in result)
                 {
-                    var data = datas.First(o => o.id == userDto.id);
-                    userDto.roi = data.roi;
-                    userDto.posCount = data.posCount;
-                    userDto.winRate = data.winRate;
+                    var data = datas.FirstOrDefault(o => o.id == userDto.id);
+
+                    if (data == null)//this guy has no data
+                    {
+                        userDto.roi = 0;
+                        userDto.posCount = 0;
+                        userDto.winRate = 0;
+                    }
+                    else
+                    {
+                        userDto.roi = data.roi;
+                        userDto.posCount = data.posCount;
+                        userDto.winRate = data.winRate;
+                    }
                 }
 
                 result = result.OrderByDescending(o => o.roi).ToList();
