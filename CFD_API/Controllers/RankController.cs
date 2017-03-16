@@ -64,13 +64,16 @@ namespace CFD_API.Controllers
                 });
             }
 
-            //100 at max
-            userDTOs = userDTOs.Take(100).ToList();
+            ////100 at max
+            //userDTOs = userDTOs.Take(100).ToList();
+
+            //only return users with positive ROIs
+            var result = userDTOs.Take(1).Concat(userDTOs.Skip(1).Where(o => o.roi > 0).Take(99)).ToList();
 
             //populate nickname/picUrl
-            var userIds = userDTOs.Select(o => o.id).ToList();
+            var userIds = result.Select(o => o.id).ToList();
             var users = db.Users.Where(o => userIds.Contains(o.Id)).ToList();
-            foreach (var userDto in userDTOs)
+            foreach (var userDto in result)
             {
                 var user = users.First(o => o.Id == userDto.id);
                 userDto.nickname = user.Nickname;
@@ -88,7 +91,7 @@ namespace CFD_API.Controllers
             //    roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
             //}).OrderByDescending(o=>o.roi).ToList();
 
-            return userDTOs;
+            return result;
 
             //return null;
         } 
