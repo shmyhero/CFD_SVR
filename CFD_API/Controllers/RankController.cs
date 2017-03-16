@@ -64,11 +64,11 @@ namespace CFD_API.Controllers
                 });
             }
 
-            ////100 at max
-            //userDTOs = userDTOs.Take(100).ToList();
+            ////only return users with positive ROIs
+            //var result = userDTOs.Take(1).Concat(userDTOs.Skip(1).Where(o => o.roi > 0).Take(99)).ToList();
 
-            //only return users with positive ROIs
-            var result = userDTOs.Take(1).Concat(userDTOs.Skip(1).Where(o => o.roi > 0).Take(99)).ToList();
+            //for test only
+            var result = userDTOs;
 
             //populate nickname/picUrl
             var userIds = result.Select(o => o.id).ToList();
