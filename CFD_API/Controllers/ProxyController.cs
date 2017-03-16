@@ -39,7 +39,7 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("DemoAccount")]
-        public JObject DemoAccount(string username, string password)
+        public JToken DemoAccount(string username, string password)
         {
             var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "demo-account");
             httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
@@ -80,7 +80,15 @@ namespace CFD_API.Controllers
 
             var dtBegin = DateTime.UtcNow;
 
-            var webResponse = httpWebRequest.GetResponse();
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
             var responseStream = webResponse.GetResponseStream();
             var sr = new StreamReader(responseStream);
 
@@ -89,8 +97,8 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("AMS demo called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
-            var jObject = JObject.Parse(str);
-            return jObject;
+            var jToken = JToken.Parse(str);
+            return jToken;
         }
 
         [HttpPost]
