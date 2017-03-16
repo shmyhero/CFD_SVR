@@ -423,13 +423,13 @@ namespace CFD_API.DTO
         public bool? hasTradedMidLev { get; set; }
         public bool? hasTradedNoLev { get; set; }
         public int? highLevBalance { get; set; }
-        public int? highLevFrq { get; set; }
+        public int? highLevFrequency { get; set; }
         public int? highLevRisk { get; set; }
         public int? midLevBalance { get; set; }
-        public int? midLevFrq { get; set; }
+        public int? midLevFrequency { get; set; }
         public int? midLevRisk { get; set; }
         public int? noLevBalance { get; set; }
-        public int? noLevFrq { get; set; }
+        public int? noLevFrequency { get; set; }
         public int? noLevRisk { get; set; }
     }
 

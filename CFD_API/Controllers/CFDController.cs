@@ -444,13 +444,13 @@ namespace CFD_API.Controllers
             mifidForm.hasTradedMidLev = form.hasTradedMidLev;
             mifidForm.hasTradedNoLev = form.hasTradedNoLev;
             mifidForm.highLevBalance = form.highLevBalance;
-            mifidForm.highLevFrq = form.highLevFrq;
+            mifidForm.highLevFrequency = form.highLevFrq;
             mifidForm.highLevRisk = form.highLevRisk;
             mifidForm.midLevBalance = form.midLevBalance;
-            mifidForm.midLevFrq = form.midLevFrq;
+            mifidForm.midLevFrequency = form.midLevFrq;
             mifidForm.midLevRisk = form.midLevRisk;
             mifidForm.noLevBalance = form.noLevBalance;
-            mifidForm.noLevFrq = form.noLevFrq;
+            mifidForm.noLevFrequency = form.noLevFrq;
             mifidForm.noLevRisk = form.noLevRisk;
 
             mifidForm.investments = form.investments;
