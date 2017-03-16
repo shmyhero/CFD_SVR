@@ -535,4 +535,11 @@ namespace CFD_API.DTO
         public string rejectionType { get; set; }
 
     }
+
+    public class ProofOfAddressDTO
+    {
+        public string imageBase64 { get; set; }
+
+        public string text { get; set; }
+    }
 }

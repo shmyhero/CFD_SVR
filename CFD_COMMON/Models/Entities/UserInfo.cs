@@ -166,5 +166,8 @@ namespace CFD_COMMON.Models.Entities
 
         [StringLength(50)]
         public string AppropriatenessResolution { get; set; }
+
+        [Column(TypeName = "ntext")]
+        public string ProofOfAddress { get; set; }
     }
 }

@@ -1685,7 +1685,7 @@ namespace CFD_API.Controllers
             if(userInfo == null)
             {
                 CFDGlobal.LogInformation("ReferenceAccount: User has no personal info");
-                return new ResultDTO(false) { message = "该用户没有对用的身份信息" };
+                return new ResultDTO(false) { message = "该用户没有对应的身份信息" };
             }
 
             //LIVE account is Created or Pending
@@ -1962,6 +1962,25 @@ namespace CFD_API.Controllers
             db.TimeStampNonces.Add(new TimeStampNonce() { TimeStamp = timeStamp, Nonce = nonce, UserID = this.UserId, CreatedAt = DateTime.UtcNow, Expiration = SqlDateTime.MaxValue.Value });
             db.SaveChanges();
             return new TimeStampDTO() { timeStamp = timeStamp, nonce = nonce };
+        }
+
+        [HttpPost]
+        [Route("live/poa")]
+        [BasicAuth]
+        public ResultDTO UploadProofOfAddress(ProofOfAddressDTO form)
+        {
+            var user = GetUser();
+            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == user.Id);
+            if (userInfo == null)
+            {
+                CFDGlobal.LogInformation("upload proof of address: User has no personal info");
+                return new ResultDTO(false) { message = "该用户没有对应的身份信息" };
+            }
+
+            userInfo.ProofOfAddress = form.imageBase64;
+            db.SaveChanges();
+
+            return new ResultDTO(true);
         }
 
         /// <summary>
