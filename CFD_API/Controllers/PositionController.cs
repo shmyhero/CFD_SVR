@@ -1227,6 +1227,10 @@ namespace CFD_API.Controllers
                 }
             }
 
+            #region Rank先给出模拟的数据，等Rank的Job好了以后再修改
+            result.rank = 3;
+            #endregion
+
             return result;
         }
 

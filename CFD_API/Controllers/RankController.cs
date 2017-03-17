@@ -91,6 +91,21 @@ namespace CFD_API.Controllers
             //    roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
             //}).OrderByDescending(o=>o.roi).ToList();
 
+            #region Rank先给出模拟的数据，等Rank的Job好了以后再修改
+            //前三名分别给1，2，3
+            for(int count = 0; count < result.Count; count ++)
+            {
+                if (count < 3)
+                {
+                    result[count].rank = 5 - count; //最高5级
+                }
+                else
+                {
+                    break;
+                }
+            }
+            #endregion
+
             return result;
 
             //return null;
