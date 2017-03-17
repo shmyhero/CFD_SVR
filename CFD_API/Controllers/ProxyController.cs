@@ -8,6 +8,7 @@ using System.Web.Http;
 using CFD_COMMON;
 using Newtonsoft.Json.Linq;
 using CFD_API.DTO;
+using CFD_COMMON.Utils;
 using Newtonsoft.Json;
 
 namespace CFD_API.Controllers
@@ -72,7 +73,7 @@ namespace CFD_API.Controllers
 'productType': 'CFD'
 }}";
 
-            var s = string.Format(json, username, password);
+            var s = string.Format(json, username, Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(password, Encryption.SHARED_SECRET));
             sw.Write(s);
             sw.Flush();
             sw.Close();
