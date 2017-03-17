@@ -1060,7 +1060,7 @@ namespace CFD_API.Controllers
 
             #region fill-in all data points for client...
 
-            var beginDate = result.First().date;
+            var beginDate = DateTime.SpecifyKind(result.First().date, DateTimeKind.Utc);
             var endDate = DateTimes.GetChinaToday();
             var newResult = new List<PosChartDTO>();
             decimal cumulativePL = 0;
@@ -1105,8 +1105,8 @@ namespace CFD_API.Controllers
                     .Select(o => o as NewPositionHistoryBase)
                     .ToList();
 
-            if (dbList.Count == 0)
-                return new List<PosChartDTO>();
+            //if (dbList.Count == 0)
+            //    return new List<PosChartDTO>();
 
             var result = dbList.GroupBy(o => o.ClosedAt.Value.AddHours(8).Date).Select(o => new PosChartDTO
             {
