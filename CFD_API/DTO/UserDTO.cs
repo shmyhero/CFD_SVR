@@ -349,6 +349,8 @@ namespace CFD_API.DTO
     public class AMSLiveUserCreateFormDTO
     {
         public bool? confirmMifidOverride { get; set; }
+        public bool? confirmDSA { get; set; }
+        public bool? confirmTerms { get; set; }
         public bool? isPhoneVerified { get; set; }
 
         public string origin { get; set; }
