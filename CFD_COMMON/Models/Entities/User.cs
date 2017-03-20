@@ -89,6 +89,11 @@ namespace CFD_COMMON.Models.Entities
 
         public bool? IsOnLive { get; set; }
 
+        /// <summary>
+        /// Liver user rank
+        /// </summary>
+        public int? LiveRank { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

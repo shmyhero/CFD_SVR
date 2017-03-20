@@ -138,6 +138,11 @@ namespace CFD_JOBS
                 {
                     QuoteSnapshot.Run(true);
                 }
+
+                if (args.Contains("-Rank"))
+                {
+                    RankJob.Run(true);
+                }
                 return 0;
             }
             catch (Exception ex)

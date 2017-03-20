@@ -91,6 +91,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
@@ -110,8 +111,11 @@
     <Compile Include="Ayondo\AyondoFixTradeWorker.cs" />
     <Compile Include="Ayondo\AyondoOldProdCleanup.cs" />
     <Compile Include="Ayondo\AyondoTradeHistoryImport.cs" />
-    <Compile Include="Ayondo\AyondoTransferHistoryImport.cs" />
+    <Compile Include="Ayondo\AyondoTransferHistoryImport.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="QuoteSnapshot.cs" />
+    <Compile Include="RankJob.cs" />
     <Compile Include="RemittanceReport.cs" />
     <Compile Include="Competition2.cs" />
     <Compile Include="StockAlert.cs" />
