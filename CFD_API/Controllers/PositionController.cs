@@ -1175,7 +1175,8 @@ namespace CFD_API.Controllers
                 winRate = isEmpty ? 0 : (decimal)positions.Count(o=>o.PL>0)/positions.Count,
                 followerCount = followingCount,
                 isFollowing= isFollowing,
-             };
+                rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0
+            };
 
             if (IsLiveUrl)
             {
@@ -1226,10 +1227,6 @@ namespace CFD_API.Controllers
                     });
                 }
             }
-
-            #region Rank先给出模拟的数据，等Rank的Job好了以后再修改
-            result.rank = 3;
-            #endregion
 
             return result;
         }

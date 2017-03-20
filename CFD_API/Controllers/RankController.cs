@@ -78,6 +78,7 @@ namespace CFD_API.Controllers
                 var user = users.First(o => o.Id == userDto.id);
                 userDto.nickname = user.Nickname;
                 userDto.picUrl = user.PicUrl;
+                userDto.rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0;
             }
 
             //var userDTOs = positions.GroupBy(o => o.UserId).Select(o => new UserDTO()
@@ -90,21 +91,6 @@ namespace CFD_API.Controllers
             //    winRate = o.Count(p => p.PL > 0)/o.Count(),
             //    roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
             //}).OrderByDescending(o=>o.roi).ToList();
-
-            #region Rank先给出模拟的数据，等Rank的Job好了以后再修改
-            //前三名分别给1，2，3
-            for(int count = 0; count < result.Count; count ++)
-            {
-                if (count < 3)
-                {
-                    result[count].rank = 5 - count; //最高5级
-                }
-                else
-                {
-                    break;
-                }
-            }
-            #endregion
 
             return result;
 
