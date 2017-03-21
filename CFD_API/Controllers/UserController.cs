@@ -1533,6 +1533,11 @@ namespace CFD_API.Controllers
                 return new ResultDTO() {success = false, message = "MifidTestFailed"};
             }
 
+            #region 上传身份证照和地址证明
+            AMSLiveAccountDocument(user.AyLiveAccountGuid, userInfo.IdFrontImg, "image/jpeg", "Address");
+            AMSLiveAccountDocument(user.AyLiveAccountGuid, userInfo.ProofOfAddress, "image/jpeg", "Identity");
+            #endregion
+
             var json = AMSLiveAccountComplete(user.AyLiveAccountGuid, mifidGuid, form, user, userInfo);
 
             if (json is JArray)

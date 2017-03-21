@@ -47,7 +47,7 @@ namespace CFD_API.DTO
         public decimal winRate { get; set; }
 
         private int _rank = 1;
-        public int rank  { get { return _rank; } set{ _rank = value; } }
+        public int rank { get { return _rank; } set { _rank = value; } }
     }
 
     public class MyInfoDTO
@@ -96,7 +96,7 @@ namespace CFD_API.DTO
         public string bankCardNumber { get; set; }
         public string bankName { get; set; }
         public string bankCardStatus { get; set; }
-        public string bankCardRejectReason { get; set; } 
+        public string bankCardRejectReason { get; set; }
         public string bankIcon { get; set; }
         public string branch { get; set; }
         public string province { get; set; }
@@ -135,7 +135,7 @@ namespace CFD_API.DTO
         /// </summary>
         public string comment { get; set; }
     }
-    
+
     public class PLReportDTO
     {
         //public decimal indexInvest { get; set; }
@@ -313,7 +313,7 @@ namespace CFD_API.DTO
         public string addr { get; set; }
         public string issueAuth { get; set; }
         public string validPeriod { get; set; }
-        
+
         public int? annualIncome { get; set; }
         public int? netWorth { get; set; }
         public int? investPct { get; set; }
@@ -416,6 +416,35 @@ namespace CFD_API.DTO
         //public int NetWorth { get; set; }
         //public int NumberOfMarginTrades { get; set; }
         //public string PhonePrimaryCountryCode { get; set; }
+    }
+
+    public class AMSLiveUserDocumentFormDTO
+    {
+        public string content { get; set; }
+        /// <summary>
+        /// "image/gif"
+        /// "image/jpeg"
+        /// "image/pjpeg"
+        /// "image/png"
+        /// </summary>
+        public string contentType { get; set; }
+        /// <summary>
+        /// "BankStatement"
+        /// "ElectricityBill"
+        /// "GasBill"
+        /// "NationalId"
+        /// "OldNationalId"
+        /// "Passport"
+        /// "WaterBill"
+        /// "Other"
+        /// </summary>
+        public string documentType { get; set; }
+        public string filename { get; set; }
+        /// <summary>
+        /// "Address"
+        /// "Identity"
+        /// </summary>
+        public string kycType { get; set; } 
     }
 
     public class AMSLiveUserMifidFormDTO

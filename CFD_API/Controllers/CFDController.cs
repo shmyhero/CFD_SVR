@@ -378,6 +378,54 @@ namespace CFD_API.Controllers
             return result;
         }
 
+        protected static JToken AMSLiveAccountDocument(string accountGuid,string content, string contentType, string kycType)
+        {
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account/" + accountGuid + "/document");
+            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+
+            var amsForm = new AMSLiveUserDocumentFormDTO();
+            amsForm.content = content;
+            amsForm.contentType = contentType;
+            amsForm.kycType = kycType;
+            amsForm.documentType = "NationalId"; //目前前端没有相关选择（照片类型是身份证照、护照或账单）
+            amsForm.filename = "upload.jpeg"; //先hardcode
+            amsForm.kycType = kycType;
+
+            var s = JsonConvert.SerializeObject(amsForm, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }); //string.Format(json, username, password);
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS live live-account/document called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var result = JToken.Parse(str);
+
+            return result;
+        }
+
         protected static JToken AMSLiveAccountInitiate()
         {
             var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account");

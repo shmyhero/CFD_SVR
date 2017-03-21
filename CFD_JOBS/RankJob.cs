@@ -48,7 +48,7 @@ namespace CFD_JOBS
                             select userid, count(closedat) as TradeCount, sum(investusd * leverage) as TradeAmount, sum(PL) as pl, sum(investusd) as invest, (SUM(PL) / SUM(InvestUSD)) as Rate from cfd.dbo.NewPositionHistory_live
                             group by userid
                             having (max(createtime) > dateadd(DAY, -14, getdate()) or max(closedat) > dateadd(DAY, -14, getdate()))
-                            and  sum(DATEDIFF(hh,createtime, closedat)) > 5 * 24 and (SUM(PL) / SUM(InvestUSD)) > 0.01
+                            and  sum(DATEDIFF(hh,createtime, closedat)) > 5 * 24 and (SUM(PL) / SUM(InvestUSD)) > 0.03
                             order by userid desc
                              */
 
@@ -57,7 +57,7 @@ namespace CFD_JOBS
                             using (SqlCommand cmd = new SqlCommand())
                             {
                                 cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["CFDEntities"].ConnectionString);
-                                cmd.CommandText = "select userid, count(closedat) as TradeCount, sum(investusd * leverage) as TradeAmount, sum(PL) as pl, sum(investusd) as invest, (SUM(PL) / SUM(InvestUSD)) as Rate from cfd.dbo.NewPositionHistory_live group by userid having(max(createtime) > dateadd(DAY, -14, getdate()) or max(closedat) > dateadd(DAY, -14, getdate())) and sum(DATEDIFF(hh, createtime, closedat)) > 5 * 24 and(SUM(PL) / SUM(InvestUSD)) > 0.01  order by userid desc";
+                                cmd.CommandText = "select userid, count(closedat) as TradeCount, sum(investusd * leverage) as TradeAmount, sum(PL) as pl, sum(investusd) as invest, (SUM(PL) / SUM(InvestUSD)) as Rate from cfd.dbo.NewPositionHistory_live group by userid having(max(createtime) > dateadd(DAY, -14, getdate()) or max(closedat) > dateadd(DAY, -14, getdate())) and sum(DATEDIFF(hh, createtime, closedat)) > 5 * 24 and(SUM(PL) / SUM(InvestUSD)) > 0.03  order by userid desc";
                                 try
                                 {
                                     cmd.Connection.Open();
@@ -129,23 +129,23 @@ namespace CFD_JOBS
 
         private static int GetRank(int tradeCount, decimal tradeAmount, decimal rate)
         {
-            if (tradeCount >= 30 && tradeAmount >= 120000  && rate >= 0.07M)
+            if (tradeCount >= 30 && tradeAmount >= 500000  && rate >= 0.15M)
             {
                 return (int)RankEnum.我是王者;
             }
-            else if (tradeCount >= 15 && tradeAmount >= 90000 && rate >= 0.05M)
+            else if (tradeCount >= 15 && tradeAmount >= 300000 && rate >= 0.12M)
             {
                 return (int)RankEnum.卓尔不群;
             }
-            else if (tradeCount >= 10 && tradeAmount >= 60000 && rate >= 0.03M)
+            else if (tradeCount >= 10 && tradeAmount >= 200000 && rate >= 0.09M)
             {
                 return (int)RankEnum.超越平凡;
             }
-            else if (tradeCount >= 5 && tradeAmount >= 30000 && rate >= 0.015M)
+            else if (tradeCount >= 5 && tradeAmount >= 100000 && rate >= 0.06M)
             {
                 return (int)RankEnum.点亮勋章;
             }
-            else if (tradeCount >= 2 && tradeAmount >= 10000 && rate >= 0.01M)
+            else if (tradeCount >= 2 && tradeAmount >= 50000 && rate >= 0.03M)
             {
                 return (int)RankEnum.财富起航;
             }
