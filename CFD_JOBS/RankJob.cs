@@ -108,6 +108,7 @@ namespace CFD_JOBS
                                             {
                                                 int rank = GetRank(rankedUser.Item2, rankedUser.Item3, rankedUser.Item6);
                                                 user.LiveRank = rank;
+                                                CFDGlobal.LogLine(string.Format("UserID: {0}, UserName: {1}, Rank: {2}",user.Id,user.Nickname, rank));
                                             }
                                         }
                                     );
