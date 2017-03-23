@@ -216,6 +216,16 @@ namespace CFD_API.DTO
         /// 模拟盘注册奖励（20元）
         /// </summary>
         public decimal demoRegister { get; set; }
+
+        /// <summary>
+        /// 实盘注册奖励(30)
+        /// </summary>
+        public decimal liveRegister { get; set; }
+
+        /// <summary>
+        /// 好友推荐奖励
+        /// </summary>
+        public decimal referralReward { get; set; }
     }
 
     public class TotalRewardDTO

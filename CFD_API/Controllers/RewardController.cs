@@ -187,7 +187,15 @@ namespace CFD_API.Controllers
             var reward = db.DemoRegisterRewards.FirstOrDefault(o => o.UserId == UserId);
             decimal demoRegisterReward = reward == null ? 0 : reward.Amount;
 
-            return new RewardDTO() { demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward }; //totalDailySignReward + totalDemoTransactionReward + demoRegisterReward;
+            //实盘账户注册交易金
+            var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == UserId);
+            decimal liveRegisterReward = liveReward == null ? 0 : liveReward.Amount;
+
+            //推荐人奖励
+            var referReward = db.ReferRewards.FirstOrDefault(o => o.RefereeID == UserId);
+            decimal referRewardAmount = referReward == null ? 0 : referReward.Amount;
+
+            return new RewardDTO() { referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward };
         }
 
         [HttpGet]
@@ -200,7 +208,7 @@ namespace CFD_API.Controllers
             //所有已经被转的交易金
             var transfer = db.RewardTransfers.Where(o => o.UserID == UserId).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
 
-            return new TotalRewardDTO() { total = reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction, paid = transfer };
+            return new TotalRewardDTO() { total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction, paid = transfer };
         }
 
         private static object transferLock = new object();

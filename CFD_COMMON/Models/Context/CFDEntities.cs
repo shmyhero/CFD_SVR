@@ -34,6 +34,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Headline> Headlines { get; set; }
         public virtual DbSet<LikeHistory> LikeHistories { get; set; }
+        public virtual DbSet<LiveRegisterReward> LiveRegisterRewards { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<Misc> Miscs { get; set; }
         public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
@@ -43,6 +44,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
         public virtual DbSet<QuoteSnapshot> QuoteSnapshots { get; set; }
         public virtual DbSet<RewardTransfer> RewardTransfers { get; set; }
+        public virtual DbSet<ReferReward> ReferRewards { get; set; }
         public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
         //public virtual DbSet<TransferHistory> TransferHistorys { get; set; }
         public virtual DbSet<UserCard> UserCards { get; set; }

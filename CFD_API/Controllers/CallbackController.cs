@@ -16,6 +16,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
+using CFD_COMMON.Utils;
 
 namespace CFD_API.Controllers
 {
@@ -48,7 +49,22 @@ namespace CFD_API.Controllers
                     if (user != null)
                     {
                         user.AyLiveAccountStatus = form.status;
+                        
+                        #region 实盘注册成功后发送短信提醒用户,并赠送30元交易金
+                        var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == user.Id);
+                        if(form.status.ToLower() == "pendinglogin" && liveReward == null)
+                        {
+                            YunPianMessenger.SendSms("【盈交易】恭喜完成开户，30元交易金已打入您的账户，完成首笔入金就可以交易啦！", user.Phone);
+                            db.LiveRegisterRewards.Add(new CFD_COMMON.Models.Entities.LiveRegisterReward() {
+                                UserId = user.Id,
+                                Amount = 30,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                        }
+                        #endregion
+
                         db.SaveChanges();
+
                     }
                 }
             }
