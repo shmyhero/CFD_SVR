@@ -155,6 +155,7 @@
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Feedback.cs" />
     <Compile Include="Models\Entities\LikeHistory.cs" />
+    <Compile Include="Models\Entities\LiveRank.cs" />
     <Compile Include="Models\Entities\LiveRegisterReward.cs" />
     <Compile Include="Models\Entities\Message.cs" />
     <Compile Include="Models\Entities\Message_Live.cs" />

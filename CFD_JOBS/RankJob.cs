@@ -104,11 +104,15 @@ namespace CFD_JOBS
                                         user =>
                                         {
                                             var rankedUser = rankedUsers.FirstOrDefault(ru => ru.Item1 == user.Id);
-                                            if (rankedUser != null)
+                                            if (rankedUser != null) 
                                             {
                                                 int rank = GetRank(rankedUser.Item2, rankedUser.Item3, rankedUser.Item6);
                                                 user.LiveRank = rank;
                                                 CFDGlobal.LogLine(string.Format("UserID: {0}, UserName: {1}, Rank: {2}",user.Id,user.Nickname, rank));
+                                            }
+                                            else //如果没有进入RankedUser，就置为0。 
+                                            {
+                                                user.LiveRank = 0;
                                             }
                                         }
                                     );

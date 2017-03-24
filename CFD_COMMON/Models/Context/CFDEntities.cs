@@ -34,6 +34,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Headline> Headlines { get; set; }
         public virtual DbSet<LikeHistory> LikeHistories { get; set; }
+        public virtual DbSet<LiveRank> LiveRanks { get; set; }
         public virtual DbSet<LiveRegisterReward> LiveRegisterRewards { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<Misc> Miscs { get; set; }

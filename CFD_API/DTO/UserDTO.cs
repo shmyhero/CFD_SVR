@@ -67,8 +67,9 @@ namespace CFD_API.DTO
         public decimal avgPl { get; set; }
         public decimal winRate { get; set; }
         public List<CardDTO> cards { get; set; }
-        private int _rank = 1;
+        private int _rank = 0;
         public int rank { get { return _rank; } set { _rank = value; } }
+        public string rankDescription { get; set; }
     }
 
     public class NewDepositDTO
