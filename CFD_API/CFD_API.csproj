@@ -275,6 +275,7 @@
     <Compile Include="Controllers\ProxyController.cs" />
     <Compile Include="Controllers\QuoteController.cs" />
     <Compile Include="Controllers\RankController.cs" />
+    <Compile Include="Controllers\ReferController.cs" />
     <Compile Include="Controllers\RewardController.cs" />
     <Compile Include="Controllers\SecurityController.cs" />
     <Compile Include="Controllers\UserController.cs" />

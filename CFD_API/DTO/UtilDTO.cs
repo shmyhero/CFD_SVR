@@ -182,4 +182,11 @@ namespace CFD_API.DTO
 
         public string ShortName { get; set; }
     }
+
+    public class ReferDTO
+    {
+        public string picUrl { get; set; }
+        public string nickName { get; set; }
+        public decimal amount { get; set; }
+    }
 }
