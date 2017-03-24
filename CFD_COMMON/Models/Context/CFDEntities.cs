@@ -46,6 +46,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<QuoteSnapshot> QuoteSnapshots { get; set; }
         public virtual DbSet<RewardTransfer> RewardTransfers { get; set; }
         public virtual DbSet<ReferReward> ReferRewards { get; set; }
+        public virtual DbSet<ReferHistory> ReferHistorys { get; set; }
         public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
         //public virtual DbSet<TransferHistory> TransferHistorys { get; set; }
         public virtual DbSet<UserCard> UserCards { get; set; }

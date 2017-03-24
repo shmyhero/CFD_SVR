@@ -168,6 +168,7 @@
     <Compile Include="Models\Entities\PriceDownInterval.cs" />
     <Compile Include="Models\Entities\QuoteHistory.cs" />
     <Compile Include="Models\Entities\QuoteSnapshot.cs" />
+    <Compile Include="Models\Entities\ReferHistory.cs" />
     <Compile Include="Models\Entities\ReferReward.cs" />
     <Compile Include="Models\Entities\RewardTransfer.cs" />
     <Compile Include="Models\Entities\TimeStampNonce.cs" />

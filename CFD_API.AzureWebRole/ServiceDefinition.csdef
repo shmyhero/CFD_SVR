@@ -19,19 +19,18 @@
       <Setting name="YunPianTemplateId" />
       <Setting name="AyondoTradeSvcUrl" />
       <Setting name="AyondoTradeSvcUrl_Live" />
+      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" />
     </ConfigurationSettings>
     <Endpoints>
       <InputEndpoint name="Endpoint1" protocol="http" port="80" />
-      <InputEndpoint name="HttpsIn" protocol="https" port="443" 
-              certificate="CFD_API_CERT" />
+      <InputEndpoint name="HttpsIn" protocol="https" port="443" certificate="CFD_API_CERT" />
     </Endpoints>
     <Imports>
       <Import moduleName="RemoteAccess" />
       <Import moduleName="RemoteForwarder" />
     </Imports>
-  
-    <Certificates>  
-      <Certificate name="CFD_API_CERT" storeLocation="LocalMachine" storeName="My" />  
-    </Certificates>  
+    <Certificates>
+      <Certificate name="CFD_API_CERT" storeLocation="LocalMachine" storeName="My" />
+    </Certificates>
   </WebRole>
 </ServiceDefinition>

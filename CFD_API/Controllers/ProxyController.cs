@@ -147,5 +147,47 @@ namespace CFD_API.Controllers
 
             return json;
         }
+
+        [HttpPost]
+        [Route("document/{accountGuid}")]
+        public JToken Document(string accountGuid, AMSLiveUserDocumentFormDTO form)
+        {
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account/" + accountGuid + "/document");
+            httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json; charset=UTF-8";
+            httpWebRequest.Proxy = null;
+            var requestStream = httpWebRequest.GetRequestStream();
+            var sw = new StreamWriter(requestStream);
+
+            var s = JsonConvert.SerializeObject(form, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+            sw.Write(s);
+            sw.Flush();
+            sw.Close();
+
+            var dtBegin = DateTime.UtcNow;
+
+            WebResponse webResponse;
+            try
+            {
+                webResponse = httpWebRequest.GetResponse();
+            }
+            catch (WebException e)
+            {
+                webResponse = e.Response;
+            }
+
+            var responseStream = webResponse.GetResponseStream();
+            var sr = new StreamReader(responseStream);
+
+            var str = sr.ReadToEnd();
+            var ts = DateTime.UtcNow - dtBegin;
+            CFDGlobal.LogInformation("AMS live live-account/document called. Time: " + ts.TotalMilliseconds + "ms Url: " +
+                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
+
+            var result = JToken.Parse(str);
+
+            return result;
+        }
     }
 }

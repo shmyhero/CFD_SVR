@@ -114,6 +114,15 @@ namespace CFD_API.Controllers
                     result.isNewUser = true;
                     result.userId = user.Id;
                     result.token = user.Token;
+
+                    #region 第一次用手机号注册，如果该手机号被推荐过，则给该用户30元奖励金
+                    var referHistory = db.ReferHistorys.FirstOrDefault(o => o.ApplicantNumber == form.phone);
+                    if(referHistory != null)
+                    {
+                        db.ReferRewards.Add(new ReferReward() { UserID = user.Id, Amount = 30, CreatedAt = DateTime.UtcNow });
+                        db.SaveChanges();
+                    }
+                    #endregion
                 }
                 else //phone exists
                 {

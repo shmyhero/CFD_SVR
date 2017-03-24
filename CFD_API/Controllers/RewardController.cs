@@ -192,7 +192,7 @@ namespace CFD_API.Controllers
             decimal liveRegisterReward = liveReward == null ? 0 : liveReward.Amount;
 
             //推荐人奖励
-            var referReward = db.ReferRewards.FirstOrDefault(o => o.RefereeID == UserId);
+            var referReward = db.ReferRewards.FirstOrDefault(o => o.UserID == UserId);
             decimal referRewardAmount = referReward == null ? 0 : referReward.Amount;
 
             return new RewardDTO() { referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward };
