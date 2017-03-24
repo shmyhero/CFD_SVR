@@ -22,9 +22,9 @@ namespace CFD_API.Controllers
         {
         }
         [HttpGet]
-        [Route("add/{phone}")]
+        [Route("add/{userId}/{phone}")]
         [BasicAuth]
-        public ResultDTO Add(string phone)
+        public ResultDTO Add(int userId, string phone)
         {
             if(string.IsNullOrEmpty(phone))
             {
@@ -36,22 +36,21 @@ namespace CFD_API.Controllers
                 return new ResultDTO() { success = false, message = "该手机号已被推荐过" };
             }
 
-            db.ReferHistorys.Add(new ReferHistory() { RefereeID = UserId, ApplicantNumber = phone, CreatedAt = DateTime.UtcNow });
+            db.ReferHistorys.Add(new ReferHistory() { RefereeID = userId, ApplicantNumber = phone, CreatedAt = DateTime.UtcNow });
             db.SaveChanges();
 
             return new ResultDTO() { success = true };
         }
 
         [HttpGet]
-        [Route("")]
-        [BasicAuth]
-        public List<ReferDTO> GetAll()
+        [Route("{userId}")]
+        public List<ReferDTO> GetAll(int userId)
         {
             var query = from rh in db.ReferHistorys
                         join u in db.Users on rh.RefereeID equals u.Id
                         join u2 in db.Users on rh.ApplicantNumber equals u2.Phone
-                        where u.AyLiveAccountId.HasValue && rh.RefereeID == UserId
-                        select new ReferDTO () { picUrl = u2.PicUrl, nickName = u2.Nickname, amount=30 };
+                        where u.AyLiveAccountId.HasValue && rh.RefereeID == userId
+                        select new ReferDTO () { picUrl = string.IsNullOrEmpty(u2.PicUrl)? string.Empty : u2.PicUrl, nickName = u2.Nickname, amount=30 };
 
             var result = query.ToList();
 
