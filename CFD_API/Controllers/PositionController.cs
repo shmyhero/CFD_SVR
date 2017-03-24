@@ -1165,7 +1165,7 @@ namespace CFD_API.Controllers
 
             var isFollowing = db.UserFollows.Any(o => o.UserId == UserId && o.FollowingId == userId);
             var rank = db.LiveRanks.FirstOrDefault(o => o.Rank == user.LiveRank);
-            string rankDescription = rank == null? string.Empty : rank.Description;
+            string rankDescription = rank == null? "默默无闻" : rank.Description;
             var result = new UserDetailDTO
             {
                 id=userId,
