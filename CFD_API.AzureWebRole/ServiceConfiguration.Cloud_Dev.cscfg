@@ -8,7 +8,7 @@
       <!--<Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />-->
       <Setting name="CFDEntities" value="data source=10.0.0.12;initial catalog=CFD_Dev;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
       <Setting name="redisConnectionString" value="Password88__@10.0.0.17:6399" />
-      <Setting name="redisConnectionString_Live" value="Password88__@10.0.0.24:6379" />
+      <Setting name="redisConnectionString_Live" value="Password88__@10.0.0.18:6379" />
       <Setting name="YunPianApiKey" value="faf57dcccf1bff886c1ee4626bf1db28" />
       <Setting name="YunPianTemplateId" value="1392151" />
       <!--<Setting name="AyondoTradeSvcUrl" value="net.tcp://10.0.0.15:10100/ayondotrade" />-->

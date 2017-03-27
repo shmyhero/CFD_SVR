@@ -10,7 +10,7 @@
       <!--<Setting name="redisConnectionString" value="Password88__@10.0.0.21:6399" />-->
       <Setting name="redisConnectionString" value="Password88__@cfd-redis1.chinacloudapp.cn:6399" />
       <!--<Setting name="redisConnectionString_Live" value="Password88__@10.0.0.24:6379" />-->
-      <Setting name="redisConnectionString_Live" value="Password88__@cfd-redis3.chinacloudapp.cn:6379" />
+      <Setting name="redisConnectionString_Live" value="Password88__@cfd-haproxy1.chinacloudapp.cn:6379" />
       <Setting name="YunPianApiKey" value="faf57dcccf1bff886c1ee4626bf1db28" />
       <Setting name="YunPianTemplateId" value="1392151" />
       <!--<Setting name="AyondoTradeSvcUrl" value="net.tcp://10.0.0.15:10100/ayondotrade" />-->
