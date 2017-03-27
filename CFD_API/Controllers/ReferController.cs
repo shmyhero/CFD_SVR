@@ -48,7 +48,7 @@ namespace CFD_API.Controllers
             var query = from rh in db.ReferHistorys
                         join u in db.Users on rh.RefereeID equals u.Id
                         join u2 in db.Users on rh.ApplicantNumber equals u2.Phone
-                        where u.AyLiveAccountId.HasValue && rh.RefereeID == userId
+                        where u.AyLiveAccountId.HasValue && rh.RefereeID == userId && rh.IsRewarded != true
                         select new ReferDTO () { picUrl = string.IsNullOrEmpty(u2.PicUrl)? string.Empty : u2.PicUrl, nickName = u2.Nickname, amount=30 };
 
             var result = query.ToList();

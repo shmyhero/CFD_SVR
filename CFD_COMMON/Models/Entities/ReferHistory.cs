@@ -22,6 +22,13 @@ namespace CFD_COMMON.Models.Entities
 
         public string ApplicantNumber { get; set; }
 
+        /// <summary>
+        /// 是否已经被奖励过。 被推荐人入金之后奖励推荐人。
+        /// </summary>
+        public bool? IsRewarded { get; set; }
+
         public DateTime CreatedAt { get; set; }
+
+        public DateTime? RewardedAt { get; set; }
     }
 }
