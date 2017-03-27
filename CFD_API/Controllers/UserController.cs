@@ -2093,6 +2093,7 @@ namespace CFD_API.Controllers
                 case "PendingDocuments":
                 case "PendingIdentityConflict":
                 case "PendingReview":
+                case "PendingRiskAssessment":
                 case "PendingUnlock":
                 case "PendingUnlockRetry":
                     return UserLiveStatus.Pending;
