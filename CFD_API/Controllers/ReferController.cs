@@ -23,7 +23,6 @@ namespace CFD_API.Controllers
         }
         [HttpGet]
         [Route("add/{userId}/{phone}")]
-        [BasicAuth]
         public ResultDTO Add(int userId, string phone)
         {
             if(string.IsNullOrEmpty(phone))
