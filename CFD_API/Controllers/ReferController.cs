@@ -22,8 +22,8 @@ namespace CFD_API.Controllers
         {
         }
         [HttpGet]
-        [Route("add/{userId}/{phone}")]
-        public ResultDTO Add(int userId, string phone)
+        [Route("add/{userId}/{phone}/{verifyCode}")]
+        public ResultDTO Add(int userId, string phone, string verifyCode)
         {
             if(string.IsNullOrEmpty(phone))
             {
@@ -32,7 +32,14 @@ namespace CFD_API.Controllers
 
             if(db.ReferHistorys.Any(o=>o.ApplicantNumber == phone))
             { 
-                return new ResultDTO() { success = false, message = "该手机号已被推荐过" };
+                return new ResultDTO() { success = false, message = "该手机号已被邀请过哟！" };
+            }
+
+            var dtValidSince = DateTime.UtcNow.AddHours(-1);
+            var verifyCodes = db.VerifyCodes.Where(o => o.Phone == phone && o.Code == verifyCode && o.SentAt > dtValidSince);
+            if (string.IsNullOrEmpty(verifyCode) || !verifyCodes.Any())
+            {
+                return new ResultDTO() { success = false, message = "输入的验证码不正确" };
             }
 
             db.ReferHistorys.Add(new ReferHistory() { RefereeID = userId, ApplicantNumber = phone, CreatedAt = DateTime.UtcNow });
@@ -48,7 +55,7 @@ namespace CFD_API.Controllers
             var query = from rh in db.ReferHistorys
                         join u in db.Users on rh.RefereeID equals u.Id
                         join u2 in db.Users on rh.ApplicantNumber equals u2.Phone
-                        where u.AyLiveAccountId.HasValue && rh.RefereeID == userId && rh.IsRewarded != true
+                        where u.AyLiveAccountId.HasValue && rh.RefereeID == userId && rh.IsRewarded == true
                         select new ReferDTO () { picUrl = string.IsNullOrEmpty(u2.PicUrl)? string.Empty : u2.PicUrl, nickName = u2.Nickname, amount=30 };
 
             var result = query.ToList();
