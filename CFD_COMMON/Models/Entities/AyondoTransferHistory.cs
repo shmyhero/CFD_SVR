@@ -62,6 +62,9 @@ namespace CFD_COMMON.Models.Entities
         public string AssetClass { get; set; }
 
         public long? PositionId { get; set; }
+
+        [StringLength(50)]
+        public string TransferId { get; set; }
     }
 
     [Table("AyondoTransferHistory")]

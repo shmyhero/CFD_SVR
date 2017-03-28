@@ -15,6 +15,7 @@ using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using System.Data.SqlTypes;
+using System.Text;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -24,7 +25,7 @@ namespace CFD_JOBS.Ayondo
 
         public TimedWebClient()
         {
-            this.Timeout = 60*60*1000;
+            this.Timeout = 10*60*1000;
         }
 
         protected override WebRequest GetWebRequest(Uri address)
@@ -40,7 +41,7 @@ namespace CFD_JOBS.Ayondo
         private static readonly TimeSpan Interval = TimeSpan.FromMinutes(10);
         private static readonly TimeSpan HistoryInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan HistoryIdentifier = TimeSpan.FromHours(2);
-        private static readonly TimeSpan MaxDuration = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan MaxDuration = TimeSpan.FromMinutes(60*24);
         private static DateTime? _lastEndTime = null;
         private static readonly IMapper Mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -68,7 +69,7 @@ namespace CFD_JOBS.Ayondo
 
                         if (lastDbRecord == null || lastDbRecord.Timestamp == null) //db is empty
                         {
-                            dtStart = dtNow.AddDays(-30);
+                            dtStart = dtNow.AddDays(-70);
                             dtEnd = dtStart + MaxDuration;
                         }
                         else //last record in db is found
@@ -91,20 +92,20 @@ namespace CFD_JOBS.Ayondo
                     var tsStart = dtStart.ToUnixTimeMs();
                     var tsEnd = dtEnd.ToUnixTimeMs();
 
-                    var webClient = new TimedWebClient();
-
                     CFDGlobal.LogLine("Fetching data " + dtStart + " ~ " + dtEnd);
 
                     var url = CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost" + (isLive ? "_Live" : ""))
-                              + (isLive ? "live" : "demo") + "/reports/tradehero/cn/transferhistory?start="
-                              + tsStart + "&end=" + tsEnd;
+                        + (isLive ? "live" : "demo") + "/reports/tradehero/cn/transferhistory?start="
+                        + tsStart + "&end=" + tsEnd;
                     CFDGlobal.LogLine("url: " + url);
 
                     var dtDownloadStart = DateTime.UtcNow;
-                    var downloadString = webClient.DownloadString(
-                        CFDGlobal.GetConfigurationSetting("ayondoTradeHistoryHost"+(isLive?"_Live":"")) 
-                        + (isLive?"live":"demo") + "/reports/tradehero/cn/transferhistory?start="
-                        + tsStart + "&end=" + tsEnd);
+                    string downloadString;
+                    using (var webClient = new TimedWebClient())
+                    {
+                        webClient.Encoding=Encoding.GetEncoding("iso-8859-1");
+                        downloadString = webClient.DownloadString(url);
+                    }
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
 
@@ -150,11 +151,13 @@ namespace CFD_JOBS.Ayondo
                                     CultureInfo.CurrentCulture,
                                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
                                 var whiteLabel = arr[8];
-                                var productName = arr[9];
-                                var baseCurrency = arr[10];
-                                var quoteCurrency = arr[11];
-                                var units = decimal.Parse(arr[12], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
-                                var instrumentType = arr[13];
+                                var productName = arr[9] == "" ? null : arr[9];
+                                var baseCurrency = arr[10] == "" ? null : arr[10];
+                                var quoteCurrency = arr[11] == "" ? null : arr[11];
+                                var units = arr[12] == ""
+                                    ? (decimal?) null
+                                    : decimal.Parse(arr[12], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
+                                var instrumentType = arr[13] == "" ? null : arr[13];
                                 var isAyondo = bool.Parse(arr[14]);
                                 var clientClassification = arr[15];
                                 var username = arr[16];
@@ -163,8 +166,9 @@ namespace CFD_JOBS.Ayondo
                                     : decimal.Parse(arr[17], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
                                 var transactionId = Convert.ToInt64(arr[18]);
                                 var tradingAccountId = Convert.ToInt64(arr[19]);
-                                var assetClass = arr[20];
-                                var posId = Convert.ToInt64(arr[21]);
+                                var assetClass = arr[20] == "n/a" ? null : arr[20];
+                                var posId = arr[21] == "n/a" ? (long?)null : Convert.ToInt64(arr[21]);
+                                var transferId = arr[25];
 
                                 var tradeHistory = new AyondoTransferHistoryBase()
                                 {
@@ -190,6 +194,7 @@ namespace CFD_JOBS.Ayondo
                                     TradingAccountId = tradingAccountId,
                                     AssetClass = assetClass,
                                     PositionId = posId,
+                                    TransferId = transferId,
                                 };
 
                                 //if (tradeHistory.TradeTime <= dbMaxCreateTime)
