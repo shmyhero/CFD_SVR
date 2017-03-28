@@ -1866,23 +1866,59 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<TransferDTO> GetTransferHistory()
         {
-            //var transfers = db.TransferHistorys.Where(t => t.UserID == UserId).ToList();
+            var user = GetUser();
 
-            //List<TransferDTO> transferHistory = new List<TransferDTO>();
-            //transfers.ForEach(t => {
-            //    string transferType = string.Empty;
-            //    switch(t.TransferType)
-            //    {
-            //        case "Deposit":
-            //            transferType = "入金"; break;
-            //        case "Withdraw":
-            //            transferType = "出金"; break;
-            //        default: transferType = "其他"; break;
-            //    }
-            //    transferHistory.Add(new TransferDTO() { amount = t.Amount, date = t.CreatedAt.HasValue? t.CreatedAt.Value.ToString("yyyy-MM-dd hh:mm:ss") : string.Empty, transferType = transferType });
-            //});
-         
-            return new List<TransferDTO>();
+            /*
+            EFT ： 出金
+            WeCollect - CUP ： Wecollect入金
+            Bank Wire ： 运营赠金
+            Transaction Fee ： 入金手续费 （可能也包含出金）
+            Trade Result ： 交易
+            Financing ： 隔夜费
+            Dividend ： 分红
+             */
+
+            //只显示以下类型的数据
+            List<string> limitedTypes = new List<string>();
+            limitedTypes.AddRange(new string[] { "EFT", "WeCollect - CUP", "Bank Wire", "Transaction Fee", });
+
+            if (!user.AyLiveAccountId.HasValue)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.Live_Acc_Not_Exist)));
+
+            List<TransferDTO> results = new List<TransferDTO>();
+
+            var transfers = db.AyondoTransferHistory_Live.Where(t => t.TradingAccountId == user.AyLiveAccountId && limitedTypes.Contains(t.TransferType)).ToList();
+            transfers.ForEach(t =>
+            {
+                results.Add(new TransferDTO()
+                {
+                    amount = t.Amount.HasValue ? t.Amount.Value : 0,
+                    date = t.ApprovalTime.HasValue ? t.ApprovalTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "--",
+                    transferType = getTransferTypeDescription(t.TransferType)
+                });
+            }
+
+            );
+
+
+            return results;
+        }
+
+        private string getTransferTypeDescription(string transType)
+        {
+            string description = string.Empty;
+            switch(transType.ToLower().Trim())
+            {
+                case "eft": description = "出金"; break;
+                case "wecollect - cup": description = "入金"; break;
+                case "bank wire": description = "交易金入金"; break;
+                case "transaction fee": description = "手续费"; break;
+                case "trade result": description = "交易"; break;
+                case "financing": description = "隔夜费"; break;
+                case "dividend": description = "分红"; break;
+            }
+
+            return description;
         }
 
         [HttpPut]

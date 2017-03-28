@@ -42,6 +42,8 @@ namespace CFD_COMMON.Localization
 
         NO_APPROVED_BANK_CARD,
 
-        PRICEDOWN
+        PRICEDOWN,
+
+        Live_Acc_Not_Exist
     }
 }
