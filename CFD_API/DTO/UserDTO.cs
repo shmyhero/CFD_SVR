@@ -35,6 +35,7 @@ namespace CFD_API.DTO
         public string liveEmail { get; set; }
         public bool autoCloseAlert_Live { get; set; }
         public string bankCardStatus { get; set; }
+        public bool showData { get; set; }
     }
 
     public class UserDTO : UserBaseDTO
@@ -589,5 +590,16 @@ namespace CFD_API.DTO
         public string imageBase64 { get; set; }
 
         public string text { get; set; }
+    }
+
+    /// <summary>
+    /// 收益列表设置
+    /// </summary>
+    public class ProfitListSettingDTO
+    {
+        /// <summary>
+        /// 是否显示用户数据
+        /// </summary>
+        public bool showData { get; set; }
     }
 }

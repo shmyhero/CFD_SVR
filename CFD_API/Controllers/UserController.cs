@@ -291,7 +291,7 @@ namespace CFD_API.Controllers
             userDto.liveUsername = user.AyLiveUsername;
             userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
             userDto.bankCardStatus = user.BankCardStatus;
-
+            userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : false;
             return userDto;
         }
 
@@ -2046,6 +2046,19 @@ namespace CFD_API.Controllers
             }
 
             userInfo.ProofOfAddress = form.imageBase64;
+            db.SaveChanges();
+
+            return new ResultDTO(true);
+        }
+
+        [HttpPost]
+        [Route("live/profit")]
+        [BasicAuth]
+        public ResultDTO ProfitListSetting(ProfitListSettingDTO form)
+        {
+            var user = GetUser();
+            user.ShowData = form.showData;
+
             db.SaveChanges();
 
             return new ResultDTO(true);
