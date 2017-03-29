@@ -71,6 +71,10 @@ namespace CFD_API.DTO
         private int _rank = 0;
         public int rank { get { return _rank; } set { _rank = value; } }
         public string rankDescription { get; set; }
+        /// <summary>
+        /// 收益榜是否显示用户数据
+        /// </summary>
+        public bool showData { get; set; }
     }
 
     public class NewDepositDTO

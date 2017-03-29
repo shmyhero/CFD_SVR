@@ -1168,16 +1168,17 @@ namespace CFD_API.Controllers
             string rankDescription = rank == null? "默默无闻" : rank.Description;
             var result = new UserDetailDTO
             {
-                id=userId,
-                nickname= user.Nickname,
+                id = userId,
+                nickname = user.Nickname,
                 picUrl = user.PicUrl,
-                avgPl = isEmpty?0: positions.Average(o=>o.PL.Value),
-                totalPl = isEmpty ? 0 : positions.Sum(o=>o.PL.Value),
-                winRate = isEmpty ? 0 : (decimal)positions.Count(o=>o.PL>0)/positions.Count,
+                avgPl = isEmpty ? 0 : positions.Average(o => o.PL.Value),
+                totalPl = isEmpty ? 0 : positions.Sum(o => o.PL.Value),
+                winRate = isEmpty ? 0 : (decimal)positions.Count(o => o.PL > 0) / positions.Count,
                 followerCount = followingCount,
-                isFollowing= isFollowing,
+                isFollowing = isFollowing,
                 rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0,
-                rankDescription = rankDescription
+                rankDescription = rankDescription,
+                showData = user.ShowData.HasValue ? user.ShowData.Value : false
             };
 
             if (IsLiveUrl)
