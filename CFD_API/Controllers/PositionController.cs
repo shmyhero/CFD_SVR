@@ -1178,7 +1178,7 @@ namespace CFD_API.Controllers
                 isFollowing = isFollowing,
                 rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0,
                 rankDescription = rankDescription,
-                showData = user.ShowData.HasValue ? user.ShowData.Value : false
+                showData = user.ShowData.HasValue ? user.ShowData.Value : true
             };
 
             if (IsLiveUrl)

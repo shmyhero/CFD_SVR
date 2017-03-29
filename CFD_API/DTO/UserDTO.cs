@@ -49,6 +49,8 @@ namespace CFD_API.DTO
 
         private int _rank = 1;
         public int rank { get { return _rank; } set { _rank = value; } }
+
+        public bool showData { get; set; }
     }
 
     public class MyInfoDTO

@@ -291,7 +291,7 @@ namespace CFD_API.Controllers
             userDto.liveUsername = user.AyLiveUsername;
             userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
             userDto.bankCardStatus = user.BankCardStatus;
-            userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : false;
+            userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
             return userDto;
         }
 
@@ -1964,6 +1964,7 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<UserDTO> GetFollowingIds()
         {
+            var user = GetUser();
             var result =
                 db.UserFollows.Include(o => o.Following)
                     .Where(o => o.UserId == UserId)
@@ -2004,12 +2005,14 @@ namespace CFD_API.Controllers
                         userDto.roi = 0;
                         userDto.posCount = 0;
                         userDto.winRate = 0;
+                        userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
                     }
                     else
                     {
                         userDto.roi = data.roi;
                         userDto.posCount = data.posCount;
                         userDto.winRate = data.winRate;
+                        userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
                     }
                 }
 
