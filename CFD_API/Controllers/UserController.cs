@@ -1887,38 +1887,39 @@ namespace CFD_API.Controllers
 
             List<TransferDTO> results = new List<TransferDTO>();
 
-            var transfers = db.AyondoTransferHistory_Live.Where(t => t.TradingAccountId == user.AyLiveAccountId && limitedTypes.Contains(t.TransferType)).ToList();
+            var transfers = db.AyondoTransferHistory_Live.Where(t => t.TradingAccountId == user.AyLiveAccountId && limitedTypes.Contains(t.TransferType)).OrderByDescending(o=>o.ApprovalTime).ToList();
             transfers.ForEach(t =>
             {
+                var result = getTransDescriptionColor(t.TransferType);
                 results.Add(new TransferDTO()
                 {
                     amount = t.Amount.HasValue ? t.Amount.Value : 0,
-                    date = t.ApprovalTime.HasValue ? t.ApprovalTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "--",
-                    transferType = getTransferTypeDescription(t.TransferType)
+                    date = t.ApprovalTime.HasValue ? t.ApprovalTime.Value.AddHours(8).ToString("yyyy-MM-dd HH:mm:ss") : "--",
+                    transferType = result.Item1,
+                    color = result.Item2
                 });
             }
 
             );
 
-
             return results;
         }
 
-        private string getTransferTypeDescription(string transType)
+        private Tuple<string,string> getTransDescriptionColor(string transType)
         {
-            string description = string.Empty;
+            Tuple<string, string> result = new Tuple<string, string>(string.Empty,string.Empty);
             switch(transType.ToLower().Trim())
             {
-                case "eft": description = "出金"; break;
-                case "wecollect - cup": description = "入金"; break;
-                case "bank wire": description = "交易金入金"; break;
-                case "transaction fee": description = "手续费"; break;
-                case "trade result": description = "交易"; break;
-                case "financing": description = "隔夜费"; break;
-                case "dividend": description = "分红"; break;
+                case "eft": result = new Tuple<string, string>("出金", "000000"); break;
+                case "wecollect - cup": result = new Tuple<string, string>("入金", "1c8d13"); break;
+                case "bank wire": result = new Tuple<string, string>("交易金入金", "1c8d13"); break;
+                case "transaction fee": result = new Tuple<string, string>("手续费", "000000"); break;
+                case "trade result": result = new Tuple<string, string>("交易", string.Empty); break;
+                case "financing": result = new Tuple<string, string>("隔夜费", string.Empty); break;
+                case "dividend": result = new Tuple<string, string>("分红", string.Empty); break;
             }
 
-            return description;
+            return result;
         }
 
         [HttpPut]

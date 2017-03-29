@@ -94,6 +94,11 @@ namespace CFD_COMMON.Models.Entities
         /// </summary>
         public int? LiveRank { get; set; }
 
+        /// <summary>
+        /// show data in Profit List
+        /// </summary>
+        public bool? ShowData { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

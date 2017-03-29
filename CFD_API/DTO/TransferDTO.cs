@@ -13,6 +13,7 @@ namespace CFD_API.DTO
         public string transferType { get; set; }
         public string date { get; set; }
         public decimal amount { get; set; }
+        public string color { get; set; }
     }
 
     public class DepositSettingDTO
