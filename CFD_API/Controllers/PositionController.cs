@@ -322,12 +322,66 @@ namespace CFD_API.Controllers
         [Route("closed")]
         [Route("live/closed")]
         [BasicAuth]
-        public List<PositionHistoryDTO> GetPositionHistory()
+        public List<PositionHistoryDTO> GetPositionHistory(DateTime? closedBefore = null, int count = 20)
         {
             var user = GetUser();
 
             if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
+            var startTime = DateTime.UtcNow.AddMonths(-3);
+            if(closedBefore == null)
+                closedBefore = DateTime.MaxValue;
+            else
+            {
+                if(closedBefore.Value.Kind == DateTimeKind.Local)
+                closedBefore = closedBefore.Value.ToUniversalTime();
+            }
+
+            var posClosedDB = IsLiveUrl
+                ? db.NewPositionHistory_live.Where(
+                    o => o.ClosedAt >= startTime && o.ClosedAt < closedBefore && o.UserId == UserId)
+                    .OrderByDescending(o => o.ClosedAt).Take(count)
+                    .ToList().Select(o => o as NewPositionHistoryBase).ToList()
+                : db.NewPositionHistories.Where(
+                    o => o.ClosedAt >= startTime && o.ClosedAt < closedBefore && o.UserId == UserId)
+                    .OrderByDescending(o => o.ClosedAt).Take(count)
+                    .ToList().Select(o => o as NewPositionHistoryBase).ToList();
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
+            var result = posClosedDB.Select(o =>
+            {
+                var prodDef = cache.ProdDefs.FirstOrDefault(p => p.Id == o.SecurityId);
+                return new PositionHistoryDTO
+                {
+                    id=o.Id.ToString(),
+
+                    invest= o.SettlePrice.Value * prodDef.LotSize / prodDef.PLUnits * (o.LongQty ?? o.ShortQty)/ o.Leverage,
+                    isLong = o.LongQty!=null,
+                    leverage = o.Leverage,
+
+                    openAt = o.CreateTime.Value,
+                    closeAt = o.ClosedAt.Value,
+
+                    openPrice = o.SettlePrice.Value,
+                    closePrice = o.ClosedPrice.Value,
+
+                    pl=o.PL.Value,
+
+                    security = new SecurityDetailDTO()
+                    {
+                        id=prodDef.Id,
+                        symbol = prodDef.Symbol,
+                        name= Translator.GetCName(prodDef.Name),
+                        ccy=prodDef.Ccy2,
+                        dcmCount = prodDef.Prec,
+                    }
+            };
+            }).ToList();
+
+            return result;
+
+
+            /*
             var result = new List<PositionHistoryDTO>();
 
             IList<PositionReport> historyReports;
@@ -557,6 +611,7 @@ namespace CFD_API.Controllers
             });
 
             return result.OrderByDescending(o => o.closeAt).ToList();
+            */
         }
 
         /// <summary>
