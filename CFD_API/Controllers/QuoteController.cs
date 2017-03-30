@@ -30,11 +30,15 @@ namespace CFD_API.Controllers
         //todo:for test only
         [HttpGet]
         [Route("{securityId}/tick")]
+        [Route("live/{securityId}/tick")]
         public List<TickDTO> GetTicks(int securityId)
         {
-            var redisTypedClient = RedisClient.As<Tick>();
-            var ticks = redisTypedClient.Lists[Ticks.GetTickListNamePrefix(TickSize.OneMinute) + securityId].GetAll();
-
+            List<Tick> ticks;
+            using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(IsLiveUrl).GetClient())
+            {
+                var redisTypedClient = redisClient.As<Tick>();
+                ticks = redisTypedClient.Lists[Ticks.GetTickListNamePrefix(TickSize.OneMinute) + securityId].GetAll();
+            }
             //ticks = ticks.Where(o => DateTime.UtcNow - o.Time < TimeSpan.FromDays(1)).ToList();
             //foreach (var tick in ticks)
             //{
