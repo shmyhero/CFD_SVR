@@ -62,9 +62,11 @@ namespace CFD_API.Controllers
         {
             //string value;
             IList<ProdDef> prodDefs;
+            IList<Quote> quotes;
             using (var redisClient = CFDGlobal.PooledRedisClientsManager_Live.GetClient())
             {
                 prodDefs = redisClient.As<ProdDef>().GetAll();
+                quotes = redisClient.As<Quote>().GetAll();
             }
 
             var now = DateTime.UtcNow;
@@ -137,6 +139,20 @@ namespace CFD_API.Controllers
                 if (ratioOpen < 0.9)
                     return Request.CreateResponse(HttpStatusCode.InternalServerError, "美股开市率小于90%");
             }
+
+            if (
+                (dayOfWeek == DayOfWeek.Friday && (h < 20 || (h == 20 && m < 59)))
+                ||
+                (dayOfWeek == DayOfWeek.Sunday && ((h == 21 && m > 5) || h > 21))
+                ||
+                ((h < 20 || (h == 20 && m < 59)) && ((h == 21 && m > 5) || h > 21))
+                )
+            {
+                var latestQuoteTime = quotes.Max(o => o.Time);
+                if (now-latestQuoteTime>TimeSpan.FromMinutes(1))
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "超过1分钟未收到任何quote");
+            }
+
 
             return Request.CreateResponse(HttpStatusCode.OK, "ok");
         }
