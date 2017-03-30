@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -8,7 +10,9 @@ using AutoMapper;
 using AyondoTrade;
 using CFD_API.Controllers.Attributes;
 using CFD_COMMON;
+using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
@@ -56,11 +60,96 @@ namespace CFD_API.Controllers
         [Route("live/redis")]
         public HttpResponseMessage RedisLiveTest()
         {
-            string value;
+            //string value;
+            IList<ProdDef> prodDefs;
             using (var redisClient = CFDGlobal.PooledRedisClientsManager_Live.GetClient())
             {
-                value = redisClient.GetValue("anykey");
-                return Request.CreateResponse(HttpStatusCode.OK, "dbsize " + redisClient.DbSize);
+                prodDefs = redisClient.As<ProdDef>().GetAll();
+            }
+
+            var now = DateTime.UtcNow;
+            var h = now.Hour;
+            var m = now.Minute;
+            var dayOfWeek = now.DayOfWeek;
+
+            if (dayOfWeek == DayOfWeek.Saturday)
+                return Request.CreateResponse(HttpStatusCode.OK, "ok");
+
+            //Commodities 21:00~22:00 close
+            //Currencies 21:00~21:05 close
+            //indices 21:00~22:00 close
+            //US Stocks 13:30~19:59 open
+
+            if (
+                (dayOfWeek == DayOfWeek.Friday && (h < 20 || (h == 20 && m < 59)))
+                ||
+                (dayOfWeek == DayOfWeek.Sunday && ((h == 22 && m > 0) || h > 22))
+                ||
+                ((h < 20 || (h == 20 && m < 59)) && ((h == 22 && m > 0) || h > 22))
+                )
+            {
+                var commodities = prodDefs.Where(o => o.QuoteType != enmQuoteType.Inactive && o.AssetClass == CFDGlobal.ASSET_CLASS_COMMODITY).ToList();
+                var openCount = commodities.Count(o => o.QuoteType != enmQuoteType.Closed);
+                var ratioOpen = (double)openCount/commodities.Count;
+                if (ratioOpen < 0.9)
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "商品开市率小于90%");
+            }
+
+            if (
+                (dayOfWeek == DayOfWeek.Friday && (h < 20 || (h == 20 && m < 59)))
+                ||
+                (dayOfWeek == DayOfWeek.Sunday && ((h == 21 && m > 5) || h > 21))
+                ||
+                ((h < 20 || (h == 20 && m < 59)) && ((h == 21 && m > 5) || h > 21))
+                )
+            {
+                var currencies = prodDefs.Where(o => o.QuoteType != enmQuoteType.Inactive && o.AssetClass == CFDGlobal.ASSET_CLASS_FX && !o.Name.EndsWith(" Outright")).ToList();
+                var openCount = currencies.Count(o => o.QuoteType != enmQuoteType.Closed);
+                var ratioOpen = (double)openCount / currencies.Count;
+                if (ratioOpen < 0.9)
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "外汇开市率小于90%");
+            }
+
+            if (
+                (dayOfWeek == DayOfWeek.Friday && (h < 20 || (h == 20 && m < 59)))
+                ||
+                (dayOfWeek == DayOfWeek.Sunday && ((h == 22 && m > 0) || h > 22))
+                ||
+                ((h < 20 || (h == 20 && m < 59)) && ((h == 22 && m > 0) || h > 22))
+                )
+            {
+                var indices = prodDefs.Where(o => o.QuoteType != enmQuoteType.Inactive && o.AssetClass == CFDGlobal.ASSET_CLASS_INDEX).ToList();
+                var openCount = indices.Count(o => o.QuoteType != enmQuoteType.Closed);
+                var ratioOpen = (double)openCount / indices.Count;
+                if (ratioOpen < 0.9)
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "指数开市率小于90%");
+            }
+
+            if (
+                dayOfWeek!= DayOfWeek.Sunday
+                &&
+                ((h > 13 || (h == 13 && m > 30)) && ((h == 19 && m < 58) || h < 19))
+                )
+            {
+                var usStocks =prodDefs.Where(o => o.QuoteType != enmQuoteType.Inactive && o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
+                var openCount = usStocks.Count(o => o.QuoteType != enmQuoteType.Closed);
+                var ratioOpen = (double) openCount/ usStocks.Count;
+                if (ratioOpen < 0.9)
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "美股开市率小于90%");
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, "ok");
+        }
+
+        [HttpGet]
+        [Route("live/redis/write")]
+        public HttpResponseMessage RedisLiveWriteTest()
+        {
+            bool setValue;
+            using (var redisClient = CFDGlobal.PooledRedisClientsManager_Live.GetClient())
+            {
+                setValue = redisClient.Set("anykey", DateTime.UtcNow.ToString(CFDGlobal.DATETIME_MASK_MILLI_SECOND));
+                return Request.CreateResponse(HttpStatusCode.OK, "setValue result: " + setValue);
             }
         }
 
