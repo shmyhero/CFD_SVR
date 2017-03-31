@@ -1974,7 +1974,8 @@ namespace CFD_API.Controllers
                         id = o.Following.Id,
                         nickname = o.Following.Nickname,
                         picUrl = o.Following.PicUrl,
-                        rank = o.Following.LiveRank.HasValue ? o.Following.LiveRank.Value : 0
+                        rank = o.Following.LiveRank.HasValue ? o.Following.LiveRank.Value : 0,
+                        showData = o.Following.ShowData.HasValue ? o.Following.ShowData.Value : true
                     }).ToList();
 
             if (result.Count > 0)
@@ -2005,14 +2006,12 @@ namespace CFD_API.Controllers
                         userDto.roi = 0;
                         userDto.posCount = 0;
                         userDto.winRate = 0;
-                        userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
                     }
                     else
                     {
                         userDto.roi = data.roi;
                         userDto.posCount = data.posCount;
                         userDto.winRate = data.winRate;
-                        userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
                     }
                 }
 
