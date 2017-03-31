@@ -105,6 +105,7 @@ namespace CFD_JOBS.Ayondo
                     {
                         webClient.Encoding=Encoding.GetEncoding("iso-8859-1");
                         downloadString = webClient.DownloadString(url);
+                        //downloadString = System.IO.File.ReadAllText("Transfer.txt");
                     }
 
                     CFDGlobal.LogLine("Done. " + (DateTime.UtcNow - dtDownloadStart).TotalSeconds + "s");
@@ -127,6 +128,8 @@ namespace CFD_JOBS.Ayondo
                     else
                     {
                         CFDGlobal.LogLine("got " + lineArrays.Count + " records");
+                        var push = new GeTui();
+                        string pushTemplate = "{{\"id\":0, \"type\":\"1\", \"title\":\"盈交易\", \"StockID\":null, \"CName\":null, \"message\":\"{0}\"}}";
 
                         using (var db = CFDEntities.Create())
                         {
@@ -169,6 +172,52 @@ namespace CFD_JOBS.Ayondo
                                 var assetClass = arr[20] == "n/a" ? null : arr[20];
                                 var posId = arr[21] == "n/a" ? (long?)null : Convert.ToInt64(arr[21]);
                                 var transferId = arr[25];
+
+                                //入金的短信、推送通知
+                                if (transferType.ToLower() == "WeCollect - CUP".ToLower())
+                                {
+                                    try
+                                    {
+                                        var query = from u in db.Users
+                                                    join d in db.Devices on u.Id equals d.userId
+                                                    into x
+                                                    from y in x.DefaultIfEmpty()
+                                                    where u.AyLiveAccountId == tradingAccountId
+                                                    select new { y.deviceToken, UserId = u.Id, u.Phone, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive, y.UpdateTime };
+                                        var user = query.FirstOrDefault();
+                                        if (user != null && !string.IsNullOrEmpty(user.deviceToken) && !string.IsNullOrEmpty(user.Phone))
+                                        {
+                                            //短信
+                                            YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", amount), user.Phone);
+
+                                            //推送
+                                            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+                                            list.Add(new KeyValuePair<string, string>(user.deviceToken, string.Format(pushTemplate,string.Format("【盈交易】您入金的{0}元已到账", amount))));
+                                            
+                                            push.PushBatch(list);
+
+                                            #region 被推荐人首次入金送推荐人30元
+                                            var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == tradingAccountId);
+                                            if (referer != null && !string.IsNullOrEmpty(referer.Phone))
+                                            {
+                                                var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);
+                                                if (referHistory != null && referHistory.IsRewarded != true)
+                                                {
+                                                    referHistory.IsRewarded = true;
+                                                    referHistory.RewardedAt = DateTime.Now;
+                                                    db.ReferRewards.Add(new ReferReward() { Amount = amount, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
+                                                }
+                                            }
+                                            #endregion
+                                        }
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        CFDGlobal.LogLine("Sending SMS failed for user:" + accountId);
+                                    }
+
+                                    
+                                }
 
                                 var tradeHistory = new AyondoTransferHistoryBase()
                                 {
