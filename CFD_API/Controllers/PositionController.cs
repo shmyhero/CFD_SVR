@@ -329,15 +329,15 @@ namespace CFD_API.Controllers
             if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             var startTime = DateTime.UtcNow.AddMonths(-3);
-            if(closedBefore == null)
+            if (closedBefore == null)
                 closedBefore = DateTime.MaxValue;
             else
             {
-                if(closedBefore.Value.Kind == DateTimeKind.Local)
-                closedBefore = closedBefore.Value.ToUniversalTime();
+                if (closedBefore.Value.Kind == DateTimeKind.Local)
+                    closedBefore = closedBefore.Value.ToUniversalTime();
             }
 
-            var posClosedDB = IsLiveUrl
+            var positions = IsLiveUrl
                 ? db.NewPositionHistory_live.Where(
                     o => o.ClosedAt >= startTime && o.ClosedAt < closedBefore && o.UserId == UserId)
                     .OrderByDescending(o => o.ClosedAt).Take(count)
@@ -347,16 +347,77 @@ namespace CFD_API.Controllers
                     .OrderByDescending(o => o.ClosedAt).Take(count)
                     .ToList().Select(o => o as NewPositionHistoryBase).ToList();
 
+            //need to get latest data from FIX?
+            if (closedBefore > DateTime.UtcNow.AddDays(-3))
+            {
+                //get all fix data
+                IList<PositionReport> fixReports;
+                var endTimeFix = DateTime.UtcNow;
+                var startTimeFix = DateTimes.GetHistoryQueryStartTime(endTimeFix);
+                using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
+                {
+                    try
+                    {
+                        fixReports =
+                            clientHttp.GetPositionHistoryReport(IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                                IsLiveUrl ? null : user.AyondoPassword, startTimeFix, endTimeFix).ToList();
+                    }
+                    catch (FaultException<OAuthLoginRequiredFault>)
+                    {
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                            __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                    }
+                }
+
+                //get closed data that are only in FIX
+                var dbPosIds = positions.Select(o => o.Id.ToString()).ToList();
+                var fixOnlyClosedReports =
+                    fixReports.Where(
+                        o => !dbPosIds.Contains(o.PosMaintRptID) &&
+                            o.CreateTime < closedBefore && o.CreateTime >= startTime &&
+                            (Decimals.IsTradeSizeZero(o.LongQty) || Decimals.IsTradeSizeZero(o.ShortQty))
+                            ).ToList();
+
+                //add fix data to result
+                if (fixOnlyClosedReports.Count > 0)
+                {
+                    var posIds = fixOnlyClosedReports.Select(o => Convert.ToInt64(o.PosMaintRptID)).ToList();
+
+                    var supplementPositions = IsLiveUrl
+                        ? db.NewPositionHistory_live.Where(o => posIds.Contains(o.Id)).ToList().Select(o => o as NewPositionHistoryBase).ToList()
+                        : db.NewPositionHistories.Where(o => posIds.Contains(o.Id)).ToList().Select(o => o as NewPositionHistoryBase).ToList();
+
+                    foreach (var p in supplementPositions)
+                    {
+                        var first = fixOnlyClosedReports.First(o => Convert.ToInt64(o.PosMaintRptID) == p.Id);
+                        p.ClosedAt = first.CreateTime;
+                        p.ClosedPrice = first.SettlPrice;
+                        p.PL = first.PL;
+                    }
+
+                    supplementPositions = supplementPositions.OrderByDescending(o => o.ClosedAt).ToList();
+                    positions = supplementPositions.Concat(positions).Take(count).ToList();
+                }
+            }
+
+            //create DTOs
             var cache = WebCache.GetInstance(IsLiveUrl);
-            var result = posClosedDB.Select(o =>
+            var result = positions.Select(o =>
             {
                 var prodDef = cache.ProdDefs.FirstOrDefault(p => p.Id == o.SecurityId);
+
+                if (prodDef == null)
+                {
+                    CFDGlobal.LogLine("cannot find product definition for sec id: " + o.SecurityId + " in history position reports of user id: " + UserId);
+                    return null;
+                }
+
                 return new PositionHistoryDTO
                 {
-                    id=o.Id.ToString(),
+                    id = o.Id.ToString(),
 
-                    invest= o.SettlePrice.Value * prodDef.LotSize / prodDef.PLUnits * (o.LongQty ?? o.ShortQty)/ o.Leverage,
-                    isLong = o.LongQty!=null,
+                    invest = o.SettlePrice.Value*prodDef.LotSize/prodDef.PLUnits*(o.LongQty ?? o.ShortQty)/o.Leverage,
+                    isLong = o.LongQty != null,
                     leverage = o.Leverage,
 
                     openAt = o.CreateTime.Value,
@@ -365,18 +426,31 @@ namespace CFD_API.Controllers
                     openPrice = o.SettlePrice.Value,
                     closePrice = o.ClosedPrice.Value,
 
-                    pl=o.PL.Value,
+                    pl = o.PL.Value,
 
                     security = new SecurityDetailDTO()
                     {
-                        id=prodDef.Id,
+                        id = prodDef.Id,
                         symbol = prodDef.Symbol,
-                        name= Translator.GetCName(prodDef.Name),
-                        ccy=prodDef.Ccy2,
+                        name = Translator.GetCName(prodDef.Name),
+                        ccy = prodDef.Ccy2,
                         dcmCount = prodDef.Prec,
                     }
-            };
-            }).ToList();
+                };
+            }).Where(o => o != null).ToList();
+
+            //financing/dividends
+            var posIDs = result.Select(o => Convert.ToInt64(o.id)).ToList();
+            var transferHistories = IsLiveUrl
+                ? db.AyondoTransferHistory_Live.Where(o => o.PositionId.HasValue && posIDs.Contains(o.PositionId.Value)).ToList().Select(o => o as AyondoTransferHistoryBase).ToList()
+                : db.AyondoTransferHistories.Where(o => o.PositionId.HasValue && posIDs.Contains(o.PositionId.Value)).ToList().Select(o => o as AyondoTransferHistoryBase).ToList();
+            result.ForEach(posDTO =>
+            {
+                var financings = transferHistories.Where(o => o.PositionId.ToString() == posDTO.id && o.TransferType == "Financing").ToList();
+                var dividends = transferHistories.Where(o => o.PositionId.ToString() == posDTO.id && o.TransferType == "Dividend").ToList();
+                if (financings.Count > 0) posDTO.financingSum = financings.Sum(o => o.Amount);
+                if (dividends.Count > 0) posDTO.dividendSum = dividends.Sum(o => o.Amount);
+            });
 
             return result;
 
