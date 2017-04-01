@@ -230,6 +230,18 @@ namespace CFD_API.Controllers
                 {
                     var account = client.LoginOAuth(username2, oauth_token);
 
+                    long accountId = 0;
+                    if(long.TryParse(account, out accountId))
+                    {
+                        //update ayondo account id if not same
+                        var user = db.Users.FirstOrDefault(o => o.AyLiveUsername == username2);
+                        if (user != null && user.AyLiveAccountId != accountId)
+                        {
+                            user.AyLiveAccountId = accountId;
+                            db.SaveChanges();
+                        }
+                    }
+
                     CFDGlobal.LogLine("Live OAuth login: " + username2 + " " + account);
                 }
 

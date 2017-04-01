@@ -811,8 +811,8 @@ namespace CFD_API.Controllers
 
                 //update ayondo account id if not same
                 var accountId = Convert.ToInt64(result.Account);
-                if (IsLiveUrl && user.AyLiveAccountId != accountId)
-                    user.AyLiveAccountId = accountId;
+                //if (IsLiveUrl && user.AyLiveAccountId != accountId)
+                //    user.AyLiveAccountId = accountId;
                 if (!IsLiveUrl && user.AyondoAccountId != accountId)
                     user.AyondoAccountId = accountId;
 
