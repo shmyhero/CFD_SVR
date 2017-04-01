@@ -174,7 +174,8 @@ namespace CFD_API.Controllers
 
             var errorResponse = Request.CreateResponse(HttpStatusCode.Redirect);
             //errorResponse.Headers.Location = new Uri(currentUrl + "/error");
-            errorResponse.Headers.Location = new Uri("http://cn.tradehero.mobi/tradehub/live/login.html?client_id=62d275a211&loginError=error");
+            errorResponse.Headers.Location = new Uri(
+                "http://cn.tradehero.mobi/tradehub/live/login.html?client_id=62d275a211&redirect_uri=https://api.typhoontechnology.hk/api/live/oauth&loginError=error");
 
             var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
             if (!string.IsNullOrWhiteSpace(error))
@@ -226,14 +227,28 @@ namespace CFD_API.Controllers
                 //    return errorResponse;
                 //}
 
+                string account;
                 using (var client = new AyondoTradeClient(true))
                 {
-                    var account = client.LoginOAuth(username2, oauth_token);
-
-                    long accountId = 0;
-                    if(long.TryParse(account, out accountId))
+                    try
                     {
-                        //update ayondo account id if not same
+                        account = client.LoginOAuth(username2, oauth_token);
+                    }
+                    catch (Exception e)
+                    {
+                        CFDGlobal.LogWarning("live oauth login failed");
+                        CFDGlobal.LogExceptionAsWarning(e);
+                        return errorResponse;
+                    }
+                }
+                CFDGlobal.LogLine("Live OAuth login: " + username2 + " " + account);
+
+                //update ayondo account id if not same
+                try
+                {
+                    long accountId = 0;
+                    if (long.TryParse(account, out accountId))
+                    {
                         var user = db.Users.FirstOrDefault(o => o.AyLiveUsername == username2);
                         if (user != null && user.AyLiveAccountId != accountId)
                         {
@@ -241,8 +256,11 @@ namespace CFD_API.Controllers
                             db.SaveChanges();
                         }
                     }
-
-                    CFDGlobal.LogLine("Live OAuth login: " + username2 + " " + account);
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogWarning("live oauth login - saving account id to db failed");
+                    CFDGlobal.LogExceptionAsWarning(e);
                 }
 
                 //return "OK";
