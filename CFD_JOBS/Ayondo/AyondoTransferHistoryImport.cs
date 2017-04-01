@@ -63,8 +63,8 @@ namespace CFD_JOBS.Ayondo
                         using (var db = CFDEntities.Create())//find last record in db
                         {
                             lastDbRecord = isLive
-                                ? (AyondoTransferHistoryBase)db.AyondoTransferHistory_Live.OrderByDescending(o => o.Id).FirstOrDefault()
-                                : (AyondoTransferHistoryBase)db.AyondoTransferHistories.OrderByDescending(o => o.Id).FirstOrDefault();
+                                ? (AyondoTransferHistoryBase)db.AyondoTransferHistory_Live.OrderByDescending(o => o.Timestamp).FirstOrDefault()
+                                : (AyondoTransferHistoryBase)db.AyondoTransferHistories.OrderByDescending(o => o.Timestamp).FirstOrDefault();
                         }
 
                         if (lastDbRecord == null || lastDbRecord.Timestamp == null) //db is empty
