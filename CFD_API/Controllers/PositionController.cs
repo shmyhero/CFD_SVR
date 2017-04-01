@@ -1308,6 +1308,8 @@ namespace CFD_API.Controllers
             result.picUrl = user.PicUrl;
             result.isFollowing = isFollowing;
             result.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
+            result.rankDescription = string.Empty; //默认值，为了使返回的json包含该字段
+            result.cards = new List<CardDTO>(); //默认值，为了使返回的json包含该字段
 
             if (result.showData || result.id == UserId) //user.showdata or mySelf?
             {
@@ -1320,7 +1322,7 @@ namespace CFD_API.Controllers
                 var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
                 var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
                 var positions2w = positions.Where(o => o.ClosedAt > twoWeeksAgoUtc).ToList();
-                result.pl2w = positions2w.Count > 0 ? positions2w.Sum(o => o.PL) : 0;
+                result.pl2w = positions2w.Count > 0 ? positions2w.Sum(o => o.PL).Value : 0;
 
                 result.winRate = isEmpty ? 0 : (decimal) positions.Count(o => o.PL > 0)/positions.Count;
                 result.followerCount = followingCount;
