@@ -1163,7 +1163,9 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PosChartDTO> PLChartClosed(int userId)
         {
-            //var jArray = new JArray();
+            var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
+                return new List<PosChartDTO>();
 
             var dbList = IsLiveUrl
                 ? db.NewPositionHistory_live.Where(o => o.UserId == userId && o.ClosedAt != null)
@@ -1219,6 +1221,10 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PosChartDTO> PLChartClosed2w(int userId)
         {
+            var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
+                return new List<PosChartDTO>();
+
             var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
             var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
 
@@ -1295,68 +1301,74 @@ namespace CFD_API.Controllers
             var isFollowing = db.UserFollows.Any(o => o.UserId == UserId && o.FollowingId == userId);
             var rank = db.LiveRanks.FirstOrDefault(o => o.Rank == user.LiveRank);
             string rankDescription = rank == null? "默默无闻" : rank.Description;
-            var result = new UserDetailDTO
-            {
-                id = userId,
-                nickname = user.Nickname,
-                picUrl = user.PicUrl,
-                avgPl = isEmpty ? 0 : positions.Average(o => o.PL.Value),
-                totalPl = isEmpty ? 0 : positions.Sum(o => o.PL.Value),
-                winRate = isEmpty ? 0 : (decimal)positions.Count(o => o.PL > 0) / positions.Count,
-                followerCount = followingCount,
-                isFollowing = isFollowing,
-                rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0,
-                rankDescription = rankDescription,
-                showData = user.ShowData.HasValue ? user.ShowData.Value : true
-            };
 
-            if (IsLiveUrl)
-            {
-                var cards = from u in db.UserCards_Live
-                    join c in db.Cards on u.CardId equals c.Id
-                        into x
-                    from y in x.DefaultIfEmpty()
-                    where u.UserId == userId//------------user id
-                            orderby u.CreatedAt descending
-                    select new CardDTO()
-                    {
-                        cardId = u.Id,
-                        //ccy = u.CCY,
-                        imgUrlBig = y.CardImgUrlBig,
-                        imgUrlMiddle = y.CardImgUrlMiddle,
-                        imgUrlSmall = y.CardImgUrlSmall,
-                        invest = u.Invest,
-                        isLong = u.IsLong,
-                        isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
-                        shared = !u.IsShared.HasValue ? false : u.IsShared.Value,
-                        leverage = u.Leverage,
-                        likes = u.Likes,
-                        reward = y.Reward,
-                        settlePrice = u.SettlePrice,
-                        //stockName = u.StockName,
-                        stockID = u.SecurityId,
-                        pl = u.PL,
-                        plRate = ((u.SettlePrice - u.TradePrice)/u.TradePrice*u.Leverage*100)*(u.IsLong.Value ? 1 : -1),
-                        themeColor = y.ThemeColor,
-                        title = y.Title,
-                        cardType = y.CardType.HasValue ? y.CardType.Value : 0,
-                        tradePrice = u.TradePrice,
-                        tradeTime = u.ClosedAt
-                    };
+            var result = new UserDetailDTO();
+            result.id = userId;
+            result.nickname = user.Nickname;
+            result.picUrl = user.PicUrl;
+            result.isFollowing = isFollowing;
+            result.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
 
-                if (cards != null)
+            if (result.showData || result.id == UserId) //user.showdata or mySelf?
+            {
+                result.rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0;
+                result.rankDescription = rankDescription;
+
+                result.avgPl = isEmpty ? 0 : positions.Average(o => o.PL.Value);
+                result.totalPl = isEmpty ? 0 : positions.Sum(o => o.PL.Value);
+                result.winRate = isEmpty ? 0 : (decimal) positions.Count(o => o.PL > 0)/positions.Count;
+                result.followerCount = followingCount;
+
+                if (IsLiveUrl)
                 {
-                    var cache = WebCache.GetInstance(true);
-                    result.cards = cards.ToList();
-                    result.cards.ForEach(cardDTO =>
-                    {
-                        var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == cardDTO.stockID);
-                        if (prodDef != null)
+                    var cards = from u in db.UserCards_Live
+                        join c in db.Cards on u.CardId equals c.Id
+                            into x
+                        from y in x.DefaultIfEmpty()
+                        where u.UserId == userId
+                        //------------user id
+                        orderby u.CreatedAt descending
+                        select new CardDTO()
                         {
-                            cardDTO.ccy = prodDef.Ccy2;
-                            cardDTO.stockName = Translator.GetCName(prodDef.Name);
-                        }
-                    });
+                            cardId = u.Id,
+                            //ccy = u.CCY,
+                            imgUrlBig = y.CardImgUrlBig,
+                            imgUrlMiddle = y.CardImgUrlMiddle,
+                            imgUrlSmall = y.CardImgUrlSmall,
+                            invest = u.Invest,
+                            isLong = u.IsLong,
+                            isNew = !u.IsNew.HasValue ? true : u.IsNew.Value,
+                            shared = !u.IsShared.HasValue ? false : u.IsShared.Value,
+                            leverage = u.Leverage,
+                            likes = u.Likes,
+                            reward = y.Reward,
+                            settlePrice = u.SettlePrice,
+                            //stockName = u.StockName,
+                            stockID = u.SecurityId,
+                            pl = u.PL,
+                            plRate =
+                                ((u.SettlePrice - u.TradePrice)/u.TradePrice*u.Leverage*100)*(u.IsLong.Value ? 1 : -1),
+                            themeColor = y.ThemeColor,
+                            title = y.Title,
+                            cardType = y.CardType.HasValue ? y.CardType.Value : 0,
+                            tradePrice = u.TradePrice,
+                            tradeTime = u.ClosedAt
+                        };
+
+                    if (cards != null)
+                    {
+                        var cache = WebCache.GetInstance(true);
+                        result.cards = cards.ToList();
+                        result.cards.ForEach(cardDTO =>
+                        {
+                            var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == cardDTO.stockID);
+                            if (prodDef != null)
+                            {
+                                cardDTO.ccy = prodDef.Ccy2;
+                                cardDTO.stockName = Translator.GetCName(prodDef.Name);
+                            }
+                        });
+                    }
                 }
             }
 

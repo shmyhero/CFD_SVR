@@ -44,11 +44,10 @@ namespace CFD_API.DTO
         //public string nickname { get; set; }
         //public string picUrl { get; set; }
         public decimal roi { get; set; }
-        public int posCount { get; set; }
-        public decimal winRate { get; set; }
+        public int? posCount { get; set; }
+        public decimal? winRate { get; set; }
 
-        private int _rank = 1;
-        public int rank { get { return _rank; } set { _rank = value; } }
+        public int? rank { get; set; }
 
         public bool showData { get; set; }
     }
@@ -64,14 +63,13 @@ namespace CFD_API.DTO
 
     public class UserDetailDTO : UserBaseDTO
     {
-        public int followerCount { get; set; }
+        public int? followerCount { get; set; }
         public bool isFollowing { get; set; }
-        public decimal totalPl { get; set; }
-        public decimal avgPl { get; set; }
-        public decimal winRate { get; set; }
+        public decimal? totalPl { get; set; }
+        public decimal? avgPl { get; set; }
+        public decimal? winRate { get; set; }
         public List<CardDTO> cards { get; set; }
-        private int _rank = 0;
-        public int rank { get { return _rank; } set { _rank = value; } }
+        public int? rank { get; set; }
         public string rankDescription { get; set; }
         /// <summary>
         /// 收益榜是否显示用户数据
