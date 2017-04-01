@@ -1163,7 +1163,9 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PosChartDTO> PLChartClosed(int userId)
         {
-            //var jArray = new JArray();
+            var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
+                return new List<PosChartDTO>();
 
             var dbList = IsLiveUrl
                 ? db.NewPositionHistory_live.Where(o => o.UserId == userId && o.ClosedAt != null)
@@ -1219,6 +1221,10 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PosChartDTO> PLChartClosed2w(int userId)
         {
+            var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
+                return new List<PosChartDTO>();
+
             var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
             var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
 
