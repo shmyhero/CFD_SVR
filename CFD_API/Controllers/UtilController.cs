@@ -117,7 +117,25 @@ namespace CFD_API.Controllers
             result.success = true;
             return result;
         }
-        
+
+        /// <summary>
+        /// 给推荐人用的验证码
+        /// 在生成验证码之前先判断是否已经注册过模拟盘
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        [Route("sendReferCode")]
+        [HttpPost]
+        public ResultDTO SendReferCode(string phone)
+        {
+            if(db.Users.Any(u => u.Phone == phone))
+            {
+                return new ResultDTO() { success = false, message = "手机号已被注册" };
+            }
+
+            return SendCode(phone);
+        }
+
         [Route("feedback")]
         [HttpPost]
         public HttpResponseMessage NewFeedback(FeedbackFormDTO form)

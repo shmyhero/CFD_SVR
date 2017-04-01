@@ -11,6 +11,7 @@ using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
+using System.Text.RegularExpressions;
 
 namespace CFD_API.Controllers
 {
@@ -33,6 +34,16 @@ namespace CFD_API.Controllers
             if(db.ReferHistorys.Any(o=>o.ApplicantNumber == phone))
             { 
                 return new ResultDTO() { success = false, message = "该手机号已被邀请过哟！" };
+            }
+
+            var misc = db.Miscs.FirstOrDefault(m => m.Key == "PhoneRegex");
+            if(misc != null)
+            {
+                Regex regex = new Regex(misc.Value);
+                if(!regex.IsMatch(phone))
+                {
+                    return new ResultDTO() { success = false, message = "手机号格式不正确" };
+                }
             }
 
             var dtValidSince = DateTime.UtcNow.AddHours(-1);
