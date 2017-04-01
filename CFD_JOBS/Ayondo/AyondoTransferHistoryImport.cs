@@ -129,7 +129,7 @@ namespace CFD_JOBS.Ayondo
                     {
                         CFDGlobal.LogLine("got " + lineArrays.Count + " records");
                         var push = new GeTui();
-                        string pushTemplate = "{{\"id\":0, \"type\":\"1\", \"title\":\"盈交易\", \"StockID\":null, \"CName\":null, \"message\":\"{0}\"}}";
+                        string pushTemplate = "{{\"type\":\"3\",\"title\":\"盈交易\",\"message\": \"{0}\",\"deepLink\":\"cfd://page/me\"}}";
 
                         using (var db = CFDEntities.Create())
                         {
@@ -205,7 +205,7 @@ namespace CFD_JOBS.Ayondo
                                                 {
                                                     referHistory.IsRewarded = true;
                                                     referHistory.RewardedAt = DateTime.Now;
-                                                    db.ReferRewards.Add(new ReferReward() { Amount = amount, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
+                                                    db.ReferRewards.Add(new ReferReward() { Amount = 30, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
                                                 }
                                             }
                                             #endregion
