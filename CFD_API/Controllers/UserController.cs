@@ -1962,7 +1962,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("following")]
         [BasicAuth]
-        public List<UserDTO> GetFollowingIds()
+        public List<UserDTO> GetFollowingUsers()
         {
             var user = GetUser();
             var result =
@@ -1974,8 +1974,8 @@ namespace CFD_API.Controllers
                         id = o.Following.Id,
                         nickname = o.Following.Nickname,
                         picUrl = o.Following.PicUrl,
-                        rank = o.Following.LiveRank.HasValue ? o.Following.LiveRank.Value : 0,
-                        showData = o.Following.ShowData.HasValue ? o.Following.ShowData.Value : true
+                        showData = o.Following.ShowData ?? true,
+                        rank = o.Following.LiveRank ?? 0,
                     }).ToList();
 
             if (result.Count > 0)
@@ -1999,6 +1999,9 @@ namespace CFD_API.Controllers
 
                 foreach (var userDto in result)
                 {
+                    if (!userDto.showData)
+                        userDto.rank = null;
+
                     var data = datas.FirstOrDefault(o => o.id == userDto.id);
 
                     if (data == null)//this guy has no data
@@ -2010,8 +2013,11 @@ namespace CFD_API.Controllers
                     else
                     {
                         userDto.roi = data.roi;
-                        userDto.posCount = data.posCount;
-                        userDto.winRate = data.winRate;
+                        if (userDto.showData)
+                        {
+                            userDto.posCount = data.posCount;
+                            userDto.winRate = data.winRate;
+                        }
                     }
                 }
 
