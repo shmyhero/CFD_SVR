@@ -120,8 +120,6 @@ namespace CFD_JOBS.Ayondo
                         .ToList();
 
                     var newTransferHistories = new List<AyondoTransferHistoryBase>();
-                    var messages = new List<MessageBase>();
-                    var referRewards = new List<ReferReward>();
 
                     if (lineArrays.Count == 0)
                     {
@@ -130,8 +128,6 @@ namespace CFD_JOBS.Ayondo
                     else
                     {
                         CFDGlobal.LogLine("got " + lineArrays.Count + " records");
-                        var push = new GeTui();
-                        //string pushTemplate = "{{\"type\":\"3\",\"title\":\"盈交易\",\"message\": \"{0}\",\"deepLink\":\"cfd://page/me\"}}";
 
                         using (var db = CFDEntities.Create())
                         {
@@ -208,6 +204,27 @@ namespace CFD_JOBS.Ayondo
                                 newTransferHistories.Add(tradeHistory);
                             }
 
+                            //update history table
+                            if (newTransferHistories.Count > 0)
+                            {
+                                if (isLive)
+                                {
+                                    db.AyondoTransferHistory_Live.AddRange(newTransferHistories.Select(o => Mapper.Map<AyondoTransferHistory_Live>(o)));
+                                }
+                                else
+                                {
+                                    db.AyondoTransferHistories.AddRange(newTransferHistories.Select(o => Mapper.Map<AyondoTransferHistory>(o)));
+                                }
+
+                                CFDGlobal.LogLine("saving transfer histories...");
+                                db.SaveChanges();
+                            }
+
+                            var messages = new List<MessageBase>();
+                            var referRewards = new List<ReferReward>();
+                            var push = new GeTui();
+                            //string pushTemplate = "{{\"type\":\"3\",\"title\":\"盈交易\",\"message\": \"{0}\",\"deepLink\":\"cfd://page/me\"}}";
+
                             #region 入金的短信、被推荐人首次入金送推荐人30元
                             foreach (var arr in lineArrays)
                             {
@@ -271,32 +288,17 @@ namespace CFD_JOBS.Ayondo
                             }
                             #endregion
 
-                            //update history table
-                            if (newTransferHistories.Count > 0 || messages.Count >0 || referRewards.Count>0)
+                            if (messages.Count > 0 || referRewards.Count > 0)
                             {
-                                if (isLive)
+                                if (messages.Count > 0)
                                 {
-                                    db.AyondoTransferHistory_Live.AddRange(newTransferHistories.Select(o => Mapper.Map<AyondoTransferHistory_Live>(o)));
-                                    if(messages.Count>0)
-                                    {
-                                        db.Message_Live.AddRange(messages.Select(m => Mapper.Map<Message_Live>(m)));
-                                    }
+                                    db.Message_Live.AddRange(messages.Select(m => Mapper.Map<Message_Live>(m)));
                                 }
-                                else
-                                {
-                                    db.AyondoTransferHistories.AddRange(newTransferHistories.Select(o => Mapper.Map<AyondoTransferHistory>(o)));
-                                    if (messages.Count > 0)
-                                    {
-                                        db.Messages.AddRange(messages.Select(m => Mapper.Map<Message>(m)));
-                                    }
-                                }
-
                                 if (referRewards.Count > 0)
                                 {
                                     db.ReferRewards.AddRange(referRewards);
                                 }
-
-                                CFDGlobal.LogLine("saving transfer histories...");
+                                CFDGlobal.LogLine("log...");//todo:log
                                 db.SaveChanges();
                             }
                         }
