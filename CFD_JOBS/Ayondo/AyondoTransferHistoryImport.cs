@@ -190,11 +190,19 @@ namespace CFD_JOBS.Ayondo
                                             //短信
                                             YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", amount), user.Phone);
 
-                                            //推送
-                                            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-                                            list.Add(new KeyValuePair<string, string>(user.deviceToken, string.Format(pushTemplate,string.Format("【盈交易】您入金的{0}元已到账", amount))));
-                                            
-                                            push.PushBatch(list);
+                                            ////推送
+                                            //List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+                                            //list.Add(new KeyValuePair<string, string>(user.deviceToken, string.Format(pushTemplate,string.Format("【盈交易】您入金的{0}元已到账", amount))));
+                                            //push.PushBatch(list);
+
+                                            //入金信息放到消息中心
+                                            Message_Live msg = new Message_Live();
+                                            msg.UserId = user.UserId;
+                                            msg.Title = "入金消息";
+                                            msg.Body = string.Format("您入金的{0}元已到账", amount);
+                                            msg.CreatedAt = DateTime.UtcNow;
+                                            msg.IsReaded = false;
+                                            db.Message_Live.Add(msg);
 
                                             #region 被推荐人首次入金送推荐人30元
                                             var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == tradingAccountId);
@@ -262,7 +270,7 @@ namespace CFD_JOBS.Ayondo
 
                                 CFDGlobal.LogLine("saving transfer histories...");
                                 db.SaveChanges();
-                            }
+                    }
                         }
                     }
 
