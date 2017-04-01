@@ -226,14 +226,10 @@ namespace CFD_JOBS.Ayondo
                             //string pushTemplate = "{{\"type\":\"3\",\"title\":\"盈交易\",\"message\": \"{0}\",\"deepLink\":\"cfd://page/me\"}}";
 
                             #region 入金的短信、被推荐人首次入金送推荐人30元
-                            foreach (var arr in lineArrays)
+                            foreach (var transfer in newTransferHistories)
                             {
-                                var transferType = arr[0];
-                                var amount = decimal.Parse(arr[4], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
-                                var tradingAccountId = Convert.ToInt64(arr[19]);
-
                                 //入金的短信
-                                if (transferType.ToLower() == "WeCollect - CUP".ToLower())
+                                if (transfer.TransferType.ToLower() == "WeCollect - CUP".ToLower())
                                 {
                                     try
                                     {
@@ -241,13 +237,13 @@ namespace CFD_JOBS.Ayondo
                                                     join d in db.Devices on u.Id equals d.userId
                                                     into x
                                                     from y in x.DefaultIfEmpty()
-                                                    where u.AyLiveAccountId == tradingAccountId
+                                                    where u.AyLiveAccountId == transfer.TradingAccountId
                                                     select new { y.deviceToken, UserId = u.Id, u.Phone, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive, y.UpdateTime };
                                         var user = query.FirstOrDefault();
                                         if (user != null && !string.IsNullOrEmpty(user.deviceToken) && !string.IsNullOrEmpty(user.Phone))
                                         {
                                             //短信
-                                            YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", amount), user.Phone);
+                                            YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", transfer.Amount), user.Phone);
 
                                             ////推送
                                             //List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
@@ -258,13 +254,13 @@ namespace CFD_JOBS.Ayondo
                                             MessageBase msg = new MessageBase();
                                             msg.UserId = user.UserId;
                                             msg.Title = "入金消息";
-                                            msg.Body = string.Format("您入金的{0}元已到账", amount);
+                                            msg.Body = string.Format("您入金的{0}元已到账", transfer.Amount);
                                             msg.CreatedAt = DateTime.UtcNow;
                                             msg.IsReaded = false;
                                             messages.Add(msg);
 
 
-                                            var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == tradingAccountId);
+                                            var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == transfer.TradingAccountId);
                                             if (referer != null && !string.IsNullOrEmpty(referer.Phone))
                                             {
                                                 var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);
@@ -280,7 +276,7 @@ namespace CFD_JOBS.Ayondo
                                     }
                                     catch (Exception ex)
                                     {
-                                        CFDGlobal.LogLine("Sending SMS failed for user:" + tradingAccountId);
+                                        CFDGlobal.LogLine("Sending SMS failed for user:" + transfer.TradingAccountId);
                                     }
 
 
@@ -298,7 +294,7 @@ namespace CFD_JOBS.Ayondo
                                 {
                                     db.ReferRewards.AddRange(referRewards);
                                 }
-                                CFDGlobal.LogLine("log...");//todo:log
+                                CFDGlobal.LogLine(string.Format("Saving message: {0} & refer reward: {1}", messages.Count, referRewards.Count));
                                 db.SaveChanges();
                             }
                         }
