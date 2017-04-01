@@ -809,14 +809,14 @@ namespace CFD_API.Controllers
                 else
                     db.NewPositionHistories.Add(Mapper.Map<NewPositionHistory>(newHistory));
 
-                //update ayondo account id if not same
-                var accountId = Convert.ToInt64(result.Account);
-                if (IsLiveUrl && user.AyLiveAccountId != accountId)
-                    user.AyLiveAccountId = accountId;
-                if (!IsLiveUrl && user.AyondoAccountId != accountId)
-                    user.AyondoAccountId = accountId;
+                ////update ayondo account id if not same
+                //var accountId = Convert.ToInt64(result.Account);
+                //if (IsLiveUrl && user.AyLiveAccountId != accountId)
+                //    user.AyLiveAccountId = accountId;
+                //if (!IsLiveUrl && user.AyondoAccountId != accountId)
+                //    user.AyondoAccountId = accountId;
 
-                db.SaveChanges();
+                //db.SaveChanges();
 
                 if(!IsLiveUrl) RewardDailyDemoTransaction();
 
