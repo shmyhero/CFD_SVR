@@ -120,6 +120,8 @@ namespace CFD_JOBS.Ayondo
                         .ToList();
 
                     var newTransferHistories = new List<AyondoTransferHistoryBase>();
+                    var messages = new List<MessageBase>();
+                    var referRewards = new List<ReferReward>();
 
                     if (lineArrays.Count == 0)
                     {
@@ -129,7 +131,7 @@ namespace CFD_JOBS.Ayondo
                     {
                         CFDGlobal.LogLine("got " + lineArrays.Count + " records");
                         var push = new GeTui();
-                        string pushTemplate = "{{\"type\":\"3\",\"title\":\"盈交易\",\"message\": \"{0}\",\"deepLink\":\"cfd://page/me\"}}";
+                        //string pushTemplate = "{{\"type\":\"3\",\"title\":\"盈交易\",\"message\": \"{0}\",\"deepLink\":\"cfd://page/me\"}}";
 
                         using (var db = CFDEntities.Create())
                         {
@@ -172,61 +174,7 @@ namespace CFD_JOBS.Ayondo
                                 var assetClass = arr[20] == "n/a" ? null : arr[20];
                                 var posId = arr[21] == "n/a" ? (long?)null : Convert.ToInt64(arr[21]);
                                 var transferId = arr[25];
-
-                                //入金的短信、推送通知
-                                if (transferType.ToLower() == "WeCollect - CUP".ToLower())
-                                {
-                                    try
-                                    {
-                                        var query = from u in db.Users
-                                                    join d in db.Devices on u.Id equals d.userId
-                                                    into x
-                                                    from y in x.DefaultIfEmpty()
-                                                    where u.AyLiveAccountId == tradingAccountId
-                                                    select new { y.deviceToken, UserId = u.Id, u.Phone, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive, y.UpdateTime };
-                                        var user = query.FirstOrDefault();
-                                        if (user != null && !string.IsNullOrEmpty(user.deviceToken) && !string.IsNullOrEmpty(user.Phone))
-                                        {
-                                            //短信
-                                            YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", amount), user.Phone);
-
-                                            ////推送
-                                            //List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-                                            //list.Add(new KeyValuePair<string, string>(user.deviceToken, string.Format(pushTemplate,string.Format("【盈交易】您入金的{0}元已到账", amount))));
-                                            //push.PushBatch(list);
-
-                                            //入金信息放到消息中心
-                                            Message_Live msg = new Message_Live();
-                                            msg.UserId = user.UserId;
-                                            msg.Title = "入金消息";
-                                            msg.Body = string.Format("您入金的{0}元已到账", amount);
-                                            msg.CreatedAt = DateTime.UtcNow;
-                                            msg.IsReaded = false;
-                                            db.Message_Live.Add(msg);
-
-                                            #region 被推荐人首次入金送推荐人30元
-                                            var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == tradingAccountId);
-                                            if (referer != null && !string.IsNullOrEmpty(referer.Phone))
-                                            {
-                                                var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);
-                                                if (referHistory != null && referHistory.IsRewarded != true)
-                                                {
-                                                    referHistory.IsRewarded = true;
-                                                    referHistory.RewardedAt = DateTime.Now;
-                                                    db.ReferRewards.Add(new ReferReward() { Amount = 30, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
-                                                }
-                                            }
-                                            #endregion
-                                        }
-                                    }
-                                    catch(Exception ex)
-                                    {
-                                        CFDGlobal.LogLine("Sending SMS failed for user:" + accountId);
-                                    }
-
-                                    
-                                }
-
+                                
                                 var tradeHistory = new AyondoTransferHistoryBase()
                                 {
                                     TransferType = transferType,
@@ -260,17 +208,97 @@ namespace CFD_JOBS.Ayondo
                                 newTransferHistories.Add(tradeHistory);
                             }
 
-                            //update history table
-                            if (newTransferHistories.Count > 0)
+                            #region 入金的短信、被推荐人首次入金送推荐人30元
+                            foreach (var arr in lineArrays)
                             {
-                                if(isLive)
+                                var transferType = arr[0];
+                                var amount = decimal.Parse(arr[4], NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
+                                var tradingAccountId = Convert.ToInt64(arr[19]);
+
+                                //入金的短信
+                                if (transferType.ToLower() == "WeCollect - CUP".ToLower())
+                                {
+                                    try
+                                    {
+                                        var query = from u in db.Users
+                                                    join d in db.Devices on u.Id equals d.userId
+                                                    into x
+                                                    from y in x.DefaultIfEmpty()
+                                                    where u.AyLiveAccountId == tradingAccountId
+                                                    select new { y.deviceToken, UserId = u.Id, u.Phone, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive, y.UpdateTime };
+                                        var user = query.FirstOrDefault();
+                                        if (user != null && !string.IsNullOrEmpty(user.deviceToken) && !string.IsNullOrEmpty(user.Phone))
+                                        {
+                                            //短信
+                                            YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", amount), user.Phone);
+
+                                            ////推送
+                                            //List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+                                            //list.Add(new KeyValuePair<string, string>(user.deviceToken, string.Format(pushTemplate,string.Format("【盈交易】您入金的{0}元已到账", amount))));
+                                            //push.PushBatch(list);
+
+                                            //入金信息放到消息中心
+                                            MessageBase msg = new MessageBase();
+                                            msg.UserId = user.UserId;
+                                            msg.Title = "入金消息";
+                                            msg.Body = string.Format("您入金的{0}元已到账", amount);
+                                            msg.CreatedAt = DateTime.UtcNow;
+                                            msg.IsReaded = false;
+                                            messages.Add(msg);
+
+
+                                            var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == tradingAccountId);
+                                            if (referer != null && !string.IsNullOrEmpty(referer.Phone))
+                                            {
+                                                var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);
+                                                if (referHistory != null && referHistory.IsRewarded != true)
+                                                {
+                                                    referHistory.IsRewarded = true;
+                                                    referHistory.RewardedAt = DateTime.Now;
+                                                    referRewards.Add(new ReferReward() { Amount = 30, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
+                                                    //db.ReferRewards.Add(new ReferReward() { Amount = 30, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        CFDGlobal.LogLine("Sending SMS failed for user:" + tradingAccountId);
+                                    }
+
+
+                                }
+                            }
+                            #endregion
+
+                            //update history table
+                            if (newTransferHistories.Count > 0 || messages.Count >0 || referRewards.Count>0)
+                            {
+                                if (isLive)
+                                {
                                     db.AyondoTransferHistory_Live.AddRange(newTransferHistories.Select(o => Mapper.Map<AyondoTransferHistory_Live>(o)));
+                                    if(messages.Count>0)
+                                    {
+                                        db.Message_Live.AddRange(messages.Select(m => Mapper.Map<Message_Live>(m)));
+                                    }
+                                }
                                 else
+                                {
                                     db.AyondoTransferHistories.AddRange(newTransferHistories.Select(o => Mapper.Map<AyondoTransferHistory>(o)));
+                                    if (messages.Count > 0)
+                                    {
+                                        db.Messages.AddRange(messages.Select(m => Mapper.Map<Message>(m)));
+                                    }
+                                }
+
+                                if (referRewards.Count > 0)
+                                {
+                                    db.ReferRewards.AddRange(referRewards);
+                                }
 
                                 CFDGlobal.LogLine("saving transfer histories...");
                                 db.SaveChanges();
-                    }
+                            }
                         }
                     }
 
