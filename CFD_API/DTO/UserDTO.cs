@@ -66,6 +66,7 @@ namespace CFD_API.DTO
         public int? followerCount { get; set; }
         public bool isFollowing { get; set; }
         public decimal? totalPl { get; set; }
+        public decimal? pl2w { get; set; }
         public decimal? avgPl { get; set; }
         public decimal? winRate { get; set; }
         public List<CardDTO> cards { get; set; }

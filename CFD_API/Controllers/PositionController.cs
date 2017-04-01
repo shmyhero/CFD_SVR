@@ -1316,6 +1316,12 @@ namespace CFD_API.Controllers
 
                 result.avgPl = isEmpty ? 0 : positions.Average(o => o.PL.Value);
                 result.totalPl = isEmpty ? 0 : positions.Sum(o => o.PL.Value);
+
+                var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
+                var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
+                var positions2w = positions.Where(o => o.ClosedAt > twoWeeksAgoUtc).ToList();
+                result.pl2w = positions2w.Count > 0 ? positions2w.Sum(o => o.PL) : 0;
+
                 result.winRate = isEmpty ? 0 : (decimal) positions.Count(o => o.PL > 0)/positions.Count;
                 result.followerCount = followingCount;
 
