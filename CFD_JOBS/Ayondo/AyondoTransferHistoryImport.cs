@@ -74,7 +74,7 @@ namespace CFD_JOBS.Ayondo
                         }
                         else //last record in db is found
                         {
-                            var dtLastDbRecord = lastDbRecord.Timestamp.Value;
+                            var dtLastDbRecord = DateTime.SpecifyKind(lastDbRecord.Timestamp.Value, DateTimeKind.Utc);
 
                             dtStart = dtLastDbRecord.AddMilliseconds(1);
 
