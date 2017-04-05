@@ -28,6 +28,8 @@ using CFD_API.DTO;
 using CFD_JOBS;
 using EntityFramework.Extensions;
 using Newtonsoft.Json.Linq;
+using Pinyin4net;
+using Pinyin4net.Format;
 using ServiceStack.ServiceHost;
 
 namespace CFD_TEST
@@ -744,6 +746,32 @@ namespace CFD_TEST
             //int timeout = 1000; // Timeout 时间，单位：毫秒  
             //System.Net.NetworkInformation.PingReply reply = p.Send("cfd-stunnel-cn2.cloudapp.net:14999", timeout, buffer, options);
             //var success = (reply.Status == System.Net.NetworkInformation.IPStatus.Success);
+        }
+
+        [TestMethod]
+        public void PinYin()
+        {
+            var format = new HanyuPinyinOutputFormat();
+            format.ToneType = HanyuPinyinToneType.WITHOUT_TONE;
+            format.CaseType = HanyuPinyinCaseType.LOWERCASE;
+            format.VCharType = HanyuPinyinVCharType.WITH_V;
+
+            using (var db = CFDEntities.Create())
+            {
+                var data = db.UserInfos.Where(o=>o.LastName!=null && o.FirstName!=null).Select(o=>new {Last= o.LastName, First=o.FirstName}).ToList();
+
+                foreach (var o in data)
+                {
+                    var lastPinyin = o.Last.ToCharArray().Select(c => PinyinHelper.ToHanyuPinyinStringArray(c, format))
+                        .Where(arr => arr != null && arr.Length > 0)
+                        .Select(arr => arr[0]).Aggregate((p, n) => p + n);
+                    var firstPinyin = o.First.ToCharArray().Select(c => PinyinHelper.ToHanyuPinyinStringArray(c, format))
+                        .Where(arr => arr != null && arr.Length > 0)
+                        .Select(arr => arr[0]).Aggregate((p, n) => p + n);
+
+                    CFDGlobal.LogLine(o.Last+" "+o.First+" "+lastPinyin+" "+firstPinyin);
+                }
+            }
         }
     }
 }
