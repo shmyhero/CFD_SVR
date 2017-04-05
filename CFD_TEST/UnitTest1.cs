@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.ServiceModel;
 using System.Threading;
 using AyondoTrade;
@@ -19,12 +21,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using ServiceStack.Redis.Generic;
 using System.ServiceModel.Channels;
+using System.ServiceModel.Dispatcher;
 using System.Text;
 using AutoMapper;
 using CFD_API.DTO;
 using CFD_JOBS;
 using EntityFramework.Extensions;
 using Newtonsoft.Json.Linq;
+using ServiceStack.ServiceHost;
 
 namespace CFD_TEST
 {
@@ -705,6 +709,41 @@ namespace CFD_TEST
             return dto2;
         }
 
-        
+        [TestMethod]
+        public void PingTest()
+        {
+            var times = new List<double>();
+            for (int i = 0; i < 4; i++)
+            {
+                var sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                sock.Blocking = true;
+
+                var stopwatch = new Stopwatch();
+
+                // Measure the Connect call only
+                stopwatch.Start();
+                sock.Connect("cfd-stunnel-cn2.cloudapp.net",14999);
+                stopwatch.Stop();
+
+                double t = stopwatch.Elapsed.TotalMilliseconds;
+                Console.WriteLine("{0:0.00}ms", t);
+                times.Add(t);
+
+                sock.Close();
+
+                Thread.Sleep(1000);
+            }
+            Console.WriteLine("{0:0.00} {1:0.00} {2:0.00}", times.Min(), times.Max(), times.Average());
+
+
+            //System.Net.NetworkInformation.Ping p = new System.Net.NetworkInformation.Ping();
+            //System.Net.NetworkInformation.PingOptions options = new System.Net.NetworkInformation.PingOptions();
+            //options.DontFragment = true;
+            //string data = "Test Data!";
+            //byte[] buffer = Encoding.ASCII.GetBytes(data);
+            //int timeout = 1000; // Timeout 时间，单位：毫秒  
+            //System.Net.NetworkInformation.PingReply reply = p.Send("cfd-stunnel-cn2.cloudapp.net:14999", timeout, buffer, options);
+            //var success = (reply.Status == System.Net.NetworkInformation.IPStatus.Success);
+        }
     }
 }
