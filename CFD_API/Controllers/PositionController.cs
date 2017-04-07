@@ -395,8 +395,7 @@ namespace CFD_API.Controllers
                         p.PL = first.PL;
                     }
 
-                    supplementPositions = supplementPositions.OrderByDescending(o => o.ClosedAt).ToList();
-                    positions = supplementPositions.Concat(positions).Take(count).ToList();
+                    positions = positions.Concat(supplementPositions).OrderByDescending(o => o.ClosedAt).Take(count).ToList();
                 }
             }
 
