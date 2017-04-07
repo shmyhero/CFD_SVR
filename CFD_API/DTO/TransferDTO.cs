@@ -35,7 +35,7 @@ namespace CFD_API.DTO
     public class RefundSettingDTO
     {
         public RefundChargeDTO charge { get; set; }
-        public int eta { get; set; }
+        public string eta { get; set; }
     }
 
     public class RefundChargeDTO

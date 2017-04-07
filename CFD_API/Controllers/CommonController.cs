@@ -67,11 +67,11 @@ namespace CFD_API.Controllers
             if (refundSetting != null)
             {
                 var setting = JObject.Parse(refundSetting.Value);
-                return new RefundSettingDTO() { eta = setting["eta"].Value<int>(), charge = new RefundChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
+                return new RefundSettingDTO() { eta = setting["etaStr"].Value<string>(), charge = new RefundChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
             }
             else
             {
-                return new RefundSettingDTO { eta = 3, charge = new RefundChargeDTO() { minimum = 0, rate = 0 } };
+                return new RefundSettingDTO { eta = "3-5", charge = new RefundChargeDTO() { minimum = 0, rate = 0 } };
             }
 
         }
