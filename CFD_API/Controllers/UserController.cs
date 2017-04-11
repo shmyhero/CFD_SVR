@@ -1544,27 +1544,27 @@ namespace CFD_API.Controllers
 
             #region 上传身份证照和地址证明
             var idUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, userInfo.IdFrontImg, "image/jpeg", "Identity");
-            CFDGlobal.LogInformation("id upload result:" + idUploadResult);
-            if (idUploadResult.Property("success") == null)
+            CFDGlobal.LogInformation("id upload result:" + idUploadResult.Item2);
+            if (!idUploadResult.Item1)
             {
-                CFDGlobal.LogWarning("LIVE register id upload error:" + idUploadResult);
+                CFDGlobal.LogWarning("LIVE register id upload error:" + idUploadResult.Item2);
 
                 return new ResultDTO
                 {
-                    error = idUploadResult,
+                    error = idUploadResult.Item2,
                     success = false,
                 };
             }
 
             var poaUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, userInfo.ProofOfAddress, "image/jpeg", "Address");
-            CFDGlobal.LogInformation("poa upload result:" + idUploadResult);
-            if (poaUploadResult.Property("success") == null)
+            CFDGlobal.LogInformation("poa upload result:" + poaUploadResult.Item2);
+            if (!poaUploadResult.Item1)
             {
-                CFDGlobal.LogWarning("LIVE register poa upload error:" + poaUploadResult);
+                CFDGlobal.LogWarning("LIVE register poa upload error:" + poaUploadResult.Item2);
 
                 return new ResultDTO
                 {
-                    error = poaUploadResult,
+                    error = poaUploadResult.Item2,
                     success = false,
                 };
             }

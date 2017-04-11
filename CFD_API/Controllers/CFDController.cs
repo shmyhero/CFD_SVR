@@ -378,7 +378,7 @@ namespace CFD_API.Controllers
             return result;
         }
 
-        protected static JObject AMSLiveAccountDocument(string accountGuid,string content, string contentType, string kycType)
+        protected static Tuple<bool,JToken> AMSLiveAccountDocument(string accountGuid,string content, string contentType, string kycType)
         {
             //var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account/" + accountGuid + "/document");
             var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_PROXY_HOST + "document/" + accountGuid);
@@ -422,9 +422,22 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("AMS live live-account/document called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
-            var result = JObject.Parse(str);
+            var result = JToken.Parse(str);
 
-            return result;
+            bool succeed = true;
+            if(result is JArray)
+            {
+                succeed = false;
+            }
+            else
+            {
+                if (((JObject)result).Property("success") == null)
+                {
+                    succeed = false;
+                }
+            }
+
+            return new Tuple<bool, JToken>(succeed, result);
         }
 
         protected static JToken AMSLiveAccountInitiate()
