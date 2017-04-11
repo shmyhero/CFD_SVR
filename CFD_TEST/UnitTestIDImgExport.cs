@@ -47,5 +47,36 @@ namespace CFD_TEST
 
             }
         }
+
+        /// <summary>
+        /// 导出所有的身份证照片
+        /// </summary>
+        [TestMethod]
+        public void IdImgExportAll()
+        {
+          
+            using (var db = CFDEntities.Create())
+            {
+                var result = (from ui in db.UserInfos
+                              join u in db.Users on ui.UserId equals u.Id
+                              into x
+                              from y in x.DefaultIfEmpty()
+                              select new { ui.IdFrontImg, ui.IdBackImg, y.AyLiveUsername }).ToList();
+
+                result.ForEach(u => {
+                    byte[] bytes = Convert.FromBase64String(u.IdFrontImg);
+                    MemoryStream ms = new MemoryStream(bytes);
+                    Bitmap bmp = new Bitmap(ms);
+                    bmp.Save("idimages/" + u.AyLiveUsername + "_正面" + ".jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+
+                    bytes = Convert.FromBase64String(u.IdBackImg);
+                    ms = new MemoryStream(bytes);
+                    bmp = new Bitmap(ms);
+                    bmp.Save("idimages/" + u.AyLiveUsername + "_反面" + ".jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                });
+
+
+            }
+        }
     }
 }
