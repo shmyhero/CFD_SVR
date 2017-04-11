@@ -79,14 +79,16 @@ namespace CFD_API.Controllers
                 userDto.nickname = user.Nickname;
                 userDto.picUrl = user.PicUrl;
                 userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
+                userDto.rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0;
 
                 if (!userDto.showData && userDto.id != UserId)//not showing data, not myself
                 {
-                    userDto.rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0;
+                    userDto.rank = 0;
 
                     userDto.posCount = 0;
                     userDto.winRate = 0;
                 }
+                
             }
 
             //var userDTOs = positions.GroupBy(o => o.UserId).Select(o => new UserDTO()

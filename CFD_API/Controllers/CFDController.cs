@@ -381,7 +381,7 @@ namespace CFD_API.Controllers
         protected static JToken AMSLiveAccountDocument(string accountGuid,string content, string contentType, string kycType)
         {
             //var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account/" + accountGuid + "/document");
-            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_PROXY_HOST + accountGuid);
+            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_PROXY_HOST + "document/" + accountGuid);
             //httpWebRequest.Headers["Authorization"] = CFDGlobal.AMS_HEADER_AUTH;
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json; charset=UTF-8";
