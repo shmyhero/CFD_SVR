@@ -378,7 +378,7 @@ namespace CFD_API.Controllers
             return result;
         }
 
-        protected static JToken AMSLiveAccountDocument(string accountGuid,string content, string contentType, string kycType)
+        protected static JObject AMSLiveAccountDocument(string accountGuid,string content, string contentType, string kycType)
         {
             //var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_HOST + "live-account/" + accountGuid + "/document");
             var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.AMS_PROXY_HOST + "document/" + accountGuid);
@@ -422,7 +422,7 @@ namespace CFD_API.Controllers
             CFDGlobal.LogInformation("AMS live live-account/document called. Time: " + ts.TotalMilliseconds + "ms Url: " +
                                      httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
 
-            var result = JToken.Parse(str);
+            var result = JObject.Parse(str);
 
             return result;
         }
