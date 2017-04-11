@@ -84,8 +84,8 @@ namespace CFD_API.Controllers
                 {
                     userDto.rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0;
 
-                    userDto.posCount = null;
-                    userDto.winRate = null;
+                    userDto.posCount = 0;
+                    userDto.winRate = 0;
                 }
             }
 

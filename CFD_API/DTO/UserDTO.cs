@@ -44,10 +44,10 @@ namespace CFD_API.DTO
         //public string nickname { get; set; }
         //public string picUrl { get; set; }
         public decimal roi { get; set; }
-        public int? posCount { get; set; }
-        public decimal? winRate { get; set; }
+        public int posCount { get; set; }
+        public decimal winRate { get; set; }
 
-        public int? rank { get; set; }
+        public int rank { get; set; }
 
         public bool showData { get; set; }
     }
