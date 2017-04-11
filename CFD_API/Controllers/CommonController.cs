@@ -13,6 +13,7 @@ using CFD_API.DTO;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using Newtonsoft.Json.Linq;
+using CFD_COMMON;
 
 namespace CFD_API.Controllers
 {
@@ -84,7 +85,16 @@ namespace CFD_API.Controllers
         [Route("setting/deposit")]
         public DepositSettingDTO GetDepositSetting()
         {
-            Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "Deposit");
+            Misc refundSetting = null;
+            CFDGlobal.LogInformation("deposit setting request uri " + Request.RequestUri.Host);
+            if (Request.RequestUri.Host == "cfd-webapi.chinacloudapp.cn")
+            {
+                refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "Deposit");
+            }
+            else
+            {
+                refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "DepositStaging");
+            }
 
             var Banks = GetBanks();
 
@@ -97,6 +107,13 @@ namespace CFD_API.Controllers
             {
                 return new DepositSettingDTO { minimum = 100M, fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = 0, rate = 0 } };
             }
+        }
+
+        [HttpGet]
+        [Route("uri")]
+        public string GetRequestUri()
+        {
+            return Request.RequestUri.Host;
         }
 
         [HttpGet]
