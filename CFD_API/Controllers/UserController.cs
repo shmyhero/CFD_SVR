@@ -563,7 +563,7 @@ namespace CFD_API.Controllers
                     //按百分比计算的手续费
                     decimal percentage = JObject.Parse(refundSetting.Value)["rate"].Value<decimal>() * available;
                     //手续费按大的算
-                    maxRefundable = minimum > percentage ? (available - minimum) : (available - percentage);
+                    maxRefundable = GetAvailableWithdraw(balance, totalUPL, balance - marginUsed);  //minimum > percentage ? (available - minimum) : (available - percentage);
                 }
 
                 if (refundCommentSetting != null)
@@ -583,6 +583,55 @@ namespace CFD_API.Controllers
                 refundable = maxRefundable > 0 ? Math.Round(maxRefundable, 2) : 0,
                 comment = refundComment
             };
+        }
+
+        /// <summary>
+        /// Open Positions/Pending Orders or not? – If no, then the client can withdraw 100%
+        /// Select the Lowest value between Cash Balance or Margin Available
+        /// Select the lowest value between 80% and Liquidity
+        /// example:
+        /// Cash Balance: 92408
+        /// Open P/L: -1310
+        /// Account Value: 91097
+        /// Margin Available: 6725
+        /// Margin Used: 85683
+        /// Liquidity: 98.23%  计算方法: ((92408 * 80%) - 1310 ) / (92408 * 80%)
+        /// 
+        /// available withdraw is: 5378.9
+        /// </summary>
+        /// <param name="availableMargin"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("live/withdraw/available")]
+        [BasicAuth]
+        public decimal GetAvailableWithdraw(decimal cashBalance, decimal pl, decimal availableMargin)
+        {
+            var user = GetUser();
+            IList<PositionReport> openPositions = null;
+            using (var wcfClient = new AyondoTradeClient(true))
+            {
+                try
+                {
+                    openPositions = wcfClient.GetPositionReport(user.AyLiveUsername, null, false);
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)//when oauth is required
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
+                        __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
+            }
+
+            if(openPositions.Count == 0) //没有持仓
+            {
+                return cashBalance;
+            }
+            else //有持仓
+            {
+                decimal liquidity = ((cashBalance * 0.8M) + pl) / (cashBalance * 0.8M);
+
+                return availableMargin * (liquidity < 0.8M ? liquidity : 0.8M);
+            }
+            
         }
 
         [HttpGet]
