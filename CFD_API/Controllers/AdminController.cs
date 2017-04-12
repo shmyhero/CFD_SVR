@@ -15,7 +15,7 @@ using CFD_API.Controllers.Attributes;
 
 namespace CFD_API.Controllers
 {
-    [Route("api")]
+    [RoutePrefix("api/admin")]
     public class AdminController : CFDController
     {
         public AdminController(CFDEntities db, IMapper mapper) : base(db, mapper)
