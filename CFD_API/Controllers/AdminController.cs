@@ -11,10 +11,11 @@ using CFD_COMMON;
 using CFD_COMMON.Azure;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
+using CFD_API.Controllers.Attributes;
 
 namespace CFD_API.Controllers
 {
-    //todo: Admin Auth required!
+    [Route("api")]
     public class AdminController : CFDController
     {
         public AdminController(CFDEntities db, IMapper mapper) : base(db, mapper)
@@ -188,6 +189,7 @@ namespace CFD_API.Controllers
 
         [Route("operation/login")]
         [HttpPost]
+        [AdminAuth]
         public string Login(OperationUserDTO userDTO)
         {
             int userType = 0;
@@ -206,6 +208,7 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("headline")]
+        [AdminAuth]
         public HttpResponseMessage PostHeadline(HeadlineDTO headLineDTO)
         {
             if (headLineDTO.id > 0) //update
@@ -223,6 +226,7 @@ namespace CFD_API.Controllers
 
         [Route("headline/{id}")]
         [HttpDelete]
+        [AdminAuth]
         public HttpResponseMessage DeleteHeadline(int id)
         {
             Headline headline = null;
