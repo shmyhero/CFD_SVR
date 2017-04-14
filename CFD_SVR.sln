@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_API", "CFD_API\CFD_API.csproj", "{551AB463-99FE-4F42-B963-DE88818CCBC0}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AyondoTrade", "AyondoTrade\AyondoTrade.csproj", "{BBA7BBA6-7410-44A1-9948-B3A22AB76E7C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFD_JOBS_WinApp", "CFD_JOBS_WinApp\CFD_JOBS_WinApp.csproj", "{3764ED90-F60B-4B80-B108-37FE04F0C7E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChromeNet", "ChromeNet\ChromeNet.csproj", "{916B2331-8CEA-4D92-9C0A-38BBA4A88C45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{3764ED90-F60B-4B80-B108-37FE04F0C7E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3764ED90-F60B-4B80-B108-37FE04F0C7E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3764ED90-F60B-4B80-B108-37FE04F0C7E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{916B2331-8CEA-4D92-9C0A-38BBA4A88C45}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{916B2331-8CEA-4D92-9C0A-38BBA4A88C45}.Debug|Any CPU.Build.0 = Debug|x64
+		{916B2331-8CEA-4D92-9C0A-38BBA4A88C45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{916B2331-8CEA-4D92-9C0A-38BBA4A88C45}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
