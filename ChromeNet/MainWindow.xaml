@@ -10,6 +10,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="24"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="400"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -29,5 +30,8 @@
         <Border Name="borderChrome" Grid.Row="1" BorderBrush="Silver" BorderThickness="2">
 
         </Border>
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Visible">
+            <TextBox Name="txtLog"></TextBox>
+        </ScrollViewer>
     </Grid>
 </Window>
