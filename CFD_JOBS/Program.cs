@@ -92,7 +92,7 @@ namespace CFD_JOBS
 
                 if (args.Contains("-Competition"))
                 {
-                    Competition.Run();
+                    Competition2.Run();
                 }
 
                 if (args.Contains("-LoadTest"))
