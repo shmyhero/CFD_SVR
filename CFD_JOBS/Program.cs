@@ -139,7 +139,7 @@ namespace CFD_JOBS
                     QuoteSnapshot.Run(true);
                 }
 
-                if (args.Contains("-Rank"))
+                if (args.Contains("-Rank_Live"))
                 {
                     RankJob.Run(true);
                 }
