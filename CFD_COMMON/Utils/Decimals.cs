@@ -20,5 +20,15 @@ namespace CFD_COMMON.Utils
 
             return Math.Abs(d.Value) < (decimal) 0.000001;
         }
+
+        public static decimal RoundIfExceed(decimal d, int decimalCount)
+        {
+            int c = BitConverter.GetBytes(decimal.GetBits(d)[3])[2];
+
+            if (c > decimalCount)
+                return Math.Round(d, decimalCount, MidpointRounding.AwayFromZero);
+            else
+                return d;
+        }
     }
 }

@@ -422,8 +422,8 @@ namespace CFD_API.Controllers
                     openAt = o.CreateTime.Value,
                     closeAt = o.ClosedAt.Value,
 
-                    openPrice = o.SettlePrice.Value,
-                    closePrice = o.ClosedPrice.Value,
+                    openPrice = Decimals.RoundIfExceed(o.SettlePrice.Value, prodDef.Prec),
+                    closePrice = Decimals.RoundIfExceed(o.ClosedPrice.Value, prodDef.Prec),
 
                     pl = o.PL.Value,
 
