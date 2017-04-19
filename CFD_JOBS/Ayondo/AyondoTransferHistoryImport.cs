@@ -47,6 +47,8 @@ namespace CFD_JOBS.Ayondo
 
         public static void Run(bool isLive = false)
         {
+            ServicePointManager.SetTcpKeepAlive(true,1000*60,1000*5);
+
             while (true)
             {
                 try
