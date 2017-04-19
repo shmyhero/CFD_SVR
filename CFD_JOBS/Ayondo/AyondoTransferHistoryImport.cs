@@ -103,7 +103,7 @@ namespace CFD_JOBS.Ayondo
                     string downloadString;
                     using (var webClient = new TimedWebClient())
                     {
-                        webClient.Encoding=Encoding.GetEncoding("iso-8859-1");
+                        webClient.Encoding = Encoding.UTF8;
                         downloadString = webClient.DownloadString(url);
                         //downloadString = System.IO.File.ReadAllText("Transfer.txt");
                     }
