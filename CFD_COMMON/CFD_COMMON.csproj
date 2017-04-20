@@ -166,6 +166,7 @@
     <Compile Include="Models\Entities\PhoneSignupHistory.cs" />
     <Compile Include="Models\Entities\OperationUser.cs" />
     <Compile Include="Models\Entities\PriceDownInterval.cs" />
+    <Compile Include="Models\Entities\ProdSetting.cs" />
     <Compile Include="Models\Entities\QuoteHistory.cs" />
     <Compile Include="Models\Entities\QuoteSnapshot.cs" />
     <Compile Include="Models\Entities\ReferHistory.cs" />

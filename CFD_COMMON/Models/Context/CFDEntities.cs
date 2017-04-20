@@ -40,7 +40,8 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Misc> Miscs { get; set; }
         public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
         public virtual DbSet<OperationUser> OperationUsers { get; set; }
-        public virtual DbSet<PriceDownInterval> PriceDownIntervals { get; set; }
+        //public virtual DbSet<PriceDownInterval> PriceDownIntervals { get; set; }
+        public virtual DbSet<ProdSetting> ProdSettings { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
         public virtual DbSet<QuoteSnapshot> QuoteSnapshots { get; set; }

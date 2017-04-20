@@ -470,7 +470,7 @@ namespace CFD_API.Controllers
             //get new price
             //var quote = redisQuoteClient.GetById(securityId);
             var quote = cache.Quotes.FirstOrDefault(o => o.Id == securityId);
-            if (Quotes.IsPriceDown(cache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            if (Quotes.IsPriceDown(cache.ProdSettingList.FirstOrDefault(o => o.ProdID == quote.Id), quote.Time))
             {
                 result.isPriceDown = true;
             }
@@ -505,6 +505,15 @@ namespace CFD_API.Controllers
             result.minValueShort = Math.Ceiling(minShort*perSizeValueUSD);
             result.maxValueLong = Math.Floor(maxLong*perSizeValueUSD);
             result.maxValueShort = Math.Floor(maxShort*perSizeValueUSD);
+
+            if(IsLiveUrl && cache.ProdSettingList.Any(p=>p.ProdID == securityId)) //只有实盘需要设置最小投入本金
+            {
+                var prodSetting = cache.ProdSettingList.FirstOrDefault(p => p.ProdID == securityId);
+                if(prodSetting.MinInvestUSD.HasValue)
+                {
+                    result.minInvestUSD = prodSetting.MinInvestUSD.Value;
+                }
+            }
 
             //demo data
             Random r = new Random();

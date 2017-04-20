@@ -1,6 +1,7 @@
 ﻿using System;
 using CFD_COMMON.Models.Cached;
 using System.Collections.Generic;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_COMMON.Utils
 {
@@ -61,12 +62,12 @@ namespace CFD_COMMON.Utils
         /// </summary>
         /// <param name="interval">中断的容忍周期</param>
         /// <returns></returns>
-        public static bool IsPriceDown(KeyValuePair<int, int> interval, DateTime time)
+        public static bool IsPriceDown(ProdSetting prodSetting, DateTime time)
         {
-            if (default(KeyValuePair<int, int>).Equals(interval))
+            if (prodSetting == null || !prodSetting.PriceDownInterval.HasValue || prodSetting.PriceDownInterval.Value <= 0)
                 return (DateTime.UtcNow - time).TotalSeconds >= 3 * 60;
 
-            return (DateTime.UtcNow - time).TotalSeconds >= interval.Value;
+            return (DateTime.UtcNow - time).TotalSeconds >= prodSetting.PriceDownInterval.Value;
         }
 
         /// <summary>

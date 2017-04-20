@@ -38,6 +38,28 @@ namespace CFD_API.DTO
 
         public decimal? minValueLong { get; set; }
         public decimal? minValueShort { get; set; }
+
+        /// <summary>
+        /// 实盘：
+        /// 商品的最小投资本金，在数据库中的ProdSetting表可以配置。
+        /// 如果ProdSetting不存在该商品的配置，则默认50
+        /// 模拟盘：
+        /// 前端不会使用该字段
+        /// </summary>
+        private decimal _minInestUSD = 50;
+        public decimal minInvestUSD
+        {
+            get
+            {
+                return _minInestUSD;
+            }
+
+            set
+            {
+                _minInestUSD = value;
+            }
+        }
+
         public decimal? maxValueLong { get; set; }
         public decimal? maxValueShort { get; set; }
         public decimal? maxLeverage { get; set; }

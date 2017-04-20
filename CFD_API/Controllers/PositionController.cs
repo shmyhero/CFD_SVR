@@ -103,7 +103,7 @@ namespace CFD_API.Controllers
                 var quote = cache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 
                 var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                if (Quotes.IsPriceDown(cache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+                if (Quotes.IsPriceDown(cache.ProdSettingList.FirstOrDefault(o => o.ProdID == quote.Id), quote.Time))
                 {
                     security.isPriceDown = true;
                 }
@@ -741,7 +741,7 @@ namespace CFD_API.Controllers
             var quote = cache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
 
             //price
-            if(!ignorePriceDelay && Quotes.IsPriceDown(cache.PriceDownInterval.FirstOrDefault(o => o.Key == quote.Id), quote.Time))
+            if(!ignorePriceDelay && Quotes.IsPriceDown(cache.ProdSettingList.FirstOrDefault(o => o.ProdID == quote.Id), quote.Time))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
                         __(TransKey.PRICEDOWN)));

@@ -10,6 +10,7 @@ using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_API.Caching
 {
@@ -19,7 +20,9 @@ namespace CFD_API.Caching
         private  Timer _timerQuote;
         private  Timer _timerTick;
         private  Timer _timerTickRaw;
-        private  Timer _timerPriceDown;
+        //private  Timer _timerPriceDown;
+        private  Timer _timerProdSetting;
+
         private static TimeSpan _updateIntervalProdDef = TimeSpan.FromSeconds(3);
         private static TimeSpan _updateIntervalQuote = TimeSpan.FromMilliseconds(500);
         private static TimeSpan _updateIntervalTick = TimeSpan.FromSeconds(10);
@@ -36,7 +39,8 @@ namespace CFD_API.Caching
             TickToday = new ConcurrentDictionary<int, List<TickDTO>>();
             TickWeek = new ConcurrentDictionary<int, List<TickDTO>>();
             TickMonth = new ConcurrentDictionary<int, List<TickDTO>>();
-            PriceDownInterval = new Dictionary<int, int>();
+            //PriceDownInterval = new Dictionary<int, int>();
+            ProdSettingList = new List<ProdSetting>();
 
             mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -61,7 +65,8 @@ namespace CFD_API.Caching
             _timerQuote = new Timer(UpdateQuotes, null, _updateIntervalQuote, TimeSpan.FromMilliseconds(-1));
             _timerTick = new Timer(UpdateTicks, null, _updateIntervalTick, TimeSpan.FromMilliseconds(-1));
             _timerTickRaw = new Timer(UpdateRawTicks, null, _updateIntervalTickRaw, TimeSpan.FromMilliseconds(-1));
-            _timerPriceDown = new Timer(UpdatePriceDownInterval, null,0, 3 * 60 * 1000);
+            //_timerPriceDown = new Timer(UpdatePriceDownInterval, null,0, 3 * 60 * 1000);
+            _timerProdSetting = new Timer(UpdateProdSetting, null, 0, 3 * 60 * 1000);
         }
 
         public  IList<ProdDef> ProdDefs { get; private set; }
@@ -70,10 +75,15 @@ namespace CFD_API.Caching
         public  ConcurrentDictionary<int, List<TickDTO>> TickToday { get; private set; }
         public  ConcurrentDictionary<int, List<TickDTO>> TickWeek { get; private set; }
         public  ConcurrentDictionary<int, List<TickDTO>> TickMonth { get; private set; }
+        ///// <summary>
+        ///// 价格中断的最大可接受时间
+        ///// </summary>
+        //public  Dictionary<int, int> PriceDownInterval { get; private set; }
+
         /// <summary>
-        /// 价格中断的最大可接受时间
+        /// 包含了最小投资本金、价格中断的最大可接受时间
         /// </summary>
-        public  Dictionary<int, int> PriceDownInterval { get; private set; }
+        public List<ProdSetting> ProdSettingList { get; private set; }
 
         private void UpdateRawTicks(object state)
         {
@@ -261,20 +271,29 @@ namespace CFD_API.Caching
             }
         }
 
-        private void UpdatePriceDownInterval(object state)
+        //private void UpdatePriceDownInterval(object state)
+        //{
+        //    using (var db = CFDEntities.Create())
+        //    {
+        //        PriceDownInterval.Clear();
+        //        db.PriceDownIntervals.ToList().ForEach(p => {
+        //                                                        if (!PriceDownInterval.ContainsKey(p.SecurityID))
+        //                                                        {
+        //                                                            PriceDownInterval.Add(p.SecurityID, p.DownInterval);
+        //                                                        }
+        //        });
+        //    }
+
+
+        //}
+
+        private void UpdateProdSetting(object state)
         {
             using (var db = CFDEntities.Create())
             {
-                PriceDownInterval.Clear();
-                db.PriceDownIntervals.ToList().ForEach(p => {
-                                                                if (!PriceDownInterval.ContainsKey(p.SecurityID))
-                                                                {
-                                                                    PriceDownInterval.Add(p.SecurityID, p.DownInterval);
-                                                                }
-                });
+                ProdSettingList.Clear();
+                ProdSettingList.AddRange(db.ProdSettings.ToList());
             }
-
-
         }
 
         public List<TickDTO> GetOrCreateTickRaw(int secId)
