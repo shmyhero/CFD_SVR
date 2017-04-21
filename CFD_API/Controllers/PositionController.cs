@@ -1326,6 +1326,24 @@ namespace CFD_API.Controllers
                 result.winRate = isEmpty ? 0 : (decimal) positions.Count(o => o.PL > 0)/positions.Count;
                 result.followerCount = followingCount;
 
+                result.avgHoldPeriod = isEmpty ? 0 : positions.Average(p => {
+                    if(!p.CreateTime.HasValue)
+                    { return 0; }
+                    else if(!p.ClosedAt.HasValue)
+                    {
+                        return Convert.ToDecimal((DateTime.Now - p.CreateTime.Value).TotalHours);
+                    }
+                    else
+                    {
+                        return Convert.ToDecimal((p.ClosedAt.Value - p.CreateTime.Value).TotalHours);
+                    }
+                });
+                //为了把小数点后第二位也向上取整，所以先除100，再乘100
+                result.avgHoldPeriod = Math.Ceiling((result.avgHoldPeriod / 24) * 100) / 100;
+                result.avgInvestUSD = isEmpty ? 0 : (int)(positions.Average(p => p.InvestUSD.HasValue? p.InvestUSD : 0));
+                result.avgLeverage = isEmpty ? 0 : (int)(positions.Sum(p => p.InvestUSD.Value * p.Leverage.Value) / positions.Sum(p => p.InvestUSD.Value));
+                result.orderCount = positions.Count;
+
                 if (IsLiveUrl)
                 {
                     var cards = from u in db.UserCards_Live

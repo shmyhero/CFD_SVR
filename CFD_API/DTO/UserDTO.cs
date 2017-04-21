@@ -76,6 +76,23 @@ namespace CFD_API.DTO
         /// 收益榜是否显示用户数据
         /// </summary>
         public bool showData { get; set; }
+
+        /// <summary>
+        /// 平均杠杆
+        /// </summary>
+        public int avgLeverage { get; set; }
+        /// <summary>
+        ///  累计下单
+        /// </summary>
+        public int orderCount { get; set; }
+        /// <summary>
+        /// 平均持仓时间
+        /// </summary>
+        public decimal avgHoldPeriod { get; set; }
+        /// <summary>
+        /// 平均本金
+        /// </summary>
+        public int avgInvestUSD { get; set; } 
     }
 
     public class NewDepositDTO
