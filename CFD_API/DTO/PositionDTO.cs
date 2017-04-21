@@ -35,6 +35,18 @@ namespace CFD_API.DTO
         public CardDTO card { get; set; }
     }
 
+    /// <summary>
+    /// 简化的仓位信息，给达人榜的个人主页用。允许别人看到的自己的仓位信息。
+    /// </summary>
+    public class SimplePositionDTO
+    {
+        public int id { get; set; }
+        public string symbol { get; set; }
+        public string name { get; set; }
+        public decimal pl { get; set; }
+        public decimal rate { get; set; }
+    }
+
     public class PositionHistoryDTO
     {
         public string id { get; set; }

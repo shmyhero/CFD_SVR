@@ -189,6 +189,44 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("live/open/{userID}")]
+        public List<SimplePositionDTO> GetSimpleOpenPositions(int userID)
+        {
+            List<SimplePositionDTO> results = new List<SimplePositionDTO>();
+            var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID && !p.ClosedAt.HasValue).OrderByDescending(p => p.Id).Take(20).ToList();
+            var cache = WebCache.GetInstance(true);
+
+            positions.ForEach(p => {
+                SimplePositionDTO dto = new SimplePositionDTO();
+                dto.id = p.SecurityId.HasValue ? p.SecurityId.Value : 0;
+                
+                dto.rate = Math.Round(dto.rate, 2);
+                var prodDef = cache.ProdDefs.FirstOrDefault(pd => pd.Id == p.SecurityId);
+                var quote = cache.Quotes.FirstOrDefault(o => o.Id == p.SecurityId.Value);
+                if (prodDef != null)
+                {
+                    #region 计算PL
+                    var tradeValue = p.InvestUSD * p.Leverage;
+                    if (quote != null)
+                    {
+                        decimal upl = p.LongQty.HasValue ? tradeValue.Value * (quote.Bid / p.SettlePrice.Value - 1) : tradeValue.Value * (1 - quote.Offer / p.SettlePrice.Value);
+                        var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
+                        dto.pl = uplUSD;
+                    }
+                    dto.rate = p.InvestUSD.HasValue ? (dto.pl / p.InvestUSD.Value) : 0;
+                    #endregion
+
+                    dto.symbol = prodDef.Symbol;
+                    dto.name = Translator.GetCName(prodDef.Name);
+                }
+
+                results.Add(dto);
+            });
+
+            return results;
+        }
+
+        [HttpGet]
         [Route("closed2")]
         [Route("live/closed2")]
         [BasicAuth]
@@ -704,6 +742,38 @@ namespace CFD_API.Controllers
             security.open = null;
             security.last = null;
             security.isOpen = null;
+        }
+
+        /// <summary>
+        /// 达人榜个人主页显示的用户平仓记录，只取前20条
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("live/closed/{userID}")]
+        public List<SimplePositionDTO> GetSimpleClosedPositions(int userID)
+        {
+            List<SimplePositionDTO> results = new List<SimplePositionDTO>();
+            var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID && p.ClosedAt.HasValue).OrderByDescending(p=>p.Id).Take(20).ToList();
+            var cache = WebCache.GetInstance(true);
+
+            positions.ForEach(p => {
+                SimplePositionDTO dto = new SimplePositionDTO();
+                dto.id = p.SecurityId.HasValue ? p.SecurityId.Value : 0;
+                dto.pl = p.PL.HasValue ? p.PL.Value : 0;
+                dto.rate = p.PL.HasValue && p.InvestUSD.HasValue ? (p.PL.Value / p.InvestUSD.Value) : 0;
+                dto.rate = Math.Round(dto.rate, 2);
+                var prodDef = cache.ProdDefs.FirstOrDefault(pd => pd.Id == p.SecurityId);
+                if (prodDef != null)
+                {
+                    dto.symbol = prodDef.Symbol;
+                    dto.name = Translator.GetCName(prodDef.Name);
+                }
+
+                results.Add(dto);
+            });
+
+            return results;
         }
 
         [HttpPost]
