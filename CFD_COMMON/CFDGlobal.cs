@@ -50,6 +50,8 @@ namespace CFD_COMMON
         public static readonly string AMS_PROXY_HOST = GetConfigurationSetting("AMSProxyHost");
         public const string AMS_CALLBACK_AUTH_TOKEN = "Tj3Id8N7mG6Dyi9Pl1Se4b7dNMik9N0sz1V5sM8cT3we8x9PoqcW3N7dV61cD5J2Ur3Qjf8yTd3EG0UX3";
 
+        public static readonly string TH_WEB_HOST = GetConfigurationSetting("THWebHost");
+
         public static string OAUTH_TOKEN_PUBLIC_KEY = @"-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlkG4r0XGWG8DO2043seO
 aQnoA426WXTliwAUf9dG7idMyTEcR5jrAY4a2nZtFRj1cstDbxZuSP3Gm2TenDxq

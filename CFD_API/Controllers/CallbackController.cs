@@ -175,7 +175,7 @@ namespace CFD_API.Controllers
             var errorResponse = Request.CreateResponse(HttpStatusCode.Redirect);
             //errorResponse.Headers.Location = new Uri(currentUrl + "/error");
             errorResponse.Headers.Location = new Uri(
-                "http://cn.tradehero.mobi/tradehub/live/login.html?client_id=62d275a211&redirect_uri=https://api.typhoontechnology.hk/api/live/oauth&loginError=error");
+                CFDGlobal.TH_WEB_HOST + "tradehub/live/login.html?client_id=62d275a211&redirect_uri=https://api.typhoontechnology.hk/api/live/oauth&loginError=error");
 
             var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
             if (!string.IsNullOrWhiteSpace(error))
@@ -266,7 +266,7 @@ namespace CFD_API.Controllers
                 //return "OK";
                 var okResponse = Request.CreateResponse(HttpStatusCode.Redirect);
                 //okResponse.Headers.Location = new Uri(currentUrl + "/ok");
-                okResponse.Headers.Location = new Uri("http://cn.tradehero.mobi/tradehub/live/loginload.html");
+                okResponse.Headers.Location = new Uri(CFDGlobal.TH_WEB_HOST + "tradehub/live/loginload.html");
                 return okResponse;
             }
 

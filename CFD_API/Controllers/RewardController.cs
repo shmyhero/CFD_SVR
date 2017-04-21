@@ -28,8 +28,8 @@ namespace CFD_API.Controllers
         {
             return new RewardIntroDTO()
             {
-                url = "http://cn.tradehero.mobi/TH_CFD_WEB/checkinRule.php",
-                imgUrl = "http://cn.tradehero.mobi/TH_CFD_WEB/images/ShareLogo.png",
+                url = CFDGlobal.TH_WEB_HOST + "TH_CFD_WEB/checkinRule.php",
+                imgUrl = CFDGlobal.TH_WEB_HOST + "TH_CFD_WEB/images/ShareLogo.png",
                 title = "签到赚取实盘资金",
                 text = "模拟注册可赚取" + RewardService.REWARD_DEMO_REG + "元；每日签到可赚取" + RewardService.CHECK_IN_DAY_1_TO_5 + "元；每日模拟交易可赚取" + RewardService.REWARD_DEMO_TRADE + "元。",
             };
@@ -41,8 +41,8 @@ namespace CFD_API.Controllers
         {
             return new RewardIntroDTO()
             {
-                url = "http://cn.tradehero.mobi/TH_CFD_WEB/checkinRule.php",
-                imgUrl = "http://cn.tradehero.mobi/TH_CFD_WEB/images/ShareLogo.png",
+                url = CFDGlobal.TH_WEB_HOST + "TH_CFD_WEB/checkinRule.php",
+                imgUrl = CFDGlobal.TH_WEB_HOST + "TH_CFD_WEB/images/ShareLogo.png",
                 title = "模拟注册获得"+RewardService.REWARD_DEMO_REG+"元交易金",
                 text = "模拟注册可赚取" + RewardService.REWARD_DEMO_REG + "元；每日签到可赚取" + RewardService.CHECK_IN_DAY_1_TO_5 + "元；每日模拟交易可赚取" + RewardService.REWARD_DEMO_TRADE + "元。",
             };
