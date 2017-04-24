@@ -62,7 +62,7 @@ namespace CFD_COMMON.Utils
         /// </summary>
         /// <param name="interval">中断的容忍周期</param>
         /// <returns></returns>
-        public static bool IsPriceDown(ProdSetting prodSetting, DateTime time)
+        public static bool IsPriceDown(ProdSetting_Live prodSetting, DateTime time)
         {
             if (prodSetting == null || !prodSetting.PriceDownInterval.HasValue || prodSetting.PriceDownInterval.Value <= 0)
                 return (DateTime.UtcNow - time).TotalSeconds >= 3 * 60;

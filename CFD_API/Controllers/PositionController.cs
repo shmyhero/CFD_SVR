@@ -103,7 +103,7 @@ namespace CFD_API.Controllers
                 var quote = cache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(report.SecurityID));
                 
                 var security = Mapper.Map<SecurityDetailDTO>(prodDef);
-                if (Quotes.IsPriceDown(cache.ProdSettingList.FirstOrDefault(o => o.ProdID == quote.Id), quote.Time))
+                if (Quotes.IsPriceDown(cache.GetProdSettingByID(quote.Id), quote.Time))
                 {
                     security.isPriceDown = true;
                 }
@@ -189,7 +189,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("live/open/{userID}")]
+        [Route("~/api/user/{userId}/live/position/open")]
         public List<SimplePositionDTO> GetSimpleOpenPositions(int userID)
         {
             List<SimplePositionDTO> results = new List<SimplePositionDTO>();
@@ -750,7 +750,7 @@ namespace CFD_API.Controllers
         /// <param name="userID"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("live/closed/{userID}")]
+        [Route("~/api/user/{userId}/live/position/closed")]
         public List<SimplePositionDTO> GetSimpleClosedPositions(int userID)
         {
             List<SimplePositionDTO> results = new List<SimplePositionDTO>();
@@ -811,7 +811,7 @@ namespace CFD_API.Controllers
             var quote = cache.Quotes.FirstOrDefault(o => o.Id == form.securityId);
 
             //price
-            if(!ignorePriceDelay && Quotes.IsPriceDown(cache.ProdSettingList.FirstOrDefault(o => o.ProdID == quote.Id), quote.Time))
+            if(!ignorePriceDelay && Quotes.IsPriceDown(cache.GetProdSettingByID(quote.Id), quote.Time))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,
                         __(TransKey.PRICEDOWN)));

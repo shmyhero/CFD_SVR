@@ -40,7 +40,7 @@ namespace CFD_API.Caching
             TickWeek = new ConcurrentDictionary<int, List<TickDTO>>();
             TickMonth = new ConcurrentDictionary<int, List<TickDTO>>();
             //PriceDownInterval = new Dictionary<int, int>();
-            ProdSettingList = new List<ProdSetting>();
+            ProdSettingLive = new List<ProdSetting_Live>();
 
             mapper = MapperConfig.GetAutoMapperConfiguration().CreateMapper();
 
@@ -66,7 +66,11 @@ namespace CFD_API.Caching
             _timerTick = new Timer(UpdateTicks, null, _updateIntervalTick, TimeSpan.FromMilliseconds(-1));
             _timerTickRaw = new Timer(UpdateRawTicks, null, _updateIntervalTickRaw, TimeSpan.FromMilliseconds(-1));
             //_timerPriceDown = new Timer(UpdatePriceDownInterval, null,0, 3 * 60 * 1000);
-            _timerProdSetting = new Timer(UpdateProdSetting, null, 0, 3 * 60 * 1000);
+            if(isLive)
+            {
+                _timerProdSetting = new Timer(UpdateProdSetting, null, 0, 3 * 60 * 1000);
+            }
+                
         }
 
         public  IList<ProdDef> ProdDefs { get; private set; }
@@ -83,7 +87,7 @@ namespace CFD_API.Caching
         /// <summary>
         /// 包含了最小投资本金、价格中断的最大可接受时间
         /// </summary>
-        public List<ProdSetting> ProdSettingList { get; private set; }
+        private List<ProdSetting_Live> ProdSettingLive;
 
         private void UpdateRawTicks(object state)
         {
@@ -294,14 +298,19 @@ namespace CFD_API.Caching
                 using (var db = CFDEntities.Create())
                 {
                     var allProdSettings = db.ProdSettings.ToList();
-                    ProdSettingList.Clear();
-                    ProdSettingList.AddRange(allProdSettings);
+                    ProdSettingLive.Clear();
+                    ProdSettingLive.AddRange(allProdSettings);
                 }
             }
             catch (Exception e)
             {
                 CFDGlobal.LogExceptionAsInfo(e);
             }
+        }
+
+        public ProdSetting_Live GetProdSettingByID(int prodID)
+        {
+            return ProdSettingLive.FirstOrDefault(o => o.ProdID == prodID);
         }
 
         public List<TickDTO> GetOrCreateTickRaw(int secId)
