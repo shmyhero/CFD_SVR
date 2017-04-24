@@ -289,10 +289,17 @@ namespace CFD_API.Caching
 
         private void UpdateProdSetting(object state)
         {
-            using (var db = CFDEntities.Create())
+            try
             {
-                ProdSettingList.Clear();
-                ProdSettingList.AddRange(db.ProdSettings.ToList());
+                using (var db = CFDEntities.Create())
+                {
+                    ProdSettingList.Clear();
+                    ProdSettingList.AddRange(db.ProdSettings.ToList());
+                }
+            }
+            catch (Exception e)
+            {
+                CFDGlobal.LogExceptionAsInfo(e);
             }
         }
 
