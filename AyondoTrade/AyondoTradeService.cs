@@ -15,7 +15,7 @@ namespace AyondoTrade
     // NOTE: In order to launch WCF Test Client for testing this service, please select AyondoTradeService.svc or AyondoTradeService.svc.cs at the Solution Explorer and start debugging.
     public class AyondoTradeService : IAyondoTradeService
     {
-        public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(10);
         public static readonly int SCAN_WAIT_MILLI_SECOND = 250;
 
         public AyondoTradeService()
