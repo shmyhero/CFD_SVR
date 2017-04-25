@@ -190,6 +190,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("~/api/user/{userId}/live/position/open")]
+        [BasicAuth]
         public List<SimplePositionDTO> GetSimpleOpenPositions(int userID)
         {
             List<SimplePositionDTO> results = new List<SimplePositionDTO>();
@@ -200,7 +201,6 @@ namespace CFD_API.Controllers
                 SimplePositionDTO dto = new SimplePositionDTO();
                 dto.id = p.SecurityId.HasValue ? p.SecurityId.Value : 0;
                 
-                dto.rate = Math.Round(dto.rate, 2);
                 var prodDef = cache.ProdDefs.FirstOrDefault(pd => pd.Id == p.SecurityId);
                 var quote = cache.Quotes.FirstOrDefault(o => o.Id == p.SecurityId.Value);
                 if (prodDef != null)
@@ -751,6 +751,7 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("~/api/user/{userId}/live/position/closed")]
+        [BasicAuth]
         public List<SimplePositionDTO> GetSimpleClosedPositions(int userID)
         {
             List<SimplePositionDTO> results = new List<SimplePositionDTO>();

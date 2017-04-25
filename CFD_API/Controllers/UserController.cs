@@ -926,6 +926,119 @@ namespace CFD_API.Controllers
             return result; 
         }
 
+        /// <summary>
+        /// 达人榜看别人的收益
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{userID}/live/plReport")]
+        [BasicAuth]
+        public List<PLReportDTO> GetOthersPLReport(int userID)
+        {
+          
+            var cache = WebCache.GetInstance(IsLiveUrl);
+            var indicesIDs = cache.ProdDefs.Where(p => p.AssetClass == "Stock Indices").Select(p => p.Id);
+            var currencyIDs = cache.ProdDefs.Where(p => p.AssetClass == "Currencies").Select(p => p.Id);
+            var commodityIDs = cache.ProdDefs.Where(p => p.AssetClass == "Commodities").Select(p => p.Id);
+            var stockIDs = cache.ProdDefs.Where(p => p.AssetClass == "Single Stocks" && Products.IsUSStocks(p.Symbol)).Select(p => p.Id);
+
+            //这里要用Contact，不要用Union。因为Union会排除重复项。
+            #region 平仓
+            var plReports = (from m in (
+                                (from n in db.NewPositionHistory_live
+                                 where n.SecurityId.HasValue && indicesIDs.Contains(n.SecurityId.Value)
+                                 && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
+                                 select new { AssetType = "指数", PL = n.PL, Invest = n.InvestUSD }).Concat(
+                                from n in db.NewPositionHistory_live
+                                where n.SecurityId.HasValue && currencyIDs.Contains(n.SecurityId.Value)
+                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
+                                select new { AssetType = "外汇", PL = n.PL, Invest = n.InvestUSD }).Concat(
+                                from n in db.NewPositionHistory_live
+                                where n.SecurityId.HasValue && commodityIDs.Contains(n.SecurityId.Value)
+                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
+                                select new { AssetType = "商品", PL = n.PL, Invest = n.InvestUSD }).Concat(
+                                from n in db.NewPositionHistory_live
+                                where n.SecurityId.HasValue && stockIDs.Contains(n.SecurityId.Value)
+                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
+                                select new { AssetType = "美股", PL = n.PL, Invest = n.InvestUSD })
+                            )
+                             group m by m.AssetType into g
+                             select new PLReportDTO
+                             {
+                                 name = g.Key,
+                                 pl = g.Sum(m => m.PL).Value,
+                                 invest = g.Sum(m => m.Invest).Value
+                             }).ToList();
+
+            //如果没有数据，需要补充
+            if(plReports.FirstOrDefault(r => r.name == "指数") == null)
+            {
+                plReports.Add(new PLReportDTO() { name = "指数" });
+            }
+            if (plReports.FirstOrDefault(r => r.name == "外汇") == null)
+            {
+                plReports.Add(new PLReportDTO() { name = "外汇" });
+            }
+            if (plReports.FirstOrDefault(r => r.name == "商品") == null)
+            {
+                plReports.Add(new PLReportDTO() { name = "商品" });
+            }
+            if (plReports.FirstOrDefault(r => r.name == "美股") == null)
+            {
+                plReports.Add(new PLReportDTO() { name = "美股" });
+            }
+
+            #endregion
+
+            #region 持仓
+            var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID && !p.ClosedAt.HasValue).OrderByDescending(p => p.Id).ToList();
+
+            positions.ForEach(p => {
+                var prodDef = cache.ProdDefs.FirstOrDefault(pd => pd.Id == p.SecurityId);
+                var quote = cache.Quotes.FirstOrDefault(o => o.Id == p.SecurityId.Value);
+                if (prodDef != null)
+                {
+                    #region 计算PL
+                    var tradeValue = p.InvestUSD * p.Leverage;
+                    if (quote != null)
+                    {
+                        decimal upl = p.LongQty.HasValue ? tradeValue.Value * (quote.Bid / p.SettlePrice.Value - 1) : tradeValue.Value * (1 - quote.Offer / p.SettlePrice.Value);
+                        var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
+                        PLReportDTO report = null;
+                        if (indicesIDs.Contains(prodDef.Id)) //指数
+                        {
+                           report = plReports.FirstOrDefault(r => r.name == "指数");
+                        }
+                        else if (currencyIDs.Contains(prodDef.Id)) //外汇
+                        {
+                            report = plReports.FirstOrDefault(r => r.name == "外汇");
+                        }
+                        else if (commodityIDs.Contains(prodDef.Id)) //商品
+                        {
+                            report = plReports.FirstOrDefault(r => r.name == "商品");
+                        }
+                        else if (stockIDs.Contains(prodDef.Id)) //股票
+                        {
+                            report = plReports.FirstOrDefault(r => r.name == "美股");
+                        }
+
+                        if (report != null)
+                        {
+                            report.pl += uplUSD;
+                            report.invest += p.InvestUSD.HasValue? p.InvestUSD.Value : 0;
+                        }
+                    }
+                    #endregion
+                }
+                
+            });
+
+            #endregion
+          
+            return plReports;
+        }
+
         [HttpGet]
         [Route("stockAlert")]
         [Route("live/stockAlert")]
