@@ -146,14 +146,16 @@ namespace CFD_COMMON.Utils
 
                 var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
 
-                fxRate = pl > 0 ? fxQuote.Offer * 1.005m : fxQuote.Bid * 0.995m;
+                //fxRate = pl > 0 ? fxQuote.Offer * 1.005m : fxQuote.Bid * 0.995m;
+                fxRate = pl > 0 ? fxQuote.Offer : fxQuote.Bid;
                 return pl / fxRate;
             }
             else
             {
                 var fxQuote = quotes.FirstOrDefault(o => o.Id == fxProdDef.Id);
 
-                fxRate = pl > 0 ? fxQuote.Bid*0.995m : fxQuote.Offer*1.005m;
+                //fxRate = pl > 0 ? fxQuote.Bid*0.995m : fxQuote.Offer*1.005m;
+                fxRate = pl > 0 ? fxQuote.Bid : fxQuote.Offer;
                 return pl * fxRate;
             }
         }
