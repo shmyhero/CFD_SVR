@@ -193,10 +193,13 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<SimplePositionDTO> GetSimpleOpenPositions(int userID)
         {
-            var user = db.Users.FirstOrDefault(o => o.Id == userID);
-            if (user == null || !(user.ShowData ?? true))
-                return new List<SimplePositionDTO>();
-            
+            if (userID != UserId) //not myself
+            {
+                var user = db.Users.FirstOrDefault(o => o.Id == userID);
+                if (user == null || !(user.ShowData ?? true))
+                    return new List<SimplePositionDTO>();
+            }
+
             List<SimplePositionDTO> results = new List<SimplePositionDTO>();
             var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID && !p.ClosedAt.HasValue).OrderByDescending(p => p.Id).Take(20).ToList();
             var cache = WebCache.GetInstance(true);
@@ -758,9 +761,12 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<SimplePositionDTO> GetSimpleClosedPositions(int userID)
         {
-            var user = db.Users.FirstOrDefault(o => o.Id == userID);
-            if (user == null || !(user.ShowData ?? true))
-                return new List<SimplePositionDTO>();
+            if (userID != UserId) //not myself
+            {
+                var user = db.Users.FirstOrDefault(o => o.Id == userID);
+                if (user == null || !(user.ShowData ?? true))
+                    return new List<SimplePositionDTO>();
+            }
 
             List<SimplePositionDTO> results = new List<SimplePositionDTO>();
             var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID && p.ClosedAt.HasValue).OrderByDescending(p=>p.Id).Take(20).ToList();

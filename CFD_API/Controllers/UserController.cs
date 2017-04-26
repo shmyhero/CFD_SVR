@@ -941,9 +941,12 @@ namespace CFD_API.Controllers
             var commodityPL = new PLReportDTO() { name = "商品" };
             var stockUSPL = new PLReportDTO() { name = "美股" };
 
-            var user = db.Users.FirstOrDefault(o => o.Id == userID);
-            if (user == null || !(user.ShowData ?? true))
-                return new List<PLReportDTO> { stockUSPL, indexPL, fxPL, commodityPL };
+            if (userID != UserId) //not myself
+            {
+                var user = db.Users.FirstOrDefault(o => o.Id == userID);
+                if (user == null || !(user.ShowData ?? true))
+                    return new List<PLReportDTO> {stockUSPL, indexPL, fxPL, commodityPL};
+            }
 
             var cache = WebCache.GetInstance(IsLiveUrl);
             var indicesIDs = cache.ProdDefs.Where(p => p.AssetClass == "Stock Indices").Select(p => p.Id);
