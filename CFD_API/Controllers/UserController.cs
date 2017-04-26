@@ -936,7 +936,15 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PLReportDTO> GetOthersPLReport(int userID)
         {
-          
+            var indexPL = new PLReportDTO() { name = "指数" };
+            var fxPL = new PLReportDTO() { name = "外汇" };
+            var commodityPL = new PLReportDTO() { name = "商品" };
+            var stockUSPL = new PLReportDTO() { name = "美股" };
+
+            var user = db.Users.FirstOrDefault(o => o.Id == userID);
+            if (user == null || !(user.ShowData ?? true))
+                return new List<PLReportDTO> { stockUSPL, indexPL, fxPL, commodityPL };
+
             var cache = WebCache.GetInstance(IsLiveUrl);
             var indicesIDs = cache.ProdDefs.Where(p => p.AssetClass == "Stock Indices").Select(p => p.Id);
             var currencyIDs = cache.ProdDefs.Where(p => p.AssetClass == "Currencies").Select(p => p.Id);
@@ -945,7 +953,7 @@ namespace CFD_API.Controllers
 
             //这里要用Contact，不要用Union。因为Union会排除重复项。
             #region 平仓
-            var plReports = (from m in (
+            var plReports = (from m in ( //TODO: improve this T-SQL, too long
                                 (from n in db.NewPositionHistory_live
                                  where n.SecurityId.HasValue && indicesIDs.Contains(n.SecurityId.Value)
                                  && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
@@ -963,6 +971,7 @@ namespace CFD_API.Controllers
                                 && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
                                 select new { AssetType = "美股", PL = n.PL, Invest = n.InvestUSD })
                             )
+                            //todo: closedAt != null?
                              group m by m.AssetType into g
                              select new PLReportDTO
                              {
@@ -991,6 +1000,7 @@ namespace CFD_API.Controllers
 
             #endregion
 
+            //TODO: why not query db only once to get both open and closed histories
             #region 持仓
             var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID && !p.ClosedAt.HasValue).OrderByDescending(p => p.Id).ToList();
 
