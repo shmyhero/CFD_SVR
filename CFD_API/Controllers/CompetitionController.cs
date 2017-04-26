@@ -84,6 +84,24 @@ namespace CFD_API.Controllers
             return competitionResults;
         }
 
+        //todo: for support/test
+        [HttpGet]
+        [Route("{id}/leaderboard/all")]
+        public dynamic GetLeaderboardAll(int id)
+        {
+            //var date = DateTimes.GetLastFinishedChinaWorkday();
+            var date = db.CompetitionResults.OrderByDescending(o => o.Date).Select(o => o.Date).FirstOrDefault();
+
+            var competitionResults =
+                db.CompetitionResults.Where(o => o.CompetitionId == id && o.Date == date)
+                    .OrderBy(o => o.Rank)
+                    .ToList()
+                    .Select(o => new {o.Date, o.UserId, o.Nickname, o.Phone, o.Rank, o.PositionCount, o.Invest, o.PL})
+                    .ToList();
+
+            return competitionResults;
+        }
+
         [HttpGet]
         [Route("{id}/user/{userId}/rank")]
         public CompetitionResultDTO GetUserRank(int id, int userId)
@@ -129,6 +147,37 @@ namespace CFD_API.Controllers
                 db.CompetitionUserPositions.Where(o => o.CompetitionId == id && o.Date == date && o.UserId == userId).ToList();
 
             return positions.Select(o => Mapper.Map<CompetitionUserPositionDTO>(o)).ToList();
+        }
+
+        //todo: for support/test
+        [HttpGet]
+        [Route("{id}/position")]
+        public dynamic GetPositionAll(int id)
+        {
+            //var date = DateTimes.GetLastFinishedChinaWorkday();
+            var date = db.CompetitionResults.OrderByDescending(o => o.Date).Select(o => o.Date).FirstOrDefault();
+
+            var cPositions =
+                db.CompetitionUserPositions.Where(o => o.CompetitionId == id && o.Date == date)
+                    .ToList();
+
+            var posIds = cPositions.Select(o => o.PositionId).ToList();
+            var positions = db.NewPositionHistories.Where(o => posIds.Contains(o.Id)).ToList();
+
+            var result = cPositions.Select(o => new
+            {
+                o.Date,
+                o.PositionId,
+                o.UserId,
+                o.SecurityId,
+                o.SecurityName,
+                o.Invest,
+                o.PL,
+                CreateTime = positions.First(p => p.Id == o.PositionId).CreateTime.Value.AddHours(8)
+            })
+                .ToList();
+
+            return result;
         }
 
         [HttpGet]

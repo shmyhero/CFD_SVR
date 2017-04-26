@@ -226,6 +226,7 @@
     <Content Include="CacheMonitor.html" />
     <Content Include="CacheClear.html" />
     <Content Include="CacheSwitcher.html" />
+    <Content Include="CompetitionView.html" />
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="ProdView.html" />
