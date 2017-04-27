@@ -16,6 +16,7 @@ using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using System.Data.SqlTypes;
 using System.Text;
+using Newtonsoft.Json.Linq;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -260,9 +261,21 @@ namespace CFD_JOBS.Ayondo
                                             msg.CreatedAt = DateTime.UtcNow;
                                             msg.IsReaded = false;
                                             messages.Add(msg);
-
-
+                                            
                                             var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == transfer.TradingAccountId);
+                                            int amount = 100;
+                                            try
+                                            {
+                                                var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
+                                                if (setting != null)
+                                                {
+                                                    amount = JObject.Parse(setting.Value)["referee"].Value<int>();
+                                                }
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                CFDGlobal.LogInformation("推荐好友的交易金设置错误:" + ex.Message);
+                                            }
                                             if (referer != null && !string.IsNullOrEmpty(referer.Phone))
                                             {
                                                 var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);
@@ -270,7 +283,7 @@ namespace CFD_JOBS.Ayondo
                                                 {
                                                     referHistory.IsRewarded = true;
                                                     referHistory.RewardedAt = DateTime.Now;
-                                                    referRewards.Add(new ReferReward() { Amount = 30, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
+                                                    referRewards.Add(new ReferReward() { Amount = amount, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
                                                     //db.ReferRewards.Add(new ReferReward() { Amount = 30, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
                                                 }
                                             }

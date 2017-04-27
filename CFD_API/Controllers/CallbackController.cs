@@ -50,11 +50,25 @@ namespace CFD_API.Controllers
                     {
                         user.AyLiveAccountStatus = form.status;
                         
-                        #region 实盘注册成功后发送短信提醒用户,并赠送30元交易金
+                        #region 实盘注册成功后发送短信提醒用户,并赠送100元交易金
                         var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == user.Id);
                         if(form.status.ToLower() == "pendinglogin" && liveReward == null)
                         {
-                            YunPianMessenger.SendSms("【盈交易】恭喜完成开户，30元交易金已打入您的账户，完成首笔入金就可以交易啦！", user.Phone);
+                            int amount = 100;
+                            try
+                            {
+                                var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
+                                if (setting != null)
+                                {
+                                    amount = JObject.Parse(setting.Value)["liveAccount"].Value<int>();
+                                }
+                            }
+                            catch(Exception ex)
+                            {
+                                CFDGlobal.LogInformation("实盘注册的交易金设置错误:" + ex.Message);
+                            }
+                        
+                            YunPianMessenger.SendSms(string.Format("【盈交易】恭喜完成开户，{0}元交易金已打入您的账户，完成首笔入金就可以交易啦！", amount), user.Phone);
                             db.LiveRegisterRewards.Add(new CFD_COMMON.Models.Entities.LiveRegisterReward() {
                                 UserId = user.Id,
                                 Amount = 30,

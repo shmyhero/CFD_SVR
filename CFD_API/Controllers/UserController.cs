@@ -115,11 +115,25 @@ namespace CFD_API.Controllers
                     result.userId = user.Id;
                     result.token = user.Token;
 
-                    #region 第一次用手机号注册，如果该手机号被推荐过，则给该用户30元奖励金
+                    #region 第一次用手机号注册，如果该手机号被推荐过，则给该用户100元奖励金
                     var referHistory = db.ReferHistorys.FirstOrDefault(o => o.ApplicantNumber == form.phone);
-                    if(referHistory != null)
+                    int amount = 100;
+                    try
                     {
-                        db.ReferRewards.Add(new ReferReward() { UserID = user.Id, Amount = 30, CreatedAt = DateTime.UtcNow });
+                        var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
+                        if (setting != null)
+                        {
+                            amount = JObject.Parse(setting.Value)["referer"].Value<int>();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CFDGlobal.LogInformation("推荐好友的交易金设置错误:" + ex.Message);
+                    }
+
+                    if (referHistory != null)
+                    {
+                        db.ReferRewards.Add(new ReferReward() { UserID = user.Id, Amount = amount, CreatedAt = DateTime.UtcNow });
                         db.SaveChanges();
                     }
                     #endregion

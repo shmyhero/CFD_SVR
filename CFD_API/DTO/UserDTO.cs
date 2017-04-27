@@ -237,12 +237,12 @@ namespace CFD_API.DTO
         /// </summary>
         public decimal totalCard { get; set; }
         /// <summary>
-        /// 模拟盘注册奖励（20元）
+        /// 模拟盘注册奖励
         /// </summary>
         public decimal demoRegister { get; set; }
 
         /// <summary>
-        /// 实盘注册奖励(30)
+        /// 实盘注册奖励
         /// </summary>
         public decimal liveRegister { get; set; }
 

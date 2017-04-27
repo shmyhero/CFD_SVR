@@ -7,6 +7,7 @@ using System.Transactions;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace CFD_COMMON.Service
 {
@@ -16,7 +17,7 @@ namespace CFD_COMMON.Service
         public const decimal CHECK_IN_DAY_1_TO_5 = 0.5M;
         public const decimal CHECK_IN_DAY_6_TO_10 = 0.6M;
         public const decimal CHECK_IN_DAY_11_TO_X = 0.8M;
-        public const decimal REWARD_DEMO_REG = 20m;
+        public static readonly decimal REWARD_DEMO_REG = 50m;
         public const decimal REWARD_DEMO_TRADE = 0.5m;
 
         public CFDEntities db { get; set; }
@@ -24,6 +25,19 @@ namespace CFD_COMMON.Service
         public RewardService(CFDEntities db)
         {
             this.db = db;
+            int demoAmount = 50;
+            try
+            {
+                var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
+                if (setting != null)
+                {
+                    demoAmount = JObject.Parse(setting.Value)["demoAccount"].Value<int>();
+                }
+            }
+            catch (Exception ex)
+            {
+                CFDGlobal.LogInformation("模拟盘注册的交易金设置错误:" + ex.Message);
+            }
         }
 
         public bool CheckIn(int userId)
