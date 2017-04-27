@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
+using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
@@ -87,6 +88,7 @@ namespace CFD_API.Controllers
         //todo: for support/test
         [HttpGet]
         [Route("{id}/leaderboard/all")]
+        [IPAuth]
         public dynamic GetLeaderboardAll(int id)
         {
             //var date = DateTimes.GetLastFinishedChinaWorkday();
@@ -152,6 +154,7 @@ namespace CFD_API.Controllers
         //todo: for support/test
         [HttpGet]
         [Route("{id}/position")]
+        [IPAuth]
         public dynamic GetPositionAll(int id)
         {
             //var date = DateTimes.GetLastFinishedChinaWorkday();

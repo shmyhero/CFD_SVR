@@ -1,26 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
 namespace CFD_API.Controllers.Attributes
 {
-    public class RestrictByIp:ActionFilterAttribute
+    public class IPAuth : AuthorizationFilterAttribute
     {
-        public override void OnActionExecuting(HttpActionContext actionContext)
+        public override void OnAuthorization(HttpActionContext actionContext)
         {
-            base.OnActionExecuting(actionContext);
-
             string ip = null;
             if (actionContext.Request.Properties.ContainsKey("MS_HttpContext"))
             {
                 var requestBase = ((HttpContextWrapper)actionContext.Request.Properties["MS_HttpContext"]).Request;
                 ip = requestBase.UserHostAddress;
 
-                //if db.Ip.Where(today).Count>xxx
+                if(ip!="::1" && ip!= "101.231.88.242")
+                    actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized);
             }
+
+            base.OnAuthorization(actionContext);
         }
     }
 }
