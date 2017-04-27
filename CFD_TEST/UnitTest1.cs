@@ -585,58 +585,39 @@ namespace CFD_TEST
             User user;
             PositionDTO pos;
 
-            //德国30
-            //for (int i = 0; i < 3; i++)
-            //{
-            //user = db.Users.FirstOrDefault(o => o.Id == 1);
-            //pos = XiaDan_SheZhiYing(user, 34820, true, 100);
-            //user = db.Users.FirstOrDefault(o => o.Id == 3277);
-            //pos = XiaDan_SheZhiYing(user, 34820, false, 100);
+            var r = new Random();
+
+            //德国30 34820
             user = db.Users.FirstOrDefault(o => o.Id == 3219);
-            pos = XiaDan_SheZhiYing(user, 34820, true, 100);
+            pos = XiaDan_SheZhiYing(user, 34820, r.NextDouble() > 0.5, 100);
+
+            //法国40 34811 50
+            //英镑/加元 34815 125
             user = db.Users.FirstOrDefault(o => o.Id == 3220);
-            pos = XiaDan_SheZhiYing(user, 34820, false, 100);
-            //user = db.Users.FirstOrDefault(o => o.Id == 3281);
-            //pos = XiaDan_SheZhiYing(user, 34820, true, 100);
-            //user = db.Users.FirstOrDefault(o => o.Id == 3218);
-            //pos = XiaDan_SheZhiYing(user, 34820, false, 100);
-            //}
+            pos = XiaDan_SheZhiYing(user, 34815, r.NextDouble() > 0.5, 125);
 
-            //华尔街
-            //user = db.Users.FirstOrDefault(o => o.Id == 3219);
-            //pos = XiaDan_SheZhiYing(user, 34864, true, 100);
-            //user = db.Users.FirstOrDefault(o => o.Id == 3220);
-            //pos = XiaDan_SheZhiYing(user, 34864, false, 100);
+            //华尔街 34864
             user = db.Users.FirstOrDefault(o => o.Id == 3281);
-            pos = XiaDan_SheZhiYing(user, 34864, true, 100);
+            pos = XiaDan_SheZhiYing(user, 34864, r.NextDouble() > 0.5, 100);
+            //美国标准500 34857
             user = db.Users.FirstOrDefault(o => o.Id == 3218);
-            pos = XiaDan_SheZhiYing(user, 34864, false, 100);
-            //for (int i = 0; i < 1; i++)
-            //{
-            //    user = db.Users.FirstOrDefault(o => o.Id == 3281);
-            //    pos = XiaDan_SheZhiYing(user, 34864, true);
-            //    user = db.Users.FirstOrDefault(o => o.Id == 3218);
-            //    pos = XiaDan_SheZhiYing(user, 34864, false);
-            //}
+            pos = XiaDan_SheZhiYing(user, 34857, r.NextDouble() > 0.5, 100);
 
-            //英国100
+            //英国100 34854
             user = db.Users.FirstOrDefault(o => o.Id == 3221);
-            pos = XiaDan_SheZhiYing(user, 34854, true, 100);
+            pos = XiaDan_SheZhiYing(user, 34854, r.NextDouble() > 0.5, 100);
+            //美国科技股100 34858
             user = db.Users.FirstOrDefault(o => o.Id == 3222);
-            pos = XiaDan_SheZhiYing(user, 34854, false, 100);
+            pos = XiaDan_SheZhiYing(user, 34858, r.NextDouble() > 0.5, 100);
 
-            ////欧元对英镑
-            //for (int i = 0; i < 1; i++)
-            //{
+            //欧元对英镑 34803
             user = db.Users.FirstOrDefault(o => o.Id == 1);
-            pos = XiaDan_SheZhiYing(user, 34803, true, 125);
+            pos = XiaDan_SheZhiYing(user, 34803, r.NextDouble() > 0.5, 125);
+
+            //欧洲50 34801 50
+            //美元/日元 34860 100
             user = db.Users.FirstOrDefault(o => o.Id == 3277);
-            pos = XiaDan_SheZhiYing(user, 34803, false, 125);
-            //user = db.Users.FirstOrDefault(o => o.Id == 3281);
-            //pos = XiaDan_SheZhiYing(user, 34803, true, 125);
-            //user = db.Users.FirstOrDefault(o => o.Id == 3218);
-            //pos = XiaDan_SheZhiYing(user, 34803, false, 125);
-            //}
+            pos = XiaDan_SheZhiYing(user, 34860, r.NextDouble() > 0.5, 100);
         }
 
         private static PositionDTO SheZhiYing(User user, PositionDTO pos)
