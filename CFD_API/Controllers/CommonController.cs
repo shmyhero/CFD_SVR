@@ -87,7 +87,7 @@ namespace CFD_API.Controllers
         {
             Misc refundSetting = null;
             CFDGlobal.LogInformation("deposit setting request uri " + Request.RequestUri.Host);
-            if (Request.RequestUri.Host == "cfd-webapi.chinacloudapp.cn")
+            if (Request.RequestUri.Host == "api.typhoontechnology.hk")
             {
                 refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "Deposit");
             }
@@ -101,11 +101,11 @@ namespace CFD_API.Controllers
             if (refundSetting != null)
             {
                 var setting = JObject.Parse(refundSetting.Value);
-                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
+                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), alipay = setting["alipay"].Value<string>(), fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
             }
             else
             {
-                return new DepositSettingDTO { minimum = 100M, fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = 0, rate = 0 } };
+                return new DepositSettingDTO { minimum = 100M, alipay= "单笔固定50美元", fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = 0, rate = 0 } };
             }
         }
 

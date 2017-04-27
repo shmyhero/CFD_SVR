@@ -19,6 +19,9 @@ namespace CFD_API.DTO
     public class DepositSettingDTO
     {
         public decimal minimum { get; set; }
+
+        public string alipay { get; set; }
+
         public decimal fxRate { get; set; }
 
         public DepositChargeDTO charge { get; set; }
