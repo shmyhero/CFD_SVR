@@ -93,8 +93,8 @@ namespace CFD_API.Controllers
                 var commodities = prodDefs.Where(o => o.QuoteType != enmQuoteType.Inactive && o.AssetClass == CFDGlobal.ASSET_CLASS_COMMODITY).ToList();
                 var openCount = commodities.Count(o => o.QuoteType != enmQuoteType.Closed);
                 var ratioOpen = (double)openCount/commodities.Count;
-                if (ratioOpen < 0.9)
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "商品开市率小于90%");
+                if (ratioOpen < 0.8)
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "商品开市率小于80%");
             }
 
             if (
@@ -108,8 +108,8 @@ namespace CFD_API.Controllers
                 var currencies = prodDefs.Where(o => o.QuoteType != enmQuoteType.Inactive && o.AssetClass == CFDGlobal.ASSET_CLASS_FX && !o.Name.EndsWith(" Outright")).ToList();
                 var openCount = currencies.Count(o => o.QuoteType != enmQuoteType.Closed);
                 var ratioOpen = (double)openCount / currencies.Count;
-                if (ratioOpen < 0.9)
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "外汇开市率小于90%");
+                if (ratioOpen < 0.8)
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "外汇开市率小于80%");
             }
 
             if (
@@ -123,8 +123,8 @@ namespace CFD_API.Controllers
                 var indices = prodDefs.Where(o => o.QuoteType != enmQuoteType.Inactive && o.AssetClass == CFDGlobal.ASSET_CLASS_INDEX).ToList();
                 var openCount = indices.Count(o => o.QuoteType != enmQuoteType.Closed);
                 var ratioOpen = (double)openCount / indices.Count;
-                if (ratioOpen < 0.9)
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "指数开市率小于90%");
+                if (ratioOpen < 0.8)
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "指数开市率小于80%");
             }
 
             if (
@@ -136,8 +136,8 @@ namespace CFD_API.Controllers
                 var usStocks =prodDefs.Where(o => o.QuoteType != enmQuoteType.Inactive && o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
                 var openCount = usStocks.Count(o => o.QuoteType != enmQuoteType.Closed);
                 var ratioOpen = (double) openCount/ usStocks.Count;
-                if (ratioOpen < 0.9)
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "美股开市率小于90%");
+                if (ratioOpen < 0.8)
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "美股开市率小于80%");
             }
 
             if (
