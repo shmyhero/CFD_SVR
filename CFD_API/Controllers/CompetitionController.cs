@@ -167,16 +167,22 @@ namespace CFD_API.Controllers
             var posIds = cPositions.Select(o => o.PositionId).ToList();
             var positions = db.NewPositionHistories.Where(o => posIds.Contains(o.Id)).ToList();
 
-            var result = cPositions.Select(o => new
+            var result = cPositions.Select(o =>
             {
-                o.Date,
-                o.PositionId,
-                o.UserId,
-                o.SecurityId,
-                o.SecurityName,
-                o.Invest,
-                o.PL,
-                CreateTime = positions.First(p => p.Id == o.PositionId).CreateTime.Value.AddHours(8)
+                var pos = positions.First(p => p.Id == o.PositionId);
+                return new
+                {
+                    o.Date,
+                    o.PositionId,
+                    o.UserId,
+                    o.SecurityId,
+                    o.SecurityName,
+                    o.Invest,
+                    o.PL,
+                    CreateTime = pos.CreateTime.Value.AddHours(8),
+                    pos.Leverage,
+                    Side = pos.LongQty.HasValue?1:0,
+                };
             })
                 .ToList();
 

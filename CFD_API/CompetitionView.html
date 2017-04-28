@@ -59,6 +59,8 @@
             <th>SecurityId</th>
             <th>SecurityName</th>
             <th>Invest</th>
+            <th>Leverage</th>
+            <th>Side</th>
             <th>PL</th>
             <th>CreateTime</th>
         </tr>
@@ -103,7 +105,7 @@
                 + '</tr>',
               $positionTable = $('#positionTable'),
             $positionTableBody = $positionTable.find('tbody'),
-            positionRowTemplate = '<tr data-symbol="{id}"><td>{Date}</td><td>{PositionId}</td><td>{UserId}</td><td>{SecurityId}</td><td>{SecurityName}</td><td>{Invest}</td><td>{PL}</td><td>{CreateTime}</td>'
+            positionRowTemplate = '<tr data-symbol="{id}"><td>{Date}</td><td>{PositionId}</td><td>{UserId}</td><td>{SecurityId}</td><td>{SecurityName}</td><td>{Invest}</td><td>{Leverage}</td><td>{Side}</td><td>{PL}</td><td>{CreateTime}</td>'
                 //+ '<td>{Bid}</td><td>{Offer}</td>'
                 //+ '<td>{LastOpen}</td><td>{LastClose}</td><td>{PreClose}</td><td>{OpenBid}</td><td>{OpenAsk}</td><td>{CloseBid}</td><td>{CloseAsk}</td>'
                 //+ '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
@@ -136,7 +138,7 @@
                 $positionTableBody.empty();
                 $.each(datas, function () {
                     var data = formatData(this);
-                    $positionTableBody.append(positionRowTemplate.supplant(data)//.replace('{Shortable}', stock.Shortable)
+                    $positionTableBody.append(positionRowTemplate.supplant(data)//.replace('{Side}', data.Side)
                         );
                 });
             });
