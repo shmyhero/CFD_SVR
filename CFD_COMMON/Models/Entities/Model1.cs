@@ -12,10 +12,14 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<UserFollow> UserFollows { get; set; }
+        public virtual DbSet<IP2Country> IP2Country { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<IP2Country>()
+                .Property(e => e.CountryCode)
+                .IsFixedLength()
+                .IsUnicode(false);
         }
     }
 }

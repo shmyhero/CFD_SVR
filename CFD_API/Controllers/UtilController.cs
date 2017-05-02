@@ -68,6 +68,30 @@ namespace CFD_API.Controllers
             return Mapper.Map<VersionAndroidDTO>(version);
         }
 
+        [HttpGet]
+        [Route("ipCheck")]
+        public bool CheckIp()
+        {
+            string ip = null;
+            if (Request.Properties.ContainsKey("MS_HttpContext"))
+            {
+                var requestBase = ((HttpContextWrapper) Request.Properties["MS_HttpContext"]).Request;
+                ip = requestBase.UserHostAddress;
+
+                using (var db = CFDEntities.Create())
+                {
+                    var record =
+                        db.IP2Country.SqlQuery(
+                            "SELECT TOP 1 * FROM IP2Country WHERE StartAddress <= @p0 ORDER BY StartAddress DESC",
+                            IPAddress.Parse(ip).MapToIPv6().GetAddressBytes()).FirstOrDefault();
+                    if (record != null && record.CountryCode == "CN")
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         [Route("sendCode")]
         [HttpPost]
         //[RequireHttps]

@@ -33,6 +33,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Headline> Headlines { get; set; }
+        public virtual DbSet<IP2Country> IP2Country { get; set; }
         public virtual DbSet<LikeHistory> LikeHistories { get; set; }
         public virtual DbSet<LiveRank> LiveRanks { get; set; }
         public virtual DbSet<LiveRegisterReward> LiveRegisterRewards { get; set; }
@@ -130,6 +131,12 @@ namespace CFD_COMMON.Models.Context
             modelBuilder.Entity<DepositHistory>()
                 .Property(e => e.ClaimAmount)
                 .HasPrecision(18, 5);
+
+
+            modelBuilder.Entity<IP2Country>()
+                .Property(e => e.CountryCode)
+                .IsFixedLength()
+                .IsUnicode(false);
 
 
             modelBuilder.Entity<NewPositionHistory>()

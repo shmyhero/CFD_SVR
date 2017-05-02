@@ -26,11 +26,13 @@ using System.Text;
 using AutoMapper;
 using CFD_API.DTO;
 using CFD_JOBS;
+using CsvHelper;
 using EntityFramework.Extensions;
 using Newtonsoft.Json.Linq;
 using Pinyin4net;
 using Pinyin4net.Format;
 using ServiceStack.ServiceHost;
+using EntityFramework.BulkInsert.Extensions;
 
 namespace CFD_TEST
 {
@@ -91,6 +93,33 @@ namespace CFD_TEST
         }
 
         [TestMethod]
+        public void ImportIP2CountryCsvFile()
+        {
+            var db = CFDEntities.Create();
+
+            var csv = new CsvReader(new StreamReader(File.Open(@"E:\Downloads\dbip-country-2017-05.csv",FileMode.Open)));
+
+            var list=new List<IP2Country>();
+
+            while (csv.Read())
+            {
+                list.Add(new IP2Country()
+                {
+                    CountryCode = csv.GetField(2),
+                    EndAddress = IPAddress.Parse(csv.GetField(1)).MapToIPv6().GetAddressBytes(),
+                    StartAddress = IPAddress.Parse(csv.GetField(0)).MapToIPv6().GetAddressBytes()
+                });
+                
+                if(list.Count%1000==0) CFDGlobal.LogLine("done: " + list.Count);
+            }
+            db.BulkInsert(list);
+            db.SaveChanges();
+
+            csv.Dispose();
+           db.Dispose();
+        }
+
+        [TestMethod]
         public void Test1()
         {
             //using (var db = CFDEntities.Create())
@@ -105,6 +134,16 @@ namespace CFD_TEST
             //    db.SaveChanges();
             //    int id = msg.Id;
             //} 
+
+            var ip = IPAddress.Parse("101.231.88.242").MapToIPv6();
+
+            using (var db =CFDEntities.Create())
+
+            {
+
+                var record = db.IP2Country.SqlQuery("SELECT TOP 1 * FROM IP2Country WHERE StartAddress <= @p0 ORDER BY StartAddress DESC", ip.GetAddressBytes()).FirstOrDefault();
+                
+            }
         }
 
         [TestMethod]

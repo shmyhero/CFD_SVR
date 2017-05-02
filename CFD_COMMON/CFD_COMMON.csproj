@@ -154,6 +154,7 @@
     <Compile Include="Models\Entities\Bookmark.cs" />
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Feedback.cs" />
+    <Compile Include="Models\Entities\IP2Country.cs" />
     <Compile Include="Models\Entities\LikeHistory.cs" />
     <Compile Include="Models\Entities\LiveRank.cs" />
     <Compile Include="Models\Entities\LiveRegisterReward.cs" />
