@@ -2347,6 +2347,8 @@ namespace CFD_API.Controllers
                     return __(TransKey.LIVE_ACC_REJ_RejectedByDD);
                 case "RejectedMifid":
                     return __(TransKey.LIVE_ACC_REJ_RejectedMifid);
+                case "RejectedDuplicate":
+                    return __(TransKey.LIVE_ACC_REJ_RejectedMifid);
 
                 default:
                     return null;
@@ -2378,6 +2380,7 @@ namespace CFD_API.Controllers
                 case "AbortedByPolicy":
                 case "RejectedDD":
                 case "RejectedMifid":
+                case "RejectedDuplicate":
                     return UserLiveStatus.Rejected;
                     break;
 
