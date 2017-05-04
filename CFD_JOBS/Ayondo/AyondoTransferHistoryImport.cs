@@ -223,12 +223,40 @@ namespace CFD_JOBS.Ayondo
                                 db.SaveChanges();
                             }
 
+                            //update DepositHistory
+                            var deposits = newTransferHistories.Where(o => o.TransferType == "WeCollect - CUP").ToList();
+                            if (deposits.Count > 0)
+                            {
+                                CFDGlobal.LogLine("updating DepositHistory table...");
+                                try
+                                {
+                                    var transactionIds = deposits.Select(o => o.TransactionId).ToList();
+                                    var depositHistories =
+                                        db.DepositHistories.Where(o => transactionIds.Contains(o.TransferID)).ToList();
+                                    foreach (var depositHistory in depositHistories)
+                                    {
+                                        var deposit =
+                                            deposits.FirstOrDefault(o => o.TransactionId == depositHistory.TransferID);
+                                        if (deposit != null)
+                                        {
+                                            depositHistory.Amount = deposit.Amount;
+                                            depositHistory.ApprovalTime = deposit.ApprovalTime;
+                                        }
+                                    }
+                                    db.SaveChanges();
+                                }
+                                catch (Exception e)
+                                {
+                                    CFDGlobal.LogException(e);
+                                }
+                            }
+
+                            #region 入金的短信、被推荐人首次入金送推荐人30元
                             var messages = new List<MessageBase>();
                             var referRewards = new List<ReferReward>();
                             var push = new GeTui();
                             //string pushTemplate = "{{\"type\":\"3\",\"title\":\"盈交易\",\"message\": \"{0}\",\"deepLink\":\"cfd://page/me\"}}";
 
-                            #region 入金的短信、被推荐人首次入金送推荐人30元
                             foreach (var transfer in newTransferHistories)
                             {
                                 //入金的短信
@@ -297,7 +325,6 @@ namespace CFD_JOBS.Ayondo
 
                                 }
                             }
-                            #endregion
 
                             if (messages.Count > 0 || referRewards.Count > 0)
                             {
@@ -312,6 +339,7 @@ namespace CFD_JOBS.Ayondo
                                 CFDGlobal.LogLine(string.Format("Saving message: {0} & refer reward: {1}", messages.Count, referRewards.Count));
                                 db.SaveChanges();
                             }
+                            #endregion
                         }
                     }
 

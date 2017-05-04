@@ -18,5 +18,9 @@ namespace CFD_COMMON.Models.Entities
         public DateTime? CreatedAt { get; set; }
 
         public decimal? ClaimAmount { get; set; }
+
+        public decimal? Amount { get; set; }
+
+        public DateTime? ApprovalTime { get; set; }
     }
 }

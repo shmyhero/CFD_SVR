@@ -132,6 +132,10 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.ClaimAmount)
                 .HasPrecision(18, 5);
 
+            modelBuilder.Entity<DepositHistory>()
+                .Property(e => e.Amount)
+                .HasPrecision(18, 5);
+
 
             modelBuilder.Entity<IP2Country>()
                 .Property(e => e.CountryCode)
