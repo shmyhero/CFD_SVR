@@ -595,7 +595,7 @@ namespace CFD_API.Controllers
                 balance = balance,
                 total = balance + totalUPL,
                 available = balance - marginUsed,
-                refundable = maxRefundable > 0 ? Math.Round(maxRefundable, 2) : 0,
+                refundable = maxRefundable > 0 ? ((int)(maxRefundable * 100))/100.00M : 0, //截取两位小数，但不四舍五入。 不能用Math.Round
                 comment = refundComment
             };
         }
