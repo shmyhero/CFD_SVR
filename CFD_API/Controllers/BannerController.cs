@@ -31,9 +31,34 @@ namespace CFD_API.Controllers
             return banners.Select(o => Mapper.Map<BannerDTO>(o)).ToList();
         }
 
+        /// <summary>
+        /// 只返回BannerType为空或者为0的
+        /// </summary>
+        /// <returns></returns>
         [Route("banner2")]
         [HttpGet]
         public IList<SimpleBannerDTO> GetBanners2()
+        {
+            int max = 5;
+            //get top banner
+            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (!item.BannerType.HasValue || item.BannerType.Value == 0) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
+
+            if (topBanners.Count < max)
+            {
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (!item.BannerType.HasValue || item.BannerType.Value == 0) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                topBanners.AddRange(nonTopBanner);
+            }
+
+            return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
+        }
+
+        /// <summary>
+        /// 返回所有的Banner
+        /// </summary>
+        /// <returns></returns>
+        [Route("banner/all")]
+        [HttpGet]
+        public IList<SimpleBannerDTO> GetBannersWithType()
         {
             int max = 5;
             //get top banner
@@ -47,7 +72,7 @@ namespace CFD_API.Controllers
 
             return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
         }
-        
+
         [Route("nextbanner/{id}")]
         [HttpGet]
         public IList<SimpleBannerDTO> NextBanner(int id)
@@ -201,6 +226,12 @@ namespace CFD_API.Controllers
                 banner.Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty;
                 banner.Digest = dicFormData.ContainsKey("Digest") ? dicFormData["Digest"] : string.Empty;
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
+                int bannerType = 0;
+                if(dicFormData.ContainsKey("BannerType"))
+                {
+                    int.TryParse(dicFormData["BannerType"], out bannerType);
+                }
+                banner.BannerType = bannerType;
                 if (!string.IsNullOrEmpty(imageUrl))
                 {
                     banner.ImgUrl = imageUrl;

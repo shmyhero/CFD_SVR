@@ -31,6 +31,8 @@ namespace CFD_COMMON.Models.Entities
 
         public DateTime? TopAt { get; set; }
 
+        public int? BannerType { get; set; }
+
         [StringLength(200)]
         public string CreatedBy { get; set; }
 
