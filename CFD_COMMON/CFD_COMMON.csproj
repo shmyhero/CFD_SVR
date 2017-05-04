@@ -120,6 +120,10 @@
   <ItemGroup>
     <Compile Include="Azure\Blob.cs" />
     <Compile Include="CFDGlobal.cs" />
+    <Compile Include="IdentityVerify\GuozhengtongVerification.cs" />
+    <Compile Include="IdentityVerify\IProfileVerify.cs" />
+    <Compile Include="IdentityVerify\MinshVerification.cs" />
+    <Compile Include="IdentityVerify\OcrFaceCheckFormDTO.cs" />
     <Compile Include="Localization\TransKey.cs" />
     <Compile Include="Localization\Translations.cs" />
     <Compile Include="Localization\Translator.cs" />
@@ -199,6 +203,7 @@
     <Compile Include="Utils\Encryption.cs" />
     <Compile Include="Utils\Extensions\CollectionExtensions.cs" />
     <Compile Include="Utils\Extensions\StringExtensions.cs" />
+    <Compile Include="Utils\Extensions\TimeExtension.cs" />
     <Compile Include="Utils\FX.cs" />
     <Compile Include="Utils\GeTui.cs" />
     <Compile Include="Utils\KLines.cs" />

@@ -33,6 +33,7 @@ using EntityFramework.Extensions;
 using Newtonsoft.Json;
 using ServiceStack.Text;
 using System.Data.SqlTypes;
+using CFD_COMMON.IdentityVerify;
 
 namespace CFD_API.Controllers
 {
@@ -1518,61 +1519,49 @@ namespace CFD_API.Controllers
                 return JObject.Parse(JsonConvert.SerializeObject(errorResult));
             }
 
-            //todo: access control per user
-
-            var httpWebRequest = WebRequest.CreateHttp(CFDGlobal.GetConfigurationSetting("GuoZhengTongHost") + "ocrFaceCheck");
-            httpWebRequest.Method = "POST";
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Proxy = null;
-            var requestStream = httpWebRequest.GetRequestStream();
-            var sw = new StreamWriter(requestStream);
-
-            //
-            form.accessId = GZT_ACCESS_ID;
-            form.accessKey = GZT_ACCESS_KEY;
-            form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
-            form.sign = Randoms.GetRandomAlphanumericString(8);
-            //
             var firstName = form.firstName;
             var lastName = form.lastName;
-            form.lastName = null;
-            form.firstName = null;
-            form.userName = HttpUtility.UrlEncode(lastName + firstName);
-            //
-            form.transaction_id = userInfo.OcrTransId;
 
-            var s = JsonConvert.SerializeObject(form); //string.Format(json, username, password);
-            sw.Write(s);
-            sw.Flush();
-            sw.Close();
-
-            var dtBegin = DateTime.UtcNow;
-
-            WebResponse webResponse;
-            try
+            //todo: access control per user
+            JObject response = null;
+            IProfileVerify pv = null;
+            string host = CFDGlobal.GetConfigurationSetting("ProfileVerify");
+            switch(host)
             {
-                webResponse = httpWebRequest.GetResponse();
+                case "GuoZhengTongHost":
+                    form.accessId = GZT_ACCESS_ID;
+                    form.accessKey = GZT_ACCESS_KEY;
+                    form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
+                    form.sign = Randoms.GetRandomAlphanumericString(8);
+                    
+                    form.lastName = null;
+                    form.firstName = null;
+                    form.userName = HttpUtility.UrlEncode(lastName + firstName);
+                    form.transaction_id = userInfo.OcrTransId;
+
+                    pv = new GuozhengtongVerification();
+                    break;
+                case "MinshHost":
+                    pv = new MinshVerification();
+                    break;
+                default: pv = new GuozhengtongVerification(); break;
             }
-            catch (WebException e)
+
+            response = pv.Verify(form);
+
+            //如果不是国政通接口，并且查询失败
+            if (host != "GuoZhengTongHost" && response["result"].Value<int>() != 0)
             {
-                webResponse = e.Response;
+                pv = new GuozhengtongVerification();
+                response = pv.Verify(form);
             }
-
-            var responseStream = webResponse.GetResponseStream();
-            var sr = new StreamReader(responseStream);
-
-            var str = sr.ReadToEnd();
-            var ts = DateTime.UtcNow - dtBegin;
-            CFDGlobal.LogInformation("OCR FaceCheck called. Time: " + ts.TotalMilliseconds + "ms Url: " +
-                                     httpWebRequest.RequestUri + " Response: " + str + "Request:" + s);
-
-            var jObject = JObject.Parse(str);
-
-            var result = jObject["result"].Value<string>();
+            
+            
+            var result = response["result"].Value<string>();
 
             if (result == "0")
             {
-                var similarity = jObject["verify_similarity"].Value<decimal>();
+                var similarity = response["verify_similarity"].Value<decimal>();
 
                 userInfo.FirstName = firstName;
                 userInfo.LastName = lastName;
@@ -1584,13 +1573,13 @@ namespace CFD_API.Controllers
             }
             else
             {
-                var message = jObject["message"].Value<string>();
+                var message = response["message"].Value<string>();
                 message = HttpUtility.UrlDecode(message);
 
-                CFDGlobal.LogInformation("OCR FaceCheck fail: " + result + " " + message);
+                CFDGlobal.LogInformation("OCR FaceCheck fail: " + response + " " + message);
             }
 
-            return jObject;
+            return response;
 
             //var jObj = new JObject {["result"] = "0"};
             //return jObj;

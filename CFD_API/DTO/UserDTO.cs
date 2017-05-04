@@ -286,20 +286,21 @@ namespace CFD_API.DTO
         public string sign { get; set; }
     }
 
-    public class OcrFaceCheckFormDTO
-    {
-        public string accessId { get; set; }
-        public string accessKey { get; set; }
+    //搬迁到Common项目中
+    //public class OcrFaceCheckFormDTO
+    //{
+    //    public string accessId { get; set; }
+    //    public string accessKey { get; set; }
 
-        public string transaction_id { get; set; }
-        public string userId { get; set; }
-        public string userName { get; set; }
-        public string firstName { get; set; }
-        public string lastName { get; set; }
+    //    public string transaction_id { get; set; }
+    //    public string userId { get; set; }
+    //    public string userName { get; set; }
+    //    public string firstName { get; set; }
+    //    public string lastName { get; set; }
 
-        public string timeStamp { get; set; }
-        public string sign { get; set; }
-    }
+    //    public string timeStamp { get; set; }
+    //    public string sign { get; set; }
+    //}
 
     /*
 {
