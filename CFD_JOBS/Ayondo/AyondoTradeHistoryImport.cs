@@ -15,6 +15,7 @@ using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using System.Data.SqlTypes;
+using System.Web;
 
 namespace CFD_JOBS.Ayondo
 {
@@ -147,8 +148,8 @@ namespace CFD_JOBS.Ayondo
                                 var posId = Convert.ToInt64(arr[0]);
                                 var tradeId = Convert.ToInt64(arr[1]);
                                 var accountId = Convert.ToInt64(arr[2]);
-                                var firstName = arr[3];
-                                var lastName = arr[4];
+                                var firstName = HttpUtility.HtmlDecode(arr[3]);
+                                var lastName = HttpUtility.HtmlDecode(arr[4]);
                                 var time = DateTime.ParseExact(arr[5], CFDGlobal.AYONDO_DATETIME_MASK,
                                     CultureInfo.CurrentCulture,
                                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
