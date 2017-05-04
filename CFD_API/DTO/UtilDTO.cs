@@ -81,6 +81,8 @@ namespace CFD_API.DTO
 
         public DateTime? topAt { get; set; }
 
+        public int bannerType { get; set; }
+
         public string createdBy { get; set; }
 
         public DateTime? createdAt { get; set; }
