@@ -22,6 +22,9 @@ namespace CFD_COMMON.Models.Entities
         public DateTime? ClosedAt { get; set; }
         public decimal? PL { get; set; }
         public decimal? ClosedPrice { get; set; }
+        public decimal? StopPx { get; set; }
+        public decimal? TakePx { get; set; }
+        public bool? IsAutoClosed { get; set; }
     }
 
     [Table("NewPositionHistory")]

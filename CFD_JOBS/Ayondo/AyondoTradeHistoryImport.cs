@@ -239,6 +239,9 @@ namespace CFD_JOBS.Ayondo
                                         pos.ClosedPrice = closeTrade.TradePrice;
                                         pos.ClosedAt = closeTrade.TradeTime;
                                         pos.PL = closeTrade.PL;
+
+                                        if (closeTrade.DeviceType == "NA")
+                                            pos.IsAutoClosed = true;
                                     }
 
                                     CFDGlobal.LogLine("updating position close time/price/pl...");

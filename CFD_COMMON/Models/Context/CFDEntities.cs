@@ -171,6 +171,14 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.PL)
                 .HasPrecision(18, 8);
 
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.StopPx)
+                .HasPrecision(18, 8);
+
+            modelBuilder.Entity<NewPositionHistory>()
+                .Property(e => e.TakePx)
+                .HasPrecision(18, 8);
+
 
             modelBuilder.Entity<QuoteHistory>()
                 .Property(e => e.Bid)
@@ -343,6 +351,14 @@ namespace CFD_COMMON.Models.Context
 
             modelBuilder.Entity<NewPositionHistory_live>()
                 .Property(e => e.ClosedPrice)
+                .HasPrecision(18, 8);
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.StopPx)
+                .HasPrecision(18, 8);
+
+            modelBuilder.Entity<NewPositionHistory_live>()
+                .Property(e => e.TakePx)
                 .HasPrecision(18, 8);
 
 

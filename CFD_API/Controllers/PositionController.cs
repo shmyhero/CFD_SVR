@@ -1162,6 +1162,23 @@ namespace CFD_API.Controllers
             var prodDef = WebCache.GetInstance(IsLiveUrl).ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
+            //update NewPositionHistory table
+            try
+            {
+                var position = IsLiveUrl
+                    ? (NewPositionHistoryBase) db.NewPositionHistory_live.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID))
+                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID));
+                if (position != null)
+                {
+                    position.TakePx = report.TakePx;
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception e)
+            {
+                CFDGlobal.LogExceptionAsWarning(e);
+            }
+
             return posDTO;
         }
 
@@ -1200,6 +1217,23 @@ namespace CFD_API.Controllers
             var prodDef = WebCache.GetInstance(IsLiveUrl).ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
 
+            //update NewPositionHistory table
+            try
+            {
+                var position = IsLiveUrl
+                    ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID))
+                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID));
+                if (position != null)
+                {
+                    position.TakePx = null;
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception e)
+            {
+                CFDGlobal.LogExceptionAsWarning(e);
+            }
+
             return posDTO;
         }
 
@@ -1237,6 +1271,24 @@ namespace CFD_API.Controllers
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             var prodDef = WebCache.GetInstance(IsLiveUrl).ProdDefs.FirstOrDefault(o => o.Id == form.securityId);
             posDTO.settlePrice = Math.Round(posDTO.settlePrice, prodDef.Prec);
+
+            //update NewPositionHistory table
+            try
+            {
+                var position = IsLiveUrl
+                    ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID))
+                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID));
+                if (position != null)
+                {
+                    position.TakePx = report.TakePx;
+                    position.StopPx = report.StopPx;
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception e)
+            {
+                CFDGlobal.LogExceptionAsWarning(e);
+            }
 
             return posDTO;
         }
