@@ -63,6 +63,7 @@ namespace CFD_API.DTO
         public string url { get; set; }
         public string header { get; set; }
         public string digest { get; set; }
+        public int bannerType { get; set; }
     }
 
     public class BannerDTO
