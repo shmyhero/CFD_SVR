@@ -2048,14 +2048,14 @@ namespace CFD_API.Controllers
                 bankCardNumber = userInfo.BankCardNumber,
                 bankIcon = userInfo.Icon,
                 bankName = userInfo.BankName,
-                bankCardStatus = userInfo.BankCardStatus,
+                bankCardStatus = string.IsNullOrEmpty(userInfo.BankCardStatus)? BankCardUpdateStatus.PendingReview : userInfo.BankCardStatus,
                 bankCardRejectReason = userInfo.BankCardRejectReason,
                 branch = userInfo.Branch,
                 province = userInfo.Province,
                 city = userInfo.City,
                 lastWithdraw = lastWithdrawRecord == null? decimal.Zero : lastWithdrawRecord.RequestAmount,
                 lastWithdrawAt = lastWithdrawRecord == null ? null : lastWithdrawRecord.CreateAt,
-
+                pendingDays = "1",//认为1个工作日内会做好银行卡的审核
                 addr = userInfo.Addr,
             };
 

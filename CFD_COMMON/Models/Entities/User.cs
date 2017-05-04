@@ -1,4 +1,4 @@
-namespace CFD_COMMON.Models.Entities
+﻿namespace CFD_COMMON.Models.Entities
 {
     using System;
     using System.Collections.Generic;
@@ -84,6 +84,14 @@ namespace CFD_COMMON.Models.Entities
 
         [StringLength(50)]
         public string ReferenceAccountGuid { get; set; }
+        /// <summary>
+        /// 何时提交的银行卡
+        /// </summary>
+        public DateTime? BankCardSubmitAt { get; set; }
+        /// <summary>
+        /// 何时Approve，或Reject
+        /// </summary>
+        public DateTime? BankCardApprovedAt { get; set; }
 
         public bool? AutoCloseAlert_Live { get; set; }
 

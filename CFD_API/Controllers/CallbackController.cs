@@ -17,6 +17,7 @@ using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using CFD_COMMON.Utils;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_API.Controllers
 {
@@ -365,6 +366,45 @@ namespace CFD_API.Controllers
             if (form.status == BankCardUpdateStatus.Rejected)
             {
                 user.BankCardRejectReason = form.rejectionType == "Other" ? form.rejectionInfo : form.rejectionType;
+            }
+
+            if(form.status == BankCardUpdateStatus.PendingReview)
+            {
+                user.BankCardSubmitAt = DateTime.Now; //记录申请时间。
+            }
+            else
+            {
+                user.BankCardApprovedAt = DateTime.Now; //记录审核时间。
+
+                try
+                {
+                    #region 发送短信和保存Message
+                    Message_Live msg = new Message_Live();
+                    msg.UserId = user.Id;
+                    msg.Title = "绑卡消息";
+                    if (form.status == BankCardUpdateStatus.Approved)
+                    {
+                        YunPianMessenger.SendSms("【盈交易】恭喜您！您的银⾏行卡绑定成功了，可以尽情的出金了哟！", user.Phone);
+
+                        msg.Body = "恭喜您！您的银⾏行卡绑定成功了，可以尽情的出⾦金了哟！";
+                        msg.CreatedAt = DateTime.UtcNow;
+                        msg.IsReaded = false;
+                    }
+                    else
+                    {
+                        YunPianMessenger.SendSms("【盈交易】很抱歉，您的银行卡未能通过审核，请联系客服人员。", user.Phone);
+                        msg.Body = "很抱歉，您的银行卡未能通过审核，请联系客服人员。";
+                        msg.CreatedAt = DateTime.UtcNow;
+                        msg.IsReaded = false;
+                    }
+                    db.Message_Live.Add(msg);
+                    #endregion
+                }
+                catch(Exception ex)
+                {
+                    CFDGlobal.LogException(ex);
+                }
+
             }
 
             db.SaveChanges();

@@ -125,7 +125,11 @@ namespace CFD_API.DTO
         public string branch { get; set; }
         public string province { get; set; }
         public string city { get; set; }
-
+        /// <summary>
+        /// 银行卡处于pending review状态的时间。
+        /// </summary>
+        public string pendingDays { get; set; }
+     
         public string addr { get; set; }
 
         public DateTime? lastWithdrawAt { get; set; }

@@ -199,6 +199,12 @@ namespace CFD_API.Controllers
 
         private void CreateBanner(string imgleUrl, Dictionary<string, string> dicFormData)
         {
+            int bannerType = 0;
+            if (dicFormData.ContainsKey("BannerType"))
+            {
+                int.TryParse(dicFormData["BannerType"], out bannerType);
+            }
+
             db.Banners2.Add(new Banner2()
             {
                 Url = dicFormData.ContainsKey("Url") ? dicFormData["Url"] : string.Empty,
@@ -207,6 +213,7 @@ namespace CFD_API.Controllers
                 Digest = dicFormData.ContainsKey("Digest") ? dicFormData["Digest"] : string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty,
+                BannerType = bannerType,
                 Expiration = SqlDateTime.MaxValue.Value,
                 ImgUrl = imgleUrl
             });
