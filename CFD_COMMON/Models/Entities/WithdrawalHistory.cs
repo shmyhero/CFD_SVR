@@ -21,5 +21,9 @@ namespace CFD_COMMON.Models.Entities
 
         [StringLength(50)]
         public string BankCardNumber { get; set; }
+
+        public decimal? Amount { get; set; }
+
+        public DateTime? ApprovalTime { get; set; }
     }
 }

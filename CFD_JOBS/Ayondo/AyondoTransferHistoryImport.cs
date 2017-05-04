@@ -251,6 +251,34 @@ namespace CFD_JOBS.Ayondo
                                 }
                             }
 
+                            //update WithdrawalHistory
+                            var withdrawals = newTransferHistories.Where(o => o.TransferType == "EFT").ToList();
+                            if (withdrawals.Count > 0)
+                            {
+                                CFDGlobal.LogLine("updating WithdrawalHistory table...");
+                                try
+                                {
+                                    var transactionIds = withdrawals.Select(o => o.TransactionId).ToList();
+                                    var withdrawalHistories =
+                                        db.WithdrawalHistories.Where(o => transactionIds.Contains(o.TransferId)).ToList();
+                                    foreach (var withdrawalHistory in withdrawalHistories)
+                                    {
+                                        var withdrawal =
+                                            withdrawals.FirstOrDefault(o => o.TransactionId == withdrawalHistory.TransferId);
+                                        if (withdrawal != null)
+                                        {
+                                            withdrawalHistory.Amount = withdrawal.Amount;
+                                            withdrawalHistory.ApprovalTime = withdrawal.ApprovalTime;
+                                        }
+                                    }
+                                    db.SaveChanges();
+                                }
+                                catch (Exception e)
+                                {
+                                    CFDGlobal.LogException(e);
+                                }
+                            }
+
                             #region 入金的短信、被推荐人首次入金送推荐人30元
                             var messages = new List<MessageBase>();
                             var referRewards = new List<ReferReward>();

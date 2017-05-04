@@ -246,6 +246,10 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.RequestAmount)
                 .HasPrecision(18, 5);
 
+            modelBuilder.Entity<WithdrawalHistory>()
+                .Property(e => e.Amount)
+                .HasPrecision(18, 5);
+
 
             //modelBuilder.Entity<AyondoSecurity>()
             //    .Property(e => e.Bid)
