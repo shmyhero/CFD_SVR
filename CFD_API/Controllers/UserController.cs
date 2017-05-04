@@ -1989,7 +1989,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            if(user.BankCardStatus!= "Approved")
+            if(user.BankCardStatus!= BankCardUpdateStatus.Approved)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.NO_APPROVED_BANK_CARD)));
 
             CFDGlobal.LogInformation(string.Format("Withdraw request, {0}, {1}, {2}", user.AyLiveUsername, user.Id, form.Amount));

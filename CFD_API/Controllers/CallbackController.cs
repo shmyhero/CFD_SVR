@@ -392,8 +392,8 @@ namespace CFD_API.Controllers
                     }
                     else
                     {
-                        YunPianMessenger.SendSms("【盈交易】很抱歉，您的银行卡未能通过审核，请联系客服人员。", user.Phone);
-                        msg.Body = "很抱歉，您的银行卡未能通过审核，请联系客服人员。";
+                        YunPianMessenger.SendSms("【盈交易】好遗憾呀！您的银行卡绑定失败，马上查看原因，或联系客服！", user.Phone);
+                        msg.Body = "好遗憾呀！您的银行卡绑定失败，马上查看原因，或联系客服！";
                         msg.CreatedAt = DateTime.UtcNow;
                         msg.IsReaded = false;
                     }
