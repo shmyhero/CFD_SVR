@@ -78,6 +78,8 @@ namespace AyondoTrade
         string NewDeposit(string username, string password, decimal amount);
 
         [OperationContract]
+        [FaultContract(typeof(OAuthLoginRequiredFault))]
+        [FaultContract(typeof(MDSTransferErrorFault))]
         string NewWithdraw(string username, string password, decimal amount);
 
         [OperationContract]

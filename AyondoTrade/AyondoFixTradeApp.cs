@@ -57,6 +57,7 @@ namespace AyondoTrade
         public string ENUM_MDS_TransferType_CUP_DEPOSIT;
         public string ENUM_MDS_TransferType_MANUAL_WITHDRAWAL;
         public string ENUM_MDS_StatusCode_CREATED;
+        public string ENUM_MDS_StatusCode_ERROR;
 
         public ConcurrentDictionary<string, string> UsernameAccounts = new ConcurrentDictionary<string, string>();
         public IDictionary<string, string> AccountUsernames = new Dictionary<string, string>();
@@ -131,7 +132,12 @@ namespace AyondoTrade
         /// <summary>
         /// guid as key
         /// </summary>
-        public ConcurrentDictionary<string, string> CreatedTransferIDs=new ConcurrentDictionary<string, string>(); 
+        public ConcurrentDictionary<string, string> CreatedTransferIDs = new ConcurrentDictionary<string, string>();
+
+        /// <summary>
+        /// guid as key
+        /// </summary>
+        public ConcurrentDictionary<string, string> ErroredTransferRequests = new ConcurrentDictionary<string, string>();
 
         //ayondodemo01 136824778776
         //ivantradehero 138673044476
@@ -241,6 +247,13 @@ namespace AyondoTrade
 
                         CreatedTransferIDs.TryAdd(reqId, transferId);
                     }
+                    else if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_ERROR))
+                    {
+                        var reqId = message.GetString(TAG_MDS_RequestID);
+                        var text = message.GetString(Tags.Text);
+
+                        ErroredTransferRequests.TryAdd(reqId, text);
+                    }
                 }
                 else
                     Crack(message, sessionID);
@@ -320,6 +333,7 @@ namespace AyondoTrade
             ENUM_MDS_TransferType_CUP_DEPOSIT = MDS_TransferType.EnumDict.First(o => o.Value == "CUP_DEPOSIT").Key;
             ENUM_MDS_TransferType_MANUAL_WITHDRAWAL = MDS_TransferType.EnumDict.First(o => o.Value == "MANUAL_WITHDRAWAL").Key;
             ENUM_MDS_StatusCode_CREATED = MDS_StatusCode.EnumDict.First(o => o.Value == "CREATED").Key;
+            ENUM_MDS_StatusCode_ERROR = MDS_StatusCode.EnumDict.First(o => o.Value == "ERROR").Key;
 
             ////testing
             //LogOn("thcn1", "3IcFhY");
@@ -828,7 +842,7 @@ namespace AyondoTrade
             return guid;
         }
 
-        public string MDS3TransferRequest(string account, string balanceId, decimal amount)
+        public string MDS3DepositRequest(string account, string balanceId, decimal amount)
         {
             var guid = Guid.NewGuid().ToString();
 

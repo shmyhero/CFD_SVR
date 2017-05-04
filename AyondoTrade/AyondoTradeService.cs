@@ -842,7 +842,7 @@ namespace AyondoTrade
             string transferId = null;
             try
             {
-                transferId = SendTransferRequestAndWait(account, amount);
+                transferId = SendDepositRequestAndWait(account, amount);
             }
             catch (UserNotLoggedInException)
             {
@@ -850,7 +850,7 @@ namespace AyondoTrade
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
-                transferId = SendTransferRequestAndWait(account, amount);
+                transferId = SendDepositRequestAndWait(account, amount);
             }
             
             return transferId;
@@ -916,7 +916,7 @@ namespace AyondoTrade
             }
         }
 
-        private string SendTransferRequestAndWait(string account, decimal amount)
+        private string SendDepositRequestAndWait(string account, decimal amount)
         {
             string balanceId=null;
            Global.FixApp.AccountBalanceIDs.TryGetValue(account, out balanceId);
@@ -930,7 +930,7 @@ namespace AyondoTrade
                 throw new FaultException("cannot find balance id for account " + account);
 
             //send message
-            var reqId = Global.FixApp.MDS3TransferRequest(account, balanceId, amount);
+            var reqId = Global.FixApp.MDS3DepositRequest(account, balanceId, amount);
 
             //wait/get response message(s)
             string transferId = null;
@@ -982,7 +982,7 @@ namespace AyondoTrade
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
 
-                //check position report
+                //check created transfer id
                 if (Global.FixApp.CreatedTransferIDs.ContainsKey(reqId))
                 {
                     //RequestID由客户端指定，TransferID由Ayondo返回
@@ -992,6 +992,22 @@ namespace AyondoTrade
 
                     if (transferId != null)
                         break;
+                }
+
+                //check errored transfer request
+                if (Global.FixApp.ErroredTransferRequests.ContainsKey(reqId))
+                {
+                    string text = null;
+                    var tryGetValue = Global.FixApp.ErroredTransferRequests.TryGetValue(reqId, out text);
+
+                    if (!tryGetValue) continue;
+
+                    if (text != null)
+                    {
+                        var fault = new MDSTransferErrorFault();
+                        fault.Text = text;
+                        throw new FaultException<MDSTransferErrorFault>(fault);
+                    }
                 }
 
                 CheckBusinessMessageReject(reqId);

@@ -79,5 +79,14 @@
             CFDGlobal.LogWarning("Cannot find ayondo translate for: [" + ayondoText + "]");
             return ayondoText;
         }
+
+        public static string AyondoMDSTransferErrorMessageTranslate(string ayondoText)
+        {
+            if (ayondoText == "Invalid Transfer Request: ca.txio.mds.utility.MDException: Insufficient Funds")
+                return "资金不足";
+
+            CFDGlobal.LogWarning("Cannot find ayondo translate for: [" + ayondoText + "]");
+            return ayondoText;
+        }
     }
 }

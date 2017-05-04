@@ -167,6 +167,7 @@ namespace AyondoTrade
             CFDGlobal.LogLine("FailedUserResponses:" + FixApp.FailedUserResponses.Count);
             CFDGlobal.LogLine("LoggedOutUserResponses:" + FixApp.LoggedOutUserResponses.Count);
             CFDGlobal.LogLine("CreatedTransferIDs:" + FixApp.CreatedTransferIDs.Count);
+            CFDGlobal.LogLine("ErroredTransferRequests:" + FixApp.ErroredTransferRequests.Count);
 
             //AutoClosedPositionReports
             countOld = FixApp.AutoClosedPositionReports.Sum(o => o.Value.Count);

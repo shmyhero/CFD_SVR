@@ -1997,7 +1997,18 @@ namespace CFD_API.Controllers
             string transferId;
             using (var clientHttp = new AyondoTradeClient(true))
             {
-                transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, form.Amount);
+                try
+                {
+                    transferId = clientHttp.NewWithdraw(user.AyLiveUsername, user.AyLivePassword, form.Amount);
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
+                catch (FaultException<MDSTransferErrorFault> e)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, Translator.AyondoMDSTransferErrorMessageTranslate(e.Detail.Text)));
+                }
             }
 
             CFDGlobal.LogInformation(string.Format("Withdraw request transferID, {0}", transferId));
