@@ -78,6 +78,9 @@ namespace CFD_API.Controllers
                 var requestBase = ((HttpContextWrapper) Request.Properties["MS_HttpContext"]).Request;
                 ip = requestBase.UserHostAddress;
 
+                if (ip == "212.36.187.202")//Sheng Xu, ayondo
+                    return true;
+
                 using (var db = CFDEntities.Create())
                 {
                     var record =
