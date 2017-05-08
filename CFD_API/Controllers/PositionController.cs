@@ -1165,9 +1165,10 @@ namespace CFD_API.Controllers
             //update NewPositionHistory table
             try
             {
+                var posId = Convert.ToInt64(report.PosMaintRptID);
                 var position = IsLiveUrl
-                    ? (NewPositionHistoryBase) db.NewPositionHistory_live.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID))
-                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID));
+                    ? (NewPositionHistoryBase) db.NewPositionHistory_live.FirstOrDefault(o => o.Id == posId)
+                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == posId);
                 if (position != null)
                 {
                     position.TakePx = report.TakePx;
@@ -1220,9 +1221,10 @@ namespace CFD_API.Controllers
             //update NewPositionHistory table
             try
             {
+                var posId = Convert.ToInt64(report.PosMaintRptID);
                 var position = IsLiveUrl
-                    ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID))
-                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID));
+                    ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == posId)
+                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == posId);
                 if (position != null)
                 {
                     position.TakePx = null;
@@ -1275,9 +1277,10 @@ namespace CFD_API.Controllers
             //update NewPositionHistory table
             try
             {
+                var posId = Convert.ToInt64(report.PosMaintRptID);
                 var position = IsLiveUrl
-                    ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID))
-                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == Convert.ToInt64(report.PosMaintRptID));
+                    ? (NewPositionHistoryBase)db.NewPositionHistory_live.FirstOrDefault(o => o.Id == posId)
+                    : db.NewPositionHistories.FirstOrDefault(o => o.Id == posId);
                 if (position != null)
                 {
                     position.TakePx = report.TakePx;
