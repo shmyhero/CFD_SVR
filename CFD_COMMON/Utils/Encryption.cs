@@ -10,7 +10,8 @@ namespace CFD_COMMON.Utils
 {
     public class Encryption
     {
-        public const string SHARED_SECRET = "25F790A0989547ECBA21BEE96DFA3EBC";
+        public const string SHARED_SECRET_Ayondo = "25F790A0989547ECBA21BEE96DFA3EBC";
+        public const string SHARED_SECRET_CFD = "8854277DA2BF4EB5A0A538E43082AD78";
 
         #region CBC + MD5ofPW + IVPrefixed
 

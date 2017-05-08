@@ -73,7 +73,7 @@ namespace CFD_API.Controllers
 'productType': 'CFD'
 }}";
 
-            var s = string.Format(json, username, Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(password, Encryption.SHARED_SECRET));
+            var s = string.Format(json, username, Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(password, Encryption.SHARED_SECRET_Ayondo));
             sw.Write(s);
             sw.Flush();
             sw.Close();

@@ -1766,7 +1766,7 @@ namespace CFD_API.Controllers
             var guid = json["data"]["accountGuid"].Value<string>();
 
             user.AyLiveUsername = form.username;
-            user.AyLivePassword = form.password;
+            user.AyLivePassword = Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(form.password, Encryption.SHARED_SECRET_CFD);
             user.AyLiveAccountGuid = guid;
             user.AyLiveApplyAt = DateTime.UtcNow;
             db.SaveChanges();

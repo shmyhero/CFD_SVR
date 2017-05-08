@@ -330,7 +330,7 @@ namespace CFD_API.Controllers
             amsForm.lastname = userInfo.LastName;
             amsForm.nationality = "CN";
             amsForm.nickname = user.Nickname;
-            amsForm.password = Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(form.password, Encryption.SHARED_SECRET);
+            amsForm.password = Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(form.password, Encryption.SHARED_SECRET_Ayondo);
             amsForm.phonePrimary = user.Phone;
             amsForm.phonePrimaryIso2 = "CN";
             amsForm.sourceOfFunds = form.sourceOfFunds;
