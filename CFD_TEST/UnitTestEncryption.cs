@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using CFD_COMMON;
+using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -29,6 +32,43 @@ namespace CFD_TEST
             Assert.AreEqual("protect me", p1);
             Assert.AreEqual("protect me", p2);
             Assert.AreEqual(p1, p2);
+        }
+
+        [TestMethod]
+        public void UpdatePlainTextLiveAccountPassword()
+        {
+            using (var db = CFDEntities.Create())
+            {
+                var list = db.Users.Where(o => o.AyLivePassword != null);
+
+                foreach (var user in list)
+                {
+                    try
+                    {
+                        var plainText = Encryption.GetPlainText_3DES_CBC_MD5ofPW_IVPrefixed(user.AyLivePassword,
+                            Encryption.SHARED_SECRET_CFD);
+
+                        //CFDGlobal.LogLine(user.AyLivePassword + " " + plainText);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is FormatException || e is ArgumentOutOfRangeException || e is CryptographicException)
+                        {
+                            user.AyLivePassword =
+                                Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(user.AyLivePassword,
+                                    Encryption.SHARED_SECRET_CFD);
+
+                            //CFDGlobal.LogLine("encrypted");
+                        }
+                        else
+                        {
+                            CFDGlobal.LogException(e);
+                        }
+                    }
+                }
+
+                db.SaveChanges();
+            }
         }
     }
 }
