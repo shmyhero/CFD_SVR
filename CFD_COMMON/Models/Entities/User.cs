@@ -52,7 +52,7 @@
         [StringLength(50)]
         public string AyLiveUsername { get; set; }
 
-        [StringLength(50)]
+        [StringLength(100)]
         public string AyLivePassword { get; set; }
 
         public long? AyLiveAccountId { get; set; }
