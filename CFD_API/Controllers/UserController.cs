@@ -1944,6 +1944,7 @@ namespace CFD_API.Controllers
                 };
             }
 
+            user.BankCardStatus = BankCardUpdateStatus.Submitted;
             user.BankCardNumber = form.accountNumber;
             user.BankName = form.nameOfBank;
             user.Branch = form.branch;
@@ -1970,7 +1971,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             user.BankCardNumber = string.Empty;
-            user.BankCardStatus = string.Empty;
+            user.BankCardStatus = BankCardUpdateStatus.Deleted;
             user.BankCardRejectReason = string.Empty;
             user.BankName = string.Empty;
             user.Branch = string.Empty;
@@ -2059,7 +2060,7 @@ namespace CFD_API.Controllers
                 bankCardNumber = userInfo.BankCardNumber,
                 bankIcon = userInfo.Icon,
                 bankName = userInfo.BankName,
-                bankCardStatus = string.IsNullOrEmpty(userInfo.BankCardStatus)? BankCardUpdateStatus.PendingReview : userInfo.BankCardStatus,
+                bankCardStatus = GetBankCardStatus(userInfo.BankCardStatus),
                 bankCardRejectReason = userInfo.BankCardRejectReason,
                 branch = userInfo.Branch,
                 province = userInfo.Province,
@@ -2071,6 +2072,23 @@ namespace CFD_API.Controllers
             };
 
             return dto;
+        }
+
+        /// <summary>
+        /// 对传给前端的银行卡状态做转换。Submitted -> PendingReview、Deleted -> String.Empty
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        private string GetBankCardStatus(string status)
+        {
+            switch(status)
+            {
+                case BankCardUpdateStatus.Deleted: status = string.Empty; break;
+                case BankCardUpdateStatus.Submitted: status = BankCardUpdateStatus.PendingReview; break;
+                default: break;
+            }
+
+            return status;
         }
 
         /// <summary>

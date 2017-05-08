@@ -138,9 +138,11 @@ namespace CFD_API.DTO
 
     public struct BankCardUpdateStatus
     {
-        public static string Approved = "Approved";
-        public static string PendingReview = "PendingReview";
-        public static string Rejected = "Rejected";
+        public const string Submitted = "Submitted";
+        public const string Approved = "Approved";
+        public const string PendingReview = "PendingReview";
+        public const string Rejected = "Rejected";
+        public const string Deleted = "Deleted";
     }
 
     public class BalanceDTO
