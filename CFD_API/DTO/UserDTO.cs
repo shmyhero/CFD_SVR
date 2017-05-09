@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CFD_COMMON.Utils;
 
 namespace CFD_API.DTO
 {
@@ -102,14 +103,6 @@ namespace CFD_API.DTO
         public string lastName { get; set; }
         public string email { get; set; }
         public string addr { get; set; }
-    }
-
-    public enum UserLiveStatus
-    {
-        None = 0,
-        Active = 1,
-        Pending = 2,
-        Rejected = 3,
     }
 
     public class LiveUserInfoDTO
