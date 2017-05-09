@@ -107,6 +107,8 @@
         /// </summary>
         public bool? ShowData { get; set; }
 
+        public DateTime? AyLiveApproveAt { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

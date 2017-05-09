@@ -300,7 +300,7 @@ namespace CFD_API.Controllers
                 userDto.rewardAmount = reward.Amount;
             }
 
-            userDto.liveAccStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            userDto.liveAccStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (userDto.liveAccStatus == UserLiveStatus.Rejected)
                 userDto.liveAccRejReason = GetUserLiveAccountRejectReason(user.AyLiveAccountStatus);
             userDto.liveUsername = user.AyLiveUsername;
@@ -1366,7 +1366,7 @@ namespace CFD_API.Controllers
             var user = GetUser();
 
             //LIVE account is Created or Pending
-            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
                 var errorResult = new ResultDTO(false) {message = __(TransKey.LIVE_ACC_EXISTS)};
@@ -1505,7 +1505,7 @@ namespace CFD_API.Controllers
             var user = GetUser();
 
             //LIVE account is Created or Pending
-            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
                 var errorResult = new ResultDTO(false) { message = __(TransKey.LIVE_ACC_EXISTS) };
@@ -1668,7 +1668,7 @@ namespace CFD_API.Controllers
             }
 
             //LIVE account is Created or Pending
-            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
                 return new ResultDTO(false) { message = __(TransKey.LIVE_ACC_EXISTS)};
@@ -1864,7 +1864,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus != UserLiveStatus.Active)
                 return new ResultDTO(false);
 
@@ -1905,7 +1905,7 @@ namespace CFD_API.Controllers
             }
 
             //LIVE account is Created or Pending
-            var liveStatus = GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
 
             //in which status can user bind a bank card?
             if (liveStatus != UserLiveStatus.Active)
@@ -2370,50 +2370,6 @@ namespace CFD_API.Controllers
 
                 default:
                     return null;
-            }
-        }
-
-        private UserLiveStatus GetUserLiveAccountStatus(string ayLiveUsername, string ayLiveAccountStatus)
-        {
-            if (string.IsNullOrWhiteSpace(ayLiveUsername))
-                return UserLiveStatus.None;
-
-            switch (ayLiveAccountStatus)
-            {
-                //pending
-                case null:
-                case "PendingMifid":
-                case "PendingClassification":
-                case "PendingDocuments":
-                case "PendingIdentityConflict":
-                case "PendingReview":
-                case "PendingRiskAssessment":
-                case "PendingUnlock":
-                case "PendingUnlockRetry":
-                    return UserLiveStatus.Pending;
-                    break;
-
-                //rejected
-                case "AbortedByExpiry":
-                case "AbortedByPolicy":
-                case "RejectedDD":
-                case "RejectedMifid":
-                case "RejectedDuplicate":
-                    return UserLiveStatus.Rejected;
-                    break;
-
-                //created
-                case "Active":
-                case "Closed":
-                case "Locked":
-                case "PendingFunding":
-                case "PendingLogin":
-                case "PendingTrading":
-                    return UserLiveStatus.Active;
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(ayLiveAccountStatus), ayLiveAccountStatus, null);
             }
         }
 

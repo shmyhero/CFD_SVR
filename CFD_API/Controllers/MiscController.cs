@@ -221,11 +221,20 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [ActionName("fixTrade")]
-        public bool GetFixTradeStatus()
+        [Route("fix")]
+        [Route("live/fix")]
+        public HttpResponseMessage GetFixStatus()
         {
-           var client=new AyondoTradeClient();
-            return client.IsFixLoggingIn();
+            bool isFixLoggedIn;
+            using (var client = new AyondoTradeClient(IsLiveUrl))
+            {
+                isFixLoggedIn = client.IsFixLoggingIn();
+            }
+
+            if (isFixLoggedIn)
+                return Request.CreateResponse(HttpStatusCode.OK, "FIX is logged in.");
+            else
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "FIX is NOT logged in.");
         }
     }
 }

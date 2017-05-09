@@ -49,6 +49,12 @@ namespace CFD_API.Controllers
                     var user = db.Users.FirstOrDefault(o => o.AyLiveAccountGuid == accountGuid);
                     if (user != null)
                     {
+                        if (UserLive.GetUserLiveAccountStatus(user.AyLiveAccountStatus) != UserLiveStatus.Active &&
+                            UserLive.GetUserLiveAccountStatus(form.status) == UserLiveStatus.Active)
+                        {
+                            user.AyLiveApproveAt = DateTime.UtcNow;
+                        }
+
                         user.AyLiveAccountStatus = form.status;
                         
                         #region 实盘注册成功后发送短信提醒用户,并赠送100元交易金
