@@ -223,59 +223,62 @@ namespace CFD_JOBS.Ayondo
                                 db.SaveChanges();
                             }
 
-                            //update DepositHistory
-                            var deposits = newTransferHistories.Where(o => o.TransferType == "WeCollect - CUP").ToList();
-                            if (deposits.Count > 0)
+                            if (isLive)
                             {
-                                CFDGlobal.LogLine("updating DepositHistory table...");
-                                try
+                                //update DepositHistory
+                                var deposits = newTransferHistories.Where(o => o.TransferType == "WeCollect - CUP").ToList();
+                                if (deposits.Count > 0)
                                 {
-                                    var transactionIds = deposits.Select(o => o.TransactionId).ToList();
-                                    var depositHistories =
-                                        db.DepositHistories.Where(o => transactionIds.Contains(o.TransferID)).ToList();
-                                    foreach (var depositHistory in depositHistories)
+                                    CFDGlobal.LogLine("updating DepositHistory table...");
+                                    try
                                     {
-                                        var deposit =
-                                            deposits.FirstOrDefault(o => o.TransactionId == depositHistory.TransferID);
-                                        if (deposit != null)
+                                        var transactionIds = deposits.Select(o => o.TransactionId).ToList();
+                                        var depositHistories =
+                                            db.DepositHistories.Where(o => transactionIds.Contains(o.TransferID)).ToList();
+                                        foreach (var depositHistory in depositHistories)
                                         {
-                                            depositHistory.Amount = deposit.Amount;
-                                            depositHistory.ApprovalTime = deposit.ApprovalTime;
+                                            var deposit =
+                                                deposits.FirstOrDefault(o => o.TransactionId == depositHistory.TransferID);
+                                            if (deposit != null)
+                                            {
+                                                depositHistory.Amount = deposit.Amount;
+                                                depositHistory.ApprovalTime = deposit.ApprovalTime;
+                                            }
                                         }
+                                        db.SaveChanges();
                                     }
-                                    db.SaveChanges();
+                                    catch (Exception e)
+                                    {
+                                        CFDGlobal.LogException(e);
+                                    }
                                 }
-                                catch (Exception e)
-                                {
-                                    CFDGlobal.LogException(e);
-                                }
-                            }
 
-                            //update WithdrawalHistory
-                            var withdrawals = newTransferHistories.Where(o => o.TransferType == "EFT").ToList();
-                            if (withdrawals.Count > 0)
-                            {
-                                CFDGlobal.LogLine("updating WithdrawalHistory table...");
-                                try
+                                //update WithdrawalHistory
+                                var withdrawals = newTransferHistories.Where(o => o.TransferType == "EFT").ToList();
+                                if (withdrawals.Count > 0)
                                 {
-                                    var transactionIds = withdrawals.Select(o => o.TransactionId).ToList();
-                                    var withdrawalHistories =
-                                        db.WithdrawalHistories.Where(o => transactionIds.Contains(o.TransferId)).ToList();
-                                    foreach (var withdrawalHistory in withdrawalHistories)
+                                    CFDGlobal.LogLine("updating WithdrawalHistory table...");
+                                    try
                                     {
-                                        var withdrawal =
-                                            withdrawals.FirstOrDefault(o => o.TransactionId == withdrawalHistory.TransferId);
-                                        if (withdrawal != null)
+                                        var transactionIds = withdrawals.Select(o => o.TransactionId).ToList();
+                                        var withdrawalHistories =
+                                            db.WithdrawalHistories.Where(o => transactionIds.Contains(o.TransferId)).ToList();
+                                        foreach (var withdrawalHistory in withdrawalHistories)
                                         {
-                                            withdrawalHistory.Amount = withdrawal.Amount;
-                                            withdrawalHistory.ApprovalTime = withdrawal.ApprovalTime;
+                                            var withdrawal =
+                                                withdrawals.FirstOrDefault(o => o.TransactionId == withdrawalHistory.TransferId);
+                                            if (withdrawal != null)
+                                            {
+                                                withdrawalHistory.Amount = withdrawal.Amount;
+                                                withdrawalHistory.ApprovalTime = withdrawal.ApprovalTime;
+                                            }
                                         }
+                                        db.SaveChanges();
                                     }
-                                    db.SaveChanges();
-                                }
-                                catch (Exception e)
-                                {
-                                    CFDGlobal.LogException(e);
+                                    catch (Exception e)
+                                    {
+                                        CFDGlobal.LogException(e);
+                                    }
                                 }
                             }
 
