@@ -384,9 +384,9 @@ namespace CFD_API.Controllers
                     msg.Title = "绑卡消息";
                     if (form.status == BankCardUpdateStatus.Approved)
                     {
-                        YunPianMessenger.SendSms("【盈交易】恭喜您！您的银⾏卡绑定成功了，可以尽情的出金了哟！", user.Phone);
+                        YunPianMessenger.SendSms("【盈交易】恭喜您！您的银行卡绑定成功了，可以尽情的出金了哟！", user.Phone);
 
-                        msg.Body = "恭喜您！您的银⾏卡绑定成功了，可以尽情的出⾦了哟！";
+                        msg.Body = "恭喜您！您的银行卡绑定成功了，可以尽情的出⾦了哟！";
                         msg.CreatedAt = DateTime.UtcNow;
                         msg.IsReaded = false;
                     }
