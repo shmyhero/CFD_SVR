@@ -9,6 +9,7 @@ using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
 using CFD_API.Controllers.Attributes;
+using CFD_API.SignalR;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
@@ -235,6 +236,14 @@ namespace CFD_API.Controllers
                 return Request.CreateResponse(HttpStatusCode.OK, "FIX is logged in.");
             else
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, "FIX is NOT logged in.");
+        }
+
+        [HttpGet]
+        [Route("websocket")]
+        public HttpResponseMessage GetWebsocketInfo()
+        {
+            string info = QuoteFeedTicker.Instance.GetSubscriptionStatus();
+            return Request.CreateResponse(HttpStatusCode.OK, info);
         }
     }
 }

@@ -212,5 +212,10 @@ namespace CFD_API.SignalR
 
             _subscription_Live.TryRemove(identity, out value);
         }
+
+        public string GetSubscriptionStatus()
+        {
+            return "demo: " + _subscription.Count + " live: " + _subscription_Live.Count;
+        }
     }
 }
