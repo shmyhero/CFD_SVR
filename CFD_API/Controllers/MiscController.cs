@@ -14,6 +14,7 @@ using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
+using Microsoft.WindowsAzure.ServiceRuntime;
 using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
@@ -262,6 +263,56 @@ namespace CFD_API.Controllers
 
             string info = QuoteFeedTicker.Instance.GetSubscriptionStatus();
             return Request.CreateResponse(HttpStatusCode.OK, info);
+        }
+
+        [HttpGet]
+        [Route("websocket/aggregate")]
+        public HttpResponseMessage GetWebsocketInfoAggregate()
+        {
+            var client = new WebClient();
+
+            string str = "";
+
+            foreach (var r in RoleEnvironment.Roles)
+            {
+                foreach (var i in r.Value.Instances)
+                {
+                    var ip = i.InstanceEndpoints.FirstOrDefault().Value.IPEndpoint.Address;
+                    str += client.DownloadString("http://" + ip + "/api/misc/websocket");
+                }
+                str += "\r\n";
+            }
+            
+            return Request.CreateResponse(HttpStatusCode.OK, str);
+        }
+
+        [HttpGet]
+        [Route("roleInfo")]
+        public HttpResponseMessage GetWebRoleInfo()
+        {
+            string str = "";
+            foreach (var r in RoleEnvironment.Roles)
+            {
+                str += r.Value.Name + " " + r.Value.Instances.Count + "[";
+                foreach (var i in r.Value.Instances)
+                {
+                    str += i.Id + " " + i.Role.Name + " " + i.InstanceEndpoints.Count + "(";
+                    foreach (var e in i.InstanceEndpoints)
+                    {
+                        str += e.Value.IPEndpoint.Address + ":" + e.Value.IPEndpoint.Port +
+                            (
+                            e.Value.PublicIPEndpoint!=null
+                            ?"-"+e.Value.PublicIPEndpoint.Address + ":" + e.Value.PublicIPEndpoint.Port
+                            :""
+                            )
+                            + ", ";
+                    }
+                    str += "), ";
+                }
+                str += ']';
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, str);
         }
     }
 }
