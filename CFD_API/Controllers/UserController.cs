@@ -1682,7 +1682,9 @@ namespace CFD_API.Controllers
             }
 
             //Create Application
-            if (user.AyLiveAccountGuid == null)
+            if (user.AyLiveAccountGuid == null //new live user
+                || UserLive.GetUserLiveAccountStatus(user.AyLiveAccountStatus) == UserLiveStatus.Rejected //has been rejected, new application guid is required
+                )
             {
                 var initResult = AMSLiveAccountInitiate();
                 var accountGuid = initResult["data"]["accountGuid"].Value<string>();
@@ -2366,7 +2368,7 @@ namespace CFD_API.Controllers
                 case "RejectedMifid":
                     return __(TransKey.LIVE_ACC_REJ_RejectedMifid);
                 case "RejectedDuplicate":
-                    return __(TransKey.LIVE_ACC_REJ_RejectedMifid);
+                    return __(TransKey.LIVE_ACC_REJ_RejectedDuplicate);
 
                 default:
                     return null;
