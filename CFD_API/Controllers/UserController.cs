@@ -1723,7 +1723,12 @@ namespace CFD_API.Controllers
             }
 
             #region 上传身份证照和地址证明
-            var idUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, userInfo.IdFrontImg, "image/jpeg", "Identity");
+            //把身份证的正面照和反面照合并成一张照片
+            var frontBitmap = GetBaimapFromBase64(userInfo.IdFrontImg);
+            var backBitmap = GetBaimapFromBase64(userInfo.IdBackImg);
+            string strCombinedBase64 = CombineImage(frontBitmap, backBitmap);
+
+            var idUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, strCombinedBase64, "image/jpeg", "Identity");
             CFDGlobal.LogInformation("id upload result:" + idUploadResult.Item2);
             if (!idUploadResult.Item1)
             {
@@ -1825,6 +1830,36 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             return new ResultDTO(true);
+        }
+
+        private Bitmap GetBaimapFromBase64(string base64)
+        {
+            byte[] b = Convert.FromBase64String(base64);
+            MemoryStream ms = new MemoryStream(b);
+            Bitmap bitmap = new Bitmap(ms);
+            return bitmap;
+        }
+
+        private string CombineImage(Bitmap bm1, Bitmap bm2)
+        {
+            int width = bm1.Width > bm2.Width ? bm1.Width : bm2.Width;
+            int height = bm1.Height + bm2.Height;
+            Image imgFinal = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(imgFinal);
+            g.DrawImage(bm1, 0, 0, bm1.Width, bm1.Height);      
+            g.DrawImage(bm2, 0, bm1.Height, bm2.Width, bm2.Height);
+
+            MemoryStream ms = new MemoryStream();
+            imgFinal.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+            byte[] arr = new byte[ms.Length];
+            ms.Position = 0;
+            ms.Read(arr, 0, (int)ms.Length);
+            ms.Close();
+            string strbaser64 = Convert.ToBase64String(arr);
+
+            GC.Collect();
+
+            return strbaser64;
         }
 
         //todo: for test use only
