@@ -213,9 +213,9 @@ namespace CFD_API.SignalR
             _subscription_Live.TryRemove(identity, out value);
         }
 
-        public string GetSubscriptionStatus()
+        public int GetSubscriptionCount(bool isLive = false)
         {
-            return "demo: " + _subscription.Count + " live: " + _subscription_Live.Count;
+            return isLive? _subscription_Live.Count : _subscription.Count;
         }
     }
 }

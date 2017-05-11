@@ -15,6 +15,7 @@ using CFD_COMMON.Models.Cached;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 using Microsoft.WindowsAzure.ServiceRuntime;
+using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
 
 namespace CFD_API.Controllers
@@ -241,7 +242,45 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("websocket")]
-        public HttpResponseMessage GetWebsocketInfo()
+        public JObject GetWebsocketInfo()
+        {
+            var o = new JObject();
+            o["demo"] = QuoteFeedTicker.Instance.GetSubscriptionCount(false);
+            o["live"] = QuoteFeedTicker.Instance.GetSubscriptionCount(true);
+            return o;
+        }
+
+        [HttpGet]
+        [Route("websocket/aggregate")]
+        public JObject GetWebsocketInfoAggregate()
+        {
+            var arr = new JArray();
+            var client = new WebClient();
+            foreach (var r in RoleEnvironment.Roles)
+            {
+                foreach (var i in r.Value.Instances)
+                {
+                    var ip = i.InstanceEndpoints.FirstOrDefault().Value.IPEndpoint.Address;
+                    var o = JObject.Parse(client.DownloadString("http://" + ip + "/api/misc/websocket"));
+                    o["ip"] = ip.ToString();
+                    o["id"] = i.Id;
+                    arr.Add(o);
+                }
+            }
+
+            var result = new JObject();
+            var demoSum = arr.Sum(o => o["demo"].Value<int>());
+            var liveSum = arr.Sum(o => o["live"].Value<int>());
+            result["total"] = demoSum + liveSum;
+            result["demo"] = demoSum;
+            result["live"] = liveSum;
+            result["instances"] = arr;
+            return result;
+        }
+
+        [HttpGet]
+        [Route("roleInfo")]
+        public HttpResponseMessage GetWebRoleInfo()
         {
             //var subscriptionId = "<your azure subscription id>";
             //var managementCertDataFromPublishSettingsFile = "<management cert data from a publish settings file>";
@@ -261,35 +300,6 @@ namespace CFD_API.Controllers
             //    }
             //}
 
-            string info = QuoteFeedTicker.Instance.GetSubscriptionStatus();
-            return Request.CreateResponse(HttpStatusCode.OK, info);
-        }
-
-        [HttpGet]
-        [Route("websocket/aggregate")]
-        public HttpResponseMessage GetWebsocketInfoAggregate()
-        {
-            var client = new WebClient();
-
-            string str = "";
-
-            foreach (var r in RoleEnvironment.Roles)
-            {
-                foreach (var i in r.Value.Instances)
-                {
-                    var ip = i.InstanceEndpoints.FirstOrDefault().Value.IPEndpoint.Address;
-                    str += client.DownloadString("http://" + ip + "/api/misc/websocket");
-                }
-                str += "\r\n";
-            }
-            
-            return Request.CreateResponse(HttpStatusCode.OK, str);
-        }
-
-        [HttpGet]
-        [Route("roleInfo")]
-        public HttpResponseMessage GetWebRoleInfo()
-        {
             string str = "";
             foreach (var r in RoleEnvironment.Roles)
             {
