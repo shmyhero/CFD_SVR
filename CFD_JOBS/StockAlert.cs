@@ -198,6 +198,7 @@ namespace CFD_JOBS.Ayondo
                                 CFDGlobal.LogLine("pushing to GeTui...");
                                 var geTuiList = new List<KeyValuePair<string, string>>();
 
+                                //todo: push to only the latest device for each user
                                 var userIds = alertsToPush.Select(o => o.Key).Distinct().ToList();
                                 var devices =
                                     db.Devices.Where(o => o.userId.HasValue && userIds.Contains(o.userId.Value))

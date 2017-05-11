@@ -398,6 +398,7 @@ namespace CFD_JOBS.Ayondo
                     #endregion
 
                     #region Push notification
+                    //TODO: push to only the latest device for each user
                     CFDGlobal.LogLine("Start pushing for user:" + user.UserId);
                     CFDGlobal.LogLine(string.Format("Device Token:{0}; IsLive:{1}; AutoCloseAlert_Live:{2};AutoCloseAlert:{3};IsOnLive:{4};TradeTime:{5};",
                         user.deviceToken, isLive, user.AutoCloseAlert_Live, user.AutoCloseAlert, user.IsOnLive, trade.TradeTime.HasValue? trade.TradeTime.Value.ToString("yyyy-MM-dd hh:mm:ss"): "--"));
