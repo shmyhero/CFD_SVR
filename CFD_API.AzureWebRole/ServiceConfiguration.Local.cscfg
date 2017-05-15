@@ -10,7 +10,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2027-05-19T23:59:59.0000000+08:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
       <Setting name="StorageConnectionString" value="BlobEndpoint=https://cfdstorage.blob.core.chinacloudapi.cn/;AccountName=cfdstorage;AccountKey=8RxDUBSev10Z2LjeAx/HQvLcl9zkQvhw5Lh/dGgMcYhPPiBizuWOT37JDh283i98Rf2TpnE9WuDL2LpMh1QJ4w==" />
-      <Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
+      <Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;failover partner=thvm-chinap2.chinacloudapp.cn,888;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
       <Setting name="redisConnectionString" value="Password88__@cfd-redis1.chinacloudapp.cn:6399" />
       <Setting name="redisConnectionString_Live" value="Password88__@cfd-haproxy1.chinacloudapp.cn:6379" />
       <Setting name="YunPianApiKey" value="faf57dcccf1bff886c1ee4626bf1db28" />
