@@ -633,22 +633,22 @@ namespace CFD_TEST
 
             //法国40 34811 50
             //英镑/加元 34815 125
-            user = db.Users.FirstOrDefault(o => o.Id == 3220);
-            pos = XiaDan_SheZhiYing(user, 34815, side, 125);
+            //user = db.Users.FirstOrDefault(o => o.Id == 3220);
+            //pos = XiaDan_SheZhiYing(user, 34815, side, 125);
 
             //华尔街 34864
             user = db.Users.FirstOrDefault(o => o.Id == 3281);
             pos = XiaDan_SheZhiYing(user, 34864, side = r.NextDouble() > 0.5, 100);
             //美国标准500 34857
-            user = db.Users.FirstOrDefault(o => o.Id == 3218);
-            pos = XiaDan_SheZhiYing(user, 34857, side, 100);
+            //user = db.Users.FirstOrDefault(o => o.Id == 3218);
+            //pos = XiaDan_SheZhiYing(user, 34857, side, 100);
 
             //英国100 34854
             user = db.Users.FirstOrDefault(o => o.Id == 3221);
             pos = XiaDan_SheZhiYing(user, 34854, side = r.NextDouble() > 0.5, 100);
             //美国科技股100 34858
-            user = db.Users.FirstOrDefault(o => o.Id == 3222);
-            pos = XiaDan_SheZhiYing(user, 34858, side, 100);
+            //user = db.Users.FirstOrDefault(o => o.Id == 3222);
+            //pos = XiaDan_SheZhiYing(user, 34858, side, 100);
 
             //欧元对英镑 34803
             user = db.Users.FirstOrDefault(o => o.Id == 1);
@@ -656,8 +656,8 @@ namespace CFD_TEST
 
             //欧洲50 34801 50
             //美元/日元 34860 100
-            user = db.Users.FirstOrDefault(o => o.Id == 3277);
-            pos = XiaDan_SheZhiYing(user, 34860, side, 100);
+            //user = db.Users.FirstOrDefault(o => o.Id == 3277);
+            //pos = XiaDan_SheZhiYing(user, 34860, side, 100);
         }
 
         private static PositionDTO SheZhiYing(User user, PositionDTO pos)

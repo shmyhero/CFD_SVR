@@ -353,12 +353,35 @@ namespace CFD_JOBS.Ayondo
             Session = Session.LookupSession(sessionID);
             DD = Session.ApplicationDataDictionary;
 
-            //Product Definition Request
-            var order = new Message();
-            order.Header.SetField(new MsgType("MDS1"));
-            order.SetField(new UserRequestID("ProdDef"));
-            Session.Send(order);
-            //}
+            SendMDS1Request();
+        }
+
+        public void SendMDS1Request()
+        {
+            if (Session != null)
+            {
+                try
+                {
+                    //Product Definition Request
+                    var order = new Message();
+                    order.Header.SetField(new MsgType("MDS1"));
+                    order.SetField(new UserRequestID("ProdDef"));
+                    Session.Send(order);
+                    //}
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogLine("send mds1 request failed");
+                    CFDGlobal.LogException(e);
+                }
+            }
+            else
+            {
+                //// This probably won't ever happen.
+                //Console.WriteLine("Can't send message: session not created.");
+
+                throw new Exception("fix session is null.");
+            }
         }
     }
 }

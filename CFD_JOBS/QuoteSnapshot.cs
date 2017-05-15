@@ -22,6 +22,9 @@ namespace CFD_JOBS
 
         public static void Run(bool isLive)
         {
+            if(isLive)
+                throw new NotImplementedException();
+
             while (true)
             {
                 var chinaNow = DateTimes.GetChinaNow();
