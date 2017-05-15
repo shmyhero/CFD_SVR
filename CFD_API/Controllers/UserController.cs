@@ -1471,6 +1471,7 @@ namespace CFD_API.Controllers
                 {
                     UserImage newUserImage = new UserImage()
                     {
+                        UserId = UserId,
                         IdFrontImg = form.frontImg,
                         IdFrontImgExt = form.frontImgExt,
                         IdBackImg = form.backImg,
