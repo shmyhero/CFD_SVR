@@ -1447,8 +1447,6 @@ namespace CFD_API.Controllers
 
                         FaceCheckAt = null,
                         FaceCheckSimilarity = null,
-
-                        UserImageID = UserId
                     };
                     db.UserInfos.Add(newInfo);
                 }
@@ -2331,15 +2329,16 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO UploadProofOfAddress(ProofOfAddressDTO form)
         {
-            var userImage = db.UserImages
-                    .FirstOrDefault(o => o.UserImageId == UserId);
-            if (userImage == null)
+            var user = GetUser();
+            var userInfo = db.UserInfos.Include(o => o.UserImage)
+                    .Where(o => o.UserId == UserId).FirstOrDefault(o => o.UserId == user.Id);
+            if (userInfo == null)
             {
                 CFDGlobal.LogInformation("upload proof of address: User has no personal info");
                 return new ResultDTO(false) { message = "该用户没有对应的身份信息" };
             }
 
-            userImage.ProofOfAddress = form.imageBase64;
+            userInfo.UserImage.ProofOfAddress = form.imageBase64;
             db.SaveChanges();
 
             return new ResultDTO(true);
