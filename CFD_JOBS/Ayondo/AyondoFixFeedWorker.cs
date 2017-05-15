@@ -19,12 +19,14 @@ namespace CFD_JOBS.Ayondo
     {
         private static Timer _timerQuotes;
         private static Timer _timerProdDefs;
+        private static Timer _timerProdDefRequest;
         private static Timer _timerTicks;
         private static Timer _timerKLine5m;
 
         private static AyondoFixFeedApp myApp;
 
         private static readonly TimeSpan _intervalProdDefs = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan _intervalProdDefRequest = TimeSpan.FromMinutes(60);
         private static readonly TimeSpan _intervalQuotes = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan _intervalTicks = TimeSpan.FromMilliseconds(1000);
         private static readonly TimeSpan _intervalKLine = TimeSpan.FromSeconds(10);
@@ -54,6 +56,7 @@ namespace CFD_JOBS.Ayondo
             initiator.Start();
 
             _timerProdDefs = new Timer(SaveProdDefs, null, _intervalProdDefs, TimeSpan.FromMilliseconds(-1));
+            _timerProdDefRequest = new Timer(SendProdDefRequest, null, _intervalProdDefRequest, TimeSpan.FromMilliseconds(-1));
             _timerQuotes = new Timer(SaveQuotes, null, _intervalQuotes, TimeSpan.FromMilliseconds(-1));
             _timerTicks = new Timer(SaveTicks, null, _intervalTicks, TimeSpan.FromMilliseconds(-1));
             _timerKLine5m = new Timer(SaveKLine, null, _intervalKLine, TimeSpan.FromMilliseconds(-1));
@@ -558,6 +561,25 @@ namespace CFD_JOBS.Ayondo
                 }
 
                 Thread.Sleep(_intervalProdDefs);
+            }
+        }
+
+        private static void SendProdDefRequest(object state)
+        {
+            while (true)
+            {
+                try
+                {
+                    CFDGlobal.LogLine("sending mds1 request...");
+                    myApp.SendMDS1Request();
+                }
+                catch (Exception e)
+                {
+                    CFDGlobal.LogLine("sending mds1 request failed");
+                    CFDGlobal.LogException(e);
+                }
+
+                Thread.Sleep(_intervalProdDefRequest);
             }
         }
     }
