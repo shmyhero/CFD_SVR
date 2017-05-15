@@ -1429,20 +1429,14 @@ namespace CFD_API.Controllers
                 var transaction_id = jObject["transaction_id"].Value<string>();
 
                 var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+                var userImage = db.UserImages.FirstOrDefault(o => o.UserImageId == UserId);
                 if (userInfo == null)
                 {
                     var newInfo = new UserInfo()
                     {
                         UserId = UserId,
-
-                        IdFrontImg = form.frontImg,
-                        IdFrontImgExt = form.frontImgExt,
-                        IdBackImg = form.backImg,
-                        IdBackImgExt = form.backImgExt,
-
                         OcrAddr = HttpUtility.UrlDecode(addr),
                         OcrEthnic = HttpUtility.UrlDecode(ethnic),
-                        OcrFaceImg = photo,
                         OcrGender = CFDGlobal.GenderChineseToBool(HttpUtility.UrlDecode(gender)),
                         OcrIdCode = id_code,
                         OcrIssueAuth = HttpUtility.UrlDecode(issue_authority),
@@ -1453,19 +1447,16 @@ namespace CFD_API.Controllers
 
                         FaceCheckAt = null,
                         FaceCheckSimilarity = null,
+
+                        UserImageID = UserId
                     };
                     db.UserInfos.Add(newInfo);
                 }
                 else
                 {
-                    userInfo.IdFrontImg = form.frontImg;
-                    userInfo.IdFrontImgExt = form.frontImgExt;
-                    userInfo.IdBackImg = form.backImg;
-                    userInfo.IdBackImgExt = form.backImgExt;
-
                     userInfo.OcrAddr = HttpUtility.UrlDecode(addr);
                     userInfo.OcrEthnic = HttpUtility.UrlDecode(ethnic);
-                    userInfo.OcrFaceImg = photo;
+                    
                     userInfo.OcrGender = CFDGlobal.GenderChineseToBool(HttpUtility.UrlDecode(gender));
                     userInfo.OcrIdCode = id_code;
                     userInfo.OcrIssueAuth = HttpUtility.UrlDecode(issue_authority);
@@ -1476,6 +1467,28 @@ namespace CFD_API.Controllers
 
                     userInfo.FaceCheckAt = null;
                     userInfo.FaceCheckSimilarity = null;
+                }
+
+                if(userImage == null)
+                {
+                    UserImage newUserImage = new UserImage()
+                    {
+                        UserImageId = UserId,
+                        IdFrontImg = form.frontImg,
+                        IdFrontImgExt = form.frontImgExt,
+                        IdBackImg = form.backImg,
+                        IdBackImgExt = form.backImgExt,
+                        OcrFaceImg = photo,
+                    };
+                    db.UserImages.Add(newUserImage);
+                }
+                else
+                {
+                    userImage.IdFrontImg = form.frontImg;
+                    userImage.IdFrontImgExt = form.frontImgExt;
+                    userImage.IdBackImg = form.backImg;
+                    userImage.IdBackImgExt = form.backImgExt;
+                    userImage.OcrFaceImg = photo;
                 }
 
                 db.SaveChanges();
@@ -1675,7 +1688,9 @@ namespace CFD_API.Controllers
             }
 
             //no OCR result
-            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+            var userInfo = db.UserInfos
+                .Include(o=>o.UserImage)
+                .FirstOrDefault(o => o.UserId == UserId);
             if (userInfo == null || userInfo.OcrTransId == null || userInfo.FaceCheckAt == null)
             {
                 return new ResultDTO(false);
@@ -1724,8 +1739,8 @@ namespace CFD_API.Controllers
 
             #region 上传身份证照和地址证明
             //把身份证的正面照和反面照合并成一张照片
-            var frontBitmap = GetBaimapFromBase64(userInfo.IdFrontImg);
-            var backBitmap = GetBaimapFromBase64(userInfo.IdBackImg);
+            var frontBitmap = GetBaimapFromBase64(userInfo.UserImage.IdFrontImg);
+            var backBitmap = GetBaimapFromBase64(userInfo.UserImage.IdBackImg);
             string strCombinedBase64 = CombineImage(frontBitmap, backBitmap);
 
             var idUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, strCombinedBase64, "image/jpeg", "Identity");
@@ -1741,7 +1756,7 @@ namespace CFD_API.Controllers
                 };
             }
 
-            var poaUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, userInfo.ProofOfAddress, "image/jpeg", "Address");
+            var poaUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, userInfo.UserImage.ProofOfAddress, "image/jpeg", "Address");
             CFDGlobal.LogInformation("poa upload result:" + poaUploadResult.Item2);
             if (!poaUploadResult.Item1)
             {
@@ -2316,15 +2331,15 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO UploadProofOfAddress(ProofOfAddressDTO form)
         {
-            var user = GetUser();
-            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == user.Id);
-            if (userInfo == null)
+            var userImage = db.UserImages
+                    .FirstOrDefault(o => o.UserImageId == UserId);
+            if (userImage == null)
             {
                 CFDGlobal.LogInformation("upload proof of address: User has no personal info");
                 return new ResultDTO(false) { message = "该用户没有对应的身份信息" };
             }
 
-            userInfo.ProofOfAddress = form.imageBase64;
+            userImage.ProofOfAddress = form.imageBase64;
             db.SaveChanges();
 
             return new ResultDTO(true);

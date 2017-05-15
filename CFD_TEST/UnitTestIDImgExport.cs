@@ -23,25 +23,30 @@ namespace CFD_TEST
             nickNames.AddRange(new string[] {"williamz", "Rebecca", "hdabb1350996504", "mrshen", "Lin17", "Ospher",
                 "teddyban", "s455294788", "xsj649", "myway1984", "kuokuo2011", "tgwyu116" });
 
+            List<string> realNames = new List<string>();
+            realNames.AddRange(new string[] {" 吴小仁", "陈旭", "孙华山", "张东鑫",
+                "黄达宁", "郭虹显", "郑青廉" });
+
             using (var db = CFDEntities.Create())
             {
                 var result = (from u in db.Users
                              join ui in db.UserInfos on u.Id equals ui.UserId
                              into x
                              from y in x.DefaultIfEmpty()
-                             where nickNames.Contains(u.AyLiveUsername)
-                             select new { y.IdFrontImg, y.IdBackImg, u.AyLiveUsername }).ToList();
+                                 //where nickNames.Contains(u.AyLiveUsername)
+                              where realNames.Contains(y.LastName + y.FirstName)
+                              select new { y.IdFrontImg, y.IdBackImg, u.AyLiveUsername, y.LastName,y.FirstName }).ToList();
 
                 result.ForEach(u => {
                     byte[] bytes = Convert.FromBase64String(u.IdFrontImg);
                     MemoryStream ms = new MemoryStream(bytes);
                     Bitmap bmp = new Bitmap(ms);
-                    bmp.Save("idimages/" + u.AyLiveUsername + "_正面" + ".jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                    bmp.Save("idimages/" + u.LastName + u.FirstName + "_正面" + ".jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
 
                     bytes = Convert.FromBase64String(u.IdBackImg);
                     ms = new MemoryStream(bytes);
                     bmp = new Bitmap(ms);
-                    bmp.Save("idimages/" + u.AyLiveUsername + "_反面" + ".jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                    bmp.Save("idimages/" + u.LastName + u.FirstName + "_反面" + ".jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
                 });
 
 

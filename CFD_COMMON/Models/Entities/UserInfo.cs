@@ -169,5 +169,11 @@ namespace CFD_COMMON.Models.Entities
 
         [Column(TypeName = "ntext")]
         public string ProofOfAddress { get; set; }
+
+        /// <summary>
+        /// for Include operation, this field is required
+        /// </summary>
+        public int UserImageID { get; set; }
+        public virtual UserImage UserImage { get; set; }
     }
 }
