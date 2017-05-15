@@ -10,7 +10,7 @@ namespace CFD_COMMON.Models.Entities
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int UserImageId { get; set; }
+        public int UserId { get; set; }
 
         [Column(TypeName = "ntext")]
         public string IdFrontImg { get; set; }

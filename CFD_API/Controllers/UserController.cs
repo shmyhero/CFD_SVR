@@ -1429,7 +1429,7 @@ namespace CFD_API.Controllers
                 var transaction_id = jObject["transaction_id"].Value<string>();
 
                 var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
-                var userImage = db.UserImages.FirstOrDefault(o => o.UserImageId == UserId);
+                var userImage = db.UserImages.FirstOrDefault(o => o.UserId == UserId);
                 if (userInfo == null)
                 {
                     var newInfo = new UserInfo()
@@ -1447,8 +1447,6 @@ namespace CFD_API.Controllers
 
                         FaceCheckAt = null,
                         FaceCheckSimilarity = null,
-
-                        UserImageID = UserId
                     };
                     db.UserInfos.Add(newInfo);
                 }
@@ -1473,7 +1471,6 @@ namespace CFD_API.Controllers
                 {
                     UserImage newUserImage = new UserImage()
                     {
-                        UserImageId = UserId,
                         IdFrontImg = form.frontImg,
                         IdFrontImgExt = form.frontImgExt,
                         IdBackImg = form.backImg,
@@ -2332,7 +2329,7 @@ namespace CFD_API.Controllers
         public ResultDTO UploadProofOfAddress(ProofOfAddressDTO form)
         {
             var userImage = db.UserImages
-                    .FirstOrDefault(o => o.UserImageId == UserId);
+                    .FirstOrDefault(o => o.UserId == UserId);
             if (userImage == null)
             {
                 CFDGlobal.LogInformation("upload proof of address: User has no personal info");
