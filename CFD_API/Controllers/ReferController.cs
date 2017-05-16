@@ -61,6 +61,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{userId}")]
+        [AllowCrossSiteJsonAttribute]
         public List<ReferDTO> GetAll(int userId)
         {
             var query = from rh in db.ReferHistorys

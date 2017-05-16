@@ -257,6 +257,7 @@
     <Compile Include="Caching\WebCache.cs" />
     <Compile Include="Caching\WebCacheInstance.cs" />
     <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\Attributes\AllowCrossSiteJsonAttribute.cs" />
     <Compile Include="Controllers\Attributes\ApiHitRecord.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth2.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />
