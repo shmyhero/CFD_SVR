@@ -78,7 +78,7 @@ namespace CFD_API.Controllers
                             YunPianMessenger.SendSms(string.Format("【盈交易】恭喜完成开户，{0}元交易金已打入您的账户，完成首笔入金就可以交易啦！", amount), user.Phone);
                             db.LiveRegisterRewards.Add(new CFD_COMMON.Models.Entities.LiveRegisterReward() {
                                 UserId = user.Id,
-                                Amount = 30,
+                                Amount = amount,
                                 CreatedAt = DateTime.UtcNow
                             });
                         }
