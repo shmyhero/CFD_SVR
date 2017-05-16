@@ -21,7 +21,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2027-05-19T23:59:59.0000000+08:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
       <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="0a4755ec-4058-48c2-a4ce-c7b2457f3dfa" />
-      <Setting name="ProfileVerify" value="MinshHost" />
+      <Setting name="ProfileVerify" value="GuoZhengTongHost" />
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="16D9A13BA237430914E76E629CF7DFF1321B0EEE" thumbprintAlgorithm="sha1" />
