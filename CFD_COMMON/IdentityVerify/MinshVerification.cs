@@ -19,7 +19,6 @@ namespace CFD_COMMON.IdentityVerify
         public JObject Verify(OcrFaceCheckFormDTO form)
         {
             string template = "{{'result':'{0}','message':'{1}','transaction_id':'XXX','user_check_result':'{2}','verify_result':'0','verify_similarity':'0'}}";
-            form.userName = form.lastName + form.firstName;
             DESUtil des = new DESUtil();
             byte[] binaryData = Encoding.UTF8.GetBytes(des.Encrypt(string.Format("{{ 'RealName': '{0}', 'IdentityID':'{1}'}}", form.userName, form.userId), key));
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(CFDGlobal.GetConfigurationSetting("MinshHost"));
@@ -70,13 +69,13 @@ namespace CFD_COMMON.IdentityVerify
             }
             catch (WebException webEx)
             {
-                CFDGlobal.LogException(webEx);
+                CFDGlobal.LogWarning(webEx.Message);
                 Stream ReceiveStream = webEx.Response.GetResponseStream();
                 Encoding encode = Encoding.GetEncoding("utf-8");
 
                 StreamReader readStream = new StreamReader(ReceiveStream, encode);
                 string message = readStream.ReadToEnd();
-                CFDGlobal.LogError(message);
+                CFDGlobal.LogWarning(message);
             }
             catch (Exception ex)
             {

@@ -1537,22 +1537,23 @@ namespace CFD_API.Controllers
             JObject response = null;
             IProfileVerify pv = null;
             string host = CFDGlobal.GetConfigurationSetting("ProfileVerify");
-            switch(host)
+
+            form.accessId = GZT_ACCESS_ID;
+            form.accessKey = GZT_ACCESS_KEY;
+            form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
+            form.sign = Randoms.GetRandomAlphanumericString(8);
+            form.transaction_id = userInfo.OcrTransId;
+            form.lastName = null;
+            form.firstName = null;
+
+            switch (host)
             {
                 case "GuoZhengTongHost":
-                    form.accessId = GZT_ACCESS_ID;
-                    form.accessKey = GZT_ACCESS_KEY;
-                    form.timeStamp = DateTimes.GetChinaNow().ToString("yyyy-MM-dd HH:mm:ss");
-                    form.sign = Randoms.GetRandomAlphanumericString(8);
-                    
-                    form.lastName = null;
-                    form.firstName = null;
                     form.userName = HttpUtility.UrlEncode(lastName + firstName);
-                    form.transaction_id = userInfo.OcrTransId;
-
                     pv = new GuozhengtongVerification();
                     break;
                 case "MinshHost":
+                    form.userName = lastName + firstName;
                     pv = new MinshVerification();
                     break;
                 default: pv = new GuozhengtongVerification(); break;
