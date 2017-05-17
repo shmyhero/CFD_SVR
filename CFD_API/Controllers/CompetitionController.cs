@@ -25,7 +25,6 @@ namespace CFD_API.Controllers
 
         [HttpPost]
         [Route("signUp")]
-        [AllowCrossSiteJsonAttribute]
         public ResultDTO SignUp(CompetitionSignUpDTO form)
         {
             var competition = db.Competitions.FirstOrDefault(o => o.Id == form.competitionId);
@@ -64,7 +63,6 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{id}/leaderboard")]
-        [AllowCrossSiteJsonAttribute]
         public List<CompetitionResultDTO> GetLeaderboard(int id)
         {
             //var date = DateTimes.GetLastFinishedChinaWorkday();
@@ -108,7 +106,6 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{id}/user/{userId}/rank")]
-        [AllowCrossSiteJsonAttribute]
         public CompetitionResultDTO GetUserRank(int id, int userId)
         {
             //var date = DateTimes.GetLastFinishedChinaWorkday();
@@ -143,7 +140,6 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{id}/user/{userId}/position")]
-        [AllowCrossSiteJsonAttribute]
         public List<CompetitionUserPositionDTO> GetUserPositions(int id, int userId)
         {
             //var date = DateTimes.GetLastFinishedChinaWorkday();
@@ -195,7 +191,6 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("{id}/user/{userId}")]
-        [AllowCrossSiteJsonAttribute]
         public CompetitionUserDTO GetUser(int id, int userId)
         {
             var competitionUser = db.CompetitionUsers.FirstOrDefault(o => o.CompetitionId == id && o.UserId == userId);

@@ -401,7 +401,6 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("headline/group")]
-        [AllowCrossSiteJsonAttribute]
         public IList<HeadlineGroupDTO> GetHeadlineGroup()
         {
             List<Headline> headlines = null;
