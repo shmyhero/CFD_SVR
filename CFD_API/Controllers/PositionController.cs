@@ -777,7 +777,7 @@ namespace CFD_API.Controllers
                 dto.id = p.SecurityId.HasValue ? p.SecurityId.Value : 0;
                 dto.pl = p.PL.HasValue ? p.PL.Value : 0;
                 dto.rate = p.PL.HasValue && p.InvestUSD.HasValue ? (p.PL.Value / p.InvestUSD.Value) : 0;
-                dto.rate = Math.Round(dto.rate, 2);
+                dto.rate = Math.Round(dto.rate, 4);
                 var prodDef = cache.ProdDefs.FirstOrDefault(pd => pd.Id == p.SecurityId);
                 if (prodDef != null)
                 {
