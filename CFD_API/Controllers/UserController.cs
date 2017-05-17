@@ -974,22 +974,21 @@ namespace CFD_API.Controllers
             var plReports = (from m in ( //TODO: improve this T-SQL, too long
                                 (from n in db.NewPositionHistory_live
                                  where n.SecurityId.HasValue && indicesIDs.Contains(n.SecurityId.Value)
-                                 && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
+                                 && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue && n.ClosedAt.HasValue
                                  select new { AssetType = "指数", PL = n.PL, Invest = n.InvestUSD }).Concat(
                                 from n in db.NewPositionHistory_live
                                 where n.SecurityId.HasValue && currencyIDs.Contains(n.SecurityId.Value)
-                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
+                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue && n.ClosedAt.HasValue
                                 select new { AssetType = "外汇", PL = n.PL, Invest = n.InvestUSD }).Concat(
                                 from n in db.NewPositionHistory_live
                                 where n.SecurityId.HasValue && commodityIDs.Contains(n.SecurityId.Value)
-                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
+                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue && n.ClosedAt.HasValue
                                 select new { AssetType = "商品", PL = n.PL, Invest = n.InvestUSD }).Concat(
                                 from n in db.NewPositionHistory_live
                                 where n.SecurityId.HasValue && stockIDs.Contains(n.SecurityId.Value)
-                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue
+                                && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue && n.ClosedAt.HasValue
                                 select new { AssetType = "美股", PL = n.PL, Invest = n.InvestUSD })
                             )
-                            //todo: closedAt != null?
                              group m by m.AssetType into g
                              select new PLReportDTO
                              {
