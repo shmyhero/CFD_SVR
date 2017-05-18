@@ -15,6 +15,16 @@ namespace CFD_TEST
     public class UnitTestEncryption
     {
         [TestMethod]
+        public void GetUserPassword()
+        {
+            using (var db = CFDEntities.Create())
+            {
+                var first = db.Users.First(o => o.Id == 2026);
+                var plainText_3DesCbcMd5OfPwIvPrefixed = Encryption.GetPlainText_3DES_CBC_MD5ofPW_IVPrefixed(first.AyLivePassword, Encryption.SHARED_SECRET_CFD);
+            }
+        }
+
+        [TestMethod]
         public void Should_encrypt_and_decrypt_using_3DES_having_different_cyphertext_each_time()
         {
             var sharedKey = "25F790A0989547ECBA21BEE96DFA3EBC";

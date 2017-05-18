@@ -27,7 +27,8 @@
 
         .phoneLink{ cursor: pointer;color:cornflowerblue}
         .phoneLink:hover{ color:blue}
-        .highlight{color:deeppink}
+        .highlight{color:deeppink !important}
+        .lowlight{color:#c5006a}
     </style>
 </head>
 <body>
@@ -89,12 +90,27 @@
             row.className = "highlight";
             //userIds.push(row.children[1].innerText);
             var userId = row.children[1].innerText;
-            var rowsP = $('#positionTable tr td:nth-child(3)').filter(function () {
-                return $(this).text() == userId;
+            var rowsP = $('#positionTable tr'// td:nth-child(3)
+                ).filter(function () {
+                    //debugger;
+                return this.children[2].innerText == userId;
             });
             rowsP.each(function (idxP, rowP) {
                 //debugger;
-                rowP.parentNode.className = "highlight";
+                rowP.className = "highlight";
+                //debugger;
+
+                var secId = rowP.children[3].innerText;
+                var lev = rowP.children[6].innerText;
+                var side = parseInt(rowP.children[7].innerText);
+
+                var rowsP2 = $('#positionTable tr').filter(function () {
+                    //debugger;
+                    return this.children[3].innerText == secId && this.children[6].innerText == lev && parseInt(this.children[7].innerText)+side==1;
+                });
+                rowsP2.each(function (idxP2, rowP2) {
+                    rowP2.className = "lowlight";
+                });
             });
         });
 
