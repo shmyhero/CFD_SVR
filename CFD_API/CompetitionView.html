@@ -105,12 +105,26 @@
                 var side = parseInt(rowP.children[7].innerText);
 
                 var rowsP2 = $('#positionTable tr').filter(function () {
-                    //debugger;
-                    return this.children[3].innerText == secId && this.children[6].innerText == lev && parseInt(this.children[7].innerText)+side==1;
+                    var result = this.children[3].innerText == secId && this.children[6].innerText == lev && (parseInt(this.children[7].innerText) + side == 1);
+                    //if (result) debugger;
+                    return result;
                 });
                 rowsP2.each(function (idxP2, rowP2) {
                     rowP2.className = "lowlight";
-                });
+
+                    var uId = rowP2.children[2].innerText;
+                    var rowsU = $('#rankTable tr'// td:nth-child(3)
+                   ).filter(function () {
+                       //debugger;
+                       return this.children[1].innerText == uId;
+                   });
+                    rowsU.each(function (idx, rowU) {
+                            //debugger;
+                            rowU.className = "lowlight";
+                            //debugger;
+                            
+                        });
+                    });
             });
         });
 
