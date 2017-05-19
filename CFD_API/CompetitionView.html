@@ -27,7 +27,7 @@
 
         .phoneLink{ cursor: pointer;color:cornflowerblue}
         .phoneLink:hover{ color:blue}
-        .highlight{color:deeppink !important}
+        .highlight{color:deeppink}
         .lowlight{color:#c5006a}
     </style>
 </head>
@@ -110,7 +110,8 @@
                     return result;
                 });
                 rowsP2.each(function (idxP2, rowP2) {
-                    rowP2.className = "lowlight";
+                    if (rowP2.className == '')
+                        rowP2.className = "lowlight";
 
                     var uId = rowP2.children[2].innerText;
                     var rowsU = $('#rankTable tr'// td:nth-child(3)
@@ -119,7 +120,8 @@
                        return this.children[1].innerText == uId;
                    });
                     rowsU.each(function (idx, rowU) {
-                            //debugger;
+                        //debugger;
+                        if (rowU.className == '')
                             rowU.className = "lowlight";
                             //debugger;
                             
