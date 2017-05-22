@@ -658,6 +658,12 @@ namespace CFD_TEST
             //美元/日元 34860 100
             //user = db.Users.FirstOrDefault(o => o.Id == 3277);
             //pos = XiaDan_SheZhiYing(user, 34860, side, 100);
+
+
+            user = db.Users.FirstOrDefault(o => o.Id == 3223);
+            pos = XiaDan_SheZhiYing(user, 34857, side = r.NextDouble() > 0.5, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 3224);
+            pos = XiaDan_SheZhiYing(user, 34858, side = r.NextDouble() > 0.5, 100);
         }
 
         private static PositionDTO SheZhiYing(User user, PositionDTO pos)
