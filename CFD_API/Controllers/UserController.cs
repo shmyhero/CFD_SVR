@@ -1754,7 +1754,20 @@ namespace CFD_API.Controllers
                 };
             }
 
-            var poaUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, userInfo.UserImage.ProofOfAddress, "image/jpeg", "Address");
+            //由于地址证明变成了两张图片，因此这里先把两张图片合并成一张(如果有两张的话)，再做上传
+            string strPOA = string.Empty;
+            if(string.IsNullOrEmpty(userInfo.UserImage.ProofOfAddress))
+            {
+                strPOA = userInfo.UserImage.ProofOfAddress;
+            }
+            else
+            {
+                var poa1 = GetBaimapFromBase64(userInfo.UserImage.ProofOfAddress);
+                var poa2 = GetBaimapFromBase64(userInfo.UserImage.ProofOfAddressII);
+                strPOA = CombineImage(poa1, poa2);
+            }
+
+            var poaUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, strPOA, "image/jpeg", "Address");
             CFDGlobal.LogInformation("poa upload result:" + poaUploadResult.Item2);
             if (!poaUploadResult.Item1)
             {
@@ -2338,6 +2351,7 @@ namespace CFD_API.Controllers
             }
 
             userImage.ProofOfAddress = form.imageBase64;
+            userImage.ProofOfAddressII = form.imageBase64II;
             db.SaveChanges();
 
             return new ResultDTO(true);

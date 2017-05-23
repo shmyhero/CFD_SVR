@@ -27,7 +27,16 @@ namespace CFD_COMMON.Models.Entities
         [Column(TypeName = "ntext")]
         public string OcrFaceImg { get; set; }
 
+        /// <summary>
+        /// 地址证明的第一张图(户口本开户人页)
+        /// </summary>
         [Column(TypeName = "ntext")]
         public string ProofOfAddress { get; set; }
+
+        /// <summary>
+        /// 地址证明的第二张图(户口本户主页)
+        /// </summary>
+        [Column(TypeName = "ntext")]
+        public string ProofOfAddressII { get; set; }
     }
 }

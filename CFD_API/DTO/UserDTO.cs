@@ -609,7 +609,15 @@ namespace CFD_API.DTO
 
     public class ProofOfAddressDTO
     {
+        /// <summary>
+        /// 地址证明的第一张图片
+        /// </summary>
         public string imageBase64 { get; set; }
+
+        /// <summary>
+        /// 地址证明的第二张图片
+        /// </summary>
+        public string imageBase64II { get; set; }
 
         public string text { get; set; }
     }
