@@ -181,11 +181,11 @@ namespace CFD_API.Controllers
                 //contains "ID" means update
                 if (formData.ContainsKey("ID"))
                 {
-                    UpdateBanner(imgList.FirstOrDefault(), formData);
+                    UpdateBanner(imgList[0],imgList[1], formData);
                 }
                 else //create banner
                 {
-                    CreateBanner(imgList.FirstOrDefault(), formData);
+                    CreateBanner(imgList[0], imgList[1], formData);
                 }
                 db.SaveChanges();
             }
@@ -197,7 +197,7 @@ namespace CFD_API.Controllers
             return null;
         }
 
-        private void CreateBanner(string imgleUrl, Dictionary<string, string> dicFormData)
+        private void CreateBanner(string imgUrl, string imgUrlBig, Dictionary<string, string> dicFormData)
         {
             int bannerType = 0;
             if (dicFormData.ContainsKey("BannerType"))
@@ -215,11 +215,12 @@ namespace CFD_API.Controllers
                 CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty,
                 BannerType = bannerType,
                 Expiration = SqlDateTime.MaxValue.Value,
-                ImgUrl = imgleUrl
+                ImgUrl = imgUrl,
+                ImgUrlBig = imgUrlBig
             });
         }
 
-        private void UpdateBanner(string imageUrl, Dictionary<string, string> dicFormData)
+        private void UpdateBanner(string imgUrl, string imgUrlBig, Dictionary<string, string> dicFormData)
         {
             Banner2 banner = null;
             int id = 0;
@@ -239,9 +240,13 @@ namespace CFD_API.Controllers
                     int.TryParse(dicFormData["BannerType"], out bannerType);
                 }
                 banner.BannerType = bannerType;
-                if (!string.IsNullOrEmpty(imageUrl))
+                if (!string.IsNullOrEmpty(imgUrl))
                 {
-                    banner.ImgUrl = imageUrl;
+                    banner.ImgUrl = imgUrl;
+                }
+                if (!string.IsNullOrEmpty(imgUrlBig))
+                {
+                    banner.ImgUrlBig = imgUrlBig;
                 }
             }
             else

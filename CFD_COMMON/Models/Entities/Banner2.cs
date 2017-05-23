@@ -19,6 +19,9 @@ namespace CFD_COMMON.Models.Entities
         public string ImgUrl { get; set; }
 
         [StringLength(200)]
+        public string ImgUrlBig { get; set; }
+
+        [StringLength(200)]
         public string Header { get; set; }
 
         [StringLength(int.MaxValue)]
