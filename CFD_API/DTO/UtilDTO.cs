@@ -71,6 +71,7 @@ namespace CFD_API.DTO
     {
         public int id { get; set; }
         public string imgUrl { get; set; }
+        public string imgUrlBig { get; set; }
         public string url { get; set; }
         public string header { get; set; }
 
