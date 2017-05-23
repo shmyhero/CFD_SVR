@@ -34,7 +34,10 @@ namespace CFD_JOBS.Ayondo
                 {
                     DateTime dtStart;
                     DateTime dtEnd;
-                    var dtNow = DateTime.UtcNow;
+
+                    //1 minute buffer just in case when ayondo's data is not ready when requested
+                    //fetching latest data without buffer time might causing record missing
+                    var dtNow = DateTime.UtcNow.AddMinutes(-1);
 
                     //bool needSave = false;
 
