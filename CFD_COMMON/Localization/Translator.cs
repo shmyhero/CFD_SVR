@@ -76,7 +76,7 @@
             if (ayondoText == "No such order: Trading not permitted outside of Gekko business hours")
                 return "非交易日无法更改设置";
 
-            CFDGlobal.LogWarning("Cannot find ayondo translate for: [" + ayondoText + "]");
+            CFDGlobal.LogWarning("Cannot find OrderReject translate for: [" + ayondoText + "]");
             return ayondoText;
         }
 
@@ -85,7 +85,7 @@
             if (ayondoText == "Invalid Transfer Request: ca.txio.mds.utility.MDException: Insufficient Funds")
                 return "资金不足";
 
-            CFDGlobal.LogWarning("Cannot find ayondo translate for: [" + ayondoText + "]");
+            CFDGlobal.LogWarning("Cannot find MDSTransferError translate for: [" + ayondoText + "]");
             return ayondoText;
         }
     }
