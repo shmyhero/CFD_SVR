@@ -21,5 +21,6 @@
     <AzureHostedServiceResourceGroup />
     <EnableRemoteDebugger>True</EnableRemoteDebugger>
     <RemoteDebuggerConnectorCertificateThumbprint>2CF35E75FA63FC2E71F66E313E66ABACFA852665</RemoteDebuggerConnectorCertificateThumbprint>
+    <EnableApplicationInsights>False</EnableApplicationInsights>
   </PropertyGroup>
 </Project>
