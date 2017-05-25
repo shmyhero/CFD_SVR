@@ -1756,7 +1756,7 @@ namespace CFD_API.Controllers
 
             //由于地址证明变成了两张图片，因此这里先把两张图片合并成一张(如果有两张的话)，再做上传
             string strPOA = string.Empty;
-            if(string.IsNullOrEmpty(userInfo.UserImage.ProofOfAddress))
+            if(string.IsNullOrEmpty(userInfo.UserImage.ProofOfAddressII))
             {
                 strPOA = userInfo.UserImage.ProofOfAddress;
             }

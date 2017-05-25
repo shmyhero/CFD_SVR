@@ -32,7 +32,7 @@ namespace CFD_API.Controllers
         }
 
         /// <summary>
-        /// 只返回BannerType为空或者为0的
+        /// 只返回BannerType为空或者为0的，用于实盘
         /// </summary>
         /// <returns></returns>
         [Route("banner2")]
@@ -53,7 +53,7 @@ namespace CFD_API.Controllers
         }
 
         /// <summary>
-        /// 返回所有的Banner
+        /// 返回所有的Banner，用于模拟
         /// </summary>
         /// <returns></returns>
         [Route("banner/all")]
