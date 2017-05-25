@@ -24,6 +24,7 @@ namespace CFD_COMMON.Utils
                 case "PendingIdentityConflict":
                 case "PendingReview":
                 case "PendingRiskAssessment":
+                case "PendingSanctionsCheck":
                 case "PendingUnlock":
                 case "PendingUnlockRetry":
                     return UserLiveStatus.Pending;
@@ -49,7 +50,10 @@ namespace CFD_COMMON.Utils
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(ayLiveAccountStatus), ayLiveAccountStatus, null);
+                    CFDGlobal.LogWarning("unknown live account status: "+  ayLiveAccountStatus);
+                    //throw new ArgumentOutOfRangeException(nameof(ayLiveAccountStatus), ayLiveAccountStatus, null);
+                    return UserLiveStatus.Pending;
+                    break;
             }
         }
 
