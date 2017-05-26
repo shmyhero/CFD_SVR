@@ -47,8 +47,8 @@ namespace CFD_JOBS.Ayondo
                         using (var db = CFDEntities.Create())//find last record in db
                         {
                             lastDbRecord = isLive
-                                ? (AyondoTradeHistoryBase) db.AyondoTradeHistory_Live.OrderByDescending(o => o.Id).FirstOrDefault()
-                                : db.AyondoTradeHistories.OrderByDescending(o => o.Id).FirstOrDefault();
+                                ? (AyondoTradeHistoryBase) db.AyondoTradeHistory_Live.OrderByDescending(o => o.TradeTime).FirstOrDefault()
+                                : db.AyondoTradeHistories.OrderByDescending(o => o.TradeTime).FirstOrDefault();
                         }
 
                         if (lastDbRecord == null || lastDbRecord.TradeTime == null) //db is empty
@@ -73,35 +73,6 @@ namespace CFD_JOBS.Ayondo
                         dtEnd = dtNow - dtStart > MaxDuration ? dtStart + MaxDuration : dtNow;
                     }
 
-                    //using (var db = CFDEntities.Create())
-                    //{
-                    //    var lastTradeHistory = isLive
-                    //        ? db.AyondoTradeHistory_Live.OrderByDescending(o => o.Id).FirstOrDefault()
-                    //        : db.AyondoTradeHistories.OrderByDescending(o => o.Id).FirstOrDefault();
-
-                    //    //如果上次同步时间超过24小时，则每次最多只取24小时
-                    //    if ((DateTime.UtcNow - lastTradeHistory.TradeTime).Value.Hours > 24)
-                    //    {
-                    //        dtEnd = lastTradeHistory.TradeTime.Value.AddHours(24);
-                    //    }
-
-                    //    //最后一次结束时间为空，意味着服务重新开启，此时需要获取数据库中最后一条TradeHistory作为开始时间
-                    //    if (_lastEndTime == null)
-                    //    {
-                    //        if(lastTradeHistory != null)
-                    //        {
-                    //            dtStart = lastTradeHistory.TradeTime.Value.AddMilliseconds(1);
-                    //        }
-                    //        else
-                    //        {
-                    //            dtStart = dtEnd - Interval; //fetch interval length of period
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        dtStart = _lastEndTime.Value.AddMilliseconds(1); //fetch data since last fetch
-                    //    }
-                    //}
                     var tsStart = dtStart.ToUnixTimeMs();//DateTime.SpecifyKind(DateTime.Parse("2017-01-18 8:07:49.767"), DateTimeKind.Utc).ToUnixTimeMs();
                     var tsEnd = dtEnd.ToUnixTimeMs();//DateTime.SpecifyKind(DateTime.Parse("2017-01-18 8:09:49.767"), DateTimeKind.Utc).ToUnixTimeMs();
 
@@ -203,28 +174,67 @@ namespace CFD_JOBS.Ayondo
                                 newTradeHistories.Add(tradeHistory);
                             }
 
-                            //if(tradeHistory.UpdateType == "DELETE")
-                            //        {
-                            //            var newPositionHistory = isLive
-                            //                ? db.NewPositionHistory_live.FirstOrDefault(h => h.Id == tradeHistory.PositionId)
-                            //                : db.NewPositionHistories.FirstOrDefault(h => h.Id == tradeHistory.PositionId);
-
-                            //            if(newPositionHistory != null)
-                            //            {
-                            //                newPositionHistory.ClosedPrice = tradeHistory.TradePrice;
-                            //                newPositionHistory.ClosedAt = tradeHistory.TradeTime;
-                            //                newPositionHistory.PL = tradeHistory.PL;
-                            //                needSave = true;
-                            //            }
-                            //        }
-                            //}
-
                             //CFDGlobal.LogLine("maxCreateTime: " + dbMaxCreateTime + " data:" + lineArrays.Count +
                             //                  " newData:" + entities.Count);
+                            
 
-                            var newClosedTradeHistories = newTradeHistories.Where(o => o.UpdateType == "DELETE").ToList();
+                            ////insert into position table if a new created position is not in db
+                            //var newCreatedTradeHistories = newTradeHistories.Where(o => o.UpdateType == "CREATE").ToList();
+                            //if (newCreatedTradeHistories.Count > 0)
+                            //{
+                            //    var newCreatedPosIDs = newCreatedTradeHistories.Select(o => o.PositionId).ToList();
+
+                            //    var positionsInDb = isLive
+                            //        ? db.NewPositionHistory_live.Where(o => newCreatedPosIDs.Contains(o.Id)).ToList().Select(o => o as NewPositionHistoryBase).ToList()
+                            //        : db.NewPositionHistories.Where(o => newCreatedPosIDs.Contains(o.Id)).ToList().Select(o => o as NewPositionHistoryBase).ToList();
+
+                            //    var positionsInDbIds = positionsInDb.Select(o => o.Id).ToList();
+                            //    var positionsToInsert = newCreatedTradeHistories.Where(o => !positionsInDbIds.Contains(o.PositionId.Value)).ToList();
+
+                            //    CFDGlobal.LogLine("got " + newCreatedTradeHistories.Count + " CREATE records, " + positionsToInsert.Count + " not in db");
+
+                            //    if (positionsToInsert.Count > 0)
+                            //    {
+                            //        var accountIds = positionsToInsert.Select(o => o.AccountId.Value).ToList();
+                            //        var tradeUsers = db.Users.Where(o => accountIds.Contains(o.AyondoAccountId.Value)).ToList();
+
+                            //        foreach (var his in positionsToInsert)
+                            //        {
+                            //           var pos=new NewPositionHistoryBase();
+                            //            pos.Id = his.PositionId.Value;
+
+                            //            var tradeUser = tradeUsers.FirstOrDefault(o => o.AyondoAccountId == his.AccountId);
+                            //            if (tradeUser != null)
+                            //                pos.UserId = tradeUser.Id;
+
+                            //            pos.SecurityId = his.SecurityId;
+                            //            pos.SettlePrice = his.TradePrice;
+                            //            pos.CreateTime = his.CreateTime;
+                            //            if (his.Direction == "Buy")
+                            //                pos.LongQty = his.Quantity;
+                            //            else
+                            //                pos.ShortQty = his.Quantity;
+                            //            //pos.Leverage
+                            //            //pos.InvestUSD
+
+                            //            if (isLive)
+                            //            {
+                            //                db.AyondoTradeHistory_Live.Add(Mapper.Map<AyondoTradeHistory_Live>(pos));
+                            //            }
+                            //            else
+                            //            {
+                            //                db.AyondoTradeHistories.Add(Mapper.Map<AyondoTradeHistory>(pos));
+                            //            }
+                            //        }
+
+                            //        CFDGlobal.LogLine("inserting new CREATE positions...");
+                            //        db.SaveChanges();
+                            //    }
+                            //}
+
 
                             //update position table with new closed trade histories
+                            var newClosedTradeHistories = newTradeHistories.Where(o => o.UpdateType == "DELETE").ToList();
                             if (newClosedTradeHistories.Count > 0)
                             {
                                 var newClosedPosIDs = newClosedTradeHistories.Select(o => o.PositionId).ToList();
@@ -232,6 +242,8 @@ namespace CFD_JOBS.Ayondo
                                 var positionsToClose = isLive
                                     ? db.NewPositionHistory_live.Where(o => newClosedPosIDs.Contains(o.Id)).ToList().Select(o=> o as NewPositionHistoryBase).ToList()
                                     : db.NewPositionHistories.Where(o => newClosedPosIDs.Contains(o.Id)).ToList().Select(o => o as NewPositionHistoryBase).ToList();
+
+                                CFDGlobal.LogLine("got " + newClosedTradeHistories.Count + " DELETE records, " + positionsToClose.Count + " found in db");
 
                                 if (positionsToClose.Count > 0)
                                 {
@@ -261,7 +273,7 @@ namespace CFD_JOBS.Ayondo
                                 else
                                     db.AyondoTradeHistories.AddRange(newTradeHistories.Select(o => Mapper.Map<AyondoTradeHistory>(o)));
 
-                                CFDGlobal.LogLine("saving trade histories...");
+                                CFDGlobal.LogLine("saving raw trade histories...");
                                 db.SaveChanges();
                             }
                         }
