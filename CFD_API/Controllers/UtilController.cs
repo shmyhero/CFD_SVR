@@ -72,7 +72,7 @@ namespace CFD_API.Controllers
         [Route("ipCheck")]
         public bool IpCheck()
         {
-            return true;
+            //return true;
 
             string ip = null;
             if (Request.Properties.ContainsKey("MS_HttpContext"))
