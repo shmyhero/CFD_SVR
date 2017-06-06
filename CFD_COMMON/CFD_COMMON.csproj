@@ -177,6 +177,7 @@
     <Compile Include="Models\Entities\ReferHistory.cs" />
     <Compile Include="Models\Entities\ReferReward.cs" />
     <Compile Include="Models\Entities\RewardTransfer.cs" />
+    <Compile Include="Models\Entities\SystemSetting.cs" />
     <Compile Include="Models\Entities\TimeStampNonce.cs" />
     <Compile Include="Models\Entities\User.cs" />
     <Compile Include="Models\Entities\UserAlert_Live.cs" />
