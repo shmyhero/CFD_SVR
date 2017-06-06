@@ -179,7 +179,7 @@ namespace CFD_COMMON.Localization
             {"jd.com inc adr", "京东"},
             {"jiangxi copper co ltd-h", "江西铜业"},
             {"jpmorgan chase & co", "摩根大通"},
-            {"legend holdings corporation", "联想"},
+            //{"legend holdings corporation", "联想"},
             {"lenovo group ltd", "联想"},
             {"macy's inc", "梅西百货"},
             {"marvell technology group ltd", "迈威科技"},
