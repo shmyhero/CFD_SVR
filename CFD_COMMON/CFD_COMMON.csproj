@@ -151,6 +151,7 @@
     <Compile Include="Models\Entities\DailyTransaction.cs" />
     <Compile Include="Models\Entities\DemoRegisterReward.cs" />
     <Compile Include="Models\Entities\DepositHistory.cs" />
+    <Compile Include="Models\Entities\DepositReward.cs" />
     <Compile Include="Models\Entities\Headline.cs" />
     <Compile Include="Models\Entities\Banner2.cs" />
     <Compile Include="Models\Entities\Banner.cs" />

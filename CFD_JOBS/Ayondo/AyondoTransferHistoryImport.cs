@@ -325,19 +325,7 @@ namespace CFD_JOBS.Ayondo
                                             messages.Add(msg);
                                             
                                             var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == transfer.TradingAccountId);
-                                            int amount = 100;
-                                            try
-                                            {
-                                                var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
-                                                if (setting != null)
-                                                {
-                                                    amount = JObject.Parse(setting.Value)["referee"].Value<int>();
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                CFDGlobal.LogInformation("推荐好友的交易金设置错误:" + ex.Message);
-                                            }
+                                            decimal amount = RewardService.REWARD_REFEREE;
                                             if (referer != null && !string.IsNullOrEmpty(referer.Phone))
                                             {
                                                 var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);

@@ -17,7 +17,22 @@ namespace CFD_COMMON.Service
         public const decimal CHECK_IN_DAY_1_TO_5 = 0.5M;
         public const decimal CHECK_IN_DAY_6_TO_10 = 0.6M;
         public const decimal CHECK_IN_DAY_11_TO_X = 0.8M;
-        public static readonly decimal REWARD_DEMO_REG = 50m;
+        /// <summary>
+        /// 模拟账号注册交易金
+        /// </summary>
+        public static decimal REWARD_DEMO_REG = 30m;
+        /// <summary>
+        /// 实盘账号注册交易金
+        /// </summary>
+        public static decimal REWARD_LIVE_REG = 50m;
+        /// <summary>
+        /// 被推荐人实盘注册交易金
+        /// </summary>
+        public static decimal REWARD_REFERER = 30m;
+        /// <summary>
+        /// 推荐人交易金
+        /// </summary>
+        public static decimal REWARD_REFEREE = 30m;
         public const decimal REWARD_DEMO_TRADE = 0.5m;
 
         public CFDEntities db { get; set; }
@@ -25,13 +40,34 @@ namespace CFD_COMMON.Service
         public RewardService(CFDEntities db)
         {
             this.db = db;
-            int demoAmount = 50;
             try
             {
                 var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
                 if (setting != null)
                 {
-                    demoAmount = JObject.Parse(setting.Value)["demoAccount"].Value<int>();
+                    REWARD_DEMO_REG = JObject.Parse(setting.Value)["demoAccount"].Value<decimal>();
+                    REWARD_LIVE_REG = JObject.Parse(setting.Value)["liveAccount"].Value<decimal>();
+                    REWARD_REFERER = JObject.Parse(setting.Value)["referer"].Value<decimal>();
+                    REWARD_REFEREE = JObject.Parse(setting.Value)["referee"].Value<decimal>();
+                }
+            }
+            catch (Exception ex)
+            {
+                CFDGlobal.LogInformation("模拟盘注册的交易金设置错误:" + ex.Message);
+            }
+        }
+
+        public static void Refresh(CFDEntities db)
+        {
+            try
+            {
+                var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
+                if (setting != null)
+                {
+                    REWARD_DEMO_REG = JObject.Parse(setting.Value)["demoAccount"].Value<decimal>();
+                    REWARD_LIVE_REG = JObject.Parse(setting.Value)["liveAccount"].Value<decimal>();
+                    REWARD_REFERER = JObject.Parse(setting.Value)["referer"].Value<decimal>();
+                    REWARD_REFEREE = JObject.Parse(setting.Value)["referee"].Value<decimal>();
                 }
             }
             catch (Exception ex)

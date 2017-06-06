@@ -249,6 +249,10 @@ namespace CFD_API.DTO
         /// 好友推荐奖励
         /// </summary>
         public decimal referralReward { get; set; }
+        /// <summary>
+        /// 首笔入金的交易金
+        /// </summary>
+        public decimal firstDeposit { get; set; }
     }
 
     public class TotalRewardDTO

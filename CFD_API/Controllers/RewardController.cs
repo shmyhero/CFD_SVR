@@ -24,6 +24,14 @@ namespace CFD_API.Controllers
         }
         
         [HttpGet]
+        [Route("refresh")]
+        public ResultDTO RefreshRewardService()
+        {
+            RewardService.Refresh(db);
+            return new ResultDTO() { success = true };
+        }
+
+        [HttpGet]
         [Route("checkIn/share")]
         public RewardIntroDTO GetDailySignRewardIntro()
         {
@@ -196,7 +204,12 @@ namespace CFD_API.Controllers
             var referReward = db.ReferRewards.FirstOrDefault(o => o.UserID == UserId);
             decimal referRewardAmount = referReward == null ? 0 : referReward.Amount;
 
-            return new RewardDTO() { referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward };
+            //首笔入金交易金
+            decimal firstDepositReward = 0;
+            var depositReward = db.DepositRewards.OrderBy(o => o.CreatedAt).FirstOrDefault(o => o.UserId == UserId);
+            firstDepositReward = depositReward == null ? 0 : depositReward.Amount;
+
+            return new RewardDTO() { referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward };
         }
 
         [HttpGet]

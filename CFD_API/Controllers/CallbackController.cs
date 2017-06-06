@@ -18,6 +18,7 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using CFD_COMMON.Utils;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Service;
 
 namespace CFD_API.Controllers
 {
@@ -61,19 +62,7 @@ namespace CFD_API.Controllers
                         var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == user.Id);
                         if(form.status.ToLower() == "pendinglogin" && liveReward == null)
                         {
-                            int amount = 100;
-                            try
-                            {
-                                var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
-                                if (setting != null)
-                                {
-                                    amount = JObject.Parse(setting.Value)["liveAccount"].Value<int>();
-                                }
-                            }
-                            catch(Exception ex)
-                            {
-                                CFDGlobal.LogInformation("实盘注册的交易金设置错误:" + ex.Message);
-                            }
+                            decimal amount = RewardService.REWARD_LIVE_REG;
                         
                             YunPianMessenger.SendSms(string.Format("【盈交易】恭喜完成开户，{0}元交易金已打入您的账户，完成首笔入金就可以交易啦！", amount), user.Phone);
                             db.LiveRegisterRewards.Add(new CFD_COMMON.Models.Entities.LiveRegisterReward() {
