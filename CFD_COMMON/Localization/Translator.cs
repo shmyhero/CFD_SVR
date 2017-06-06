@@ -15,11 +15,11 @@
             var str = RemoveENameSuffix(name);
             var lower = str.ToLower();
 
-            if (lower.StartsWith("china 50 "))
-                return "新华富时A50";
+            //if (lower.StartsWith("china 50 "))
+            //    return "新华富时A50";
             //return str.Replace("China 50 ","新华富时A50 ");
-            if (lower.StartsWith("japan 225 "))
-                return "日经225";
+            //if (lower.StartsWith("japan 225 "))
+            //    return "日经225";
             //return str.Replace("Japan 225 ", "日经225 ");
 
             if (Translations.ProdCNames.ContainsKey(lower))
@@ -36,7 +36,11 @@
 
         public static string RemoveENameSuffix(string name)
         {
-            return name.Replace(" CFD", string.Empty).Replace(" TradeHero", string.Empty).Replace(" Mini", string.Empty).Replace(" Outright", string.Empty).Replace(" Spot", string.Empty);//;
+            return name.Replace(" CFD", string.Empty)
+                .Replace(" TradeHero", string.Empty)
+                .Replace(" Mini", string.Empty)
+                //.Replace(" Outright", string.Empty)
+                .Replace(" Spot", string.Empty);//;
         }
 
         public static string AyondoOrderRejectMessageTranslate(string ayondoText)
