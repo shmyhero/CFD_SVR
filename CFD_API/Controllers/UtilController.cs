@@ -72,7 +72,9 @@ namespace CFD_API.Controllers
         [Route("ipCheck")]
         public bool IpCheck()
         {
-            //return true;
+            var ipCheck = db.SystemSettings.FirstOrDefault().IpCheck;
+            if (!ipCheck)
+                return true;
 
             string ip = null;
             if (Request.Properties.ContainsKey("MS_HttpContext"))
@@ -83,15 +85,14 @@ namespace CFD_API.Controllers
                 if (ip == "212.36.187.202" || ip == "84.19.42.150") //Sheng Xu, ayondo
                     return true;
 
-                using (var db = CFDEntities.Create())
-                {
-                    var record =
-                        db.IP2Country.SqlQuery(
-                            "SELECT TOP 1 * FROM IP2Country WHERE StartAddress <= @p0 ORDER BY StartAddress DESC",
-                            IPAddress.Parse(ip).MapToIPv6().GetAddressBytes()).FirstOrDefault();
-                    if (record != null && record.CountryCode == "CN")
-                        return true;
-                }
+
+                var record =
+                    db.IP2Country.SqlQuery(
+                        "SELECT TOP 1 * FROM IP2Country WHERE StartAddress <= @p0 ORDER BY StartAddress DESC",
+                        IPAddress.Parse(ip).MapToIPv6().GetAddressBytes()).FirstOrDefault();
+                if (record != null && record.CountryCode == "CN")
+                    return true;
+
             }
 
             return false;

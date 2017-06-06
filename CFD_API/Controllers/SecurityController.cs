@@ -164,14 +164,7 @@ namespace CFD_API.Controllers
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
 
-            //Where(o => o.Financing == "US Stocks" 
-
             var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
-
-            //foreach (var o in securityDtos)
-            //{
-            //    o.tag = "US";
-            //}
 
             UpdateLastPrice(securityDtos);
 
@@ -199,9 +192,10 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("stock/us")]
+        [Route("live/stock/us")]
         public List<SecurityDTO> GetUSStocks(int page = 1, int perPage = 20)
         {
-            var activeProds = GetActiveProds();
+            var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
 
@@ -216,9 +210,10 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("stock/hk")]
+        [Route("live/stock/hk")]
         public List<SecurityDTO> GetHKStocks(int page = 1, int perPage = 20)
         {
-            var activeProds = GetActiveProds();
+            var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsHKStocks(o.Symbol)).ToList();
 

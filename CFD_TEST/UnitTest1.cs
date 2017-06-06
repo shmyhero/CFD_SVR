@@ -628,8 +628,8 @@ namespace CFD_TEST
             bool side;
 
             //德国30 34820
-            user = db.Users.FirstOrDefault(o => o.Id == 3219);
-            pos = XiaDan_SheZhiYing(user, 34820, side = r.NextDouble() > 0.5, 100);
+            //user = db.Users.FirstOrDefault(o => o.Id == 3219);
+            //pos = XiaDan_SheZhiYing(user, 34820, side = r.NextDouble() > 0.5, 100);
 
             //法国40 34811 50
             //英镑/加元 34815 125
@@ -661,7 +661,7 @@ namespace CFD_TEST
 
 
             user = db.Users.FirstOrDefault(o => o.Id == 3223);
-            pos = XiaDan_SheZhiYing(user, 34857, side = r.NextDouble() > 0.5, 100);
+            pos = XiaDan_SheZhiYing(user, 34820, side = r.NextDouble() > 0.5, 100);
             user = db.Users.FirstOrDefault(o => o.Id == 3224);
             pos = XiaDan_SheZhiYing(user, 34858, side = r.NextDouble() > 0.5, 100);
         }
