@@ -248,6 +248,13 @@ namespace CFD_API.Controllers
             return totalReward;
         }
 
+        [HttpGet]
+        [Route("register")]
+        public int GetRegisterReward()
+        {
+            return 30;
+        }
+
         private static object transferLock = new object();
         /// <summary>
         /// 鼓励金转到实盘账户
