@@ -255,6 +255,23 @@ namespace CFD_API.DTO
     {
         public decimal? total { get; set; }
         public decimal? paid { get; set; }
+        /// <summary>
+        /// 累计入金总额
+        /// </summary>
+        public decimal? totalDeposit { get; set; }
+        /// <summary>
+        /// 最小转出金额
+        /// </summary>
+        public decimal? minTransfer { get; set; }
+
+        /// <summary>
+        /// 是否转交易金，目前的规则是：剩余交易金≥60元和实盘累计⼊金≥200美元，才可以转交易金
+        /// </summary>
+        public bool? canTransfer { get; set; }
+        /// <summary>
+        /// canTansfer为false时，显示原因信息
+        /// </summary>
+        public string message { get; set; }
     }
 
     public class MessageDTO {

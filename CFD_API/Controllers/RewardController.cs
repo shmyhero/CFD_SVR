@@ -11,6 +11,7 @@ using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
+using Newtonsoft.Json.Linq;
 
 namespace CFD_API.Controllers
 {
@@ -208,7 +209,43 @@ namespace CFD_API.Controllers
             //所有已经被转的交易金
             var transfer = db.RewardTransfers.Where(o => o.UserID == UserId).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
 
-            return new TotalRewardDTO() { total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction, paid = transfer };
+            //用户累计入金
+            var user = GetUser();
+            //to-do 用户入金的交易类型是不是：WeCollect - CUP 和 Bank Wire
+            //Bank Wire可能是运营给的赠金，也可能是用户的入金，需要区分开吗？
+            var totalDeposit = db.AyondoTransferHistory_Live.Where(o => o.TradingAccountId == user.AyLiveAccountId && (o.TransferType == "WeCollect - CUP")).Select(o=>o.Amount).Sum();
+            decimal rewardTransferLimit = 60; //转出交易金的限制，必须大于60
+            decimal depositLimit = 200; //入金的限制，必须累计大于200
+            string rewardLimitMessage = "剩余交易金≥60元, 才能转⼊实盘账户";
+            string depositLimitMessage = "累计⼊金≥200美元，才能转⼊实盘账户";
+            var rewardSetting = db.Miscs.FirstOrDefault(o => o.Key == "TransferSetting");
+            if (rewardSetting != null) //如果数据库有配置，就用数据库的配置
+            {
+                var setting = JObject.Parse(rewardSetting.Value);
+                rewardTransferLimit = setting["rewardLimit"].Value<decimal>();
+                depositLimit = setting["depositLimit"].Value<decimal>();
+                rewardLimitMessage = setting["rewardLimitMessage"].Value<string>();
+                depositLimitMessage = setting["depositLimitMessage"].Value<string>();
+            }
+            var totalReward = new TotalRewardDTO() {
+                total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction,
+                paid = transfer,
+                canTransfer = true,
+                minTransfer = rewardTransferLimit,
+                totalDeposit = totalDeposit,
+            };
+            if (totalReward.total < rewardTransferLimit)
+            {
+                totalReward.message = rewardLimitMessage;
+                totalReward.canTransfer = false;
+            }
+            else if(totalDeposit < 200)
+            {
+                totalReward.message = depositLimitMessage;
+                totalReward.canTransfer = false;
+            }
+            
+            return totalReward;
         }
 
         private static object transferLock = new object();
