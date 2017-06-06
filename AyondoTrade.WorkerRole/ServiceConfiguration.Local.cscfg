@@ -9,7 +9,7 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEGrbuMkRZeieTd8VdKmOI4swDQYJKoZIhvcNAQEBBQAEggEAjOBJqgVlGJXkz2tFsGtbhSR9BA8p5fPsNDyp+3YndLc8idynXbYjr0cLOe4F6GVQZ+r5dlK2p1XMsgvGk7CrVM/xbc7wJKwF5LwprPmB7BA6ILf/asMrZajNL9RryOMpt2YFhqleOXAYz/MUTbaw1a406TY/KZyRkx348Z2Zv5W5TkgOWo07o0JTFQF5IQo2kFCHOwKo2yG/Bz6Br+lyssHX77HUWZMu7UnIWTdGzhKBJmHkaJPNbUoTnJBBj/0hyCNp6hFM4e8ZLZ/H2tusz5YHjF5CxM8pXTdVlcrl6RsKIMTg+Q6mtAvagxYw7z9pjjUfvxQamK2on/NbZaigBzAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECAKyrOUKmsAqgBAKywKHg2Mq9/gnZQwZYFL0" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2027-06-06T23:59:59.0000000+08:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
-      <Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;failover partner=thvm-chinap2.chinacloudapp.cn,888;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
+      <Setting name="CFDEntities" value="data source=thvm-chinap3.chinacloudapp.cn,888;failover partner=thvm-chinap2.chinacloudapp.cn,888;connect timeout=30;initial catalog=CFD;persist security info=True;user id=tradehero_sa;password=__sa90070104th__;MultipleActiveResultSets=True;App=EntityFramework" />
       <!--<Setting name="redisConnectionString" value="Password88__@cfd-redis1.chinacloudapp.cn:6399" />-->
       <Setting name="ayondoFixTradeCfgFilePath" value="AyondoTrade.cfg" />
       <Setting name="ayondoFixTradeUsername" value="thcntrade" />
