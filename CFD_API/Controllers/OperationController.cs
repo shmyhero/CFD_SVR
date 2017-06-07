@@ -3,6 +3,7 @@ using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
 using CFD_API.DTO.Form;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
 using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
@@ -82,5 +83,38 @@ namespace CFD_API.Controllers
                                          select new RewardTransferDTO() { liveAccount = y.AyLiveUsername, liveAccountID = y.AyLiveAccountId.HasValue? y.AyLiveAccountId.Value.ToString() : string.Empty, name = t2.LastName + t2.FirstName, amount = x.Amount, date = x.CreatedAt }).ToList();
             return rewardTransferHistory;
         }
+
+        [HttpPost]
+        [Route("reward/phone")]
+        public ResultDTO RecordPhone(CheckPhoneDTO form)
+        {
+            if(string.IsNullOrEmpty(form.phone) || string.IsNullOrEmpty(form.verifyCode))
+            {
+                return new ResultDTO() { success = false, message = "缺少参数" };
+            }
+
+            if(db.RewardPhoneHistorys.Any(o=>o.Phone == form.phone))
+            {
+                return new ResultDTO() { success = false, message = "该手机号已申请过交易金" };
+            }
+            var dtValidSince = DateTime.UtcNow - TimeSpan.FromHours(1);
+            if(db.VerifyCodes.Any(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince))
+            {
+                RewardPhoneHistory rph = new RewardPhoneHistory() {
+                     ChannelID = form.channelID,
+                     Phone = form.phone,
+                     CreatedAt = DateTime.Now
+                };
+                db.RewardPhoneHistorys.Add(rph);
+                db.SaveChanges();
+                return new ResultDTO() { success = true, message = "OK" };
+            }
+            else
+            {
+                return new ResultDTO() { success = false, message = "验证码校验失败" };
+            }
+
+        }
+
     }
 }

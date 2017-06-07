@@ -31,6 +31,7 @@ using CFD_API.Caching;
 using CFD_COMMON.Models.Cached;
 using Newtonsoft.Json.Linq;
 using System.Configuration;
+using CFD_API.DTO.Form;
 
 namespace CFD_API.Controllers
 {
@@ -96,6 +97,23 @@ namespace CFD_API.Controllers
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 检查手机号是否已注册过模拟盘
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        [Route("phone")]
+        [HttpPost]
+        public ResultDTO CheckPhoneNumber(CheckPhoneDTO  form)
+        {
+            if (db.Users.Any(u => u.Phone == form.phone))
+            {
+                return new ResultDTO() { success = false, message = "手机号已注册" };
+            }
+
+            return new ResultDTO() { success = true, message = "OK" };
         }
 
         [Route("sendCode")]

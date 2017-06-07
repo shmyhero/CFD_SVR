@@ -49,4 +49,11 @@ namespace CFD_API.DTO.Form
         public decimal amount;
         public DateTime date;
     }
+
+    public class CheckPhoneDTO
+    {
+        public int channelID;
+        public string phone;
+        public string verifyCode;
+    }
 }
