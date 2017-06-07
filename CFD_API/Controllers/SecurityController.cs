@@ -376,7 +376,7 @@ namespace CFD_API.Controllers
 
             var securityDtos = activeProds
                 .Where(o =>
-                    (o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || Products.IsUSStocks(o.Symbol))//US Stocks and non-stocks
+                    (o.AssetClass != CFDGlobal.ASSET_CLASS_STOCK || (Products.IsUSStocks(o.Symbol) || Products.IsHKStocks(o.Symbol)))//US Stocks and non-stocks
                     && !o.Name.EndsWith(" Outright") //exclude Outright
                 ) 
                 .Select(delegate(ProdDef o)
