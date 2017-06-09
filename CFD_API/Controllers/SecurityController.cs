@@ -577,6 +577,7 @@ namespace CFD_API.Controllers
                     {
                         fx.ask = fxQuote.Offer;
                         fx.bid = fxQuote.Bid;
+                        fx.last = Quotes.GetLastPrice(fxQuote);
                     }
 
                     result.fxOutright = fx;
