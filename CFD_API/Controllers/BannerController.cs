@@ -41,11 +41,11 @@ namespace CFD_API.Controllers
         {
             int max = 5;
             //get top banner
-            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (!item.BannerType.HasValue || item.BannerType.Value == 0) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
+            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (!item.BannerType.HasValue || item.BannerType.Value == 0 || item.BannerType.Value == 3) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
 
             if (topBanners.Count < max)
             {
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (!item.BannerType.HasValue || item.BannerType.Value == 0) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (!item.BannerType.HasValue || item.BannerType.Value == 0 || item.BannerType.Value == 3) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
                 topBanners.AddRange(nonTopBanner);
             }
 
