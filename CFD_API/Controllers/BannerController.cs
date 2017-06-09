@@ -174,18 +174,22 @@ namespace CFD_API.Controllers
             await Request.Content.ReadAsMultipartAsync(provider);
 
             List<string> imgList = UploadHelper.UploadFiles(provider, CFDGlobal.BANNER_PIC_BLOB_CONTAINER);
-            Dictionary<string, string> formData = UploadHelper.GetFormData(provider);
+
+            string imgUrl = imgList.Count > 0 ? imgList[0] : string.Empty;
+            string imgUrlBig = imgList.Count > 1 ? imgList[1] : string.Empty;
+
+            Dictionary <string, string> formData = UploadHelper.GetFormData(provider);
 
             try
             {
                 //contains "ID" means update
                 if (formData.ContainsKey("ID"))
                 {
-                    UpdateBanner(imgList[0],imgList[1], formData);
+                    UpdateBanner(imgUrl, imgUrlBig, formData);
                 }
                 else //create banner
                 {
-                    CreateBanner(imgList[0], imgList[1], formData);
+                    CreateBanner(imgUrl, imgUrlBig, formData);
                 }
                 db.SaveChanges();
             }
