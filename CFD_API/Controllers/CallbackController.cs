@@ -58,7 +58,7 @@ namespace CFD_API.Controllers
 
                         user.AyLiveAccountStatus = form.status;
                         
-                        #region 实盘注册成功后发送短信提醒用户,并赠送100元交易金
+                        #region 实盘注册成功后发送短信提醒用户,并赠送50元交易金
                         var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == user.Id);
                         if(form.status.ToLower() == "pendinglogin" && liveReward == null)
                         {

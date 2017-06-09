@@ -84,6 +84,13 @@ namespace CFD_API.Controllers
             return rewardTransferHistory;
         }
 
+        /// <summary>
+        /// 记录通过活动、渠道的手机号
+        /// channelID小于0的是活动，活动之间手机号可以重复登记
+        /// channelID大于0的是渠道，渠道之间手机号不可以重复登记
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("reward/phone")]
         public ResultDTO RecordPhone(CheckPhoneDTO form)
@@ -93,10 +100,21 @@ namespace CFD_API.Controllers
                 return new ResultDTO() { success = false, message = "缺少参数" };
             }
 
-            if(db.RewardPhoneHistorys.Any(o=>o.Phone == form.phone))
+            if(form.channelID > 0) //大于0就是渠道过来的登记，各渠道间手机后不能重复
             {
-                return new ResultDTO() { success = false, message = "该手机号已申请过交易金" };
+                if (db.RewardPhoneHistorys.Any(o => o.Phone == form.phone && o.ChannelID > 0))
+                {
+                    return new ResultDTO() { success = false, message = "该手机号已参加过活动" };
+                }
             }
+            else //小于等于0就是活动过来的登记，各个活动间的手机号可以重复
+            {
+                if (db.RewardPhoneHistorys.Any(o => o.Phone == form.phone && o.ChannelID == form.channelID))
+                {
+                    return new ResultDTO() { success = false, message = "该手机号已参加过活动" };
+                }
+            }
+            
             var dtValidSince = DateTime.UtcNow - TimeSpan.FromHours(1);
             if(db.VerifyCodes.Any(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince))
             {
