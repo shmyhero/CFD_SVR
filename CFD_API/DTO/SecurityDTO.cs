@@ -6,7 +6,7 @@ using CFD_COMMON.Models.Cached;
 
 namespace CFD_API.DTO
 {
-    public class SecurityDTO
+    public class SecurityLiteDTO
     {
         public int id { get; set; }
         public string symbol { get; set; }
@@ -24,13 +24,16 @@ namespace CFD_API.DTO
         public string eName { get; set; }
     }
 
-    public class SecurityDetailDTO : SecurityDTO
+    public class SecurityDTO : SecurityLiteDTO
     {
         public int? dcmCount { get; set; }
 
         public decimal? bid { get; set; }
         public decimal? ask { get; set; }
+    }
 
+    public class SecurityDetailDTO : SecurityDTO
+    {
         public DateTime? lastOpen { get; set; }
         public DateTime? lastClose { get; set; }
 
@@ -75,6 +78,8 @@ namespace CFD_API.DTO
         public bool isPriceDown { get; set; }
 
         public List<int> levList { get; set; }
+
+        public SecurityDTO fxOutright { get; set; }
     }
 
     /// <summary>

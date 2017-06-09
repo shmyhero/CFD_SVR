@@ -70,6 +70,7 @@ namespace CFD_COMMON.Localization
             {"nzd/usd", "新西兰元/美元"},
             {"usd/cad", "美元/加元"},
             {"usd/chf", "美元/瑞郎"},
+            {"usd/hkd", "美元/港元"},
             {"usd/jpy", "美元/日元"},
 
             {"3m co", "3M"},

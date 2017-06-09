@@ -24,7 +24,7 @@ namespace CFD_API
                 cfg.CreateMap<User, MeDTO>();
                 cfg.CreateMap<UserInfo, MyInfoDTO>();
 
-                cfg.CreateMap<AyondoSecurity, SecurityDTO>()
+                cfg.CreateMap<AyondoSecurity, SecurityLiteDTO>()
                     //.ForMember(dest => dest.last, opt => opt.MapFrom(src => Quotes.GetLastPrice(src)))
                     ////tag
                     //.ForMember(dest => dest.tag, opt => opt.Condition(o => o.AssetClass == "Single Stocks"))
@@ -41,7 +41,7 @@ namespace CFD_API
                     .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.CName))
                     ;
 
-                cfg.CreateMap<ProdDef, SecurityDTO>()
+                cfg.CreateMap<ProdDef, SecurityLiteDTO>()
                     .ForMember(dest => dest.name, opt => opt.MapFrom(src => Translator.GetCName(src.Name)))
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open))

@@ -30,7 +30,7 @@ namespace CFD_API.DTO
         public decimal? financingSum { get; set; }
         public decimal? dividendSum { get; set; }
 
-        public SecurityDetailDTO fxOutright { get; set; }
+        public SecurityDTO fxOutright { get; set; }
 
         public CardDTO card { get; set; }
     }

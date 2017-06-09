@@ -32,7 +32,7 @@ namespace CFD_API.Controllers
         {
         }
 
-        public void UpdateLastPrice(IList<SecurityDTO> list)
+        public void UpdateLastPrice(IList<SecurityLiteDTO> list)
         {
             if (list.Count == 0) return;
 
@@ -115,7 +115,7 @@ namespace CFD_API.Controllers
         [Route("bookmark")]
         [Route("live/bookmark")]
         [BasicAuth]
-        public List<SecurityDTO> GetBookmarkList(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetBookmarkList(int page = 1, int perPage = 20)
         {
             var bookmarkIDs = IsLiveUrl
                 ? db.Bookmark_Live.Where(o => o.UserId == UserId).OrderBy(o => o.DisplayOrder).Skip((page - 1)*perPage).Take(perPage).Select(o => o.AyondoSecurityId).ToList()
@@ -124,7 +124,7 @@ namespace CFD_API.Controllers
             //var prodDefs = RedisClient.As<ProdDef>().GetByIds(bookmarkIDs);
             var prodDefs = GetActiveProdsByIdsKeepOrder(bookmarkIDs, IsLiveUrl);
 
-            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -134,7 +134,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("byIds/{securityIds}")]
         [Route("live/byIds/{securityIds}")]
-        public List<SecurityDTO> GetSecuritiesByIds(string securityIds)
+        public List<SecurityLiteDTO> GetSecuritiesByIds(string securityIds)
         {
             if (securityIds == null)
                 securityIds = string.Empty;
@@ -148,7 +148,7 @@ namespace CFD_API.Controllers
 
             //var securities = db.AyondoSecurities.Where(o => ids.Contains(o.Id)).ToList();
 
-            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -158,13 +158,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("stock/topGainer")]
         [Route("live/stock/topGainer")]
-        public List<SecurityDTO> GetTopGainerList(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetTopGainerList(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
 
-            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -175,13 +175,13 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("stock")]
-        public List<SecurityDTO> GetAllStocks(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetAllStocks(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds();
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK).ToList();
 
-            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -193,13 +193,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("stock/us")]
         [Route("live/stock/us")]
-        public List<SecurityDTO> GetUSStocks(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetUSStocks(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsUSStocks(o.Symbol)).ToList();
 
-            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -211,13 +211,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("stock/hk")]
         [Route("live/stock/hk")]
-        public List<SecurityDTO> GetHKStocks(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetHKStocks(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_STOCK && Products.IsHKStocks(o.Symbol)).ToList();
 
-            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -229,13 +229,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("index")]
         [Route("live/index")]
-        public List<SecurityDTO> GetIndexList(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetIndexList(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_INDEX).ToList();
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -245,13 +245,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("fx")]
         [Route("live/fx")]
-        public List<SecurityDTO> GetFxList(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetFxList(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_FX && !o.Name.EndsWith(" Outright")).ToList();
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -261,13 +261,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("fx/outright")]
         [Route("live/fx/outright")]
-        public List<SecurityDTO> GetFxOutrightList(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetFxOutrightList(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds(IsLiveUrl, true);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_FX && o.Name.EndsWith(" Outright")).ToList();
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1) * perPage).Take(perPage).Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -277,13 +277,13 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("futures")]
         [Route("live/futures")]
-        public List<SecurityDTO> GetFuturesList(int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> GetFuturesList(int page = 1, int perPage = 20)
         {
             var activeProds = GetActiveProds(IsLiveUrl);
 
             var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_COMMODITY).ToList();
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
@@ -359,9 +359,9 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("search")]
         [Route("live/search")]
-        public List<SecurityDTO> SearchSecurity(string keyword, int page = 1, int perPage = 20)
+        public List<SecurityLiteDTO> SearchSecurity(string keyword, int page = 1, int perPage = 20)
         {
-            if(string.IsNullOrWhiteSpace(keyword)) return new List<SecurityDTO>();
+            if(string.IsNullOrWhiteSpace(keyword)) return new List<SecurityLiteDTO>();
 
             keyword = keyword.ToLower();
 
@@ -381,11 +381,11 @@ namespace CFD_API.Controllers
                 ) 
                 .Select(delegate(ProdDef o)
                 {
-                    var result= Mapper.Map<SecurityDTO>(o);
+                    var result= Mapper.Map<SecurityLiteDTO>(o);
                     result.eName = o.Name;
                     return result;
                 })
-                .Where(delegate(SecurityDTO o)
+                .Where(delegate(SecurityLiteDTO o)
                 {
                     //for example 雅培制药
 
@@ -550,6 +550,37 @@ namespace CFD_API.Controllers
             else
             {
                 result.levList = new List<int>() {1, 2, 3, 4, 5, 10, 15, 20, 30, 50, 70, 100, lev};
+            }
+
+            //default fx rate for client calculation
+            if (prodDef.Ccy2 != "USD")
+            {
+                var fxProdDef =
+                    cache.ProdDefs.FirstOrDefault(
+                        o => o.Symbol == prodDef.Ccy2 + "USD" && o.Name.EndsWith(" Outright"));
+
+                if (fxProdDef == null)
+                {
+                    fxProdDef =
+                        cache.ProdDefs.FirstOrDefault(
+                            o => o.Symbol == "USD" + prodDef.Ccy2 && o.Name.EndsWith(" Outright"));
+                }
+
+                if (fxProdDef != null)
+                {
+                    var fx = new SecurityDTO();
+                    fx.id = fxProdDef.Id;
+                    fx.symbol = fxProdDef.Symbol;
+
+                    var fxQuote = cache.Quotes.FirstOrDefault(o => o.Id == fx.id);
+                    if (fxQuote != null)
+                    {
+                        fx.ask = fxQuote.Offer;
+                        fx.bid = fxQuote.Bid;
+                    }
+
+                    result.fxOutright = fx;
+                }
             }
 
             return result;

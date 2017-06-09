@@ -142,7 +142,7 @@ namespace CFD_API.Controllers
 
                     if (fxProdDef != null)
                     {
-                        var fx =new SecurityDetailDTO();
+                        var fx =new SecurityDTO();
                         fx.id = fxProdDef.Id;
                         fx.symbol = fxProdDef.Symbol;
                         
