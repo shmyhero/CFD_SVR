@@ -628,42 +628,56 @@ namespace CFD_TEST
             bool side;
 
             //德国30 34820
-            //user = db.Users.FirstOrDefault(o => o.Id == 3219);
-            //pos = XiaDan_SheZhiYing(user, 34820, side = r.NextDouble() > 0.5, 100);
-
             //法国40 34811 50
-            //英镑/加元 34815 125
-            //user = db.Users.FirstOrDefault(o => o.Id == 3220);
-            //pos = XiaDan_SheZhiYing(user, 34815, side, 125);
+            //英国100 34854
+            //欧洲50 34801 50
 
             //华尔街 34864
+            //美国标准500 34857
+            //美国科技股100 34858
+
+            //英镑/加元 34815 125
+            //欧元/英镑 34803 125
+            //美元/日元 34860 100
+            //加元/日元 34781
+            //欧元/美元 34805
+
+            user = db.Users.FirstOrDefault(o => o.Id == 3219);
+            pos = XiaDan_SheZhiYing(user, 34801, side = r.NextDouble() > 0.5, 50);
+            user = db.Users.FirstOrDefault(o => o.Id == 3220);
+            pos = XiaDan_SheZhiYing(user, 34815, side = r.NextDouble() > 0.5
+                , 125);
+
             user = db.Users.FirstOrDefault(o => o.Id == 3281);
             pos = XiaDan_SheZhiYing(user, 34864, side = r.NextDouble() > 0.5, 100);
-            //美国标准500 34857
-            //user = db.Users.FirstOrDefault(o => o.Id == 3218);
-            //pos = XiaDan_SheZhiYing(user, 34857, side, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 3218);
+            pos = XiaDan_SheZhiYing(user, 34857, side = r.NextDouble() > 0.5
+                , 100);
 
-            //英国100 34854
             user = db.Users.FirstOrDefault(o => o.Id == 3221);
             pos = XiaDan_SheZhiYing(user, 34854, side = r.NextDouble() > 0.5, 100);
-            //美国科技股100 34858
-            //user = db.Users.FirstOrDefault(o => o.Id == 3222);
-            //pos = XiaDan_SheZhiYing(user, 34858, side, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 3222);
+            pos = XiaDan_SheZhiYing(user, 34858, side = r.NextDouble() > 0.5
+                , 100);
 
-            //欧元对英镑 34803
             user = db.Users.FirstOrDefault(o => o.Id == 1);
             pos = XiaDan_SheZhiYing(user, 34803, side = r.NextDouble() > 0.5, 125);
-
-            //欧洲50 34801 50
-            //美元/日元 34860 100
-            //user = db.Users.FirstOrDefault(o => o.Id == 3277);
-            //pos = XiaDan_SheZhiYing(user, 34860, side, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 3277);
+            pos = XiaDan_SheZhiYing(user, 34860, side = r.NextDouble() > 0.5
+                , 100);
 
 
             user = db.Users.FirstOrDefault(o => o.Id == 3223);
-            pos = XiaDan_SheZhiYing(user, 34820, side = r.NextDouble() > 0.5, 100);
+            pos = XiaDan_SheZhiYing(user, 34811, side = r.NextDouble() > 0.5, 50);
+            user = db.Users.FirstOrDefault(o => o.Id == 3226);
+            pos = XiaDan_SheZhiYing(user, 34781, side = r.NextDouble() > 0.5
+                , 100);
+
             user = db.Users.FirstOrDefault(o => o.Id == 3224);
-            pos = XiaDan_SheZhiYing(user, 34858, side = r.NextDouble() > 0.5, 100);
+            pos = XiaDan_SheZhiYing(user, 34820, side = r.NextDouble() > 0.5, 100);
+            user = db.Users.FirstOrDefault(o => o.Id == 3225);
+            pos = XiaDan_SheZhiYing(user, 34805, side = r.NextDouble() > 0.5
+                , 100);
         }
 
         private static PositionDTO SheZhiYing(User user, PositionDTO pos)
