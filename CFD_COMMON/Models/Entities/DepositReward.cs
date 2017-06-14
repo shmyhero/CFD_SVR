@@ -11,8 +11,8 @@ namespace CFD_COMMON.Models.Entities
     {
         public int id { get; set; }
         public int UserId { get; set; }
-        public decimal Amount { get; set; }
-        public decimal DepositAmount { get; set; }
+        public decimal? Amount { get; set; }
+        public decimal? DepositAmount { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
 }
