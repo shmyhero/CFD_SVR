@@ -295,6 +295,7 @@ namespace CFD_API.Controllers
             userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
             userDto.bankCardStatus = user.BankCardStatus;
             userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
+            userDto.firstDayClicked = user.FirstDayClicked.HasValue ? user.FirstDayClicked.Value : false;
             return userDto;
         }
 

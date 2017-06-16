@@ -37,6 +37,10 @@ namespace CFD_API.DTO
         public bool autoCloseAlert_Live { get; set; }
         public string bankCardStatus { get; set; }
         public bool showData { get; set; }
+        /// <summary>
+        /// 首日入金奖励的消息是否点过
+        /// </summary>
+        public bool firstDayClicked { get; set; }
     }
 
     public class UserDTO : UserBaseDTO

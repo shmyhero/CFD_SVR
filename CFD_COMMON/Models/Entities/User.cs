@@ -109,6 +109,11 @@
 
         public DateTime? AyLiveApproveAt { get; set; }
 
+        /// <summary>
+        /// 首日入金奖励是否点击过
+        /// </summary>
+        public bool? FirstDayClicked { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

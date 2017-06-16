@@ -301,6 +301,25 @@ namespace CFD_API.Controllers
             return new ResultDTO() { success = true };
         }
 
+        /// <summary>
+        /// 用户在App上点击过"首日入金奖励"的提示
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("firstday/clicked")]
+        [BasicAuth]
+        public ResultDTO FirstDayPopupClicked()
+        {
+            var user = GetUser();
+            if(!user.FirstDayClicked.HasValue || !user.FirstDayClicked.Value)
+            {
+                user.FirstDayClicked = true;
+                db.SaveChanges();
+            }
+
+            return new ResultDTO() { success = true };
+        }
+
         [HttpGet]
         [Route("summary")]
         [BasicAuth]
