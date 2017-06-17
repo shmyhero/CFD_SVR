@@ -45,5 +45,7 @@ namespace CFD_COMMON.Models.Entities
         public string ExpiredBy { get; set; }
 
         public DateTime? Expiration { get; set; }
+
+        public string Color { get; set; }
     }
 }

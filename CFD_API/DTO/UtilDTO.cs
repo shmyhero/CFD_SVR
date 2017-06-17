@@ -65,6 +65,7 @@ namespace CFD_API.DTO
         public string header { get; set; }
         public string digest { get; set; }
         public int bannerType { get; set; }
+        public string color { get; set; }
     }
 
     public class BannerDTO
@@ -92,6 +93,8 @@ namespace CFD_API.DTO
         public string expiredBy { get; set; }
 
         public DateTime? expiration { get; set; }
+
+        public string color { get; set; }
     }
 
     public class OperationUserDTO

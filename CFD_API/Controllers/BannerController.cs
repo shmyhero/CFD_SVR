@@ -220,7 +220,8 @@ namespace CFD_API.Controllers
                 BannerType = bannerType,
                 Expiration = SqlDateTime.MaxValue.Value,
                 ImgUrl = imgUrl,
-                ImgUrlBig = imgUrlBig
+                ImgUrlBig = imgUrlBig,
+                Color = dicFormData.ContainsKey("Color") ? dicFormData["Color"] : string.Empty,
             });
         }
 
@@ -238,6 +239,7 @@ namespace CFD_API.Controllers
                 banner.Body = dicFormData.ContainsKey("Body") ? dicFormData["Body"] : string.Empty;
                 banner.Digest = dicFormData.ContainsKey("Digest") ? dicFormData["Digest"] : string.Empty;
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
+                banner.Color = dicFormData.ContainsKey("Color")? dicFormData["Color"] : string.Empty;
                 int bannerType = 0;
                 if(dicFormData.ContainsKey("BannerType"))
                 {
