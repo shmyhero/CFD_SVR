@@ -517,8 +517,10 @@ namespace CFD_API.Controllers
             //for single stocks, reduct max lev for gsmd
             var lev = prodDef.AssetClass == CFDGlobal.ASSET_CLASS_STOCK ? (int) (prodDef.MaxLeverage/2) : (int) prodDef.MaxLeverage;
 
-            //1,2,5,10,15,20,50,100
+            //lev to int
+            result.maxLeverage = Math.Floor(prodDef.MaxLeverage);
 
+            //generate lev list for client
             if (lev <= 10)
             {
                 result.levList = Enumerable.Range(1, lev).ToList();
