@@ -209,15 +209,15 @@ namespace CFD_COMMON.Service
                                     from y in x.DefaultIfEmpty()
                                     where u.AyLiveAccountId == transfer.TradingAccountId
                                     select new { y.deviceToken, UserId = u.Id, u.Phone, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive, y.UpdateTime };
-                        var user = query.FirstOrDefault();
-                        if (user != null && !string.IsNullOrEmpty(user.deviceToken) && !string.IsNullOrEmpty(user.Phone))
+                        var userInfo = query.FirstOrDefault();
+                        if (userInfo != null && !string.IsNullOrEmpty(userInfo.deviceToken) && !string.IsNullOrEmpty(userInfo.Phone))
                         {
                             //短信
-                            YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", transfer.Amount), user.Phone);
+                            YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", transfer.Amount), userInfo.Phone);
 
                             //入金信息放到消息中心
                             MessageBase msg = new MessageBase();
-                            msg.UserId = user.UserId;
+                            msg.UserId = userInfo.UserId;
                             msg.Title = "入金消息";
                             msg.Body = string.Format("您入金的{0}元已到账", transfer.Amount);
                             msg.CreatedAt = DateTime.UtcNow;
@@ -242,7 +242,7 @@ namespace CFD_COMMON.Service
                             if(firstDepositDayReward > 0)
                             {
                                 MessageBase msg1stDayDeposit = new MessageBase();
-                                msg1stDayDeposit.UserId = user.UserId;
+                                msg1stDayDeposit.UserId = userInfo.UserId;
                                 msg1stDayDeposit.Title = "首日入金赠金";
                                 msg1stDayDeposit.Body = string.Format("您的首日入金赠金{0}元已自动转入您的交易金账号", transfer.Amount);
                                 msg1stDayDeposit.CreatedAt = DateTime.UtcNow;
@@ -251,11 +251,18 @@ namespace CFD_COMMON.Service
 
                                 DepositReward dr = new DepositReward();
                                 dr.Amount = firstDepositDayReward;
-                                dr.UserId = user.UserId;
+                                dr.UserId = userInfo.UserId;
                                 dr.DepositAmount = transfer.Amount;
                                 dr.CreatedAt = DateTime.Now;
                                 depositRewards.Add(dr);
+
+                                var user = db.Users.FirstOrDefault(u => u.Id == userInfo.UserId);
+                                if(!user.FirstDayRewarded.HasValue) //App首页提示用户拿到首日交易金。 Null未拿到，False已看过此消息，True已拿到交易金未看过消息
+                                {
+                                    user.FirstDayRewarded = true;
+                                }
                             }
+
                         }
                     }
                     catch (Exception ex)

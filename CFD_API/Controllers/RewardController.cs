@@ -330,9 +330,9 @@ namespace CFD_API.Controllers
         public ResultDTO FirstDayRewarded()
         {
             var user = GetUser();
-            if (user.FirstDayRewarded.HasValue && user.FirstDayClicked.Value)
+            if (user.FirstDayRewarded.HasValue && user.FirstDayRewarded.Value)
             {
-                user.FirstDayClicked = false;
+                user.FirstDayRewarded = false;
                 db.SaveChanges();
             }
 
