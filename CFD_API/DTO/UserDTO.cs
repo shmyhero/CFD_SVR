@@ -41,6 +41,10 @@ namespace CFD_API.DTO
         /// 首日入金奖励的消息是否点过
         /// </summary>
         public bool firstDayClicked { get; set; }
+        /// <summary>
+        /// 拿到首日奖励的提示信息是否已经看过
+        /// </summary>
+        public bool firstDayRewarded { get; set; }
     }
 
     public class UserDTO : UserBaseDTO

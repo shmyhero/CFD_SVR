@@ -113,6 +113,10 @@
         /// 首日入金奖励是否点击过
         /// </summary>
         public bool? FirstDayClicked { get; set; }
+        /// <summary>
+        /// 拿到首日奖励的提示信息是否已经看过
+        /// </summary>
+        public bool? FirstDayRewarded { get; set; }
 
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }

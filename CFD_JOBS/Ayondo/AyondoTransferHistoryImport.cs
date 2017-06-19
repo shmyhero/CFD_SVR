@@ -285,82 +285,9 @@ namespace CFD_JOBS.Ayondo
                                 }
                             }
 
-                            #region 入金的短信、被推荐人首次入金送推荐人30元
-                            var messages = new List<MessageBase>();
-                            var referRewards = new List<ReferReward>();
-                            var push = new GeTui();
-                            //string pushTemplate = "{{\"type\":\"3\",\"title\":\"盈交易\",\"message\": \"{0}\",\"deepLink\":\"cfd://page/me\"}}";
-
-                            foreach (var transfer in newTransferHistories)
-                            {
-                                //入金的短信
-                                if (transfer.TransferType.ToLower() == "WeCollect - CUP".ToLower())
-                                {
-                                    try
-                                    {
-                                        var query = from u in db.Users
-                                                    join d in db.Devices on u.Id equals d.userId
-                                                    into x
-                                                    from y in x.DefaultIfEmpty()
-                                                    where u.AyLiveAccountId == transfer.TradingAccountId
-                                                    select new { y.deviceToken, UserId = u.Id, u.Phone, u.AyondoAccountId, u.AyLiveAccountId, u.AutoCloseAlert, u.AutoCloseAlert_Live, u.IsOnLive, y.UpdateTime };
-                                        var user = query.FirstOrDefault();
-                                        if (user != null && !string.IsNullOrEmpty(user.deviceToken) && !string.IsNullOrEmpty(user.Phone))
-                                        {
-                                            //短信
-                                            YunPianMessenger.SendSms(string.Format("【盈交易】您入金的{0}美元已到账", transfer.Amount), user.Phone);
-
-                                            ////推送
-                                            //List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-                                            //list.Add(new KeyValuePair<string, string>(user.deviceToken, string.Format(pushTemplate,string.Format("【盈交易】您入金的{0}元已到账", amount))));
-                                            //push.PushBatch(list);
-
-                                            //入金信息放到消息中心
-                                            MessageBase msg = new MessageBase();
-                                            msg.UserId = user.UserId;
-                                            msg.Title = "入金消息";
-                                            msg.Body = string.Format("您入金的{0}元已到账", transfer.Amount);
-                                            msg.CreatedAt = DateTime.UtcNow;
-                                            msg.IsReaded = false;
-                                            messages.Add(msg);
-                                            
-                                            var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == transfer.TradingAccountId);
-                                            decimal amount = RewardService.REWARD_REFEREE;
-                                            if (referer != null && !string.IsNullOrEmpty(referer.Phone))
-                                            {
-                                                var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);
-                                                if (referHistory != null && referHistory.IsRewarded != true)
-                                                {
-                                                    referHistory.IsRewarded = true;
-                                                    referHistory.RewardedAt = DateTime.Now;
-                                                    referRewards.Add(new ReferReward() { Amount = amount, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
-                                                    //db.ReferRewards.Add(new ReferReward() { Amount = 30, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
-                                                }
-                                            }
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        CFDGlobal.LogLine("Sending SMS failed for user:" + transfer.TradingAccountId);
-                                    }
-
-
-                                }
-                            }
-
-                            if (messages.Count > 0 || referRewards.Count > 0)
-                            {
-                                if (messages.Count > 0)
-                                {
-                                    db.Message_Live.AddRange(messages.Select(m => Mapper.Map<Message_Live>(m)));
-                                }
-                                if (referRewards.Count > 0)
-                                {
-                                    db.ReferRewards.AddRange(referRewards);
-                                }
-                                CFDGlobal.LogLine(string.Format("Saving message: {0} & refer reward: {1}", messages.Count, referRewards.Count));
-                                db.SaveChanges();
-                            }
+                            #region 入金奖励的相关逻辑，包括：首日如今奖励、被推荐人首次入金送推荐人30元、入金短信和消息中心
+                            RewardService rewardService = new RewardService(db);
+                            rewardService.DepositReward(newTransferHistories);
                             #endregion
                         }
                     }

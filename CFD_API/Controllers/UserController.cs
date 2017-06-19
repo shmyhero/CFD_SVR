@@ -296,6 +296,7 @@ namespace CFD_API.Controllers
             userDto.bankCardStatus = user.BankCardStatus;
             userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
             userDto.firstDayClicked = user.FirstDayClicked.HasValue ? user.FirstDayClicked.Value : false;
+            userDto.firstDayRewarded = user.FirstDayRewarded.HasValue ? user.FirstDayRewarded.Value : false;
             return userDto;
         }
 
