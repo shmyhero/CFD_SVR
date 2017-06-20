@@ -272,20 +272,11 @@ namespace CFD_API.Controllers
 
             var userDto = Mapper.Map<MeDTO>(user);
 
-            //TODO: only here to reward demo registration?
-            //todo: transaction required!
-            if(!db.DemoRegisterRewards.Any(item => item.UserId == this.UserId))
+            var rewardService = new RewardService(db);
+            decimal amount = rewardService.DemoRegReward(UserId, user.Phone);
+            if(amount > 0)
             {
-                var reward = new DemoRegisterReward()
-                {
-                    Amount = RewardService.REWARD_DEMO_REG,
-                    ClaimedAt = null,
-                    UserId = UserId,
-                };
-                db.DemoRegisterRewards.Add(reward);
-                db.SaveChanges();
-
-                userDto.rewardAmount = reward.Amount;
+                userDto.rewardAmount = amount;
             }
 
             userDto.liveAccStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
@@ -447,6 +438,9 @@ namespace CFD_API.Controllers
             {
                 var userService=new UserService(db);
                 userService.BindPhone(UserId,form.phone);
+
+                var rewardService = new RewardService(db);
+                rewardService.DemoBindPhoneReward(UserId);
 
                 result.success = true;
             }

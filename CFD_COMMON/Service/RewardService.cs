@@ -19,9 +19,12 @@ namespace CFD_COMMON.Service
         public const decimal CHECK_IN_DAY_6_TO_10 = 0.6M;
         public const decimal CHECK_IN_DAY_11_TO_X = 0.8M;
         /// <summary>
-        /// 模拟账号注册交易金
+        /// 模拟账号手机注册交易金
         /// </summary>
-        public static decimal REWARD_DEMO_REG = 30m;
+        public static decimal REWARD_DEMO_PhoneREG = 30m;
+
+        public static decimal REWARD_DEMO_WeChatREG = 5m;
+
         /// <summary>
         /// 实盘账号注册交易金
         /// </summary>
@@ -53,7 +56,7 @@ namespace CFD_COMMON.Service
                 var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
                 if (setting != null)
                 {
-                    REWARD_DEMO_REG = JObject.Parse(setting.Value)["demoAccount"].Value<decimal>();
+                    REWARD_DEMO_PhoneREG = JObject.Parse(setting.Value)["demoAccount"].Value<decimal>();
                     REWARD_LIVE_REG = JObject.Parse(setting.Value)["liveAccount"].Value<decimal>();
                     REWARD_REFERER = JObject.Parse(setting.Value)["referer"].Value<decimal>();
                     REWARD_REFEREE = JObject.Parse(setting.Value)["referee"].Value<decimal>();
@@ -73,7 +76,7 @@ namespace CFD_COMMON.Service
                 var setting = db.Miscs.FirstOrDefault(m => m.Key == "RewardSetting");
                 if (setting != null)
                 {
-                    REWARD_DEMO_REG = JObject.Parse(setting.Value)["demoAccount"].Value<decimal>();
+                    REWARD_DEMO_PhoneREG = JObject.Parse(setting.Value)["demoAccount"].Value<decimal>();
                     REWARD_LIVE_REG = JObject.Parse(setting.Value)["liveAccount"].Value<decimal>();
                     REWARD_REFERER = JObject.Parse(setting.Value)["referer"].Value<decimal>();
                     REWARD_REFEREE = JObject.Parse(setting.Value)["referee"].Value<decimal>();
@@ -186,6 +189,54 @@ namespace CFD_COMMON.Service
             });
             
         }
+
+        public decimal DemoRegReward(int userID, string phone)
+        {
+            decimal amount = 0;
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+            {
+                using (var dbIsol = CFDEntities.Create())
+                {
+                    if (!dbIsol.DemoRegisterRewards.Any(item => item.UserId == userID))
+                    {
+                        var reward = new DemoRegisterReward()
+                        {
+                            //手机注册送30，微信注册送5
+                            Amount = string.IsNullOrEmpty(phone) ? RewardService.REWARD_DEMO_WeChatREG : RewardService.REWARD_DEMO_PhoneREG,
+                            ClaimedAt = null,
+                            UserId = userID,
+                        };
+                        dbIsol.DemoRegisterRewards.Add(reward);
+                        dbIsol.SaveChanges();
+
+                        amount = reward.Amount;
+                    }
+                }
+                scope.Complete();
+            }
+            return amount;
+        }
+
+        public void DemoBindPhoneReward(int userID)
+        {
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+            {
+                using (var dbIsol = CFDEntities.Create())
+                {
+                    var demoRegisterReward = dbIsol.DemoRegisterRewards.FirstOrDefault(item => item.UserId == userID);
+                    if (demoRegisterReward != null)
+                    {
+                        if(demoRegisterReward.Amount == REWARD_DEMO_WeChatREG)
+                        {
+                            demoRegisterReward.Amount = REWARD_DEMO_PhoneREG;
+                            dbIsol.SaveChanges();
+                        }
+                    }
+                }
+                scope.Complete();
+            }
+        }
+
 
         /// <summary>
         /// 入金的短信、被推荐人首次入金送推荐人30元。首日入金奖励
