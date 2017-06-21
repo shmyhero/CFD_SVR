@@ -22,6 +22,7 @@ namespace CFD_COMMON.Utils
                 case "PendingClassification":
                 case "PendingDocuments":
                 case "PendingIdentityConflict":
+                case "PendingIdentityCheck":
                 case "PendingReview":
                 case "PendingRiskAssessment":
                 case "PendingSanctionsCheck":
