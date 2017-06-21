@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Web.Http;
 
@@ -153,7 +154,7 @@ namespace CFD_API.Controllers
                 dto.demoSignedAt = u.CreatedAt.HasValue? u.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
                 dto.demoTransCount = db.AyondoTradeHistories.Count(t => t.AccountId == u.AyondoAccountId);
                 dto.lastLoginAt = u.LastHitAt.HasValue? u.LastHitAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
-                dto.reward = GetTotalReward(u.Id) - db.RewardTransfers.Where(o => o.UserID == u.Id).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+                dto.reward = GetTotalReward(u.Id).Item1 - db.RewardTransfers.Where(o => o.UserID == u.Id).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
                 dto.liveSignedAt = u.AyLiveApproveAt.HasValue? u.AyLiveApproveAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
                 dto.liveAccountName = u.AyLiveUsername;
                 var userInfo = db.UserInfos.FirstOrDefault(ui => ui.UserId == u.Id);
@@ -171,7 +172,56 @@ namespace CFD_API.Controllers
             return result;
         }
 
-        private decimal GetTotalReward(int userID)
+        [HttpGet]
+        [Route("userreward")]
+        [AdminAuth]
+        public List<UserRewardDTO> SearchUserReward(string nickName, string start, string end)
+        {
+            List<UserRewardDTO> result = new List<UserRewardDTO>();
+            if (string.IsNullOrEmpty(nickName) && string.IsNullOrEmpty(start) && string.IsNullOrEmpty(end))
+            {
+                return result;
+            }
+
+            DateTime startTime = SqlDateTime.MinValue.Value;
+            DateTime.TryParse(start, out startTime);
+
+            DateTime endTime = SqlDateTime.MaxValue.Value;
+            DateTime.TryParse(end, out endTime);
+
+            List<User> users = new List<User>();
+            if(string.IsNullOrEmpty(nickName))
+            {
+                users = db.Users.Where(u => (u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
+            }
+            else
+            {
+                users = db.Users.Where(u => (u.Nickname.Contains(nickName) && u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
+            }
+
+            users.ForEach(u => {
+                UserRewardDTO dto = new UserRewardDTO();
+                dto.nickName = u.Nickname;
+                dto.phone = u.Phone;
+                var reward = GetTotalReward(u.Id);
+                dto.totalReward = reward.Item1;
+                dto.remainingReward = reward.Item1 - db.RewardTransfers.Where(o => o.UserID == u.Id).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+                dto.firstDayReward = reward.Item2.firstDeposit;
+                dto.demoProfitReward = reward.Item2.demoProfit;
+                dto.dailySignReward = reward.Item2.totalDailySign;
+                dto.demoTransReward = reward.Item2.totalDemoTransaction;
+                dto.demoRegisterReward = reward.Item2.demoRegister;
+                dto.cardReward = reward.Item2.totalCard;
+                dto.liveRegisterReward = reward.Item2.liveRegister;
+                dto.friendsReward = reward.Item2.referralReward;
+
+                result.Add(dto);
+            });
+
+            return result;
+        }
+
+        private Tuple<decimal, RewardDTO> GetTotalReward(int userID)
         {
             //reward for daily sign
             decimal totalDailySignReward = db.DailySigns
@@ -213,7 +263,8 @@ namespace CFD_API.Controllers
                 demoProfit = demoRewards.Sum(o => o.Amount);
             }
 
-            return demoProfit + referRewardAmount + liveRegisterReward + demoRegisterReward + totalDailySignReward + totalCard.Value + totalDemoTransactionReward + firstDepositReward;
+            RewardDTO totalReward = new RewardDTO() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward };
+            return new Tuple<decimal, RewardDTO>(demoProfit + referRewardAmount + liveRegisterReward + demoRegisterReward + totalDailySignReward + totalCard.Value + totalDemoTransactionReward + firstDepositReward, totalReward) ;
         }
         
     }

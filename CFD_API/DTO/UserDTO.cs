@@ -700,4 +700,50 @@ namespace CFD_API.DTO
         public string liveAccountName { get; set; }
         
     }
+
+    public struct UserRewardDTO
+    {
+        public string nickName;
+        public string phone;
+        /// <summary>
+        /// 累计交易金
+        /// </summary>
+        public decimal totalReward;
+        /// <summary>
+        /// 剩余交易金
+        /// </summary>
+        public decimal remainingReward;
+        /// <summary>
+        /// 首日入金交易金
+        /// </summary>
+        public decimal firstDayReward;
+        /// <summary>
+        /// 模拟收益交易金
+        /// </summary>
+        public decimal demoProfitReward;
+        /// <summary>
+        /// 每日签到交易金
+        /// </summary>
+        public decimal dailySignReward;
+        /// <summary>
+        /// 模拟下单交易金
+        /// </summary>
+        public decimal demoTransReward;
+        /// <summary>
+        /// 模拟注册交易金
+        /// </summary>
+        public decimal demoRegisterReward;
+        /// <summary>
+        /// 卡片交易金
+        /// </summary>
+        public decimal cardReward;
+        /// <summary>
+        /// 实盘开户交易金
+        /// </summary>
+        public decimal liveRegisterReward;
+        /// <summary>
+        /// 邀请好友交易金
+        /// </summary>
+        public decimal friendsReward;
+    }
 }
