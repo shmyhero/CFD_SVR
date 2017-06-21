@@ -204,12 +204,23 @@ namespace CFD_API.Controllers
             var referReward = db.ReferRewards.FirstOrDefault(o => o.UserID == UserId);
             decimal referRewardAmount = referReward == null ? 0 : referReward.Amount;
 
-            //首笔入金交易金
+            //首日入金交易金
             decimal firstDepositReward = 0;
-            var depositReward = db.DepositRewards.OrderBy(o => o.CreatedAt).FirstOrDefault(o => o.UserId == UserId);
-            firstDepositReward = depositReward == null ? 0 : depositReward.Amount;
+            var depositRewards = db.DepositRewards.Where(o => o.UserId == UserId);
+            if(!(depositRewards == null || depositRewards.Count() == 0))
+            {
+                firstDepositReward = depositRewards.Sum(o => o.Amount);
+            }
+            
+            //模拟收益交易金
+            decimal demoProfit = 0;
+            var demoRewards = db.DemoProfitRewards.Where(o => o.UserId == UserId);
+            if (!(demoRewards == null || demoRewards.Count() == 0))
+            {
+                demoProfit = demoRewards.Sum(o => o.Amount);
+            }
 
-            return new RewardDTO() { referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward };
+            return new RewardDTO() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward };
         }
 
         [HttpGet]

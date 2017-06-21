@@ -261,6 +261,10 @@ namespace CFD_API.DTO
         /// 首笔入金的交易金
         /// </summary>
         public decimal firstDeposit { get; set; }
+        /// <summary>
+        /// 模拟收益交易金
+        /// </summary>
+        public decimal demoProfit { get; set; }
     }
 
     public class TotalRewardDTO

@@ -149,6 +149,7 @@
     <Compile Include="Models\Entities\CompetitionUserPosition.cs" />
     <Compile Include="Models\Entities\DailySign.cs" />
     <Compile Include="Models\Entities\DailyTransaction.cs" />
+    <Compile Include="Models\Entities\DemoProfitReward.cs" />
     <Compile Include="Models\Entities\DemoRegisterReward.cs" />
     <Compile Include="Models\Entities\DepositHistory.cs" />
     <Compile Include="Models\Entities\DepositReward.cs" />
