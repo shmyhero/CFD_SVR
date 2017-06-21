@@ -134,5 +134,87 @@ namespace CFD_API.Controllers
 
         }
 
+        [HttpGet]
+        [Route("demouser")]
+        [AdminAuth]
+        /// <summary>
+        /// 模拟用户信息管理
+        /// </summary>
+        /// <returns></returns>
+        public List<DemoUserDTO> SearchDemoUser(string phone)
+        {
+            List<DemoUserDTO> result = new List<DemoUserDTO>();
+
+            var users = db.Users.Where(u => u.Phone.Contains(phone)).OrderByDescending(u => u.CreatedAt).ToList();
+            users.ForEach(u => {
+                DemoUserDTO dto = new DemoUserDTO();
+                dto.nickName = u.Nickname;
+                dto.phone = u.Phone;
+                dto.demoSignedAt = u.CreatedAt.HasValue? u.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
+                dto.demoTransCount = db.AyondoTradeHistories.Count(t => t.AccountId == u.AyondoAccountId);
+                dto.lastLoginAt = u.LastHitAt.HasValue? u.LastHitAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
+                dto.reward = GetTotalReward(u.Id) - db.RewardTransfers.Where(o => o.UserID == u.Id).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+                dto.liveSignedAt = u.AyLiveApproveAt.HasValue? u.AyLiveApproveAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
+                dto.liveAccountName = u.AyLiveUsername;
+                var userInfo = db.UserInfos.FirstOrDefault(ui => ui.UserId == u.Id);
+                if(userInfo == null)
+                {
+                    dto.realName = string.Empty;
+                }
+                else
+                {
+                    dto.realName = userInfo.LastName + userInfo.FirstName;
+                }
+                result.Add(dto);
+            });
+
+            return result;
+        }
+
+        private decimal GetTotalReward(int userID)
+        {
+            //reward for daily sign
+            decimal totalDailySignReward = db.DailySigns
+                .Where(o => o.UserId == userID && !o.IsPaid.Value)
+                .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+
+            //reward for daily demo trasaction
+            var totalDemoTransactionReward = db.DailyTransactions
+                .Where(o => o.UserId == userID && !o.IsPaid.Value)
+                .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+
+            var totalCard = db.UserCards_Live.Where(o => (!o.IsPaid.HasValue || !o.IsPaid.Value) && o.UserId == userID).Select(o => o.Reward).DefaultIfEmpty(0).Sum();
+
+            //reward for demo register
+            var reward = db.DemoRegisterRewards.FirstOrDefault(o => o.UserId == userID);
+            decimal demoRegisterReward = reward == null ? 0 : reward.Amount;
+
+            //实盘账户注册交易金
+            var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == userID);
+            decimal liveRegisterReward = liveReward == null ? 0 : liveReward.Amount;
+
+            //推荐人奖励
+            var referReward = db.ReferRewards.FirstOrDefault(o => o.UserID == userID);
+            decimal referRewardAmount = referReward == null ? 0 : referReward.Amount;
+
+            //首日入金交易金
+            decimal firstDepositReward = 0;
+            var depositRewards = db.DepositRewards.Where(o => o.UserId == userID);
+            if (!(depositRewards == null || depositRewards.Count() == 0))
+            {
+                firstDepositReward = depositRewards.Sum(o => o.Amount);
+            }
+
+            //模拟收益交易金
+            decimal demoProfit = 0;
+            var demoRewards = db.DemoProfitRewards.Where(o => o.UserId == userID);
+            if (!(demoRewards == null || demoRewards.Count() == 0))
+            {
+                demoProfit = demoRewards.Sum(o => o.Amount);
+            }
+
+            return demoProfit + referRewardAmount + liveRegisterReward + demoRegisterReward + totalDailySignReward + totalCard.Value + totalDemoTransactionReward + firstDepositReward;
+        }
+        
     }
 }

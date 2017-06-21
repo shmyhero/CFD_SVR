@@ -665,4 +665,39 @@ namespace CFD_API.DTO
         /// </summary>
         public bool showData { get; set; }
     }
+
+    public struct DemoUserDTO
+    {
+        public string nickName { get; set; }
+        public string phone { get; set; }
+        /// <summary>
+        /// 模拟账号注册时间
+        /// </summary>
+        public string demoSignedAt { get; set; }
+        /// <summary>
+        /// 模拟下单总数
+        /// </summary>
+        public int demoTransCount { get; set; }
+        /// <summary>
+        /// 最近登录时间
+        /// </summary>
+        public string lastLoginAt { get; set; }
+        /// <summary>
+        /// 交易金余额
+        /// </summary>
+        public decimal reward { get; set; }
+        /// <summary>
+        /// 实盘注册时间
+        /// </summary>
+        public string liveSignedAt { get; set; }
+        /// <summary>
+        /// 姓名
+        /// </summary>
+        public string realName { get; set; }
+        /// <summary>
+        /// 实盘用户名
+        /// </summary>
+        public string liveAccountName { get; set; }
+        
+    }
 }
