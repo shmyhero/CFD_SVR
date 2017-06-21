@@ -184,10 +184,12 @@ namespace CFD_API.Controllers
             }
 
             DateTime startTime = SqlDateTime.MinValue.Value;
-            DateTime.TryParse(start, out startTime);
+            if(!string.IsNullOrEmpty(start))
+                DateTime.TryParse(start, out startTime);
 
             DateTime endTime = SqlDateTime.MaxValue.Value;
-            DateTime.TryParse(end, out endTime);
+            if (!string.IsNullOrEmpty(end))
+                DateTime.TryParse(end, out endTime);
 
             List<User> users = new List<User>();
             if(string.IsNullOrEmpty(nickName))
