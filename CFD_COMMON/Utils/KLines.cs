@@ -89,49 +89,31 @@ namespace CFD_COMMON.Utils
 
     public class PeriodAttribute : Attribute
     {
-        private int period;
-        public int Period
-        {
-            get
-            {
-                return period;
-            }
-        }
+        public int Period { get; }
+
         public PeriodAttribute(int period)
         {
-            this.period = period;
+            this.Period = period;
         }
     }
 
     public class ClearWhenAttribute : Attribute
     {
-        private int size;
-        public int Size
-        {
-            get
-            {
-                return size;
-            }
-        }
+        public int Size { get; }
+
         public ClearWhenAttribute(int size)
         {
-            this.size = size;
+            this.Size = size;
         }
     }
 
     public class ClearToAttribute : Attribute
     {
-        private int size;
-        public int Size
-        {
-            get
-            {
-                return size;
-            }
-        }
+        public int Size { get; }
+
         public ClearToAttribute(int size)
         {
-            this.size = size;
+            this.Size = size;
         }
     }
 }
