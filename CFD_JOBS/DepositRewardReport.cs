@@ -1,32 +1,24 @@
-﻿using System;
+﻿using CFD_COMMON;
+using CFD_COMMON.Models.Context;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
-using CFD_COMMON;
-using CFD_COMMON.Models.Context;
-using ServiceStack.Text;
-using System.Threading.Tasks;
-using AutoMapper;
-using CFD_COMMON.Utils;
-using CFD_COMMON.Utils.Extensions;
-using CFD_COMMON.Localization;
-using CFD_COMMON.Models.Entities;
-using CFD_COMMON.Service;
-using System.Data.SqlTypes;
-using System.Text;
-using System.IO;
-using System.Data.OleDb;
 using System.Net.Mail;
-using Newtonsoft.Json.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CFD_JOBS
 {
-    public class RemittanceReport
+    /// <summary>
+    /// 首日入金奖励金报表
+    /// </summary>
+    public class DepositRewardReport
     {
         private static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
-
         public static void Run()
         {
             while (true)
@@ -48,41 +40,44 @@ namespace CFD_JOBS
                     {
                         Console.WriteLine("读取发送时间失败");
                     }
-                    
+
                     var timeToSend = DateTime.SpecifyKind(new DateTime(start.Year, start.Month, start.Day, timeToSendHour, 0, 0), DateTimeKind.Utc);
                     if (start < timeToSend && end >= timeToSend)
                     {
-                        string fileName = "Remittance/" + timeToSend.ToString("yyyy-MM-dd") + ".xls";
-                        if (File.Exists(fileName))
-                        {
-                            File.Delete(fileName);
-                        }
+                        string fileName = string.Empty;
+                       
                         ExcelExport excel = new ExcelExport();
-                        List<ExportItem> exporItems = new List<ExportItem>();
+                        List<RewardExportItem> exporItems = new List<RewardExportItem>();
                         string refundMailSetting = string.Empty;
                         using (var db = CFDEntities.Create())
                         {
                             DateTime yesterDay = timeToSend.AddDays(-1);
-                            exporItems = (from t in db.WithdrawalHistories
-                                          join u in db.Users on t.UserId equals u.Id
-                                          join u2 in db.UserInfos on u.Id equals u2.UserId
-                                          where t.CreateAt > yesterDay && t.CreateAt <= timeToSend
-                                          select new ExportItem() {
-                                              BeneficiaryName = u2.LastName + u2.FirstName,
-                                              UserName = u.AyLiveUsername,
-                                              BeneficiaryAccountNo = u.BankCardNumber,
-                                              Province = u.Province,
-                                              City = u.City,
-                                              BankName = u.BankName,
-                                              BankBranch = u.Branch,
-                                              IdCardNo = u2.IdCode,
-                                              Amount = t.RequestAmount.HasValue ? t.RequestAmount.Value : 0
+                            exporItems = (from dr in db.DepositRewards
+                                          join u in db.Users on dr.UserId equals u.Id
+                                          join ui in db.UserInfos on u.Id equals ui.UserId
+                                          where dr.CreatedAt > yesterDay && dr.CreatedAt <= timeToSend
+                                          select new RewardExportItem()
+                                          {
+                                              RealName = ui.LastName + ui.FirstName,
+                                              AccountName = u.AyLiveUsername,
+                                              DepositAmount = dr.DepositAmount.HasValue ? dr.DepositAmount.Value : 0,
+                                              RewardAmount = dr.Amount,
+                                              DepositAt = dr.CreatedAt.HasValue ? dr.CreatedAt.Value : DateTime.MinValue
                                           }).ToList();
 
                             refundMailSetting = db.Miscs.FirstOrDefault(o => o.Key == "RefundMail").Value;
                         }
-                        excel.RemittanceExportItems = exporItems;
-                        excel.ExportRemittance(fileName);
+                        excel.DepositRewardExportItems = exporItems;
+                        if(exporItems.Count > 0)
+                        {
+                            fileName = "Reward/" + timeToSend.ToString("yyyy-MM-dd") + ".xls";
+                            if (File.Exists(fileName))
+                            {
+                                File.Delete(fileName);
+                            }
+                            excel.ExportDepositReward(fileName);
+                        }
+
                         SendMail(fileName, refundMailSetting);
                     }
                 }
@@ -106,8 +101,6 @@ namespace CFD_JOBS
 
             try
             {
-                var attach = new Attachment(fileName);
-
                 MailMessage mm = new MailMessage();
                 mm.From = new MailAddress(from);
                 if (!string.IsNullOrEmpty(to))
@@ -126,9 +119,17 @@ namespace CFD_JOBS
                     }
                 }
 
-                mm.Attachments.Add(attach);
-                mm.Subject = "Daily Remittance Report";
-                mm.Body = "Please find the enclosed. This mail is sent automatically. ";
+                if(!string.IsNullOrEmpty(fileName))
+                {
+                    var attach = new Attachment(fileName);
+                    mm.Attachments.Add(attach);
+                }
+
+                mm.Subject = "First Day Deposit Reward Report";
+                if (!string.IsNullOrEmpty(fileName))
+                    mm.Body = "Please find the enclosed. This mail is sent automatically. ";
+                else
+                    mm.Body = "No items found";
                 SmtpClient sc = new SmtpClient(smtp);
                 sc.Credentials = new NetworkCredential(account, password);
 
@@ -140,4 +141,5 @@ namespace CFD_JOBS
             }
         }
     }
+
 }

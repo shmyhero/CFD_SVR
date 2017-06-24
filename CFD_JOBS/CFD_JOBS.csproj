@@ -115,6 +115,8 @@
     <Compile Include="Ayondo\AyondoTransferHistoryImport.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="BaseExport.cs" />
+    <Compile Include="DepositRewardReport.cs" />
     <Compile Include="QuoteSnapshot.cs" />
     <Compile Include="RankJob.cs" />
     <Compile Include="RemittanceReport.cs" />
@@ -142,6 +144,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <None Include="Template\Deposit_Reward_Template.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Template\WeCollect_Remittance_Template.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

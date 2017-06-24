@@ -129,6 +129,11 @@ namespace CFD_JOBS
                     RemittanceReport.Run();
                 }
 
+                if (args.Contains("-RewardReport"))
+                {
+                    DepositRewardReport.Run();
+                }
+
                 if (args.Contains("-QuoteSnap"))
                 {
                     QuoteSnapshot.Run(false);
