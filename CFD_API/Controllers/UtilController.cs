@@ -116,6 +116,20 @@ namespace CFD_API.Controllers
             return new ResultDTO() { success = true, message = "OK" };
         }
 
+        /// <summary>
+        /// for test only
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        [Route("verifyCode")]
+        [HttpGet]
+        [IPAuth]
+        public List<VerifyCode> GetVerifyCode()
+        {
+            var verifyCodes = db.VerifyCodes.OrderByDescending(o => o.SentAt).Take(50).ToList();
+            return verifyCodes;
+        }
+
         [Route("sendCode")]
         [HttpPost]
         //[RequireHttps]
