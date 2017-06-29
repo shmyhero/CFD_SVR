@@ -246,7 +246,7 @@ namespace CFD_API.Controllers
                     }
                     catch (Exception e)
                     {
-                        CFDGlobal.LogWarning("live oauth login failed");
+                        CFDGlobal.LogWarning("live oauth login failed. username: " + username2);
                         CFDGlobal.LogExceptionAsWarning(e);
                         return errorResponse;
                     }
