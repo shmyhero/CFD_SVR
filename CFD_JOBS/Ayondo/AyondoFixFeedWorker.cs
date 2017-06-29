@@ -147,9 +147,9 @@ namespace CFD_JOBS.Ayondo
 
             var list = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(kLineSize) + prodDef.Id];
 
-            if (quotes.Count == 0) //no quotes received, then should just fill the non-changing quotes
+            if (quotes.Count == 0) //no quotes received, then should just fill the non-changing candle
             {
-                if (kLineSize != KLineSize.Day) //no need to fill the non-changing quotes for day kline)
+                if (kLineSize != KLineSize.Day) //no need to fill the non-changing candle for day kline)
                 {
                     //var list = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(kLineSize) + prodDef.Id];
 
@@ -189,7 +189,7 @@ namespace CFD_JOBS.Ayondo
 
                 //var list = redisKLineClient.Lists[KLines.GetKLineListNamePrefix(kLineSize) + prodDef.Id];
 
-                if (klineTime1 != klineTime2 && kLineSize != KLineSize.Day)
+                if (klineTime1 != klineTime2 && kLineSize != KLineSize.Day) //quotes range more than 1 candle
                 {
                     var list1 = orderedQuotes.Where(o => o.Time < klineTime2).ToList();
                     var list2 = orderedQuotes.Where(o => o.Time >= klineTime2).ToList();
@@ -220,12 +220,12 @@ namespace CFD_JOBS.Ayondo
                     {
                         var last = list[list.Count - 1];
 
-                        if (last.Time < klineTime1)
+                        if (last.Time < klineTime1)//2 new candles to append
                         {
                             list.Add(k1);
                             list.Add(k2);
                         }
-                        else if (last.Time == klineTime1)
+                        else if (last.Time == klineTime1) //update last 1, append 1 new
                         {
                             list[list.Count - 1] = new KLine()
                             {
@@ -267,11 +267,11 @@ namespace CFD_JOBS.Ayondo
                     {
                         var last = list[list.Count - 1];
 
-                        if (last.Time < k.Time)
+                        if (last.Time < k.Time)//append 1 new
                         {
                             list.Add(k);
                         }
-                        else if (last.Time == k.Time)
+                        else if (last.Time == k.Time)//update last 1
                         {
                             list[list.Count - 1] = new KLine()
                             {
