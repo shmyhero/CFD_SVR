@@ -477,6 +477,8 @@ namespace CFD_JOBS.Ayondo
                             //current redis list
                             var listOld = redisProdDefClient.GetAll();
 
+                            var eurgbpOld = listOld.FirstOrDefault(o => o.Symbol == "EURGBP");
+
                             IList<ProdDef> listToSave = new List<ProdDef>();
                             //var listToSaveAsQuote = new List<ProdDef>();
 
@@ -491,8 +493,15 @@ namespace CFD_JOBS.Ayondo
                                     {
                                         CFDGlobal.LogLine("PROD CLOSED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " + newProdDef.Bid);
 
-                                        //close time
-                                        old.LastClose = newProdDef.Time;
+                                        if (old.AssetClass == "Currencies" && old.Symbol.StartsWith("XBT"))
+                                        {
+                                            //for bitcoin products, Open/Close change with EURGBP
+                                        }
+                                        else
+                                        {
+                                            //close time
+                                            old.LastClose = newProdDef.Time;
+                                        }
 
                                         ////prod def will be treated as a new QUOTE when stock open/close
                                         //listToSaveAsQuote.Add(newProdDef);
@@ -503,17 +512,24 @@ namespace CFD_JOBS.Ayondo
                                         CFDGlobal.LogLine("PROD OPENED " + newProdDef.Id + " time: " + newProdDef.Time + " offer: " + newProdDef.Offer + " bid: " +
                                                           newProdDef.Bid);
 
-                                        //open time
-                                        old.LastOpen = newProdDef.Time;
+                                        if (old.AssetClass == "Currencies" && old.Symbol.StartsWith("XBT"))
+                                        {
+                                            //for bitcoin products, Open/Close change with EURGBP
+                                        }
+                                        else
+                                        {
+                                            //open time
+                                            old.LastOpen = newProdDef.Time;
 
-                                        //open prices
-                                        old.OpenAsk = newProdDef.Offer;
-                                        old.OpenBid = newProdDef.Bid;
+                                            //open prices
+                                            old.OpenAsk = newProdDef.Offer;
+                                            old.OpenBid = newProdDef.Bid;
 
-                                        //preclose
-                                        old.PreClose = Quotes.GetClosePrice(newProdDef) ??
-                                        //when close ask/bid is null, get from ask/bid
-                                                       Quotes.GetLastPrice(newProdDef);
+                                            //preclose
+                                            old.PreClose = Quotes.GetClosePrice(newProdDef) ??
+                                                           //when close ask/bid is null, get from ask/bid
+                                                           Quotes.GetLastPrice(newProdDef);
+                                        }
 
                                         ////prod def will be treated as a new QUOTE when stock open/close
                                         //listToSaveAsQuote.Add(newProdDef);
@@ -527,8 +543,17 @@ namespace CFD_JOBS.Ayondo
                                     old.AssetClass = newProdDef.AssetClass;
                                     old.Bid = newProdDef.Bid;
                                     old.Offer = newProdDef.Offer;
-                                    old.CloseBid = newProdDef.CloseBid;
-                                    old.CloseAsk = newProdDef.CloseAsk;
+
+                                    if (old.AssetClass == "Currencies" && old.Symbol.StartsWith("XBT"))
+                                    {
+                                        //for bitcoin products, Open/Close change with EURGBP
+                                    }
+                                    else
+                                    {
+                                        old.CloseBid = newProdDef.CloseBid;
+                                        old.CloseAsk = newProdDef.CloseAsk;
+                                    }
+
                                     old.Shortable = newProdDef.Shortable;
                                     old.MinSizeShort = newProdDef.MinSizeShort;
                                     old.MaxSizeShort = newProdDef.MaxSizeShort;
@@ -552,6 +577,60 @@ namespace CFD_JOBS.Ayondo
                             }
 
                             redisProdDefClient.StoreAll(listToSave);
+
+                            //-------------------when EURGBP changes status, set bitcoin products' LastOpen/LastClose----------------------------
+                            var eurgbpNew = listToSave.FirstOrDefault(o => o.Symbol == "EURGBP");
+                            if (eurgbpOld != null && eurgbpNew!=null)
+                            {
+                                if (eurgbpOld.QuoteType != enmQuoteType.Closed && eurgbpNew.QuoteType == enmQuoteType.Closed) //xxx -> close
+                                {
+                                    var prodDefs = redisProdDefClient.GetAll();
+
+                                    var bitcoins = prodDefs.Where(
+                                    o => o.AssetClass == "Currencies" && o.Symbol.StartsWith("XBT"))
+                                    .ToList();
+
+                                    var redisQuoteClient = redisClient.As<Quote>();
+
+                                    foreach (var bitcoin in bitcoins)
+                                    {
+                                        bitcoin.LastClose = eurgbpNew.Time;
+
+                                        var bcQuote = redisQuoteClient.GetById(bitcoin.Id);
+                                        if (bcQuote != null)
+                                        {
+                                            bitcoin.CloseAsk = bcQuote.Offer;
+                                            bitcoin.CloseBid = bcQuote.Bid;
+                                        }
+                                    }
+                                }
+                                else if (eurgbpOld.QuoteType != enmQuoteType.Open && eurgbpOld.QuoteType != enmQuoteType.PhoneOnly &&
+                                         (eurgbpNew.QuoteType == enmQuoteType.Open || eurgbpNew.QuoteType == enmQuoteType.PhoneOnly)) //xxx -> open/phone
+                                {
+                                    var prodDefs = redisProdDefClient.GetAll();
+
+                                    var bitcoins = prodDefs.Where(
+                                    o => o.AssetClass == "Currencies" && o.Symbol.StartsWith("XBT"))
+                                    .ToList();
+
+                                    var redisQuoteClient = redisClient.As<Quote>();
+
+                                    foreach (var bitcoin in bitcoins)
+                                    {
+                                        bitcoin.LastOpen = eurgbpNew.Time;
+
+                                        var bcQuote = redisQuoteClient.GetById(bitcoin.Id);
+                                        if (bcQuote != null)
+                                        {
+                                            bitcoin.OpenAsk = bcQuote.Offer;
+                                            bitcoin.OpenBid = bcQuote.Bid;
+                                        }
+
+                                        bitcoin.PreClose = Quotes.GetClosePrice(bitcoin);
+                                    }
+                                }
+                            }
+                            //-------------------------------------------------------------------------------------------------------------------------
                         }
                     }
                 }
