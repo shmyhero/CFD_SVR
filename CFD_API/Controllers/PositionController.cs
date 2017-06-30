@@ -216,9 +216,11 @@ namespace CFD_API.Controllers
                     var tradeValue = p.InvestUSD * p.Leverage;
                     if (quote != null)
                     {
+                        //直接用美元算的损益，就不用再转换美元了
                         decimal upl = p.LongQty.HasValue ? tradeValue.Value * (quote.Bid / p.SettlePrice.Value - 1) : tradeValue.Value * (1 - quote.Offer / p.SettlePrice.Value);
-                        var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
-                        dto.pl = uplUSD;
+                        //var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
+                        //dto.pl = uplUSD;
+                        dto.pl = upl;
                     }
                     dto.rate = p.InvestUSD.HasValue ? (dto.pl / p.InvestUSD.Value) : 0;
                     #endregion
