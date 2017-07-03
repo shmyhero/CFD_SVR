@@ -477,7 +477,7 @@ namespace CFD_JOBS.Ayondo
                             //current redis list
                             var listOld = redisProdDefClient.GetAll();
 
-                            var eurgbpOld = listOld.FirstOrDefault(o => o.Symbol == "EURGBP");
+                            var eurgbpOld = listOld.FirstOrDefault(o => o.Symbol == "EURGBP" && !o.Name.EndsWith(" Outright"));
 
                             IList<ProdDef> listToSave = new List<ProdDef>();
                             //var listToSaveAsQuote = new List<ProdDef>();
@@ -579,11 +579,13 @@ namespace CFD_JOBS.Ayondo
                             redisProdDefClient.StoreAll(listToSave);
 
                             //-------------------when EURGBP changes status, set bitcoin products' LastOpen/LastClose----------------------------
-                            var eurgbpNew = listToSave.FirstOrDefault(o => o.Symbol == "EURGBP");
+                            var eurgbpNew = listToSave.FirstOrDefault(o => o.Symbol == "EURGBP" && !o.Name.EndsWith(" Outright"));
                             if (eurgbpOld != null && eurgbpNew!=null)
                             {
                                 if (eurgbpOld.QuoteType != enmQuoteType.Closed && eurgbpNew.QuoteType == enmQuoteType.Closed) //xxx -> close
                                 {
+                                    CFDGlobal.LogLine("EURGBP CLOSE - changing bitcoins infos...");
+
                                     var prodDefs = redisProdDefClient.GetAll();
 
                                     var bitcoins = prodDefs.Where(
@@ -607,6 +609,8 @@ namespace CFD_JOBS.Ayondo
                                 else if (eurgbpOld.QuoteType != enmQuoteType.Open && eurgbpOld.QuoteType != enmQuoteType.PhoneOnly &&
                                          (eurgbpNew.QuoteType == enmQuoteType.Open || eurgbpNew.QuoteType == enmQuoteType.PhoneOnly)) //xxx -> open/phone
                                 {
+                                    CFDGlobal.LogLine("EURGBP OPEN - changing bitcoins infos...");
+
                                     var prodDefs = redisProdDefClient.GetAll();
 
                                     var bitcoins = prodDefs.Where(
