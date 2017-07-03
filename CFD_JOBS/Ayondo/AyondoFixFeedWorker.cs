@@ -605,6 +605,8 @@ namespace CFD_JOBS.Ayondo
                                             bitcoin.CloseBid = bcQuote.Bid;
                                         }
                                     }
+
+                                    redisProdDefClient.StoreAll(bitcoins);
                                 }
                                 else if (eurgbpOld.QuoteType != enmQuoteType.Open && eurgbpOld.QuoteType != enmQuoteType.PhoneOnly &&
                                          (eurgbpNew.QuoteType == enmQuoteType.Open || eurgbpNew.QuoteType == enmQuoteType.PhoneOnly)) //xxx -> open/phone
@@ -632,6 +634,8 @@ namespace CFD_JOBS.Ayondo
 
                                         bitcoin.PreClose = Quotes.GetClosePrice(bitcoin);
                                     }
+
+                                    redisProdDefClient.StoreAll(bitcoins);
                                 }
                             }
                             //-------------------------------------------------------------------------------------------------------------------------
