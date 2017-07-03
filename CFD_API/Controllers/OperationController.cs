@@ -142,14 +142,42 @@ namespace CFD_API.Controllers
         /// 模拟用户信息管理
         /// </summary>
         /// <returns></returns>
-        public List<DemoUserDTO> SearchDemoUser(string phone)
+        public List<DemoUserDTO> SearchDemoUser(string phone, string start, string end)
         {
             List<DemoUserDTO> result = new List<DemoUserDTO>();
 
-            var users = db.Users.Where(u => u.Phone.Contains(phone)).OrderByDescending(u => u.CreatedAt).ToList();
+            DateTime startTime = SqlDateTime.MinValue.Value;
+            if (!string.IsNullOrEmpty(start))
+                DateTime.TryParse(start, out startTime);
+
+            DateTime endTime = SqlDateTime.MaxValue.Value;
+            if (!string.IsNullOrEmpty(end))
+                DateTime.TryParse(end, out endTime);
+
+            //var users = db.Users.Where(u => u.Phone.Contains(phone)).OrderByDescending(u => u.CreatedAt).ToList();
+            List<User> users = new List<User>();
+            if (string.IsNullOrEmpty(phone))
+            {
+                //如果三个查询参数都为空，就返回当日实盘开户的信息
+                if(startTime == SqlDateTime.MinValue.Value && endTime == SqlDateTime.MaxValue.Value)
+                {
+                    DateTime utcToday = DateTime.Today.AddHours(-8);
+                    users = db.Users.Where(u => (u.AyLiveApproveAt >= utcToday)).ToList();
+                }
+                else
+                {
+                    users = db.Users.Where(u => (u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
+                }
+            }
+            else
+            {
+                users = db.Users.Where(u => (u.Phone.Contains(phone) && u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
+            }
+
             users.ForEach(u => {
                 DemoUserDTO dto = new DemoUserDTO();
                 dto.nickName = u.Nickname;
+                dto.account = u.AyondoUsername;
                 dto.phone = u.Phone;
                 dto.demoSignedAt = u.CreatedAt.HasValue? u.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
                 dto.demoTransCount = db.AyondoTradeHistories.Count(t => t.AccountId == u.AyondoAccountId);
@@ -166,6 +194,17 @@ namespace CFD_API.Controllers
                 {
                     dto.realName = userInfo.LastName + userInfo.FirstName;
                 }
+
+                var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == u.Phone);
+                if(referHistory != null)
+                {
+                    var referee = db.Users.FirstOrDefault(u1 => u1.Id == referHistory.RefereeID);
+                    if(referee != null)
+                    {
+                        dto.channel = referee.Nickname;
+                    }
+                }
+                
                 result.Add(dto);
             });
 

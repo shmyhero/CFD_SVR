@@ -669,6 +669,7 @@ namespace CFD_API.DTO
     public struct DemoUserDTO
     {
         public string nickName { get; set; }
+        public string account { get; set; }
         public string phone { get; set; }
         /// <summary>
         /// 模拟账号注册时间
@@ -698,7 +699,10 @@ namespace CFD_API.DTO
         /// 实盘用户名
         /// </summary>
         public string liveAccountName { get; set; }
-        
+        /// <summary>
+        /// 渠道
+        /// </summary>
+        public string channel { get; set; }
     }
 
     public struct UserRewardDTO

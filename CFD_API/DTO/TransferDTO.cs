@@ -25,10 +25,13 @@ namespace CFD_API.DTO
         /// 阿里最大入金金额
         /// </summary>
         public decimal alipayMax { get; set; }
+        public decimal alipayMin { get; set; }
+
         /// <summary>
         /// 银联最大入金金额
         /// </summary>
         public decimal cupMax { get; set; }
+        public decimal cupMin { get; set; }
 
         public decimal fxRate { get; set; }
 
