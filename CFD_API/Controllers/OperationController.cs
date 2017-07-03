@@ -174,6 +174,10 @@ namespace CFD_API.Controllers
                 users = db.Users.Where(u => (u.Phone.Contains(phone) && u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
             }
 
+            var phoneList = users.Select(u => u.Phone).ToList();
+
+            var referHistorys = db.ReferHistorys.Where(rh => phoneList.Contains(rh.ApplicantNumber)).ToList();
+
             users.ForEach(u => {
                 DemoUserDTO dto = new DemoUserDTO();
                 dto.nickName = u.Nickname;
@@ -194,17 +198,18 @@ namespace CFD_API.Controllers
                 {
                     dto.realName = userInfo.LastName + userInfo.FirstName;
                 }
-
-                var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == u.Phone);
-                if(referHistory != null)
+                
+                if(referHistorys.Any(r => r.ApplicantNumber == u.Phone))
                 {
-                    var referee = db.Users.FirstOrDefault(u1 => u1.Id == referHistory.RefereeID);
-                    if(referee != null)
+                    int refereeID = referHistorys.FirstOrDefault(r => r.ApplicantNumber == u.Phone).RefereeID;
+                    var referee = db.Users.FirstOrDefault(u1 => u1.Id == refereeID);
+                    if (referee != null)
                     {
                         dto.channel = referee.Nickname;
                     }
                 }
-                
+
+
                 result.Add(dto);
             });
 
