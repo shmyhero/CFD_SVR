@@ -33,6 +33,7 @@ using Pinyin4net;
 using Pinyin4net.Format;
 using ServiceStack.ServiceHost;
 using EntityFramework.BulkInsert.Extensions;
+using ServiceStack.DesignPatterns.Model;
 
 namespace CFD_TEST
 {
@@ -367,6 +368,36 @@ namespace CFD_TEST
             Assert.AreEqual("value1", value);
 
             redisClient.RemoveEntry(new[] {"key1"});
+        }
+
+        public class TestClass:IHasIntId
+        {
+            public string name { get; set; }
+            public int Id { get; set; }
+        }
+
+        [TestMethod]
+        public void RedisTest2()
+        {
+            var redisClient = CFDGlobal.BasicRedisClientManager.GetClient();
+
+            var redisTypedClient = redisClient.As<TestClass>();
+
+            redisTypedClient.StoreAll(new List<TestClass>() {new TestClass() {Id = 1,name="c1"},new TestClass() {Id=2, name="c2"} });
+
+            var list = redisTypedClient.GetAll();
+
+            var itemOld = list.FirstOrDefault(o => o.name=="c1");
+
+            var listToSave = new List<TestClass>();
+
+            listToSave.Add(new TestClass() {Id=1,name = "c1new"});
+
+            redisTypedClient.StoreAll(listToSave);
+
+            var itemNew = listToSave.FirstOrDefault(o => o.name=="c1new");
+
+            Assert.AreNotEqual(itemOld.name,itemNew.name);
         }
 
         [TestMethod]
