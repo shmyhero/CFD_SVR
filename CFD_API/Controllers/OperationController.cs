@@ -219,10 +219,10 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("userreward")]
         [AdminAuth]
-        public List<UserRewardDTO> SearchUserReward(string nickName, string start, string end)
+        public List<UserRewardDTO> SearchUserReward(string phone, string start, string end)
         {
             List<UserRewardDTO> result = new List<UserRewardDTO>();
-            if (string.IsNullOrEmpty(nickName) && string.IsNullOrEmpty(start) && string.IsNullOrEmpty(end))
+            if (string.IsNullOrEmpty(phone) && string.IsNullOrEmpty(start) && string.IsNullOrEmpty(end))
             {
                 return result;
             }
@@ -236,13 +236,13 @@ namespace CFD_API.Controllers
                 DateTime.TryParse(end, out endTime);
 
             List<User> users = new List<User>();
-            if(string.IsNullOrEmpty(nickName))
+            if(string.IsNullOrEmpty(phone))
             {
                 users = db.Users.Where(u => (u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
             }
             else
             {
-                users = db.Users.Where(u => (u.Nickname.Contains(nickName) && u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
+                users = db.Users.Where(u => (u.Phone.Contains(phone) && u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
             }
 
             users.ForEach(u => {
