@@ -477,7 +477,11 @@ namespace CFD_JOBS.Ayondo
                             //current redis list
                             var listOld = redisProdDefClient.GetAll();
 
-                            var eurgbpOld = listOld.FirstOrDefault(o => o.Symbol == "EURGBP" && !o.Name.EndsWith(" Outright"));
+                            var fxToFollow = "EURUSD";
+
+                            var fxOld = listOld.FirstOrDefault(o => o.Symbol == fxToFollow && !o.Name.EndsWith(" Outright"));
+                            var fxOldNotClosed = fxOld.QuoteType != enmQuoteType.Closed;
+                            var fxOldNotOpen = fxOld.QuoteType != enmQuoteType.Open && fxOld.QuoteType != enmQuoteType.PhoneOnly;
 
                             IList<ProdDef> listToSave = new List<ProdDef>();
                             //var listToSaveAsQuote = new List<ProdDef>();
@@ -579,12 +583,13 @@ namespace CFD_JOBS.Ayondo
                             redisProdDefClient.StoreAll(listToSave);
 
                             //-------------------when EURGBP changes status, set bitcoin products' LastOpen/LastClose----------------------------
-                            var eurgbpNew = listToSave.FirstOrDefault(o => o.Symbol == "EURGBP" && !o.Name.EndsWith(" Outright"));
-                            if (eurgbpOld != null && eurgbpNew!=null)
+                            var fxNew = listToSave.FirstOrDefault(o => o.Symbol == fxToFollow && !o.Name.EndsWith(" Outright"));
+
+                            if (fxNew!=null)
                             {
-                                if (eurgbpOld.QuoteType != enmQuoteType.Closed && eurgbpNew.QuoteType == enmQuoteType.Closed) //xxx -> close
+                                if (fxOldNotClosed && fxNew.QuoteType == enmQuoteType.Closed) //xxx -> close
                                 {
-                                    CFDGlobal.LogLine("EURGBP CLOSE - changing bitcoins infos...");
+                                    CFDGlobal.LogLine(fxToFollow + " CLOSED - changing bitcoins infos...");
 
                                     var prodDefs = redisProdDefClient.GetAll();
 
@@ -596,7 +601,7 @@ namespace CFD_JOBS.Ayondo
 
                                     foreach (var bitcoin in bitcoins)
                                     {
-                                        bitcoin.LastClose = eurgbpNew.Time;
+                                        bitcoin.LastClose = fxNew.Time;
 
                                         var bcQuote = redisQuoteClient.GetById(bitcoin.Id);
                                         if (bcQuote != null)
@@ -608,10 +613,10 @@ namespace CFD_JOBS.Ayondo
 
                                     redisProdDefClient.StoreAll(bitcoins);
                                 }
-                                else if (eurgbpOld.QuoteType != enmQuoteType.Open && eurgbpOld.QuoteType != enmQuoteType.PhoneOnly &&
-                                         (eurgbpNew.QuoteType == enmQuoteType.Open || eurgbpNew.QuoteType == enmQuoteType.PhoneOnly)) //xxx -> open/phone
+                                else if (fxOldNotOpen &&
+                                         (fxNew.QuoteType == enmQuoteType.Open || fxNew.QuoteType == enmQuoteType.PhoneOnly)) //xxx -> open/phone
                                 {
-                                    CFDGlobal.LogLine("EURGBP OPEN - changing bitcoins infos...");
+                                    CFDGlobal.LogLine(fxToFollow + " OPENED - changing bitcoins infos...");
 
                                     var prodDefs = redisProdDefClient.GetAll();
 
@@ -623,7 +628,7 @@ namespace CFD_JOBS.Ayondo
 
                                     foreach (var bitcoin in bitcoins)
                                     {
-                                        bitcoin.LastOpen = eurgbpNew.Time;
+                                        bitcoin.LastOpen = fxNew.Time;
 
                                         var bcQuote = redisQuoteClient.GetById(bitcoin.Id);
                                         if (bcQuote != null)
