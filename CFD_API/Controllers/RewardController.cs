@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Web.Http;
 using AutoMapper;
 using CFD_API.Controllers.Attributes;
@@ -12,6 +13,7 @@ using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using ServiceStack.Redis;
 using Newtonsoft.Json.Linq;
+using System.Net;
 
 namespace CFD_API.Controllers
 {
@@ -289,6 +291,12 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public ResultDTO Transfer(decimal amount)
         {
+            var forbiddenList = db.Miscs.FirstOrDefault(m => m.Key == "RewardTransferBlackList");
+            if(forbiddenList != null && forbiddenList.Value.Split(';').Contains(UserId.ToString()))
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "请联系客服"));
+            }
+
             lock (transferLock)
             {
                 var reward = GetTotalReward();

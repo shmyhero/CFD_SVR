@@ -68,10 +68,10 @@ namespace CFD_API.Controllers
             //var date = DateTimes.GetLastFinishedChinaWorkday();
             var date = db.CompetitionResults.OrderByDescending(o => o.Date).Select(o => o.Date).FirstOrDefault();
 
-            var competitionResults =
-                db.CompetitionResults.Include(o => o.User).Where(o => o.CompetitionId == id && o.Date == date)
+            //Top3尽量安排给实盘用户
+            var liveUserResult = db.CompetitionResults.Include(o => o.User).Where(o => o.CompetitionId == id && o.Date == date && o.User.AyLiveAccountId.HasValue)
                     .OrderBy(o => o.Rank)
-                    .Take(10)
+                    .Take(3)
                     .ToList()
                     .Select(o =>
                     {
@@ -82,7 +82,27 @@ namespace CFD_API.Controllers
                     })
                     .ToList();
 
-            return competitionResults;
+            //其他参与竞赛用户的数量(排除了top3实盘用户之后，可能是实盘用户和模拟盘用户的混合)
+            int restUserCount = 10 - liveUserResult.Count;
+            //取其他竞赛用户的时候，要排除这些Top Live User
+            var liveUserIDs = liveUserResult.Select(u => u.userId.Value).ToList();
+
+            var restUserResult =
+                db.CompetitionResults.Include(o => o.User).Where(o => o.CompetitionId == id && o.Date == date && !liveUserIDs.Contains(o.User.Id))
+                    .OrderBy(o => o.Rank)
+                    .Take(restUserCount)
+                    .ToList()
+                    .Select(o =>
+                    {
+                        var dto = Mapper.Map<CompetitionResultDTO>(o);
+                        dto.nickname = o.User.Nickname;
+                        dto.picUrl = o.User.PicUrl;
+                        return dto;
+                    })
+                    .ToList();
+
+            liveUserResult.AddRange(restUserResult);
+            return liveUserResult;
         }
 
         //todo: for support/test
