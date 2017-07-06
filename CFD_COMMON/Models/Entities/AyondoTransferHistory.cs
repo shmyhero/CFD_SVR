@@ -27,6 +27,9 @@ namespace CFD_COMMON.Models.Entities
         public string Ccy { get; set; }
 
         public DateTime? Timestamp { get; set; }
+        /// <summary>
+        /// UTC
+        /// </summary>
         public DateTime? ApprovalTime { get; set; }
 
         [StringLength(50)]

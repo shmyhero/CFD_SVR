@@ -1,5 +1,7 @@
 ﻿using CFD_COMMON;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Service;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -51,6 +53,71 @@ namespace CFD_JOBS
                         string refundMailSetting = string.Empty;
                         using (var db = CFDEntities.Create())
                         {
+                            #region 找出符合首日入金条件的用户，把结果加入DepositReward表
+                            RewardService rewardSvc = new RewardService(db);
+
+                            var utc2DaysAgo = DateTime.UtcNow.AddDays(-2);
+                            var utc1DayAgo = DateTime.UtcNow.AddDays(-1);
+                            //找到所有首次入金时间大于2天前小于1天前的记录
+                            var firtDayDepositUsers = (from u in db.Users
+                                                       join a in db.AyondoTransferHistory_Live on u.AyLiveAccountId equals a.TradingAccountId
+                                                       where u.AyLiveAccountId != null && a.TransferType == "WeCollect - CUP"
+                                                       group new { u.Id, a.ApprovalTime } by a.TradingAccountId into g
+                                                       let minApproval = g.Min(a => a.ApprovalTime)
+                                                       where minApproval > utc2DaysAgo && minApproval < utc1DayAgo
+                                                       select new
+                                                       {
+                                                           g.Key,
+                                                           UserID = g.Min(a => a.Id),
+                                                           ApprovalTime = g.Min(a => a.ApprovalTime)
+                                                       }).ToList();
+                            //遍历这些用户，计算其交易金并保存
+                            firtDayDepositUsers.ForEach(u =>
+                            {
+                                try
+                                {
+                                    var firstDayEndTime = u.ApprovalTime.Value.AddDays(1);
+                                    var firstDayDepositAmount = db.AyondoTransferHistory_Live.Where(a => a.TradingAccountId == u.Key && a.ApprovalTime <= firstDayEndTime && a.TransferType == "WeCollect - CUP").Sum(a => a.Amount);
+                                    decimal rewardAmount = firstDayDepositAmount.Value * rewardSvc.GetFirstDayRewadRate(firstDayDepositAmount.Value);
+                                    rewardAmount = rewardAmount > 10000 ? 10000 : rewardAmount;
+                                    rewardAmount = rewardAmount * RewardService.ExchangeRate;
+
+                                    if (rewardAmount > 0)
+                                    {
+                                        Message_Live msg1stDayDeposit = new Message_Live();
+                                        msg1stDayDeposit.UserId = u.UserID;
+                                        msg1stDayDeposit.Title = "首日入金赠金";
+                                        msg1stDayDeposit.Body = string.Format("您的首日入金赠金{0}元已自动转入您的交易金账号", rewardAmount);
+                                        msg1stDayDeposit.CreatedAt = DateTime.UtcNow;
+                                        msg1stDayDeposit.IsReaded = false;
+                                        db.Message_Live.Add(msg1stDayDeposit);
+
+                                        DepositReward dr = new DepositReward();
+                                        dr.Amount = rewardAmount;
+                                        dr.UserId = u.UserID;
+                                        dr.DepositAmount = firstDayDepositAmount;
+                                        dr.CreatedAt = DateTime.Now;
+                                        db.DepositRewards.Add(dr);
+
+                                        var user = db.Users.FirstOrDefault(u1 => u1.Id == u.UserID);
+                                        if (!user.FirstDayRewarded.HasValue) //App首页提示用户拿到首日交易金。 Null未拿到，False已看过此消息，True已拿到交易金未看过消息
+                                        {
+                                            user.FirstDayRewarded = true;
+                                        }
+
+                                        db.SaveChanges();
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex.Message);
+                                }
+                               
+                            });
+
+
+                            #endregion
+
                             DateTime yesterDay = timeToSend.AddDays(-1);
                             exporItems = (from dr in db.DepositRewards
                                           join u in db.Users on dr.UserId equals u.Id

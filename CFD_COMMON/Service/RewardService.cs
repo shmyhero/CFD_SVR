@@ -288,31 +288,33 @@ namespace CFD_COMMON.Service
                                 }
                             }
 
-                            //首日入金交易金
-                            decimal firstDepositDayReward = FirstDayDepositReward(transfer);
-                            if(firstDepositDayReward > 0)
-                            {
-                                MessageBase msg1stDayDeposit = new MessageBase();
-                                msg1stDayDeposit.UserId = userInfo.UserId;
-                                msg1stDayDeposit.Title = "首日入金赠金";
-                                msg1stDayDeposit.Body = string.Format("您的首日入金赠金{0}元已自动转入您的交易金账号", transfer.Amount);
-                                msg1stDayDeposit.CreatedAt = DateTime.UtcNow;
-                                msg1stDayDeposit.IsReaded = false;
-                                messages.Add(msg1stDayDeposit);
+                            //由每笔入金判断是否送交易金，改为首日累计，在第二天判断要送多少交易金
+                            //代码移动到Job->FirstDayDepositRewardJob
+                            ////首日入金交易金
+                            //decimal firstDepositDayReward = FirstDayDepositReward(transfer);
+                            //if(firstDepositDayReward > 0)
+                            //{
+                            //    MessageBase msg1stDayDeposit = new MessageBase();
+                            //    msg1stDayDeposit.UserId = userInfo.UserId;
+                            //    msg1stDayDeposit.Title = "首日入金赠金";
+                            //    msg1stDayDeposit.Body = string.Format("您的首日入金赠金{0}元已自动转入您的交易金账号", transfer.Amount);
+                            //    msg1stDayDeposit.CreatedAt = DateTime.UtcNow;
+                            //    msg1stDayDeposit.IsReaded = false;
+                            //    messages.Add(msg1stDayDeposit);
 
-                                DepositReward dr = new DepositReward();
-                                dr.Amount = firstDepositDayReward;
-                                dr.UserId = userInfo.UserId;
-                                dr.DepositAmount = transfer.Amount;
-                                dr.CreatedAt = DateTime.Now;
-                                depositRewards.Add(dr);
+                            //    DepositReward dr = new DepositReward();
+                            //    dr.Amount = firstDepositDayReward;
+                            //    dr.UserId = userInfo.UserId;
+                            //    dr.DepositAmount = transfer.Amount;
+                            //    dr.CreatedAt = DateTime.Now;
+                            //    depositRewards.Add(dr);
 
-                                var user = db.Users.FirstOrDefault(u => u.Id == userInfo.UserId);
-                                if(!user.FirstDayRewarded.HasValue) //App首页提示用户拿到首日交易金。 Null未拿到，False已看过此消息，True已拿到交易金未看过消息
-                                {
-                                    user.FirstDayRewarded = true;
-                                }
-                            }
+                            //    var user = db.Users.FirstOrDefault(u => u.Id == userInfo.UserId);
+                            //    if(!user.FirstDayRewarded.HasValue) //App首页提示用户拿到首日交易金。 Null未拿到，False已看过此消息，True已拿到交易金未看过消息
+                            //    {
+                            //        user.FirstDayRewarded = true;
+                            //    }
+                            //}
 
                         }
                     }
@@ -351,7 +353,7 @@ namespace CFD_COMMON.Service
             decimal rewardAmount = 0;
             decimal rewardRate = GetFirstDayRewadRate(transferHistory.Amount.Value);
             var firstDeposit = db.AyondoTransferHistory_Live.FirstOrDefault(t => t.TradingAccountId == transferHistory.TradingAccountId);
-            if(firstDeposit == null || (firstDeposit.ApprovalTime.HasValue && firstDeposit.ApprovalTime.Value >= DateTime.Now.AddDays(-1))) //首次充值或首次充值的一天以内
+            if(firstDeposit == null || (firstDeposit.ApprovalTime.HasValue && firstDeposit.ApprovalTime.Value >= DateTime.UtcNow.AddDays(-1))) //首次充值或首次充值的一天以内
             {
                 rewardAmount = transferHistory.Amount.Value * rewardRate;
             }
