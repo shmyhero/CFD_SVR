@@ -45,6 +45,10 @@ namespace CFD_API.DTO
         /// 拿到首日奖励的提示信息是否已经看过
         /// </summary>
         public bool firstDayRewarded { get; set; }
+        /// <summary>
+        /// 推广码
+        /// </summary>
+        public string promotionCode { get; set; }
     }
 
     public class UserDTO : UserBaseDTO
@@ -749,5 +753,11 @@ namespace CFD_API.DTO
         /// 邀请好友交易金
         /// </summary>
         public decimal friendsReward;
+    }
+
+    public struct FirstLoginInfoDTO
+    {
+        public string nickName { get; set; }
+        public string promotionCode { get; set; }
     }
 }

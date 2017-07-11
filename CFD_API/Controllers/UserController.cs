@@ -288,6 +288,7 @@ namespace CFD_API.Controllers
             userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
             userDto.firstDayClicked = user.FirstDayClicked.HasValue ? user.FirstDayClicked.Value : false;
             userDto.firstDayRewarded = user.FirstDayRewarded.HasValue ? user.FirstDayRewarded.Value : false;
+            userDto.promotionCode = user.PromotionCode;
             return userDto;
         }
 
@@ -331,29 +332,103 @@ namespace CFD_API.Controllers
             return new ResultDTO(true);
         }
 
+        /// <summary>
+        /// 修改昵称和推广码
+        /// </summary>
+        /// <param name="nickname"></param>
+        /// <param name="code"></param>
+        /// <returns></returns>
         [HttpPost]
         //[RequireHttps]
         [ActionName("nickname")]
         [BasicAuth]
-        public ResultDTO SetNickname(string nickname)
-        {
-            nickname = nickname.Trim();
-
-            if (nickname.Length > NICKNAME_MAX_LENGTH)
-                return new ResultDTO() {success = false, message = __(TransKey.NICKNAME_TOO_LONG)};
-
-            if (db.Users.Any(o => o.Id != UserId && o.Nickname == nickname))
-                return new ResultDTO
-                {
-                    success = false,
-                    message = __(TransKey.NICKNAME_EXISTS)
-                };
-
+        public ResultDTO SetNickname(string nickname, string code)
+        {           
             var user = GetUser();
-            user.Nickname = nickname;
+
+            if (!string.IsNullOrEmpty(nickname))
+            {
+                nickname = nickname.Trim();
+                if (nickname.Length > NICKNAME_MAX_LENGTH)
+                    return new ResultDTO() { success = false, message = __(TransKey.NICKNAME_TOO_LONG) };
+
+                if (db.Users.Any(o => o.Id != UserId && o.Nickname == nickname))
+                    return new ResultDTO
+                    {
+                        success = false,
+                        message = __(TransKey.NICKNAME_EXISTS)
+                    };
+                
+                user.Nickname = nickname;
+            }
+
+            if(!string.IsNullOrEmpty(code))
+            {
+                code = code.Trim();
+                if (!string.IsNullOrEmpty(user.PromotionCode))
+                {
+                    return new ResultDTO
+                    {
+                        success = false,
+                        message = "推广码已存在"
+                    };
+                }
+
+                user.PromotionCode = code;
+            }
+            
             db.SaveChanges();
 
             return new ResultDTO {success = true};
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        [HttpPost]
+        //[RequireHttps]
+        [ActionName("updateFirstLoginInfo")]
+        [BasicAuth]
+        public ResultDTO SetFirstLoginInfo(FirstLoginInfoDTO form)
+        {
+            var user = GetUser();
+
+            if (!string.IsNullOrEmpty(form.nickName))
+            {
+                form.nickName = form.nickName.Trim();
+                if (form.nickName.Length > NICKNAME_MAX_LENGTH)
+                    return new ResultDTO() { success = false, message = __(TransKey.NICKNAME_TOO_LONG) };
+
+                if (db.Users.Any(o => o.Id != UserId && o.Nickname == form.nickName))
+                    return new ResultDTO
+                    {
+                        success = false,
+                        message = __(TransKey.NICKNAME_EXISTS)
+                    };
+
+                user.Nickname = form.nickName;
+            }
+
+            if (!string.IsNullOrEmpty(form.promotionCode))
+            {
+                form.promotionCode = form.promotionCode.Trim();
+                if (!string.IsNullOrEmpty(user.PromotionCode))
+                {
+                    return new ResultDTO
+                    {
+                        success = false,
+                        message = "推广码已存在"
+                    };
+                }
+
+                user.PromotionCode = form.promotionCode;
+            }
+
+            db.SaveChanges();
+
+            return new ResultDTO { success = true };
         }
 
         [HttpPost]

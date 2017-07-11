@@ -274,6 +274,7 @@
     <Compile Include="Controllers\CompetitionController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
     <Compile Include="Controllers\OperationController.cs" />
+    <Compile Include="Controllers\PartnerController.cs" />
     <Compile Include="Controllers\PositionController.cs" />
     <Compile Include="Controllers\ProxyController.cs" />
     <Compile Include="Controllers\QuoteController.cs" />
@@ -289,6 +290,7 @@
     <Compile Include="DTO\FormDTO\PositionFormDTO.cs" />
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
     <Compile Include="DTO\KLineDTO.cs" />
+    <Compile Include="DTO\PartnerDTO.cs" />
     <Compile Include="DTO\PositionDTO.cs" />
     <Compile Include="DTO\SecurityDTO.cs" />
     <Compile Include="DTO\SignalRDTO\PositionDTO.cs" />

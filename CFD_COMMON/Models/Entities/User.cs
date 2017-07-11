@@ -118,6 +118,11 @@
         /// </summary>
         public bool? FirstDayRewarded { get; set; }
 
+        /// <summary>
+        /// 推广码
+        /// </summary>
+        public string PromotionCode { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }
