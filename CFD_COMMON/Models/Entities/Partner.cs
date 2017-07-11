@@ -27,6 +27,6 @@ namespace CFD_COMMON.Models.Entities
         /// </summary>
         public bool? PromotionType2 { get; set; }
 
-        public bool? CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }
