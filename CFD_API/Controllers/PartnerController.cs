@@ -90,6 +90,16 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "推荐码错误"));
             }
 
+            //如果该手机号已经通过App注册过推荐码，并且推荐码和合伙人的不一致，就返回异常
+            if(!string.IsNullOrEmpty(form.promotionCode))
+            {
+                var user = db.Users.FirstOrDefault(u => u.Phone == form.phone);
+                if(user!=null && !string.IsNullOrEmpty(user.PromotionCode) && user.PromotionCode != form.promotionCode)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "与App注册的推荐码不一致"));
+                }
+            }
+
             if (verifyCodes.Any())
             {
                 var partner = db.Partners.FirstOrDefault(p => p.Phone == form.phone);

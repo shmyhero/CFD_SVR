@@ -423,6 +423,17 @@ namespace CFD_API.Controllers
                     };
                 }
 
+                //如果该手机号已经注册过合伙人，并且合伙人的上级推荐码和App的不一致，就返回异常
+                var partner = db.Partners.FirstOrDefault(p => p.Phone == user.Phone);
+                if(partner != null && !string.IsNullOrEmpty(partner.ParentCode) && partner.ParentCode != form.promotionCode)
+                {
+                    return new ResultDTO
+                    {
+                        success = false,
+                        message = "与注册的合伙人上级推荐码不一致"
+                    };
+                }
+
                 user.PromotionCode = form.promotionCode;
             }
 
