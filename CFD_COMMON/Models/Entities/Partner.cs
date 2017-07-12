@@ -27,6 +27,16 @@ namespace CFD_COMMON.Models.Entities
         /// </summary>
         public bool? PromotionType2 { get; set; }
 
+        /// <summary>
+        /// 上级推荐码，一级合作人此字段为空
+        /// </summary>
+        public string ParentCode { get; set; }
+
+        /// <summary>
+        /// 推荐码
+        /// </summary>
+        public string PromotionCode { get; set; }
+
         public DateTime? CreatedAt { get; set; }
     }
 }
