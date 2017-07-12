@@ -7,6 +7,9 @@ namespace CFD_API.DTO
 {
     public class PartnerDTO
     {
+        public bool success { get; set; }
+        public string message { get; set; }
+
         public string name { get; set; }
         public string province { get; set; }
         public string email { get; set; }

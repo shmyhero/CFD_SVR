@@ -265,7 +265,7 @@ namespace CFD_API.Controllers
                 totalReward.message = rewardLimitMessage;
                 totalReward.canTransfer = false;
             }
-            else if(totalDeposit < 200)
+            else if(totalDeposit < depositLimit)
             {
                 totalReward.message = depositLimitMessage;
                 totalReward.canTransfer = false;

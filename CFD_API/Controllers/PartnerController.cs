@@ -50,6 +50,7 @@ namespace CFD_API.Controllers
         /// 二级合伙人推荐码长度为5
         /// </summary>
         private int SecondLevelCodeLength = 5;
+        private int ThirdLevelCodeLength = 7;
 
         public PartnerController(CFDEntities db, IMapper mapper) : base(db, mapper)
         {
@@ -59,7 +60,7 @@ namespace CFD_API.Controllers
         [Route("login")]
         public PartnerDTO Login(PartnerLoginDTO form)
         {
-            PartnerDTO dto = new PartnerDTO();
+            PartnerDTO dto = new PartnerDTO() { success = true };
             var dtValidSince = DateTime.UtcNow - VERIFY_CODE_PERIOD;
             var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
             if(verifyCodes.Any())
@@ -72,8 +73,10 @@ namespace CFD_API.Controllers
             }
             else
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "验证码错误"));
+                dto.success = false;
+                dto.message = "验证码错误";
             }
+
             return dto;
         }
 
@@ -83,11 +86,17 @@ namespace CFD_API.Controllers
         {
             var dtValidSince = DateTime.UtcNow - VERIFY_CODE_PERIOD;
             var verifyCodes = db.VerifyCodes.Where(o => o.Phone == form.phone && o.Code == form.verifyCode && o.SentAt > dtValidSince);
+            
+            if(!string.IsNullOrEmpty(form.promotionCode) && (form.promotionCode.Length < FirstLevelCodeLength || form.promotionCode.Length>ThirdLevelCodeLength))
+            {
+                return new ResultDTO() { success = false, message = "推荐码格式错误" };
+            }
+            
             //传入的推荐码只能是一级或二级合伙人
             //以传入的推荐码作为上级推荐人，生成下级推荐码
             if(!string.IsNullOrEmpty(form.promotionCode) && form.promotionCode.Length !=FirstLevelCodeLength && form.promotionCode.Length != SecondLevelCodeLength)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "推荐码错误"));
+                return new ResultDTO() { success = false, message = "推荐码错误" };
             }
 
             //如果该手机号已经通过App注册过推荐码，并且推荐码和合伙人的不一致，就返回异常
@@ -96,7 +105,7 @@ namespace CFD_API.Controllers
                 var user = db.Users.FirstOrDefault(u => u.Phone == form.phone);
                 if(user!=null && !string.IsNullOrEmpty(user.PromotionCode) && user.PromotionCode != form.promotionCode)
                 {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "与App注册的推荐码不一致"));
+                    return new ResultDTO() { success = false, message = "与App注册的推荐码不一致" };
                 }
             }
 
@@ -107,6 +116,7 @@ namespace CFD_API.Controllers
                 {
                     partner = Mapper.Map<Partner>(form);
                     partner.CreatedAt = DateTime.UtcNow;
+                    partner.RootCode = form.promotionCode.Substring(0, 3);
                     partner.ParentCode = form.promotionCode;
                     partner.PromotionCode = GetSubPromotionCode(form.promotionCode);
 
@@ -116,7 +126,7 @@ namespace CFD_API.Controllers
                         count++;
                         if (count == 20)
                         {
-                            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "推荐码创建失败"));
+                            return new ResultDTO() { success = false, message = "推荐码创建失败" };
                         }
                         partner.PromotionCode = GetSubPromotionCode(form.promotionCode);
                     }
@@ -131,7 +141,7 @@ namespace CFD_API.Controllers
             }
             else
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "验证码错误"));
+                return new ResultDTO() { success = false, message = "验证码错误" };
             }
 
             return new ResultDTO() { success = true };
