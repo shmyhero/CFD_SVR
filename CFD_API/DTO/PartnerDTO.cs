@@ -60,4 +60,66 @@ namespace CFD_API.DTO
         public bool? promotionType2 { get; set; }
 
     }
+
+    public class PartnerReportDTO
+    {
+        public string PromotionCode { get; set; }
+
+        public string Name { get; set; }
+
+        public string ParentCode { get; set; }
+
+        public string RootCode { get; set; }
+
+        public int UserCount { get; set; }
+
+        public DateTime? PartnerCreatedAt { get; set; }
+
+        public int? UserId { get; set; }
+
+        public string Nickname { get; set; }
+
+        public string Phone { get; set; }
+
+        public long? AyondoAccountId { get; set; }
+
+        public DateTime? UserCreateAt { get; set; }
+
+        public DateTime? LastHitAt { get; set; }
+
+        public DateTime? AyLiveApplyAt { get; set; }
+
+        public string AyLiveUsername { get; set; }
+
+        public int? TradeCount { get; set; }
+    }
+
+    public class PartnerUserReportDTO
+    {
+        public int UserId { get; set; }
+
+        public string Nickname { get; set; }
+
+        public string Phone { get; set; }
+
+        public long? AyondoAccountId { get; set; }
+
+        public DateTime? UserCreatedAt { get; set; }
+
+        public DateTime? LastHitAt { get; set; }
+
+        public DateTime? AyLiveApplyAt { get; set; }
+
+        public string AyLiveUsername { get; set; }
+
+        public int? TradeCount { get; set; }
+
+        public string PromotionCode { get; set; }
+
+        public string Name { get; set; }
+
+        public string ParentCode { get; set; }
+
+        public string RootCode { get; set; }
+    }
 }

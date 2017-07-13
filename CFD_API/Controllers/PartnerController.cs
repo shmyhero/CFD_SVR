@@ -208,5 +208,48 @@ namespace CFD_API.Controllers
             
             return subCode;
         }
+
+        [HttpGet]
+        [Route("report")]
+        public List <PartnerReportDTO> GetPartnerReport(string promotionCode = "", int page = 1, int pageSize = 10)
+        {
+            IQueryable<PartnerView> query = null;
+            if (string.IsNullOrEmpty(promotionCode))
+            {
+                //get the level 1 partners
+                query = db.PartnerViews.Where(pv => pv.ParentCode == null && pv.RootCode == pv.PromotionCode);
+            }
+            else
+            {
+                //get the sub level partners
+                query = db.PartnerViews.Where(pv => pv.ParentCode == promotionCode);
+                  
+            }
+            query = query.OrderByDescending(pv => pv.PartnerCreatedAt)
+                    .Skip((page - 1) * pageSize).Take(pageSize);
+
+            return Mapper.Map<List<PartnerReportDTO>>(query.ToList());
+        }
+
+        [HttpGet]
+        [Route("userreport")]
+        public List<PartnerUserReportDTO> GetPartnerUserReport(string promotionCode = "", int page = 1, int pageSize = 10)
+        {
+            IQueryable<PartnerUserView> query = null;
+            if (string.IsNullOrEmpty(promotionCode))
+            {
+                //get all the users who have been promoted
+                query = db.PartnerUserViews;
+            }
+            else
+            {
+                //get users according promotion code recursively;                  
+                query = db.PartnerUserViews.Where(pv => pv.PromotionCode.StartsWith(promotionCode));
+            }
+            query = query.OrderByDescending(pv => pv.UserCreatedAt)
+                    .Skip((page - 1) * pageSize).Take(pageSize);
+
+            return Mapper.Map<List<PartnerUserReportDTO>>(query.ToList());
+        }
     }
 }
