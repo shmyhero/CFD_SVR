@@ -109,6 +109,21 @@ namespace CFD_API.Controllers
                         }
                     }
 
+                    //是否已经注册过Partner(合作伙伴)，如果是就更新User的PromotionCode
+                    var partner = db.Partners.FirstOrDefault(p => p.Phone == user.Phone);
+                    if(partner != null)
+                    {
+                        //如果Partner是2、3级，就用上级Code作为PromotionCode
+                        if(!string.IsNullOrEmpty(partner.PromotionCode) && partner.PromotionCode.Length > 3)
+                        {
+                            user.PromotionCode = partner.ParentCode;
+                        }
+                        else //如果是1级Partner，就用自己的Code作为PromotionCode
+                        {
+                            user.PromotionCode = partner.PromotionCode;
+                        }
+                    }
+
                     db.SaveChanges();
 
                     result.success = true;
