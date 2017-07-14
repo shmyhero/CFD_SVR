@@ -80,7 +80,7 @@ namespace CFD_API.Controllers
                                          join z in db.UserInfos on y.Id equals z.UserId
                                          into t1
                                          from t2 in t1.DefaultIfEmpty()
-                                         where x.CreatedAt>startTime && x.CreatedAt < endTime
+                                         where x.CreatedAt>startTime && x.CreatedAt < endTime && y.AyLiveUsername.Contains(form.name)
                                          select new RewardTransferDTO() { liveAccount = y.AyLiveUsername, liveAccountID = y.AyLiveAccountId.HasValue? y.AyLiveAccountId.Value.ToString() : string.Empty, name = t2.LastName + t2.FirstName, amount = x.Amount, date = x.CreatedAt }).ToList();
             return rewardTransferHistory;
         }

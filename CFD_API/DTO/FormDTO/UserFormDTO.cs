@@ -37,6 +37,10 @@ namespace CFD_API.DTO.Form
 
     public class RewardTransferSearchDTO
     {
+        /// <summary>
+        /// 实盘用户名
+        /// </summary>
+        public string name;
         public string startTime;
         public string endTime;
     }
