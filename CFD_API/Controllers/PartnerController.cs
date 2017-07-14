@@ -211,7 +211,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("report")]
-        public List <PartnerReportDTO> GetPartnerReport(string promotionCode = "", int page = 1, int pageSize = 10)
+        public PartnerReportDTO GetPartnerReport(string promotionCode = "", int page = 1, int pageSize = 10)
         {
             IQueryable<PartnerView> query = null;
             if (string.IsNullOrEmpty(promotionCode))
@@ -222,18 +222,45 @@ namespace CFD_API.Controllers
             else
             {
                 //get the sub level partners
-                query = db.PartnerViews.Where(pv => pv.ParentCode == promotionCode);
-                  
+                query = db.PartnerViews.Where(pv => pv.ParentCode == promotionCode);                  
             }
+            int count = query.Count();
+
             query = query.OrderByDescending(pv => pv.PartnerCreatedAt)
                     .Skip((page - 1) * pageSize).Take(pageSize);
 
-            return Mapper.Map<List<PartnerReportDTO>>(query.ToList());
+            List<PartnerReportRecordDTO>  records =  Mapper.Map<List<PartnerReportRecordDTO>>(query.ToList());
+            return new PartnerReportDTO() { TotalCount = count, Records = records };
+        }
+
+        [HttpGet]
+        [Route("reportbydate")]
+        public PartnerReportDTO GetPartnerReportByDate(string from, string to, int page = 1, int pageSize = 10)
+        {                        
+            DateTime fromDate = DateTime.Parse(from);
+            DateTime toDate = DateTime.Parse(to);           
+            var query = db.PartnerViews.Where(pv => pv.PartnerCreatedAt >= fromDate && pv.PartnerCreatedAt <= toDate);            
+            int count = query.Count();
+            query = query.OrderByDescending(pv => pv.PartnerCreatedAt)
+                    .Skip((page - 1) * pageSize).Take(pageSize);
+
+            List<PartnerReportRecordDTO> records = Mapper.Map<List<PartnerReportRecordDTO>>(query.ToList());
+            return new PartnerReportDTO() { TotalCount = count, Records = records };
+        }
+
+        [HttpGet]
+        [Route("reportbyphone/{phone}")]
+        public PartnerReportDTO GetPartnerReportByPhone(string phone)
+        {           
+            var query = db.PartnerViews.Where(pv => pv.Phone == phone);
+            int count = query.Count();          
+            List<PartnerReportRecordDTO> records = Mapper.Map<List<PartnerReportRecordDTO>>(query.ToList());
+            return new PartnerReportDTO() { TotalCount = count, Records = records };
         }
 
         [HttpGet]
         [Route("userreport")]
-        public List<PartnerUserReportDTO> GetPartnerUserReport(string promotionCode = "", int page = 1, int pageSize = 10)
+        public PartnerUserReportDTO GetPartnerUserReport(string promotionCode = "", int page = 1, int pageSize = 10)
         {
             IQueryable<PartnerUserView> query = null;
             if (string.IsNullOrEmpty(promotionCode))
@@ -244,12 +271,39 @@ namespace CFD_API.Controllers
             else
             {
                 //get users according promotion code recursively;                  
-                query = db.PartnerUserViews.Where(pv => pv.PromotionCode.StartsWith(promotionCode));
+                query = db.PartnerUserViews.Where(puv => puv.PromotionCode.StartsWith(promotionCode));
             }
+            int count = query.Count();
             query = query.OrderByDescending(pv => pv.UserCreatedAt)
                     .Skip((page - 1) * pageSize).Take(pageSize);
 
-            return Mapper.Map<List<PartnerUserReportDTO>>(query.ToList());
+            List<PartnerUserReportRecordDTO> records = Mapper.Map<List<PartnerUserReportRecordDTO>>(query.ToList());
+            return new PartnerUserReportDTO() { TotalCount = count, Records = records };
+        }
+
+        [HttpGet]
+        [Route("userreportbydate")]
+        public PartnerUserReportDTO GetPartnerUserReportByDate(string from, string to, int page = 1, int pageSize = 10)
+        {
+            DateTime fromDate = DateTime.Parse(from);
+            DateTime toDate = DateTime.Parse(to);
+            var query = db.PartnerUserViews.Where(puv => puv.UserCreatedAt >= fromDate && puv.UserCreatedAt <= toDate);
+            int count = query.Count();
+            query = query.OrderByDescending(puv => puv.UserCreatedAt)
+                    .Skip((page - 1) * pageSize).Take(pageSize);
+
+            List<PartnerUserReportRecordDTO> records = Mapper.Map<List<PartnerUserReportRecordDTO>>(query.ToList());
+            return new PartnerUserReportDTO() { TotalCount = count, Records = records };
+        }
+
+        [HttpGet]
+        [Route("userreportbyphone/{phone}")]
+        public PartnerUserReportDTO GetPartneUserrReportByPhone(string phone)
+        {
+            var query = db.PartnerUserViews.Where(puv => puv.Phone == phone);
+            int count = query.Count();
+            List<PartnerUserReportRecordDTO> records = Mapper.Map<List<PartnerUserReportRecordDTO>>(query.ToList());
+            return new PartnerUserReportDTO() { TotalCount = count, Records = records };
         }
     }
 }

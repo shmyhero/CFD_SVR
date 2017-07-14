@@ -31,6 +31,10 @@ namespace CFD_COMMON.Models.Entities
 
         public int? TradeCount { get; set; }
 
+        public string IsDeposit { get; set; }
+
+        public decimal? Amount { get; set; }
+
         public string PromotionCode { get; set; }
 
         public string Name { get; set; }

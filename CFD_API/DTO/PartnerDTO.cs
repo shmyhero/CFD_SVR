@@ -61,7 +61,8 @@ namespace CFD_API.DTO
 
     }
 
-    public class PartnerReportDTO
+    
+    public class PartnerReportRecordDTO
     {
         public string PromotionCode { get; set; }
 
@@ -92,9 +93,22 @@ namespace CFD_API.DTO
         public string AyLiveUsername { get; set; }
 
         public int? TradeCount { get; set; }
+
+        public string IsDeposit { get; set; }
+
+        public decimal? Amount { get; set; }
+
     }
 
-    public class PartnerUserReportDTO
+
+    public class PartnerReportDTO
+    {
+        public int TotalCount { get; set; }
+
+        public List<PartnerReportRecordDTO> Records {get; set;}
+    }
+
+    public class PartnerUserReportRecordDTO
     {
         public int UserId { get; set; }
 
@@ -114,6 +128,11 @@ namespace CFD_API.DTO
 
         public int? TradeCount { get; set; }
 
+        public string IsDeposit { get; set; }
+
+        public decimal? Amount { get; set; }
+
+
         public string PromotionCode { get; set; }
 
         public string Name { get; set; }
@@ -121,5 +140,12 @@ namespace CFD_API.DTO
         public string ParentCode { get; set; }
 
         public string RootCode { get; set; }
+    }
+
+    public class PartnerUserReportDTO
+    {
+        public int TotalCount { get; set; }
+
+        public List<PartnerUserReportRecordDTO> Records { get; set; }
     }
 }
