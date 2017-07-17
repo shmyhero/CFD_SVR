@@ -68,7 +68,7 @@ namespace CFD_API.DTO
     
     public class PartnerReportRecordDTO
     {
-        public string PromotionCode { get; set; }
+        public string PartnerCode { get; set; }
 
         public string Name { get; set; }
 
@@ -137,7 +137,7 @@ namespace CFD_API.DTO
         public decimal? Amount { get; set; }
 
 
-        public string PromotionCode { get; set; }
+        public string PartnerCode { get; set; }
 
         public string Name { get; set; }
 

@@ -12,7 +12,7 @@ namespace CFD_COMMON.Models.Entities
     public class PartnerView
     {
         [Key]
-        public string PromotionCode { get; set; }
+        public string PartnerCode { get; set; }
 
         public string Name { get; set; }
 
