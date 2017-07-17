@@ -86,7 +86,7 @@ namespace CFD_API.Controllers
         {
             var dtValidSince = DateTime.UtcNow - VERIFY_CODE_PERIOD;
 
-            if (!string.IsNullOrEmpty(form.promotionCode) && (form.promotionCode.Length < FirstLevelCodeLength || form.promotionCode.Length > ThirdLevelCodeLength))
+            if (!string.IsNullOrEmpty(form.partnerCode) && (form.partnerCode.Length < FirstLevelCodeLength || form.partnerCode.Length > ThirdLevelCodeLength))
             {
                 return new ResultDTO() { success = false, message = "推荐码格式错误" };
             }
@@ -95,58 +95,74 @@ namespace CFD_API.Controllers
             if(!verifyCodes.Any())
                 return new ResultDTO() { success = false, message = "验证码错误" };
 
-            string promotionCode = GetSubPromotionCode(form.promotionCode);
+            //传入的合伙人码只能是一级或二级合伙人
+            //以传入的合伙人码作为上级合伙人，生成下级合伙人码
+            if (!string.IsNullOrEmpty(form.partnerCode) && form.partnerCode.Length != FirstLevelCodeLength && form.partnerCode.Length != SecondLevelCodeLength)
+            {
+                return new ResultDTO() { success = false, message = "合伙人码格式错误" };
+            }
+
+            //获取上级合伙人
+            Partner parentPartner = null;
+            if(!string.IsNullOrEmpty(form.partnerCode))
+            {
+                parentPartner = db.Partners.FirstOrDefault(p => p.PartnerCode == form.partnerCode);
+                if(parentPartner == null)
+                {
+                    return new ResultDTO() { success = false, message = "合伙人码不存在" };
+                }
+            }
+
+            string partnerCode = GetSubPartnerCode(form.partnerCode);
             int count = 0;
-            while (db.Partners.Any(p => p.PromotionCode == promotionCode) && count <= 20)
+            while (db.Partners.Any(p => p.PartnerCode == partnerCode) && count <= 20)
             {
                 count++;
                 if (count == 20)
                 {
                     return new ResultDTO() { success = false, message = "推荐码创建失败" };
                 }
-                promotionCode = GetSubPromotionCode(form.promotionCode);
+                partnerCode = GetSubPartnerCode(form.partnerCode);
+            }
+            count = 0;
+            string promotionCode = GetPromotionCode();
+            while(db.Partners.Any(p => p.PartnerCode == partnerCode) && count <= 20)
+            {
+                count++;
+                if (count == 20)
+                {
+                    return new ResultDTO() { success = false, message = "推荐码创建失败" };
+                }
+                partnerCode = GetSubPartnerCode(form.partnerCode);
             }
             
-            //传入的推荐码只能是一级或二级合伙人
-            //以传入的推荐码作为上级推荐人，生成下级推荐码
-            if(!string.IsNullOrEmpty(form.promotionCode) && form.promotionCode.Length !=FirstLevelCodeLength && form.promotionCode.Length != SecondLevelCodeLength)
-            {
-                return new ResultDTO() { success = false, message = "推荐码错误" };
-            }
 
-            //如果该手机号已经通过App注册过推荐码，并且推荐码和合伙人的不一致，就返回异常
-            if(!string.IsNullOrEmpty(form.promotionCode))
+            //如果该手机号已经通过App注册过推荐码，并且推荐码和传入的上级合伙人的不一致，就返回异常
+            if(!string.IsNullOrEmpty(form.partnerCode))
             {
                 var user = db.Users.FirstOrDefault(u => u.Phone == form.phone);
-                if(user!=null && !string.IsNullOrEmpty(user.PromotionCode) && user.PromotionCode != form.promotionCode)
+                
+                if(user!=null && !string.IsNullOrEmpty(user.PromotionCode) && user.PromotionCode != parentPartner.PromotionCode)
                 {
                     return new ResultDTO() { success = false, message = "与App注册的推荐码不一致" };
                 }
 
                 //如果注册过App,但没有填过App的推荐码，就填上
-                //2，3级推荐人用上级的填。1级推荐人用自己的填
                 if (user != null && string.IsNullOrEmpty(user.PromotionCode))
                 {
-                    if(!string.IsNullOrEmpty(form.promotionCode)) //2，3级用上级推荐码
-                    {
-                        user.PromotionCode = form.promotionCode;
-                    }
-                    else //1级用自己的
-                    {
-                        user.PromotionCode = promotionCode;
-                    }
+                    user.PromotionCode = promotionCode;
                     db.SaveChanges();
                 }
             }
-
             
             var partner = db.Partners.FirstOrDefault(p => p.Phone == form.phone);
             if (partner == null)
             {
                 partner = Mapper.Map<Partner>(form);
                 partner.CreatedAt = DateTime.UtcNow;
-                partner.RootCode = form.promotionCode.Substring(0, 3);
-                partner.ParentCode = form.promotionCode;
+                partner.RootCode = form.partnerCode.Substring(0, 3);
+                partner.ParentCode = form.partnerCode;
+                partner.PartnerCode = partnerCode;
                 partner.PromotionCode = promotionCode;
 
                 db.Partners.Add(partner);
@@ -161,11 +177,11 @@ namespace CFD_API.Controllers
         }
 
         /// <summary>
-        /// 根据传入的推荐码，生成下级推荐码
+        /// 根据传入的合伙人码，生成下级合伙人码
         /// </summary>
         /// <param name="parentCode"></param>
         /// <returns></returns>
-        private string GetSubPromotionCode(string parentCode)
+        private string GetSubPartnerCode(string parentCode)
         {
             int codeLength = 3;
             string subCode = string.Empty;
@@ -190,15 +206,12 @@ namespace CFD_API.Controllers
             for (int i = 0; i < codeLength - parentCode.Length; i++)
             {
                 number = random.Next(100);
-                switch (number % 3)
+                switch (number % 2)
                 {
                     case 0:
                         subCode += ((char)('0' + (char)(number % 10))).ToString();
                         break;
                     case 1:
-                        subCode += ((char)('a' + (char)(number % 26))).ToString();
-                        break;
-                    case 2:
                         subCode += ((char)('A' + (char)(number % 26))).ToString();
                         break;
                     default:
@@ -207,6 +220,35 @@ namespace CFD_API.Controllers
             }
             
             return subCode;
+        }
+
+        /// <summary>
+        /// 生成4位的推荐码
+        /// </summary>
+        /// <returns></returns>
+        private string GetPromotionCode()
+        {
+            string code = string.Empty;
+
+            int number;
+            Random random = new Random();
+            for (int i = 0; i < 4; i++)
+            {
+                number = random.Next(100);
+                switch (number % 2)
+                {
+                    case 0:
+                        code += ((char)('0' + (char)(number % 10))).ToString();
+                        break;
+                    case 1:
+                        code += ((char)('A' + (char)(number % 26))).ToString();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return code;
         }
 
         [HttpGet]

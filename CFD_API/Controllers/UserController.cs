@@ -114,13 +114,13 @@ namespace CFD_API.Controllers
                     if(partner != null)
                     {
                         //如果Partner是2、3级，就用上级Code作为PromotionCode
-                        if(!string.IsNullOrEmpty(partner.PromotionCode) && partner.PromotionCode.Length > 3)
+                        if(!string.IsNullOrEmpty(partner.PartnerCode) && partner.PartnerCode.Length > 3)
                         {
                             user.PromotionCode = partner.ParentCode;
                         }
                         else //如果是1级Partner，就用自己的Code作为PromotionCode
                         {
-                            user.PromotionCode = partner.PromotionCode;
+                            user.PromotionCode = partner.PartnerCode;
                         }
                     }
 
@@ -434,14 +434,17 @@ namespace CFD_API.Controllers
                     return new ResultDTO
                     {
                         success = false,
-                        message = "推广码已存在"
+                        message = "推荐码已存在"
                     };
                 }
 
                 //如果该手机号已经注册过合伙人，并且合伙人的上级推荐码和App的不一致，就返回异常
                 var partner = db.Partners.FirstOrDefault(p => p.Phone == user.Phone);
-                if(partner != null && !string.IsNullOrEmpty(partner.ParentCode) && partner.ParentCode != form.promotionCode)
+                if(partner != null && !string.IsNullOrEmpty(partner.ParentCode))
                 {
+                    //根据PartnerCode找到上级合伙人
+                    var parentPartner = db.Partners.FirstOrDefault(p=>p.PartnerCode == partner.ParentCode);
+                    if(parentPartner.PromotionCode != form.promotionCode)
                     return new ResultDTO
                     {
                         success = false,

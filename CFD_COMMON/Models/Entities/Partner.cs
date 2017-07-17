@@ -38,7 +38,12 @@ namespace CFD_COMMON.Models.Entities
         public string ParentCode { get; set; }
 
         /// <summary>
-        /// 推荐码
+        /// 合伙人编码,可能是3，5，7位
+        /// </summary>
+        public string PartnerCode { get; set; }
+
+        /// <summary>
+        /// 推广码，固定4位
         /// </summary>
         public string PromotionCode { get; set; }
 

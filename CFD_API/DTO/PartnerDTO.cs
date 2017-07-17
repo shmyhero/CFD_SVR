@@ -27,6 +27,10 @@ namespace CFD_API.DTO
         /// </summary>
         public string parentCode { get; set; }
         /// <summary>
+        /// 合伙人码
+        /// </summary>
+        public string partnerCode { get; set; }
+        /// <summary>
         /// 推广码
         /// </summary>
         public string promotionCode { get; set; }
@@ -47,9 +51,9 @@ namespace CFD_API.DTO
         public string phone { get; set; }
         public string verifyCode { get; set; }
         /// <summary>
-        /// 上级合伙人的推荐码
+        /// 上级合伙人的合伙人码
         /// </summary>
-        public string promotionCode { get; set; }
+        public string partnerCode { get; set; }
         /// <summary>
         /// 在线推广-网站、电子邮件、社交媒体、
         /// </summary>
