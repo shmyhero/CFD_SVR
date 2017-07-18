@@ -520,6 +520,9 @@ namespace CFD_API.Controllers
                 ? (int) (prodDef.MaxLeverage/2)
                 : (int) prodDef.MaxLeverage;
 
+            if (lev*prodDef.GSMD > 0.5m)
+                CFDGlobal.LogWarning("max_lev * gsmd > 50% detected! sec_id:" + prodDef.Id);
+
             //lev to int
             result.maxLeverage = Math.Floor(prodDef.MaxLeverage);
 
