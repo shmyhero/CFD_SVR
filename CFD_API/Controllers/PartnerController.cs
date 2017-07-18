@@ -164,7 +164,7 @@ namespace CFD_API.Controllers
                 partner.ParentCode = form.partnerCode;
                 partner.PartnerCode = partnerCode;
                 partner.PromotionCode = promotionCode;
-
+                partner.isAdmin = false;
                 db.Partners.Add(partner);
                 db.SaveChanges();
             }

@@ -46,6 +46,10 @@ namespace CFD_COMMON.Models.Entities
         /// 推广码，固定4位
         /// </summary>
         public string PromotionCode { get; set; }
+        /// <summary>
+        /// 是否是管理员
+        /// </summary>
+        public bool? isAdmin { get; set; }
 
         public DateTime? CreatedAt { get; set; }
     }

@@ -34,6 +34,9 @@ namespace CFD_API.DTO
         /// 推广码
         /// </summary>
         public string promotionCode { get; set; }
+
+        public bool isAdmin { get; set; }
+
         public DateTime? createdAt { get; set; }
     }
 
