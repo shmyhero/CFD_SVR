@@ -1855,19 +1855,18 @@ namespace CFD_API.Controllers
             //    strPOA = CombineImage(poa1, poa2);
             //}
 
-            //send ID pic as "Address" as well
-            var poaUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, strCombinedBase64, "image/jpeg", "Address");
-            CFDGlobal.LogInformation("poa upload result:" + poaUploadResult.Item2);
-            if (!poaUploadResult.Item1)
-            {
-                CFDGlobal.LogWarning("LIVE register poa upload error:" + poaUploadResult.Item2);
+            //var poaUploadResult = AMSLiveAccountDocument(user.AyLiveAccountGuid, strPOA, "image/jpeg", "Address");
+            //CFDGlobal.LogInformation("poa upload result:" + poaUploadResult.Item2);
+            //if (!poaUploadResult.Item1)
+            //{
+            //    CFDGlobal.LogWarning("LIVE register poa upload error:" + poaUploadResult.Item2);
 
-                return new ResultDTO
-                {
-                    error = poaUploadResult.Item2,
-                    success = false,
-                };
-            }
+            //    return new ResultDTO
+            //    {
+            //        error = poaUploadResult.Item2,
+            //        success = false,
+            //    };
+            //}
             #endregion
 
             var json = AMSLiveAccountComplete(user.AyLiveAccountGuid, mifidGuid, form, user, userInfo);
