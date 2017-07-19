@@ -1898,7 +1898,11 @@ namespace CFD_API.Controllers
             //userInfo.FirstName = form.firstName;
             //userInfo.LastName = form.lastName;
             userInfo.Gender = form.gender;
-            userInfo.Birthday = form.birthday;
+
+            //
+            //userInfo.Birthday = form.birthday;
+            userInfo.Birthday = UserLive.GetBirthdayFromIdCode(userInfo.IdCode, ".");
+
             userInfo.Ethnic = form.ethnic;
             //userInfo.IdCode = form.idCode;
             userInfo.Addr = form.addr;
