@@ -229,8 +229,9 @@ namespace CFD_API.Controllers
                     }
                     catch (Exception ex)
                     {
-                        CFDGlobal.LogWarning("Fail saving wechat picture to azure blob");
-                        CFDGlobal.LogException(ex);
+                        CFDGlobal.LogWarning("Fail saving wechat picture to azure blob. userid: " + user.Id +
+                                             " pic_url: " + form.headimgurl);
+                        CFDGlobal.LogExceptionAsWarning(ex);
                     }
                 }
 
