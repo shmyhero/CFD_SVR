@@ -316,7 +316,11 @@ namespace CFD_API.Controllers
             amsForm.addressCountry = "CN";
             amsForm.addressLine1 = form.addr;
             amsForm.currency = "USD";
-            amsForm.dateOfBirth = form.birthday.Replace('.', '-');
+
+            //get birthday from id number instead of the birthday field
+            //amsForm.dateOfBirth = form.birthday.Replace('.', '-');
+            amsForm.dateOfBirth = UserLive.GetBirthdayFromIdCode(userInfo.IdCode,"-");
+
             amsForm.email = form.email;
             amsForm.employmentStatus = form.empStatus;
             amsForm.employerName = form.employerName;

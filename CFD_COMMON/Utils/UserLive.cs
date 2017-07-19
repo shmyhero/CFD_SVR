@@ -65,5 +65,14 @@ namespace CFD_COMMON.Utils
 
             return GetUserLiveAccountStatus(ayLiveAccountStatus);
         }
+
+        public static string GetBirthdayFromIdCode(string idCode, string separator = "-")
+        {
+
+            var yyyy = idCode.Substring(6, 4);
+            var mm = idCode.Substring(10, 2);
+            var dd = idCode.Substring(12, 2);
+            return yyyy + separator + mm + separator + dd;
+        }
     }
 }
