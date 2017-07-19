@@ -196,7 +196,7 @@ namespace CFD_API.Controllers
             if (userID != UserId) //not myself
             {
                 var user = db.Users.FirstOrDefault(o => o.Id == userID);
-                if (user == null || !(user.ShowData ?? true))
+                if (user == null || !(user.ShowData ?? false))
                     return new List<SimplePositionDTO>();
             }
 
@@ -766,7 +766,7 @@ namespace CFD_API.Controllers
             if (userID != UserId) //not myself
             {
                 var user = db.Users.FirstOrDefault(o => o.Id == userID);
-                if (user == null || !(user.ShowData ?? true))
+                if (user == null || !(user.ShowData ?? false))
                     return new List<SimplePositionDTO>();
             }
 
@@ -1354,7 +1354,7 @@ namespace CFD_API.Controllers
             #endregion
 
             var user = db.Users.FirstOrDefault(o => o.Id == userId);
-            if (!(user.ShowData ?? true) && userId != UserId) //not showing data && not myself
+            if (!(user.ShowData ?? false) && userId != UserId) //not showing data && not myself
             {
                 //data obfuscation
                 var max = newResult.Max(o => o.pl);
@@ -1428,7 +1428,7 @@ namespace CFD_API.Controllers
             #endregion
 
             var user = db.Users.FirstOrDefault(o => o.Id == userId);
-            if (!(user.ShowData ?? true) && userId != UserId) //not showing data && not myself
+            if (!(user.ShowData ?? false) && userId != UserId) //not showing data && not myself
             {
                 //data obfuscation
                 var max = newResult.Max(o => o.pl);
@@ -1474,7 +1474,7 @@ namespace CFD_API.Controllers
             result.nickname = user.Nickname;
             result.picUrl = user.PicUrl;
             result.isFollowing = isFollowing;
-            result.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
+            result.showData = user.ShowData ?? false;
             result.rankDescription = string.Empty; //默认值，为了使返回的json包含该字段
             result.cards = new List<CardDTO>(); //默认值，为了使返回的json包含该字段
 

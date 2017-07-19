@@ -78,7 +78,7 @@ namespace CFD_API.Controllers
                 var user = users.First(o => o.Id == userDto.id);
                 userDto.nickname = user.Nickname;
                 userDto.picUrl = user.PicUrl;
-                userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
+                userDto.showData = user.ShowData ?? false;
                 userDto.rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0;
 
                 if (!userDto.showData && userDto.id != UserId)//not showing data, not myself

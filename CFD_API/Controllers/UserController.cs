@@ -301,7 +301,7 @@ namespace CFD_API.Controllers
             userDto.liveUsername = user.AyLiveUsername;
             userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
             userDto.bankCardStatus = user.BankCardStatus;
-            userDto.showData = user.ShowData.HasValue ? user.ShowData.Value : true;
+            userDto.showData = user.ShowData ?? false;
             userDto.firstDayClicked = user.FirstDayClicked.HasValue ? user.FirstDayClicked.Value : false;
             userDto.firstDayRewarded = user.FirstDayRewarded.HasValue ? user.FirstDayRewarded.Value : false;
             userDto.promotionCode = user.PromotionCode;
@@ -1048,7 +1048,7 @@ namespace CFD_API.Controllers
             if (userID != UserId) //not myself
             {
                 var user = db.Users.FirstOrDefault(o => o.Id == userID);
-                if (user == null || !(user.ShowData ?? true))
+                if (user == null || !(user.ShowData ?? false))
                     return new List<PLReportDTO> {stockUSPL, indexPL, fxPL, commodityPL};
             }
 
@@ -2364,7 +2364,7 @@ namespace CFD_API.Controllers
                         id = o.Following.Id,
                         nickname = o.Following.Nickname,
                         picUrl = o.Following.PicUrl,
-                        showData = o.Following.ShowData ?? true,
+                        showData = o.Following.ShowData ?? false,
                         rank = o.Following.LiveRank ?? 0,
                     }).ToList();
 
