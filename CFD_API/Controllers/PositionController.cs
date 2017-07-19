@@ -1304,8 +1304,6 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PosChartDTO> PLChartClosed(int userId)
         {
-            //不论是否显示打开数据显示开关，都要返回
-            //至于哪些数据显示、哪些隐藏，由前端App判断
             //var user = db.Users.FirstOrDefault(o => o.Id == userId);
             //if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
             //    return new List<PosChartDTO>();
@@ -1355,6 +1353,19 @@ namespace CFD_API.Controllers
 
             #endregion
 
+            var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            if (!(user.ShowData ?? true) && userId != UserId) //not showing data && not myself
+            {
+                //data obfuscation
+                var max = newResult.Max(o => o.pl);
+                var min = newResult.Min(o => o.pl);
+                var ratio = 100/(max - min);
+                foreach (var dto in newResult)
+                {
+                    dto.pl = dto.pl*ratio;
+                }
+            }
+
             return newResult;
         }
 
@@ -1364,8 +1375,6 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PosChartDTO> PLChartClosed2w(int userId)
         {
-            //不论是否显示打开数据显示开关，都要返回
-            //至于哪些数据显示、哪些隐藏，由前端App判断
             //var user = db.Users.FirstOrDefault(o => o.Id == userId);
             //if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
             //    return new List<PosChartDTO>();
@@ -1417,6 +1426,19 @@ namespace CFD_API.Controllers
             }
 
             #endregion
+
+            var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            if (!(user.ShowData ?? true) && userId != UserId) //not showing data && not myself
+            {
+                //data obfuscation
+                var max = newResult.Max(o => o.pl);
+                var min = newResult.Min(o => o.pl);
+                var ratio = 100 / (max - min);
+                foreach (var dto in newResult)
+                {
+                    dto.pl = dto.pl * ratio;
+                }
+            }
 
             return newResult;
         }
