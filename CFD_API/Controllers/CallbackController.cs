@@ -43,7 +43,7 @@ namespace CFD_API.Controllers
 
             if (form != null)
             {
-                CFDGlobal.LogWarning("AMS Callback live-account status: " + (accountGuid ?? "") + " " + (form.status ?? ""));
+                CFDGlobal.LogInformation("AMS Callback live-account status: " + (accountGuid ?? "") + " " + (form.status ?? ""));
 
                 if (!string.IsNullOrWhiteSpace(accountGuid) && !string.IsNullOrWhiteSpace(form.status))
                 {
