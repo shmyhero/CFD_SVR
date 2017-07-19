@@ -1362,7 +1362,7 @@ namespace CFD_API.Controllers
                 var ratio = 100/(max - min);
                 foreach (var dto in newResult)
                 {
-                    dto.pl = dto.pl*ratio;
+                    dto.pl = (dto.pl - min)*ratio;
                 }
             }
 
@@ -1436,7 +1436,7 @@ namespace CFD_API.Controllers
                 var ratio = 100 / (max - min);
                 foreach (var dto in newResult)
                 {
-                    dto.pl = dto.pl * ratio;
+                    dto.pl = (dto.pl - min) * ratio;
                 }
             }
 
