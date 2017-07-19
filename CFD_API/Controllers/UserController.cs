@@ -777,7 +777,7 @@ namespace CFD_API.Controllers
             var indexPL = new PLReportDTO() {name = "指数"};
             var fxPL = new PLReportDTO() {name = "外汇"};
             var commodityPL = new PLReportDTO() {name = "商品"};
-            var stockUSPL = new PLReportDTO() {name = "美股"};
+            var stockUSPL = new PLReportDTO() {name = "股票"};
 
             var cache = WebCache.GetInstance(IsLiveUrl);
             //open positions
@@ -935,7 +935,7 @@ namespace CFD_API.Controllers
             var indexPL = new PLReportDTO() { name = "指数" };
             var fxPL = new PLReportDTO() { name = "外汇" };
             var commodityPL = new PLReportDTO() { name = "商品" };
-            var stockUSPL = new PLReportDTO() { name = "美股" };
+            var stockUSPL = new PLReportDTO() { name = "股票" };
 
             var cache = WebCache.GetInstance(IsLiveUrl);
 
@@ -963,7 +963,7 @@ namespace CFD_API.Controllers
                     commodityPL.invest += invest;
                     commodityPL.pl += pl;
                 }
-                else if (prodDef.AssetClass == "Single Stocks" && Products.IsUSStocks(prodDef.Symbol))
+                else if (prodDef.AssetClass == "Single Stocks" && (Products.IsUSStocks(prodDef.Symbol) || Products.IsHKStocks(prodDef.Symbol)))
                 {
                     stockUSPL.invest += invest;
                     stockUSPL.pl += pl;
@@ -1017,7 +1017,7 @@ namespace CFD_API.Controllers
                     commodityPL.invest += invest;
                     commodityPL.pl += uplUSD;
                 }
-                else if (prodDef.AssetClass == "Single Stocks" && Products.IsUSStocks(prodDef.Symbol))
+                else if (prodDef.AssetClass == "Single Stocks" && (Products.IsUSStocks(prodDef.Symbol) || Products.IsHKStocks(prodDef.Symbol)))
                 {
                     stockUSPL.invest += invest;
                     stockUSPL.pl += uplUSD;
@@ -1042,7 +1042,7 @@ namespace CFD_API.Controllers
             var indexPL = new PLReportDTO() { name = "指数" };
             var fxPL = new PLReportDTO() { name = "外汇" };
             var commodityPL = new PLReportDTO() { name = "商品" };
-            var stockUSPL = new PLReportDTO() { name = "美股" };
+            var stockUSPL = new PLReportDTO() { name = "股票" };
 
             if (userID != UserId) //not myself
             {
@@ -1075,7 +1075,7 @@ namespace CFD_API.Controllers
                                 from n in db.NewPositionHistory_live
                                 where n.SecurityId.HasValue && stockIDs.Contains(n.SecurityId.Value)
                                 && n.UserId == userID && n.PL.HasValue && n.InvestUSD.HasValue && n.ClosedAt.HasValue
-                                select new { AssetType = "美股", PL = n.PL, Invest = n.InvestUSD })
+                                select new { AssetType = "股票", PL = n.PL, Invest = n.InvestUSD })
                             )
                              group m by m.AssetType into g
                              select new PLReportDTO
@@ -1098,9 +1098,9 @@ namespace CFD_API.Controllers
             {
                 plReports.Add(new PLReportDTO() { name = "商品" });
             }
-            if (plReports.FirstOrDefault(r => r.name == "美股") == null)
+            if (plReports.FirstOrDefault(r => r.name == "股票") == null)
             {
-                plReports.Add(new PLReportDTO() { name = "美股" });
+                plReports.Add(new PLReportDTO() { name = "股票" });
             }
 
             #endregion
@@ -1135,7 +1135,7 @@ namespace CFD_API.Controllers
                         }
                         else if (stockIDs.Contains(prodDef.Id)) //股票
                         {
-                            report = plReports.FirstOrDefault(r => r.name == "美股");
+                            report = plReports.FirstOrDefault(r => r.name == "股票");
                         }
 
                         if (report != null)

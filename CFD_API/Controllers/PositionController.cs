@@ -1304,9 +1304,11 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PosChartDTO> PLChartClosed(int userId)
         {
-            var user = db.Users.FirstOrDefault(o => o.Id == userId);
-            if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
-                return new List<PosChartDTO>();
+            //不论是否显示打开数据显示开关，都要返回
+            //至于哪些数据显示、哪些隐藏，由前端App判断
+            //var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            //if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
+            //    return new List<PosChartDTO>();
 
             var dbList = IsLiveUrl
                 ? db.NewPositionHistory_live.Where(o => o.UserId == userId && o.ClosedAt != null)
@@ -1362,9 +1364,11 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public List<PosChartDTO> PLChartClosed2w(int userId)
         {
-            var user = db.Users.FirstOrDefault(o => o.Id == userId);
-            if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
-                return new List<PosChartDTO>();
+            //不论是否显示打开数据显示开关，都要返回
+            //至于哪些数据显示、哪些隐藏，由前端App判断
+            //var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            //if (!(user.ShowData ?? true) && userId != UserId)//not showing data && not myself
+            //    return new List<PosChartDTO>();
 
             var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
             var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);

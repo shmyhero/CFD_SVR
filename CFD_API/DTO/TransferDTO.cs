@@ -37,7 +37,7 @@ namespace CFD_API.DTO
 
         public DepositChargeDTO charge { get; set; }
 
-        public List<BankDTO> banks {get;set;}
+        public List<BankDTO> banks { get; set; }
     }
 
     public class DepositChargeDTO
@@ -56,5 +56,11 @@ namespace CFD_API.DTO
     {
         public decimal minimum { get; set; }
         public decimal rate { get; set; }
+    }
+
+    public class DataPublishDTO
+    {
+        public int version;
+        public List<string> terms;
     }
 }

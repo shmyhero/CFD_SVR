@@ -110,6 +110,33 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("setting/publishterms/{version}")]
+        public DataPublishDTO GetPublishTerms(int version)
+        {
+            DataPublishDTO dto = new DataPublishDTO() { version = version };
+            var setting = db.Miscs.FirstOrDefault(m => m.Key == "PublishTerms");
+            if (setting == null)
+                return dto;
+
+            var settingObj = JObject.Parse(setting.Value);
+            int savedVersion = settingObj["version"].Value<int>();
+
+            //更新过，就返回新的Terms和新的版本号
+            if(savedVersion > version)
+            {
+                dto.version = savedVersion;
+                dto.terms = new List<string>();
+                var terms = (settingObj["terms"] as JArray);
+                foreach (var term in terms)
+                {
+                    dto.terms.Add(term.Value<string>());
+                }
+            }
+
+            return dto;
+        }
+
+        [HttpGet]
         [Route("uri")]
         public string GetRequestUri()
         {
