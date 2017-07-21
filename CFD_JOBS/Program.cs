@@ -7,9 +7,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using CFD_COMMON;
 using CFD_COMMON.Utils.Extensions;
 using CFD_JOBS.Ayondo;
+using Elmah;
 
 namespace CFD_JOBS
 {
@@ -242,6 +244,36 @@ namespace CFD_JOBS
             CFDGlobal.LogLine("................................................................................");
             CFDGlobal.LogLine("-");
             return execTime;
+        }
+    }
+
+    public class ElmahLogForJOB
+    {
+        public static void Log(Exception e, bool sendMail = true)
+        {
+            ErrorLog errorLog = ErrorLog.GetDefault(null);
+            errorLog.ApplicationName = "/LM/W3SVC/1273337584/ROOT";
+            errorLog.Log(new Error(e));
+
+            if (sendMail)
+            {
+                var mail = new ElmahMailForJOB();
+                mail.Log(new Error(e));
+            }
+        }
+    }
+
+    public class ElmahMailForJOB : ErrorMailModule
+    {
+        public ElmahMailForJOB()
+        {
+            //this basically just gets config from errorMail  (app.config)
+            base.OnInit(new HttpApplication());
+        }
+        public void Log(Error error)
+        {
+            //just send the email pls
+            base.ReportError(error);
         }
     }
 }

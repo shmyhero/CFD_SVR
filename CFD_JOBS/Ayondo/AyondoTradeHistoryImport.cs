@@ -294,6 +294,8 @@ namespace CFD_JOBS.Ayondo
                 catch (Exception e)
                 {
                     CFDGlobal.LogException(e);
+
+                    ElmahLogForJOB.Log(e);
                 }
 
                 CFDGlobal.LogLine("");
