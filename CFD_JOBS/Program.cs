@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -249,6 +250,8 @@ namespace CFD_JOBS
 
     public class ElmahLogForJOB
     {
+        public static ConcurrentDictionary<string,DateTime> ErrorMailExMessages = new ConcurrentDictionary<string, DateTime>();  
+
         public static void Log(Exception e, bool sendMail = true)
         {
             ErrorLog errorLog = ErrorLog.GetDefault(null);
@@ -257,8 +260,16 @@ namespace CFD_JOBS
 
             if (sendMail)
             {
-                var mail = new ElmahMailForJOB();
-                mail.Log(new Error(e));
+                DateTime dtLastSent = DateTime.MinValue;
+                var tryGetValue = ErrorMailExMessages.TryGetValue(e.Message, out dtLastSent);
+
+                if (tryGetValue && DateTime.UtcNow - dtLastSent > TimeSpan.FromHours(1))
+                {
+                    var mail = new ElmahMailForJOB();
+                    mail.Log(new Error(e));
+
+                    ErrorMailExMessages.AddOrUpdate(e.Message, DateTime.UtcNow, (k, v) => DateTime.UtcNow);
+                }
             }
         }
     }
