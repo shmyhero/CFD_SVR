@@ -265,8 +265,15 @@ namespace CFD_JOBS
 
                 if (tryGetValue && DateTime.UtcNow - dtLastSent > TimeSpan.FromHours(1))
                 {
-                    var mail = new ElmahMailForJOB();
-                    mail.Log(new Error(e));
+                    try
+                    {
+                        var mail = new ElmahMailForJOB();
+                        mail.Log(new Error(e));
+                    }
+                    catch (Exception exMail)
+                    {
+                        CFDGlobal.LogException(exMail);
+                    }
 
                     ErrorMailExMessages.AddOrUpdate(e.Message, DateTime.UtcNow, (k, v) => DateTime.UtcNow);
                 }
