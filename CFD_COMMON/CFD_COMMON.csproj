@@ -171,6 +171,7 @@
     <Compile Include="Models\Entities\NewPositionHistory.cs" />
     <Compile Include="Models\Entities\NewPositionHistory_live.cs" />
     <Compile Include="Models\Entities\Partner.cs" />
+    <Compile Include="Models\Entities\PartnerReferHistory.cs" />
     <Compile Include="Models\Entities\PartnerUserView.cs" />
     <Compile Include="Models\Entities\PartnerView.cs" />
     <Compile Include="Models\Entities\PhoneSignupHistory.cs" />

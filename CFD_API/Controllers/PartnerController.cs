@@ -34,6 +34,7 @@ using Newtonsoft.Json;
 using ServiceStack.Text;
 using System.Data.SqlTypes;
 using CFD_COMMON.IdentityVerify;
+using System.Text.RegularExpressions;
 
 namespace CFD_API.Controllers
 {
@@ -173,6 +174,85 @@ namespace CFD_API.Controllers
                 return new ResultDTO() { success = false, message="该手机号已注册过合作人" };
             }
 
+            return new ResultDTO() { success = true };
+        }
+
+        [HttpGet]
+        [Route("refer/{promotionCode}/{phone}/{verifyCode}")]
+        public ResultDTO Refer(string promotionCode, string phone, string verifyCode)
+        {
+            #region 验证参数
+            if(string.IsNullOrEmpty(promotionCode))
+            {
+                return new ResultDTO() { success = false, message = "缺少推荐码" };
+            }
+
+            if (string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(verifyCode))
+            {
+                return new ResultDTO() { success = false, message = "手机号为空/验证码" };
+            }
+
+            var misc = db.Miscs.FirstOrDefault(m => m.Key == "PhoneRegex");
+            if (misc != null)
+            {
+                Regex regex = new Regex(misc.Value);
+                if (!regex.IsMatch(phone))
+                {
+                    return new ResultDTO() { success = false, message = "手机号格式不正确" };
+                }
+            }
+
+            if (db.PartnerReferHistorys.Any(o => o.FriendPhone == phone) || db.Users.Any(u=>u.Phone == phone))
+            {
+                return new ResultDTO() { success = false, message = "该手机号已被邀请/注册过哟！" };
+            }
+
+            var dtValidSince = DateTime.UtcNow.AddHours(-1);
+            var verifyCodes = db.VerifyCodes.Where(o => o.Phone == phone && o.Code == verifyCode && o.SentAt > dtValidSince);
+            if (string.IsNullOrEmpty(verifyCode) || !verifyCodes.Any())
+            {
+                return new ResultDTO() { success = false, message = "输入的验证码不正确" };
+            }
+
+            var partner = db.Partners.FirstOrDefault(p=>p.PromotionCode == promotionCode);
+            if(partner == null)
+            {
+                return new ResultDTO() { success = false, message = "推荐码错误" };
+            }
+            #endregion
+
+            #region 添加到合伙人好友推荐表
+            db.PartnerReferHistorys.Add(new PartnerReferHistory() {  RefereePhone = partner.Phone, FriendPhone = phone, CreatedAt = DateTime.UtcNow });
+            #endregion
+
+            #region 模拟盘开户
+            var userService = new UserService(db);
+            userService.CreateUserByPhone(phone);
+
+            var user = db.Users.FirstOrDefault(o => o.Phone == phone);
+
+            var nickname = "u" + user.Id.ToString("000000");
+            user.Nickname = nickname;
+
+            //check duplicate nickname and generate random suffix
+            int tryCount = 0;
+            while (db.Users.Any(o => o.Id != user.Id && o.Nickname == user.Nickname))
+            {
+                user.Nickname = nickname.TruncateMax(4) + Randoms.GetRandomAlphabeticString(4);
+
+                tryCount++;
+
+                if (tryCount > 10)
+                {
+                    CFDGlobal.LogWarning("Tryout exceeded: signupByPhone - check duplicate nickname and generate random suffix");
+                    break;
+                }
+            }
+
+            user.PromotionCode = promotionCode;
+            #endregion
+
+            db.SaveChanges();
             return new ResultDTO() { success = true };
         }
 
