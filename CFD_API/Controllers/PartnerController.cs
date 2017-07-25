@@ -161,7 +161,7 @@ namespace CFD_API.Controllers
             {
                 partner = Mapper.Map<Partner>(form);
                 partner.CreatedAt = DateTime.UtcNow;
-                partner.RootCode = string.IsNullOrEmpty(form.partnerCode)? string.Empty :  form.partnerCode.Substring(0, 3);
+                partner.RootCode = string.IsNullOrEmpty(form.partnerCode)? partnerCode :  form.partnerCode.Substring(0, 3);
                 partner.ParentCode = form.partnerCode;
                 partner.PartnerCode = partnerCode;
                 partner.PromotionCode = promotionCode;
