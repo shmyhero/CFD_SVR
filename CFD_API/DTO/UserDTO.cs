@@ -429,6 +429,9 @@ namespace CFD_API.DTO
         public bool? confirmTerms { get; set; }
         public bool? isPhoneVerified { get; set; }
 
+        public string identificationDocument { get; set; }
+        public string identificationNumber { get; set; }
+
         public string origin { get; set; }
         public string productType { get; set; }
 

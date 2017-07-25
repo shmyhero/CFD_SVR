@@ -347,6 +347,9 @@ namespace CFD_API.Controllers
             amsForm.origin = CFDGlobal.AMS_ORIGIN;
             amsForm.productType = "CFD";
 
+            amsForm.identificationDocument = "NationalId";
+            amsForm.identificationNumber = userInfo.IdCode;
+
             amsForm.confirmMifidOverride = form.confirmMifidOverride;
             amsForm.confirmDSA = true;
             amsForm.confirmTerms = true;
