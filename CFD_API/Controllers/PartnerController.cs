@@ -96,6 +96,12 @@ namespace CFD_API.Controllers
             if(!verifyCodes.Any())
                 return new ResultDTO() { success = false, message = "验证码错误" };
 
+            var partner = db.Partners.FirstOrDefault(p => p.Phone == form.phone);
+            if(partner != null)
+            {
+                return new ResultDTO() { success = false, message = "该手机号已注册过合作人" };
+            }
+
             //传入的合伙人码只能是一级或二级合伙人
             //以传入的合伙人码作为上级合伙人，生成下级合伙人码
             if (!string.IsNullOrEmpty(form.partnerCode) && form.partnerCode.Length != FirstLevelCodeLength && form.partnerCode.Length != SecondLevelCodeLength)
@@ -136,47 +142,53 @@ namespace CFD_API.Controllers
                 }
                 partnerCode = GetSubPartnerCode(form.partnerCode);
             }
-            
+
 
             //如果该手机号已经通过App注册过推荐码，并且推荐码和传入的上级合伙人的不一致，就返回异常
-            if(!string.IsNullOrEmpty(form.partnerCode))
+            //更新对应App User的Promotion Code
+            var user = db.Users.FirstOrDefault(u => u.Phone == form.phone);
+            if(user != null)
             {
-                var user = db.Users.FirstOrDefault(u => u.Phone == form.phone);
-                
-                if(user!=null && !string.IsNullOrEmpty(user.PromotionCode) && user.PromotionCode != parentPartner.PromotionCode)
+                if (!string.IsNullOrEmpty(form.partnerCode))//有上级合伙人
                 {
-                    return new ResultDTO() { success = false, message = "与App注册的推荐码不一致" };
-                }
+                    if (!string.IsNullOrEmpty(user.PromotionCode) && user.PromotionCode != parentPartner.PromotionCode)
+                    {
+                        return new ResultDTO() { success = false, message = "与App注册的推荐码不一致" };
+                    }
 
-                //如果注册过App,但没有填过App的推荐码，就填上
-                if (user != null && string.IsNullOrEmpty(user.PromotionCode))
+                    //如果注册过App,但没有填过App的推荐码，就填上
+                    if (string.IsNullOrEmpty(user.PromotionCode))
+                    {
+                        user.PromotionCode = promotionCode;
+                        db.SaveChanges();
+                    }
+                }
+                else //无上级合伙人
                 {
-                    user.PromotionCode = promotionCode;
-                    db.SaveChanges();
+                    //如果注册过App,但没有填过App的推荐码，就填上
+                    if (string.IsNullOrEmpty(user.PromotionCode))
+                    {
+                        user.PromotionCode = promotionCode;
+                        db.SaveChanges();
+                    }
                 }
             }
-            
-            var partner = db.Partners.FirstOrDefault(p => p.Phone == form.phone);
-            if (partner == null)
+
+            #region 保存合伙人记录
+            partner = Mapper.Map<Partner>(form);
+            partner.CreatedAt = DateTime.UtcNow;
+            partner.RootCode = string.IsNullOrEmpty(form.partnerCode) ? partnerCode : form.partnerCode.Substring(0, 3);
+            if (!string.IsNullOrEmpty(form.partnerCode))
             {
-                partner = Mapper.Map<Partner>(form);
-                partner.CreatedAt = DateTime.UtcNow;
-                partner.RootCode = string.IsNullOrEmpty(form.partnerCode)? partnerCode :  form.partnerCode.Substring(0, 3);
-                if(!string.IsNullOrEmpty(form.partnerCode))
-                {
-                    partner.ParentCode = form.partnerCode;
-                }
-                    
-                partner.PartnerCode = partnerCode;
-                partner.PromotionCode = promotionCode;
-                partner.isAdmin = false;
-                db.Partners.Add(partner);
-                db.SaveChanges();
+                partner.ParentCode = form.partnerCode;
             }
-            else
-            {
-                return new ResultDTO() { success = false, message="该手机号已注册过合作人" };
-            }
+
+            partner.PartnerCode = partnerCode;
+            partner.PromotionCode = promotionCode;
+            partner.isAdmin = false;
+            db.Partners.Add(partner);
+            db.SaveChanges();
+            #endregion
 
             return new ResultDTO() { success = true };
         }
