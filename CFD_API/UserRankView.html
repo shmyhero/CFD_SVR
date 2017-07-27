@@ -57,16 +57,17 @@
     <table border="1" style="white-space: nowrap">
         <thead>
         <tr>
-            <th>Id</th>
-            <th>Pic</th>
+            <th>ID</th>
+            <th>头像</th>
             <th>昵称</th>
             <th>收益率</th>
             <th>胜率</th>
-            <th>仓位数</th>
+            <th>平仓数</th>
+            <th>净收益</th>
         </tr>
         </thead>
         <tbody>
-        <tr class="loading"><td colspan="6">loading...</td></tr>
+        <tr class="loading"><td colspan="7">loading...</td></tr>
         </tbody>
     </table>
 </div>
@@ -106,6 +107,13 @@
                     if (b == 'winRate')
                         return (Math.round(r * 10000) / 100).toFixed(2) + '%';
 
+                    if (b == 'pl') {
+                        if (r >= 0)
+                            return '<font style="color:#f4415f; font-weight:' + Math.floor((r + 100 > 900 ? 900 : r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                        else
+                            return '<font style="color:#32c17a; font-weight:' + Math.floor((-r + 100 > 900 ? 900 : -r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                    }
+
                     //debugger;
 
                     return r;
@@ -143,7 +151,7 @@
         var ticker =
                 $rankTable = $('#rankTable'),
             $rankTableBody = $rankTable.find('tbody'),
-            rankRowTemplate = '<tr data-symbol="{id}"><td>{id}</td><td>{picUrl}</td><td>{nickname}</td><td>{roi}</td><td>{winRate}</td><td>{posCount}</td>'
+            rankRowTemplate = '<tr data-symbol="{id}"><td>{id}</td><td>{picUrl}</td><td>{nickname}</td><td>{roi}</td><td>{winRate}</td><td>{posCount}</td><td>{pl}</td>'
                 //+ '<td>{Bid}</td><td>{Offer}</td>'
                 //+ '<td>{LastOpen}</td><td>{LastClose}</td><td>{PreClose}</td><td>{OpenBid}</td><td>{OpenAsk}</td><td>{CloseBid}</td><td>{CloseAsk}</td>'
                 //+ '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'

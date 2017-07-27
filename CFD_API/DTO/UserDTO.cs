@@ -65,6 +65,18 @@ namespace CFD_API.DTO
         public bool showData { get; set; }
     }
 
+    public class UserRankReportDTO : UserBaseDTO
+    {
+        //public int id { get; set; }
+        //public string nickname { get; set; }
+        //public string picUrl { get; set; }
+        public decimal roi { get; set; }
+        public int posCount { get; set; }
+        public decimal winRate { get; set; }
+
+        public decimal pl { get; set; }
+    }
+
     public class MyInfoDTO
     {
         //public int id { get; set; }
