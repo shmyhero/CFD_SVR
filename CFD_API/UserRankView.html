@@ -5,8 +5,8 @@
     <meta charset="utf-8"/>
     <style>
         body {
-            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-            font-size: 16px;
+            font-family: "Microsoft YaHei","黑体",'Segoe UI', Arial, Helvetica, sans-serif;
+            font-size: 14px;
         }
 
         table {
@@ -41,36 +41,65 @@
         .lowlight {
             color: #c5006a;
         }
+
+        a:visited, a {
+            color:navy
+        }
     </style>
 </head>
 <body>
 <div>
-    此榜单只能在公司访问
+    平仓收益榜（只能从公司IP访问）
 </div>
 <br/>
+    当前时间范围：<label id="lblDays"></label>天&nbsp;&nbsp;&nbsp;
     <input id="txtDays" type="hidden" value="14" />
     <input type="button" value="2 weeks" onclick="document.getElementById('txtDays').value = '14'; loadData();" />
     <input type="button" value="All Time" onclick="document.getElementById('txtDays').value = '9999'; loadData();"/>
+    <input id="txtUserId" type="hidden" value="" />
     <br/>
     <br />
 <div id="rankTable">
     <table border="1" style="white-space: nowrap">
         <thead>
         <tr>
-            <th>ID</th>
+            <!--<th>ID</th>-->
             <th>头像</th>
             <th>昵称</th>
             <th>收益率</th>
             <th>胜率</th>
             <th>平仓数</th>
             <th>净收益</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
-        <tr class="loading"><td colspan="7">loading...</td></tr>
+        <tr class="loading"><td colspan="8">loading...</td></tr>
         </tbody>
     </table>
 </div>
+
+    <div id="positionTable" style="display: none">
+        <table border="1" style="white-space: nowrap">
+            <thead>
+                <tr>
+                    <th>产品</th>
+                    <th>涨跌</th>
+                    <th>本金</th>
+                    <th>杠杆</th>
+                    <th>开仓时间↓</th>
+                    <th>开仓价</th>
+                    <th>收益</th>
+                    <th>收益率</th>
+                    <th>平仓时间</th>
+                    <th>平仓价</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="loading"><td colspan="6">loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
 
 <script src="/Scripts/jquery-1.6.4.min.js"></script>
 <script type="text/javascript">
@@ -91,10 +120,10 @@
                     var r = o[b];
                     //return typeof r === 'string' || typeof r === 'number' ? r : a;
                     if (b == 'picUrl') {
-                        //if (r == null)
-                        //    return '';
+                        if (r == null)
+                            r = '';
                         //else
-                            return '<img src="' + r + '" style="width:40px;height:40px" />';
+                            return '<img src="' + r + '" style="width:30px;height:30px" />';
                     }
 
                     if (b == 'roi') {
@@ -107,11 +136,36 @@
                     if (b == 'winRate')
                         return (Math.round(r * 10000) / 100).toFixed(2) + '%';
 
+                    //if (b == 'posCount')
+                    //    return '<a href="#" onclick="showPositions('+o.id+');return false;">'+r+'</a>';
+
                     if (b == 'pl') {
                         if (r >= 0)
                             return '<font style="color:#f4415f; font-weight:' + Math.floor((r + 100 > 900 ? 900 : r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
                         else
                             return '<font style="color:#32c17a; font-weight:' + Math.floor((-r + 100 > 900 ? 900 : -r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                    }
+
+                    if (b == 'closeAt' && r == '0001-01-01T00:00:00')
+                        return '';
+
+                    if (b == 'openAt' || b == 'closeAt') {
+                        var dt = new Date(r);
+                        dt.setTime(dt.getTime() + (8 * 60 * 60 * 1000));
+                        return dt.toLocaleString();
+                    }
+
+                    if (b == 'closePrice' && r == 0)
+                        return '';
+
+                    if (b == 'security.name')
+                        return o.security.name;
+
+                    if (b == 'isLong') {
+                        if (r)
+                            return '↗';
+                        else
+                            return '↘';
                     }
 
                     //debugger;
@@ -123,6 +177,10 @@
     }
 
     function loadData() {
+        var div = document.getElementById('positionTable');
+        div.style.display = 'none';
+
+        document.getElementById('lblDays').innerText = document.getElementById('txtDays').value;
         var url = 'api/rank/live/user/plClosed?day=' + document.getElementById('txtDays').value;
 
         $.ajax(url).done(function (datas) {
@@ -146,24 +204,41 @@
         //});
     }
 
-    
+    function loadPosData() {
+        var userId = document.getElementById('txtUserId').value;
+
+        var url = 'api/position/live/report?userId=' + userId;
+
+        $.ajax(url).done(function (datas) {
+            $positionTableBody.empty();
+            $.each(datas, function () {
+                var data = formatPositionData(this);
+                $positionTableBody.append(positionRowTemplate.supplant(data) //.replace('{Shortable}', stock.Shortable)
+                );
+            });
+        });
+    }
+
 
         var ticker =
                 $rankTable = $('#rankTable'),
             $rankTableBody = $rankTable.find('tbody'),
-            rankRowTemplate = '<tr data-symbol="{id}"><td>{id}</td><td>{picUrl}</td><td>{nickname}</td><td>{roi}</td><td>{winRate}</td><td>{posCount}</td><td>{pl}</td>'
+            rankRowTemplate = '<tr data-symbol="{id}">' 
+                //+'<td>{id}</td>'
+            +'<td>{picUrl}</td><td>{nickname}</td><td>{roi}</td><td>{winRate}</td><td>{posCount}</td><td>{pl}</td>'
+            +'<td><a href="#" onclick="showPositions(this,{id});return false;">明细</a></td>'
                 //+ '<td>{Bid}</td><td>{Offer}</td>'
                 //+ '<td>{LastOpen}</td><td>{LastClose}</td><td>{PreClose}</td><td>{OpenBid}</td><td>{OpenAsk}</td><td>{CloseBid}</td><td>{CloseAsk}</td>'
                 //+ '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
-                + '</tr>';
+                + '</tr>',
 
-        //$positionTable = $('#positionTable'),
-        //$positionTableBody = $positionTable.find('tbody'),
-        //positionRowTemplate = '<tr data-symbol="{id}"><td>{Date}</td><td>{PositionId}</td><td>{UserId}</td><td>{SecurityId}</td><td>{SecurityName}</td><td>{Invest}</td><td>{Leverage}</td><td>{Side}</td><td>{PL}</td><td>{CreateTime}</td>'
-        //+ '<td>{Bid}</td><td>{Offer}</td>'
-        //+ '<td>{LastOpen}</td><td>{LastClose}</td><td>{PreClose}</td><td>{OpenBid}</td><td>{OpenAsk}</td><td>{CloseBid}</td><td>{CloseAsk}</td>'
+        $positionTable = $('#positionTable'),
+        $positionTableBody = $positionTable.find('tbody'),
+        positionRowTemplate = '<tr data-symbol="{id}"><td>{security.name}</td><td>{isLong}</td><td>{invest}</td><td>{leverage}</td><td>{openAt}</td><td>{openPrice}</td>'
+        + '<td>{pl}</td><td>{roi}</td>'
+        + '<td>{closeAt}</td><td>{closePrice}</td>'
         //+ '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
-        //+ '</tr>';
+        + '</tr>';
 
         function formatData(data) {
             //return $.extend(stock, {
@@ -174,7 +249,39 @@
             return data;
         }
 
+        function formatPositionData(data) {
+            //return $.extend(stock, {
+            //    Offer: stock.Offer.toFixed(2),
+            //    PercentChange: (stock.last*1.03 * 100).toFixed(2) + '%',
+            //    Direction: stock.Change === 0 ? '' : stock.Change >= 0 ? up : down
+            //});
+            data.roi = data.pl / data.invest;
+            return data;
+        }
+
         $(loadData());
+
+        function showPositions(obj, id) {
+            $('a').each(function() { this.style.fontWeight = ''; });
+
+            obj.style.fontWeight = 'bold';
+
+            var div = document.getElementById('positionTable');
+
+            div.style.display = '';
+            div.style.position = 'absolute';
+
+            var base = $(obj).parent();
+            //debugger;
+
+            $(div).offset({
+                left: base.offset().left + base.outerWidth() + 5,
+                top: base.offset().top //+ base.height()
+            });
+
+            document.getElementById('txtUserId').value = id;
+            loadPosData();
+        }
   
 </script>
 
