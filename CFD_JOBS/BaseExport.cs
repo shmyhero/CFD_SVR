@@ -13,6 +13,9 @@ namespace CFD_JOBS
 
         public List<RewardExportItem> DepositRewardExportItems;
         public abstract void ExportDepositReward(string fileName);
+
+        public List<PartnerExportItem> PartnerExportItems;
+        public abstract void ExportPartner(string fileName);
     }
 
     class CSVExport : BaseExport
@@ -54,6 +57,10 @@ namespace CFD_JOBS
         public override void ExportDepositReward(string fileName)
         {
             throw new NotImplementedException();
+        }
+
+        public override void ExportPartner(string fileName)
+        {
         }
     }
 
@@ -108,6 +115,35 @@ namespace CFD_JOBS
                 }
             }
         }
+
+        public override void ExportPartner(string fileName)
+        {
+            if (PartnerExportItems == null)
+            {
+                throw new Exception("列为空");
+            }
+
+            if (PartnerExportItems == null || PartnerExportItems.Count == 0)
+                return;
+
+            //把模板copy一份
+            var templateBytes = File.ReadAllBytes("Template/Partner_Template.xls");
+            File.WriteAllBytes(fileName, templateBytes);
+
+            String sConnectionString = string.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=Excel 8.0;", fileName);
+            using (OleDbConnection oleConn = new OleDbConnection(sConnectionString))
+            {
+                oleConn.Open();
+                using (OleDbCommand ole_cmd = oleConn.CreateCommand())
+                {
+                    PartnerExportItems.ForEach(item =>
+                    {
+                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}')", item.PartnerCode, item.Name, item.Email, item.Phone);
+                        ole_cmd.ExecuteNonQuery();
+                    });
+                }
+            }
+        }
     }
 
     class ExportItem
@@ -147,5 +183,13 @@ namespace CFD_JOBS
         /// 入金时间
         /// </summary>
         public DateTime DepositAt;
+    }
+
+    class PartnerExportItem
+    {
+        public string PartnerCode;
+        public string Name;
+        public string Email;
+        public string Phone;
     }
 }

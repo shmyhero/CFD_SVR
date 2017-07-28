@@ -254,7 +254,7 @@ namespace CFD_API.Controllers
                 depositLimitMessage = setting["depositLimitMessage"].Value<string>();
             }
             var totalReward = new TotalRewardDTO() {
-                total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction + reward.firstDeposit,
+                total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction + reward.firstDeposit + reward.demoProfit,
                 paid = transfer,
                 canTransfer = true,
                 minTransfer = rewardTransferLimit,

@@ -137,6 +137,11 @@ namespace CFD_JOBS
                     DepositRewardReport.Run();
                 }
 
+                if (args.Contains("-PartnerReport"))
+                {
+                    PartnerReport.Run();
+                }
+
                 if (args.Contains("-QuoteSnap"))
                 {
                     QuoteSnapshot.Run(false);
