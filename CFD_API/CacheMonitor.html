@@ -13,7 +13,7 @@
                 queryString = "?username=thcn2031";
             }
 
-            var html = $.ajax({ url: "api/Position/printcache" + queryString, async: false });
+            var html = $.ajax({ url: "api/Position/live/printcache" + queryString, async: false });
             $("#divResult").html(html.responseText);
         });
     </script>

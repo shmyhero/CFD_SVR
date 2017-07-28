@@ -105,6 +105,42 @@ namespace CFD_API.Controllers
             return result;
 
             //return null;
-        } 
+        }
+
+        [HttpGet]
+        [Route("live/user/plClosed")]
+        [IPAuth]
+        public List<UserRankReportDTO> GetUserRank(int day)
+        {
+            var daysAgo = DateTimes.GetChinaToday().AddDays(-(day-1));
+            var twoWeeksAgoUtc = daysAgo.AddHours(-8);
+
+            var userDTOs = db.NewPositionHistory_live.Where(o => o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
+                .GroupBy(o => o.UserId).Select(o => new UserRankReportDTO()
+                {
+                    id = o.Key.Value,
+
+                    posCount = o.Count(),
+                    winRate = (decimal)o.Count(p => p.PL > 0) / o.Count(),
+                    roi = o.Sum(p => p.PL.Value) / o.Sum(p => p.InvestUSD.Value),
+
+                    pl = o.Sum(p => p.PL.Value)
+
+                }).OrderByDescending(o => o.roi).ToList();
+            
+            var result = userDTOs;
+
+            //populate nickname/picUrl
+            var userIds = result.Select(o => o.id).ToList();
+            var users = db.Users.Where(o => userIds.Contains(o.Id)).ToList();
+            foreach (var userDto in result)
+            {
+                var user = users.First(o => o.Id == userDto.id);
+                userDto.nickname = user.Nickname;
+                userDto.picUrl = user.PicUrl;
+            }
+
+            return result;
+        }
     }
 }

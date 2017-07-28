@@ -1570,10 +1570,11 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("printcache")]
+        [Route("live/printcache")]
         public string PrintCache(string username = "")
         {
             string result;
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 result = clientHttp.PrintCache(username);
             }
@@ -1592,9 +1593,10 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("clearcache")]
+        [Route("live/clearcache")]
         public void ClearCache(string username = "")
         {
-            using (var clientHttp = new AyondoTradeClient())
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
                 clientHttp.ClearCache(username);
             }
