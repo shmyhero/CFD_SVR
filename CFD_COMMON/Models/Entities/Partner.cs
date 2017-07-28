@@ -50,7 +50,10 @@ namespace CFD_COMMON.Models.Entities
         /// 是否是管理员
         /// </summary>
         public bool? isAdmin { get; set; }
-
+        /// <summary>
+        /// 对应AMS系统里面的Sales Rep字段
+        /// </summary>
+        public string PartnerGUID { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
 }

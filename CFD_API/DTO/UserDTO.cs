@@ -420,6 +420,8 @@ namespace CFD_API.DTO
         public int? noLevBalance { get; set; }
         public int? noLevFrq { get; set; }
         public int? noLevRisk { get; set; }
+
+        public string salesRepGuid { get; set; }
     }
 
     public class AMSLiveUserCreateFormDTO
@@ -482,7 +484,8 @@ namespace CFD_API.DTO
         /// </summary>
         public bool? subscribeTradeNotifications { get; set; }
         public string username { get; set; }
-        //public string SalesRepGuid { get; set; }
+        public string salesRepGuid { get; set; }
+
         //public int AnnualIncome { get; set; }
         //public int InvestmentPortfolio { get; set; }
         //public string JobTitle { get; set; }

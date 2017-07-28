@@ -355,6 +355,8 @@ namespace CFD_API.Controllers
             amsForm.confirmTerms = true;
             amsForm.isPhoneVerified = true;
 
+            amsForm.salesRepGuid = form.salesRepGuid;
+
             var s = JsonConvert.SerializeObject(amsForm, new JsonSerializerSettings() {NullValueHandling = NullValueHandling.Ignore}); //string.Format(json, username, password);
             sw.Write(s);
             sw.Flush();
