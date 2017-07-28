@@ -93,10 +93,11 @@
                     <th>收益率</th>
                     <th>平仓时间</th>
                     <th>平仓价</th>
+                    <th>系统平仓?</th>
                 </tr>
             </thead>
             <tbody>
-                <tr class="loading"><td colspan="6">loading...</td></tr>
+                <tr class="loading"><td colspan="11">loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -168,6 +169,13 @@
                             return '↘';
                     }
 
+                    if (b == 'isAutoClosed') {
+                        if (r)
+                            return '✔';
+                        else
+                            return '';
+                    }
+
                     //debugger;
 
                     return r;
@@ -209,6 +217,9 @@
 
         var url = 'api/position/live/report?userId=' + userId;
 
+        $positionTableBody.empty();
+        $positionTableBody.append('<td style="text-align:left" colspan="11">loading...</td>');
+
         $.ajax(url).done(function (datas) {
             $positionTableBody.empty();
             $.each(datas, function () {
@@ -237,6 +248,7 @@
         positionRowTemplate = '<tr data-symbol="{id}"><td>{security.name}</td><td>{isLong}</td><td>{invest}</td><td>{leverage}</td><td>{openAt}</td><td>{openPrice}</td>'
         + '<td>{pl}</td><td>{roi}</td>'
         + '<td>{closeAt}</td><td>{closePrice}</td>'
+        + '<td>{isAutoClosed}</td>'
         //+ '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
         + '</tr>';
 
@@ -262,9 +274,9 @@
         $(loadData());
 
         function showPositions(obj, id) {
-            $('a').each(function() { this.style.fontWeight = ''; });
+            $('#rankTable tr').each(function() { this.style.fontWeight = ''; });
 
-            obj.style.fontWeight = 'bold';
+            obj.parentNode.parentNode.style.fontWeight = 'bold';
 
             var div = document.getElementById('positionTable');
 

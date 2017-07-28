@@ -238,9 +238,9 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("~/api/position/live/report")]
         [IPAuth]
-        public List<PositionHistoryDTO> GetPositionsByUser(int userID)
+        public List<PositionReportDTO> GetPositionsByUser(int userID)
         {
-            var results = new List<PositionHistoryDTO>();
+            var results = new List<PositionReportDTO>();
             var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID).OrderByDescending(p => p.CreateTime).ToList();
             var cache = WebCache.GetInstance(true);
 
@@ -249,7 +249,7 @@ namespace CFD_API.Controllers
 
                 var prodDef = cache.ProdDefs.FirstOrDefault(pd => pd.Id == p.SecurityId);
 
-                var dto = new PositionHistoryDTO
+                var dto = new PositionReportDTO
                 {
                     id = p.Id.ToString(),
                     openAt = p.CreateTime.Value,
@@ -276,6 +276,7 @@ namespace CFD_API.Controllers
                     dto.closeAt = p.ClosedAt.Value;
                     dto.closePrice = p.ClosedPrice.Value;
                     dto.pl = p.PL.Value;
+                    dto.isAutoClosed = p.IsAutoClosed??false;
                 }
 
                 results.Add(dto);
