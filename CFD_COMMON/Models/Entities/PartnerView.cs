@@ -22,6 +22,8 @@ namespace CFD_COMMON.Models.Entities
 
         public int UserCount { get; set; }
 
+        public string PartnerGUID { get; set; }
+
         public DateTime? PartnerCreatedAt { get; set; }
 
         public int? UserId { get; set; }

@@ -109,19 +109,11 @@ namespace CFD_API.Controllers
                         }
                     }
 
-                    //是否已经注册过Partner(合作伙伴)，如果是就更新User的PromotionCode
+                    //是否已经注册过Partner(合作伙伴)，如果是就用Partner的PromotionCode更新User的PromotionCode
                     var partner = db.Partners.FirstOrDefault(p => p.Phone == user.Phone);
                     if(partner != null)
                     {
-                        //如果Partner是2、3级，就用上级Code作为PromotionCode
-                        if(!string.IsNullOrEmpty(partner.PartnerCode) && partner.PartnerCode.Length > 3)
-                        {
-                            user.PromotionCode = partner.ParentCode;
-                        }
-                        else //如果是1级Partner，就用自己的Code作为PromotionCode
-                        {
-                            user.PromotionCode = partner.PartnerCode;
-                        }
+                        user.PromotionCode = partner.PromotionCode;
                     }
 
                     db.SaveChanges();
@@ -1760,6 +1752,9 @@ namespace CFD_API.Controllers
         public ResultDTO CreateLiveAccount(LiveSignupFormDTO form)
         {
             var user = GetUser();
+
+            //根据PromotionCode找到对应的Partner的GUID
+            form.salesRepGuid = GetPartnerGUID(user.PromotionCode);
 
             //phone bound?
             if (user.Phone == null)

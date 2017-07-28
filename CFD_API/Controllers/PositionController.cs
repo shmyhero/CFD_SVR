@@ -236,6 +236,55 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("~/api/position/live/report")]
+        [IPAuth]
+        public List<PositionHistoryDTO> GetPositionsByUser(int userID)
+        {
+            var results = new List<PositionHistoryDTO>();
+            var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID).OrderByDescending(p => p.CreateTime).ToList();
+            var cache = WebCache.GetInstance(true);
+
+            positions.ForEach(p =>
+            {
+
+                var prodDef = cache.ProdDefs.FirstOrDefault(pd => pd.Id == p.SecurityId);
+
+                var dto = new PositionHistoryDTO
+                {
+                    id = p.Id.ToString(),
+                    openAt = p.CreateTime.Value,
+                    openPrice = p.SettlePrice.Value,
+                    invest = p.InvestUSD.Value,
+                    leverage = p.Leverage.Value,
+                    isLong = p.LongQty.HasValue,
+                    security = Mapper.Map< SecurityDetailDTO>(prodDef),
+                };
+                if (p.ClosedAt == null)
+                {
+                    var tradeValue = p.InvestUSD*p.Leverage;
+                    var quote = cache.Quotes.FirstOrDefault(o => o.Id == p.SecurityId.Value);
+                    if (quote != null)
+                    {
+                        decimal upl = p.LongQty.HasValue
+                            ? tradeValue.Value*(quote.Bid/p.SettlePrice.Value - 1)
+                            : tradeValue.Value*(1 - quote.Offer/p.SettlePrice.Value);
+                        dto.pl = upl;
+                    }
+                }
+                else
+                {
+                    dto.closeAt = p.ClosedAt.Value;
+                    dto.closePrice = p.ClosedPrice.Value;
+                    dto.pl = p.PL.Value;
+                }
+
+                results.Add(dto);
+            });
+
+            return results;
+        }
+
+        [HttpGet]
         [Route("closed2")]
         [Route("live/closed2")]
         [BasicAuth]

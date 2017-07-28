@@ -81,6 +81,29 @@ namespace CFD_API.Controllers
             return db.Users.FirstOrDefault(o => o.Id == UserId);
         }
 
+        /// <summary>
+        /// 根据promotionCode找到合伙人的GUID
+        /// </summary>
+        /// <param name="promotionCode"></param>
+        /// <returns></returns>
+        public string GetPartnerGUID(string promotionCode)
+        {
+            if(string.IsNullOrEmpty(promotionCode))
+            {
+                return string.Empty;
+            }
+
+            var partner = db.Partners.FirstOrDefault(p => p.PromotionCode == promotionCode);
+            if(partner == null)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return partner.PartnerGUID;
+            }
+        }
+
         public void CheckAndCreateAyondoDemoAccount(User user)
         {
             if (string.IsNullOrEmpty(user.AyondoUsername))

@@ -80,6 +80,7 @@ namespace CFD_API.DTO
         public string RootCode { get; set; }
 
         public int UserCount { get; set; }
+        public string PartnerGUID { get; set; }
 
         public DateTime? PartnerCreatedAt { get; set; }
 
