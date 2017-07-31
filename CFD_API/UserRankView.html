@@ -60,16 +60,16 @@
     <br/>
     <br />
 <div id="rankTable">
-    <table border="1" style="white-space: nowrap">
+    <table id="tblRank" border="1" style="white-space: nowrap">
         <thead>
         <tr>
             <!--<th>ID</th>-->
             <th>头像</th>
             <th>昵称</th>
-            <th>收益率</th>
+            <th onclick="sortTable('tblRank', 2)" style="cursor: pointer; color: navy">收益率</th>
             <th>胜率</th>
-            <th>平仓数</th>
-            <th>净收益</th>
+            <th onclick="sortTable('tblRank', 4)" style="cursor: pointer; color: navy">平仓数</th>
+            <th onclick="sortTable('tblRank', 5)" style="cursor: pointer; color: navy">净收益</th>
             <th></th>
         </tr>
         </thead>
@@ -103,7 +103,7 @@
     </div>
 
 <script src="/Scripts/jquery-1.6.4.min.js"></script>
-<script type="text/javascript">
+    <script type="text/javascript">
     function getQueryStringByName(name) {
         var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
         if (result == null || result.length < 1) {
@@ -191,6 +191,9 @@
         document.getElementById('lblDays').innerText = document.getElementById('txtDays').value;
         var url = 'api/rank/live/user/plClosed?day=' + document.getElementById('txtDays').value;
 
+        $rankTableBody.empty();
+        $rankTableBody.append('<td style="text-align:left" colspan="8">loading...</td>');
+
         $.ajax(url).done(function (datas) {
             $rankTableBody.empty();
             $.each(datas, function () {
@@ -210,6 +213,16 @@
         //        );
         //    });
         //});
+
+        //reset header sort indicator
+        var headers = document.getElementById('tblRank').getElementsByTagName('th');
+        for (var i = 0; i < headers.length; i++) {
+            if (headers[i].innerText.indexOf('↓') > 0)
+                headers[i].innerText = headers[i].innerText.replace('↓', '');
+            if (headers[i].innerText.indexOf('↑') > 0)
+                headers[i].innerText = headers[i].innerText.replace('↑', '');
+        }
+        headers[2].innerText = headers[2].innerText + '↓';
     }
 
     function loadPosData() {
@@ -234,7 +247,7 @@
         var ticker =
                 $rankTable = $('#rankTable'),
             $rankTableBody = $rankTable.find('tbody'),
-            rankRowTemplate = '<tr data-symbol="{id}">' 
+            rankRowTemplate = '<tr data-symbol="{id}">'
                 //+'<td>{id}</td>'
             +'<td>{picUrl}</td><td>{nickname}</td><td>{roi}</td><td>{winRate}</td><td>{posCount}</td><td>{pl}</td>'
             +'<td><a href="#" onclick="showPositions(this,{id});return false;">明细</a></td>'
@@ -274,9 +287,9 @@
         $(loadData());
 
         function showPositions(obj, id) {
-            $('#rankTable tr').each(function() { this.style.fontWeight = ''; });
+            $('#rankTable tr').each(function () { this.style.background = '#fff'; });
 
-            obj.parentNode.parentNode.style.fontWeight = 'bold';
+            obj.parentNode.parentNode.style.background = '#ffcd91';
 
             var div = document.getElementById('positionTable');
 
@@ -294,6 +307,112 @@
             document.getElementById('txtUserId').value = id;
             loadPosData();
         }
+
+function sortTable(tableId,n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById(tableId);
+  switching = true;
+
+  var arr = new Array();
+    for (var i = 1; i < table.rows.length; i++) {
+        arr.push(table.rows[i]);
+    }
+    
+    
+  //Set the sorting direction to ascending:
+  dir = "desc";
+
+  /*Make a loop that will continue until
+  no switching has been done:*/
+  while (switching) {
+    //start by saying: no switching is done:
+      switching = false;
+
+      //rows = table.getElementsByTagName("TR");
+
+    ///*Loop through all table rows (except the
+    //first, which contains table headers):*/
+      //for (i = 1; i < (rows.length - 1) ; i++) {
+      for (i = 0; i < (arr.length - 1) ; i++) {
+
+      //start by saying there should be no switching:
+        shouldSwitch = false;
+
+      /*Get the two elements you want to compare,
+      one from current row and one from the next:*/
+      //x = rows[i].getElementsByTagName("TD")[n];
+          //y = rows[i + 1].getElementsByTagName("TD")[n];
+
+        x = arr[i].childNodes[n];
+          y = arr[i+1].childNodes[n];
+
+      /*check if the two rows should switch place,
+      based on the direction, asc or desc:*/
+      if (dir == "asc") {
+          //debugger;
+          if (new Number(x.innerText.replace('%', '')) > new Number(y.innerText.replace('%', ''))) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+      } else if (dir == "desc") {
+          if (new Number(x.innerText.replace('%', '')) < new Number(y.innerText.replace('%', ''))) {
+          //if so, mark as a switch and break the loop:
+          shouldSwitch= true;
+          break;
+        }
+      }
+    }
+
+    if (shouldSwitch) {
+      /*If a switch has been marked, make the switch
+      and mark that a switch has been done:*/
+        //rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        var tmp = arr[i];
+        arr[i] = arr[i + 1];
+        arr[i + 1] = tmp;
+
+      switching = true;
+      //Each time a switch is done, increase this count by 1:
+      switchcount ++;
+    } else {
+      /*If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again.*/
+      if (switchcount == 0 && dir == "desc") {
+        dir = "asc";
+        switching = true;
+      }
+      else {
+          $rankTableBody.empty();
+          //alert();
+          for (var i = 0; i < arr.length; i++) {
+              //debugger;
+              $rankTableBody.append(arr[i].outerHTML);
+          }
+
+          var headers = table.getElementsByTagName('th');
+          for(var i=0;i<headers.length;i++)
+          {
+              if (headers[i].innerText.indexOf('↓') > 0)
+                  headers[i].innerText = headers[i].innerText.replace('↓', '');
+              if (headers[i].innerText.indexOf('↑') > 0)
+                  headers[i].innerText = headers[i].innerText.replace('↑', '');
+          }
+          var h = headers[n];
+          if (dir == 'asc')
+              h.innerText = h.innerText + '↑';
+          else
+              h.innerText = h.innerText + '↓';
+
+
+          //$('#rankTable tr').each(function () { this.style.background = '#fff'; });
+          var div = document.getElementById('positionTable');
+          div.style.display = 'none';
+      }
+    }
+  }
+}
+
   
 </script>
 
