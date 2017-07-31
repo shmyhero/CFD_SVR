@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8"/>
+
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+</head>
+<body>
+<div style="text-align: center">
+    <input type="button" value="All Time" onclick="loadData(false)"/>
+    <input type="button" value="This Week" onclick="loadData(true)"/>
+</div>
+    <br/>
+<div id="container" style="height: 800px; min-width: 310px; max-width: 800px; margin: 0 auto">
+    <!--<label style="display: block; font-size: xx-large; text-align: center">Loading...</label>-->
+</div>
+
+<script type="text/javascript">
+    function loadData(thisWeek) {
+        $('#container').html('<label style="display: block; font-size: xx-large; text-align: center">Loading...</label>');
+
+        $.getJSON('api/position/live/report/openTime' + (thisWeek?'/7d':''), function (result) {
+            var xs = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            var ys = ['0:00~', '1:00~', '2:00~', '3:00~', '4:00~', '5:00~', '6:00~', '7:00~', '8:00~', '9:00~', '10:00~', '11:00~', '12:00~', '13:00~', '14:00~', '15:00~', '16:00~', '17:00~', '18:00~', '19:00~', '20:00~', '21:00~', '22:00~', '23:00~'];
+            var datas = new Array();
+            for (var i = 0; i < 7; i++) {
+                for (var j = 0; j < 24; j++) {
+                    datas.push([i, j, 0]);
+                }
+            }
+
+            //debugger;
+
+            for (var i = 0; i < result.length; i++) {
+                var d = new Date(result[i].openAt);
+                var day = d.getDay();
+                var hour = d.getHours();
+
+                var data = datas[(day - 1) * 24 + hour];
+                data[2] = data[2] + 1;
+            }
+
+            //debugger;
+
+            Highcharts.chart('container', {
+                chart: {
+                    type: 'heatmap',
+                    marginTop: 40,
+                    marginBottom: 80,
+                    plotBorderWidth: 1
+                },
+
+
+                title: {
+                    text: thisWeek ? '开仓时间分布（最近1周）' : '开仓时间分布（上线至今）'
+                },
+
+                xAxis: {
+                    categories: xs
+                },
+
+                yAxis: {
+                    categories: ys,
+                    title: null,
+                    reversed: true
+                },
+
+                colorAxis: {
+                    min: 0,
+                    minColor: '#FFFFFF',
+                    maxColor: Highcharts.getOptions().colors[0]
+                },
+
+                legend: {
+                    align: 'right',
+                    layout: 'vertical',
+                    margin: 0,
+                    verticalAlign: 'top',
+                    y: 25,
+                    symbolHeight: 280
+                },
+
+                tooltip: {
+                    formatter: function() {
+                        return '<b>' + this.series.xAxis.categories[this.point.x] + '</b> <b>' +
+                            this.series.yAxis.categories[this.point.y] + '</b> 累计开仓 <br><b>' + this.point.value + '个</b>';
+                    }
+                },
+
+                series: [
+                    {
+                        name: 'Sales per employee',
+                        borderWidth: 1,
+                        data: datas,
+                        dataLabels: {
+                            enabled: true,
+                            color: '#000000'
+                        }
+                    }
+                ]
+
+            });
+        });
+    }
+
+    loadData(false);
+</script>
+</body>
+</html>

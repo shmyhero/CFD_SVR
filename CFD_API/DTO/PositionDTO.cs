@@ -77,18 +77,18 @@ namespace CFD_API.DTO
         public SecurityDetailDTO security { get; set; }
 
         public decimal? invest { get; set; }
-        public bool isLong { get; set; }
+        public bool? isLong { get; set; }
         public decimal? leverage { get; set; }
 
-        public decimal openPrice { get; set; }
-        public decimal closePrice { get; set; }
+        public decimal? openPrice { get; set; }
+        public decimal? closePrice { get; set; }
 
-        public decimal pl { get; set; }
+        public decimal? pl { get; set; }
 
         public DateTime openAt { get; set; }
-        public DateTime closeAt { get; set; }
+        public DateTime? closeAt { get; set; }
 
-        public bool isAutoClosed { get; set; }
+        public bool? isAutoClosed { get; set; }
     }
 
     public class ReplaceStopTakeFormDTO
