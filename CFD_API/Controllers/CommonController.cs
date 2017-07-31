@@ -209,7 +209,7 @@ namespace CFD_API.Controllers
             ActivityDTO dto = new ActivityDTO();
 
             var user = GetUser();
-            if(user.AyLiveApproveAt != null)
+            if(user.AyLiveApproveAt == null)
             {
                 var demoAct = db.Miscs.FirstOrDefault(m=>m.Key=="DemoActivity");
                 if(demoAct!=null)
