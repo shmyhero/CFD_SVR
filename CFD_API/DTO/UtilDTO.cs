@@ -197,4 +197,18 @@ namespace CFD_API.DTO
         public string nickName { get; set; }
         public decimal amount { get; set; }
     }
+
+    /// <summary>
+    /// 首页活动 - 需求2.1.5 首页活动弹窗
+    /// </summary>
+    public class ActivityDTO
+    {
+        public int id { get; set; }
+
+        public string name { get; set; }
+
+        public string picUrl { get; set; }
+
+        public string pageUrl { get; set; }
+    }
 }

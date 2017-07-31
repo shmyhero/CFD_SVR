@@ -645,6 +645,7 @@ namespace CFD_API.Controllers
 
             #region 获取可提现余额以及备注
             decimal maxRefundable = 0;
+            decimal miniRefundable = 5;
             string refundComment = "出金将收取0元手续费";
             if(IsLiveUrl)
             {
@@ -660,6 +661,8 @@ namespace CFD_API.Controllers
                     decimal percentage = JObject.Parse(refundSetting.Value)["rate"].Value<decimal>() * available;
                     //手续费按大的算
                     maxRefundable = GetAvailableWithdraw(balance, totalUPL, balance - marginUsed);  //minimum > percentage ? (available - minimum) : (available - percentage);
+                    //最小可出金金额
+                    miniRefundable = JObject.Parse(refundSetting.Value)["miniRefundable"].Value<decimal>();
                 }
 
                 if (refundCommentSetting != null)
@@ -677,6 +680,7 @@ namespace CFD_API.Controllers
                 total = balance + totalUPL,
                 available = balance - marginUsed,
                 refundable = maxRefundable > 0 ? ((int)(maxRefundable * 100))/100.00M : 0, //截取两位小数，但不四舍五入。 不能用Math.Round
+                minRefundable = miniRefundable,
                 comment = refundComment
             };
         }

@@ -178,6 +178,11 @@ namespace CFD_API.DTO
         public decimal refundable { get; set; }
 
         /// <summary>
+        /// 最小提现金额
+        /// </summary>
+        public decimal minRefundable { get; set; }
+
+        /// <summary>
         /// 提现说明
         /// </summary>
         public string comment { get; set; }

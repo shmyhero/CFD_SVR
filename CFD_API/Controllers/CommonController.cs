@@ -14,6 +14,7 @@ using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using Newtonsoft.Json.Linq;
 using CFD_COMMON;
+using CFD_API.Controllers.Attributes;
 
 namespace CFD_API.Controllers
 {
@@ -194,6 +195,46 @@ namespace CFD_API.Controllers
             {
                 request.Abort();
             }
+        }
+
+        /// <summary>
+        /// 根据用户情况(是否开通过实盘)，显示模拟/实盘活动广告
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("activity")]
+        [BasicAuth]
+        public ActivityDTO GetActivity()
+        {
+            ActivityDTO dto = new ActivityDTO();
+
+            var user = GetUser();
+            if(string.IsNullOrEmpty(user.AyLiveUsername))
+            {
+                var demoAct = db.Miscs.FirstOrDefault(m=>m.Key=="DemoActivity");
+                if(demoAct!=null)
+                {
+                    var jObj = JObject.Parse(demoAct.Value);
+                    dto.id = jObj["id"].Value<int>();
+                    dto.name = jObj["name"].Value<string>();
+                    dto.picUrl = jObj["picUrl"].Value<string>();
+                    dto.pageUrl = jObj["pageUrl"].Value<string>();
+                }
+            }
+            else
+            {
+                var liveAct = db.Miscs.FirstOrDefault(m => m.Key == "LiveActivity");
+                if (liveAct != null)
+                {
+                    var jObj = JObject.Parse(liveAct.Value);
+                    dto.id = jObj["id"].Value<int>();
+                    dto.name = jObj["name"].Value<string>();
+                    dto.picUrl = jObj["picUrl"].Value<string>();
+                    dto.pageUrl = jObj["pageUrl"].Value<string>();
+                }
+            }
+
+            return dto;
         }
     }
 }
