@@ -37,6 +37,8 @@ namespace CFD_COMMON.Models.Entities
 
         public string PartnerCode { get; set; }
 
+        public string OcrRealName { get; set; }
+
         public string Name { get; set; }
 
         public string ParentCode { get; set; }

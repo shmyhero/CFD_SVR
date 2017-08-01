@@ -140,8 +140,9 @@ namespace CFD_API.DTO
 
         public decimal? Amount { get; set; }
 
-
         public string PartnerCode { get; set; }
+
+        public string OcrRealName { get; set; }
 
         public string Name { get; set; }
 
