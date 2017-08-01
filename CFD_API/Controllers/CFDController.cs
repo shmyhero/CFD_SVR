@@ -90,13 +90,13 @@ namespace CFD_API.Controllers
         {
             if(string.IsNullOrEmpty(promotionCode))
             {
-                return string.Empty;
+                return null;
             }
 
             var partner = db.Partners.FirstOrDefault(p => p.PromotionCode == promotionCode);
             if(partner == null)
             {
-                return string.Empty;
+                return null;
             }
             else
             {
@@ -378,7 +378,7 @@ namespace CFD_API.Controllers
             amsForm.confirmTerms = true;
             amsForm.isPhoneVerified = true;
 
-            //amsForm.salesRepGuid = form.salesRepGuid;
+            amsForm.salesRepGuid = form.salesRepGuid;
 
             var s = JsonConvert.SerializeObject(amsForm, new JsonSerializerSettings() {NullValueHandling = NullValueHandling.Ignore}); //string.Format(json, username, password);
             sw.Write(s);
