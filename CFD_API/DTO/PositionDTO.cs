@@ -85,7 +85,7 @@ namespace CFD_API.DTO
 
         public decimal? pl { get; set; }
 
-        public DateTime openAt { get; set; }
+        public DateTime? openAt { get; set; }
         public DateTime? closeAt { get; set; }
 
         public bool? isAutoClosed { get; set; }
