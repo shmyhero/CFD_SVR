@@ -230,6 +230,7 @@
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="insight.html" />
+    <Content Include="ProdRankView.html" />
     <Content Include="ProdView.html" />
     <Content Include="QuoteView.html" />
     <Content Include="Scripts\jquery-1.6.4.js" />
@@ -239,7 +240,7 @@
     <None Include="Template\BankStatementTemplate.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Content Include="StatsView.html" />
+    <Content Include="OpenTimeDistView.html" />
     <Content Include="TicksView.html" />
     <Content Include="TickView.html" />
     <Content Include="UserRankView.html" />

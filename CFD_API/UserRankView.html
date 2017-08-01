@@ -147,7 +147,7 @@
                             return '<font style="color:#32c17a; font-weight:' + Math.floor((-r + 100 > 900 ? 900 : -r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
                     }
 
-                    if (b == 'closeAt' && r == '0001-01-01T00:00:00')
+                    if (b == 'closeAt' && r == null)
                         return '';
 
                     if (b == 'openAt' || b == 'closeAt') {
@@ -156,7 +156,7 @@
                         return dt.toLocaleString();
                     }
 
-                    if (b == 'closePrice' && r == 0)
+                    if (b == 'closePrice' && r == null)
                         return '';
 
                     if (b == 'security.name')

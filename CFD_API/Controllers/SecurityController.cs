@@ -757,5 +757,44 @@ namespace CFD_API.Controllers
 
             return result;
         }
+
+        [HttpGet]
+        [Route("live/report")]
+        [IPAuth]
+        public List<ProdRankReportDTO> GetSecurityReport()
+        {
+            var cache = WebCache.GetInstance(true);
+
+            var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
+            var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+
+            var positions = db.NewPositionHistory_live.AsNoTracking().ToList();
+
+            var result = positions.GroupBy(o => o.SecurityId).Select(o =>
+            {
+                var prodDef = cache.ProdDefs.FirstOrDefault(p => p.Id == o.Key);
+                return new ProdRankReportDTO
+                {
+                    id = o.Key.Value,
+                    symbol = prodDef.Symbol,
+                    name = Translator.GetCName(prodDef.Name),
+                        totalCount = o.Count(),
+                };
+            }).ToList() ;
+
+            var monthCounts = positions.Where(o=>o.CreateTime>oneMonthAgo).GroupBy(o => o.SecurityId);
+            foreach (var monthCount in monthCounts)
+            {
+                result.FirstOrDefault(o => o.id == monthCount.Key).monthCount = monthCount.Count();
+            }
+
+            var weekCounts = positions.Where(o => o.CreateTime > oneWeekAgo).GroupBy(o => o.SecurityId);
+            foreach (var weekCount in weekCounts)
+            {
+                result.FirstOrDefault(o => o.id == weekCount.Key).weekCount = weekCount.Count();
+            }
+
+            return result.OrderByDescending(o=>o.totalCount).ToList();
+        }
     }
 }
