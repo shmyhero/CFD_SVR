@@ -230,6 +230,7 @@
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="insight.html" />
+    <Content Include="InvestLevView.html" />
     <Content Include="ProdRankView.html" />
     <Content Include="ProdView.html" />
     <Content Include="QuoteView.html" />

@@ -310,6 +310,31 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("~/api/position/live/report/investLev")]
+        [IPAuth]
+        public List<PositionReportDTO> GetPositionInvestLev(int day, int secId = 0)
+        {
+            var daysAgo = DateTime.UtcNow.AddDays(-day);
+
+            var results = new List<PositionReportDTO>();
+            var positions = db.NewPositionHistory_live.Where(o => o.CreateTime > daysAgo && (secId==0 || o.SecurityId==secId)).OrderByDescending(p => p.CreateTime).ToList();
+
+            positions.ForEach(p =>
+            {
+
+                var dto = new PositionReportDTO
+                {
+                    invest =p.InvestUSD.Value,
+                    leverage = p.Leverage.Value,
+                };
+
+                results.Add(dto);
+            });
+
+            return results;
+        }
+
+        [HttpGet]
         [Route("closed2")]
         [Route("live/closed2")]
         [BasicAuth]

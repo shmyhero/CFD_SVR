@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+</head>
+<body>
+<select id="select1" onchange="loadData($('#select2')[0].value, $('#select1')[0].value)">
+    <option value="0">所有产品</option>
+</select>
+<select id="select2" onchange="loadData($('#select2')[0].value, $('#select1')[0].value)">
+    <option value="9999">所有时段</option>
+    <option value="30">30天</option>
+    <option value="7">7天</option>
+</select>
+
+<div id="container" style="height: 800px; min-width: 310px; max-width: 1200px; margin: 0 auto"></div>
+
+<script type="text/javascript">
+    function loadList() {
+
+        $.getJSON('api/security/live/tradable', function (result) {
+
+            //debugger;
+
+            var options = $("#select1");
+            $.each(result, function () {
+                options.append($("<option />").val(this.Id).text(this.cname));
+            });
+
+            
+        });
+    }
+
+    function loadData(days, secId) {
+        $('#container').html('<label style="display: block; font-size: xx-large; text-align: center">Loading...</label>');
+
+        $.getJSON('api/position/live/report/investLev?secId=' + secId + '&day=' + days, function(result) {
+
+            var datas = new Array();
+            for (var i = 0; i < result.length; i++) {
+                var position = result[i];
+
+                var exist = false;
+                for (var j = 0; j < datas.length; j++) {
+                    if (datas[j][0] == position.invest && datas[j][1] == position.leverage) {
+                        exist = true;
+                        datas[j][2] = datas[j][2] + 1;
+                        break;
+                    }
+                }
+
+                if (!exist)
+                    datas.push([position.invest, position.leverage, 1]);
+            }
+
+            //debugger;
+
+            Highcharts.chart('container', {
+                chart: {
+                    type: 'bubble',
+                    plotBorderWidth: 1,
+                    zoomType: 'xy'
+                },
+
+                legend: {
+                    enabled: false
+                },
+
+                title: {
+                    text: '本金/杠杆分布'
+                },
+
+                subtitle: {
+                    text: '产品:' + $('#select1')[0].selectedOptions[0].innerText + '  时间范围:' + days + '天'
+                },
+
+                xAxis: {
+                    gridLineWidth: 1,
+                    title: {
+                        text: '本金'
+                    }
+                },
+
+                yAxis: {
+                    title: {
+                        text: '杠杆'
+                    }
+                },
+
+                tooltip: {
+                    useHTML: true,
+                    headerFormat: '<table>',
+                    pointFormat: //'<tr><th colspan="2"><h3>{point.country}</h3></th></tr>' +
+                        '<tr><th>本金x杠杆:</th><td>{point.x}x{point.y}</td></tr>' +
+                            '<tr><th>仓位数:</th><td>{point.z}</td></tr>',
+                    footerFormat: '</table>',
+                    followPointer: true
+                },
+
+                //plotOptions: {
+                //    series: {
+                //        dataLabels: {
+                //            enabled: true,
+                //            format: '{point.name}'
+                //        }
+                //    }
+                //},
+
+                series: [
+                    {
+                        data: datas
+                    }
+                ]
+
+            });
+        });
+    }
+
+    loadList();
+
+    //debugger;
+
+    loadData(9999, $('#select1')[0].selectedValue);
+</script>
+</body>
+</html>

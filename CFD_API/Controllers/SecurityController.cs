@@ -357,6 +357,29 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("live/tradable")]
+        [IPAuth]
+        public List<ProdDefDTO> GetAllTradableSecurities()
+        {
+            var activeProds = GetActiveProds(true);
+
+            var tradable = activeProds.Where(o => !o.Name.EndsWith(" Outright")).ToList();
+
+            var result = tradable.Select(o => Mapper.Map<ProdDefDTO>(o)).ToList();
+
+            foreach (var prodDTO in result)
+            {
+                ////get cname
+                //var @default = securities.FirstOrDefault(o => o.Id == prodDTO.Id);
+                //if (@default != null && @default.CName != null)
+                //    prodDTO.cname = @default.CName;
+                prodDTO.cname = Translator.GetCName(prodDTO.Name);
+            }
+
+            return result.OrderBy(o => o.AssetClass).ThenBy(o => o.Name).ToList();
+        }
+
+        [HttpGet]
         [Route("search")]
         [Route("live/search")]
         public List<SecurityLiteDTO> SearchSecurity(string keyword, int page = 1, int perPage = 20)
