@@ -780,7 +780,19 @@ namespace CFD_API.Controllers
                     name = Translator.GetCName(prodDef.Name),
                         totalCount = o.Count(),
                 };
-            }).ToList() ;
+            }).ToList();
+
+            var activeProds = GetActiveProds(true).Where(o=>!o.Name.EndsWith(" Outright"));
+            foreach (var activeProd in activeProds)
+            {
+                if(result.All(o => o.id != activeProd.Id))
+                    result.Add(new ProdRankReportDTO
+                    {
+                        id=activeProd.Id,
+                        symbol = activeProd.Symbol,
+                        name=Translator.GetCName(activeProd.Name),
+                    });
+            }
 
             var monthCounts = positions.Where(o=>o.CreateTime>oneMonthAgo).GroupBy(o => o.SecurityId);
             foreach (var monthCount in monthCounts)

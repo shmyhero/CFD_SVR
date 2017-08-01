@@ -2,9 +2,312 @@
 <html>
 <head>
     <title></title>
-	<meta charset="utf-8" />
+    <meta charset="utf-8"/>
+    <script src="/Scripts/jquery-1.6.4.min.js"></script>
+    <style>
+        body {
+            font-family: "Microsoft YaHei","黑体",'Segoe UI', Arial, Helvetica, sans-serif;
+            font-size: 16px;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+            table th, table td {
+                padding: 2px 6px;
+            }
+
+            table td {
+                text-align: right;
+            }
+
+        .loading td {
+            text-align: left;
+        }
+
+        .phoneLink {
+            cursor: pointer;
+            color: cornflowerblue;
+        }
+
+            .phoneLink:hover {
+                color: blue;
+            }
+
+        .highlight {
+            color: deeppink;
+        }
+
+        .lowlight {
+            color: #c5006a;
+        }
+
+        a:visited, a {
+            color: navy;
+        }
+    </style>
 </head>
 <body>
-    
+<font style="font-size: large">产品开仓次数榜</font>
+<br/>
+    <br />
+<div id="rankTable">
+    <table id="tblRank" border="1" style="white-space: nowrap">
+        <thead>
+        <tr>
+            <!--<th>ID</th>-->
+            <th>ID</th>
+            <th>Symbol</th>
+            <th>Name</th>
+            <th onclick="sortTable('tblRank', 3)" style="cursor: pointer; color: navy">近1周</th>
+            <th onclick="sortTable('tblRank', 4)" style="cursor: pointer; color: navy">近1月</th>
+            <th onclick="sortTable('tblRank', 5)" style="cursor: pointer; color: navy">所有</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="loading"><td colspan="6">loading...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    function getQueryStringByName(name) {
+        var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+        if (result == null || result.length < 1) {
+            return "";
+        }
+        return result[1];
+    }
+
+    // A simple templating method for replacing placeholders enclosed in curly braces.
+    if (!String.prototype.supplant) {
+        String.prototype.supplant = function(o) {
+            return this.replace(/{([^{}]*)}/g,
+                function(a, b) {
+                    //debugger;
+                    var r = o[b];
+                    //return typeof r === 'string' || typeof r === 'number' ? r : a;
+                    if (b == 'picUrl') {
+                        if (r == null)
+                            r = '';
+                        //else
+                        return '<img src="' + r + '" style="width:30px;height:30px" />';
+                    }
+
+                    if (b == 'roi') {
+                        if (r >= 0)
+                            return '<font style="color:#f4415f">' + (Math.round(r * 10000) / 100).toFixed(2) + '%</font>';
+                        else
+                            return '<font style="color:#32c17a">' + (Math.round(r * 10000) / 100).toFixed(2) + '%</font>';
+                    }
+
+                    if (b == 'winRate')
+                        return (Math.round(r * 10000) / 100).toFixed(2) + '%';
+
+                    //if (b == 'posCount')
+                    //    return '<a href="#" onclick="showPositions('+o.id+');return false;">'+r+'</a>';
+
+                    if (b == 'pl') {
+                        if (r >= 0)
+                            return '<font style="color:#f4415f; font-weight:' + Math.floor((r + 100 > 900 ? 900 : r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                        else
+                            return '<font style="color:#32c17a; font-weight:' + Math.floor((-r + 100 > 900 ? 900 : -r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                    }
+
+                    if (b == 'closeAt' && r == null)
+                        return '';
+
+                    if (b == 'openAt' || b == 'closeAt') {
+                        var dt = new Date(r);
+                        dt.setTime(dt.getTime() + (8 * 60 * 60 * 1000));
+                        return dt.toLocaleString();
+                    }
+
+                    if (b == 'closePrice' && r == null)
+                        return '';
+
+                    if (b == 'security.name')
+                        return o.security.name;
+
+                    if (b == 'isLong') {
+                        if (r)
+                            return '↗';
+                        else
+                            return '↘';
+                    }
+
+                    if (b == 'isAutoClosed') {
+                        if (r)
+                            return '✔';
+                        else
+                            return '';
+                    }
+
+                    //debugger;
+
+                    return r;
+                }
+            );
+        };
+    }
+
+    function loadData() {
+
+        var url = 'api/security/live/report';
+
+        $.ajax(url).done(function(datas) {
+            $rankTableBody.empty();
+            $.each(datas, function() {
+                var data = formatData(this);
+                $rankTableBody.append(rankRowTemplate.supplant(data) //.replace('{Shortable}', stock.Shortable)
+                );
+            });
+        });
+
+        //reset header sort indicator
+        var headers = document.getElementById('tblRank').getElementsByTagName('th');
+        for (var i = 0; i < headers.length; i++) {
+            if (headers[i].innerText.indexOf('↓') > 0)
+                headers[i].innerText = headers[i].innerText.replace('↓', '');
+            if (headers[i].innerText.indexOf('↑') > 0)
+                headers[i].innerText = headers[i].innerText.replace('↑', '');
+        }
+        headers[5].innerText = headers[5].innerText + '↓';
+    }
+
+    var ticker =
+            $rankTable = $('#rankTable'),
+        $rankTableBody = $rankTable.find('tbody'),
+        rankRowTemplate = '<tr data-symbol="{id}">'
+            //+'<td>{id}</td>'
+            + '<td>{id}</td><td>{symbol}</td><td>{name}</td><td>{weekCount}</td><td>{monthCount}</td><td>{totalCount}</td>'
+            + '</tr>',
+
+        $positionTable = $('#positionTable'),
+        $positionTableBody = $positionTable.find('tbody'),
+        positionRowTemplate = '<tr data-symbol="{id}"><td>{security.name}</td><td>{isLong}</td><td>{invest}</td><td>{leverage}</td><td>{openAt}</td><td>{openPrice}</td>'
+            + '<td>{pl}</td><td>{roi}</td>'
+            + '<td>{closeAt}</td><td>{closePrice}</td>'
+            + '<td>{isAutoClosed}</td>'
+            //+ '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
+            + '</tr>';
+
+    function formatData(data) {
+        //return $.extend(stock, {
+        //    Offer: stock.Offer.toFixed(2),
+        //    PercentChange: (stock.last*1.03 * 100).toFixed(2) + '%',
+        //    Direction: stock.Change === 0 ? '' : stock.Change >= 0 ? up : down
+        //});
+        return data;
+    }
+
+    $(loadData());
+
+    function sortTable(tableId, n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById(tableId);
+        switching = true;
+
+        var arr = new Array();
+        for (var i = 1; i < table.rows.length; i++) {
+            arr.push(table.rows[i]);
+        }
+
+
+        //Set the sorting direction to ascending:
+        dir = "desc";
+
+        /*Make a loop that will continue until
+        no switching has been done:*/
+        while (switching) {
+            //start by saying: no switching is done:
+            switching = false;
+
+            //rows = table.getElementsByTagName("TR");
+
+            ///*Loop through all table rows (except the
+            //first, which contains table headers):*/
+            //for (i = 1; i < (rows.length - 1) ; i++) {
+            for (i = 0; i < (arr.length - 1); i++) {
+
+                //start by saying there should be no switching:
+                shouldSwitch = false;
+
+                /*Get the two elements you want to compare,
+                one from current row and one from the next:*/
+                //x = rows[i].getElementsByTagName("TD")[n];
+                //y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                x = arr[i].childNodes[n];
+                y = arr[i + 1].childNodes[n];
+
+                /*check if the two rows should switch place,
+                based on the direction, asc or desc:*/
+                if (dir == "asc") {
+                    //debugger;
+                    if (new Number(x.innerText.replace('%', '')) > new Number(y.innerText.replace('%', ''))) {
+                        //if so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (new Number(x.innerText.replace('%', '')) < new Number(y.innerText.replace('%', ''))) {
+                        //if so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+
+            if (shouldSwitch) {
+                /*If a switch has been marked, make the switch
+                and mark that a switch has been done:*/
+                //rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                var tmp = arr[i];
+                arr[i] = arr[i + 1];
+                arr[i + 1] = tmp;
+
+                switching = true;
+                //Each time a switch is done, increase this count by 1:
+                switchcount ++;
+            } else {
+                /*If no switching has been done AND the direction is "asc",
+                set the direction to "desc" and run the while loop again.*/
+                if (switchcount == 0 && dir == "desc") {
+                    dir = "asc";
+                    switching = true;
+                } else {
+                    $rankTableBody.empty();
+                    //alert();
+                    for (var i = 0; i < arr.length; i++) {
+                        //debugger;
+                        $rankTableBody.append(arr[i].outerHTML);
+                    }
+
+                    var headers = table.getElementsByTagName('th');
+                    for (var i = 0; i < headers.length; i++) {
+                        if (headers[i].innerText.indexOf('↓') > 0)
+                            headers[i].innerText = headers[i].innerText.replace('↓', '');
+                        if (headers[i].innerText.indexOf('↑') > 0)
+                            headers[i].innerText = headers[i].innerText.replace('↑', '');
+                    }
+                    var h = headers[n];
+                    if (dir == 'asc')
+                        h.innerText = h.innerText + '↑';
+                    else
+                        h.innerText = h.innerText + '↓';
+
+
+                    //$('#rankTable tr').each(function () { this.style.background = '#fff'; });
+                    var div = document.getElementById('positionTable');
+                    div.style.display = 'none';
+                }
+            }
+        }
+    }
+
+
+</script>
 </body>
 </html>

@@ -288,34 +288,12 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("~/api/position/live/report/openTime")]
         [IPAuth]
-        public List<PositionReportDTO> GetPositionOpenTime()
+        public List<PositionReportDTO> GetPositionOpenTime(int week)
         {
-            var results = new List<PositionReportDTO>();
-            var positions = db.NewPositionHistory_live.OrderByDescending(p => p.CreateTime).ToList();
-            
-            positions.ForEach(p =>
-            {
-
-                var dto = new PositionReportDTO
-                {
-                    openAt =DateTime.SpecifyKind(p.CreateTime.Value,DateTimeKind.Utc),
-                };
-
-                results.Add(dto);
-            });
-
-            return results;
-        }
-
-        [HttpGet]
-        [Route("~/api/position/live/report/openTime/7d")]
-        [IPAuth]
-        public List<PositionReportDTO> GetPositionOpenTime7d()
-        {
-            var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
+            var weeksAgo = DateTime.UtcNow.AddDays(-week*7);
 
             var results = new List<PositionReportDTO>();
-            var positions = db.NewPositionHistory_live.Where(o=>o.CreateTime> oneWeekAgo).OrderByDescending(p => p.CreateTime).ToList();
+            var positions = db.NewPositionHistory_live.Where(o=>o.CreateTime> weeksAgo).OrderByDescending(p => p.CreateTime).ToList();
 
             positions.ForEach(p =>
             {

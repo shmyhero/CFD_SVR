@@ -12,8 +12,9 @@
 </head>
 <body>
 <div style="text-align: center">
-    <input type="button" value="All Time" onclick="loadData(false)"/>
-    <input type="button" value="This Week" onclick="loadData(true)"/>
+    <input type="button" value="All Time" onclick="loadData(999)"/>
+    <input type="button" value="4 Week" onclick="loadData(4)" />
+    <input type="button" value="1 Week" onclick="loadData(1)"/>
 </div>
     <br/>
 <div id="container" style="height: 800px; min-width: 310px; max-width: 800px; margin: 0 auto">
@@ -21,10 +22,10 @@
 </div>
 
 <script type="text/javascript">
-    function loadData(thisWeek) {
+    function loadData(weeks) {
         $('#container').html('<label style="display: block; font-size: xx-large; text-align: center">Loading...</label>');
 
-        $.getJSON('api/position/live/report/openTime' + (thisWeek?'/7d':''), function (result) {
+        $.getJSON('api/position/live/report/openTime?week=' + weeks, function (result) {
             var xs = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
             var ys = ['0:00~', '1:00~', '2:00~', '3:00~', '4:00~', '5:00~', '6:00~', '7:00~', '8:00~', '9:00~', '10:00~', '11:00~', '12:00~', '13:00~', '14:00~', '15:00~', '16:00~', '17:00~', '18:00~', '19:00~', '20:00~', '21:00~', '22:00~', '23:00~'];
             var datas = new Array();
@@ -57,7 +58,7 @@
 
 
                 title: {
-                    text: thisWeek ? '开仓时间分布（最近1周）' : '开仓时间分布（上线至今）'
+                    text: '开仓时间分布（最近' + weeks + '周）'
                 },
 
                 xAxis: {
@@ -108,7 +109,7 @@
         });
     }
 
-    loadData(false);
+    loadData(999);
 </script>
 </body>
 </html>
