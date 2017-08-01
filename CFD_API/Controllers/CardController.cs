@@ -148,35 +148,67 @@ namespace CFD_API.Controllers
             return cardDTO;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="shareID">1-App首页，2-微信好友，3-微信朋友圈</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("share/{id}")]
         [BasicAuth]
-        public ResultDTO ShareCard(int id)
+        public ResultDTO ShareCard(int id, int shareID = 0)
         {
             UserCard_Live uc = db.UserCards_Live.Where(o => o.Id == id && o.UserId == this.UserId).FirstOrDefault();
-            if (uc != null)
+            if (uc != null )
             {
-                uc.IsShared = true;
-                db.SaveChanges();
+                if (shareID == (int)ShareType.App)//只有App首页分享，才需要改IsShared状态
+                {
+                    uc.IsShared = true;
+                }
             }
             else
             {
                 return new ResultDTO(false);
             }
 
+            #region 积分计算
+            var scoreSetting = GetScoresSetting();
+            int score = 0;
+            string oper = string.Empty;
+            switch(shareID)
+            {
+                case (int)ShareType.App: score = scoreSetting.AppShare; oper = ScoreSource.AppShare; break;
+                case (int)ShareType.WechatFriend: score = scoreSetting.WechatFriend; oper = ScoreSource.WechatFriend; break;
+                case (int)ShareType.WechatCircle: score = scoreSetting.WeChatCircle; oper = ScoreSource.WechatCircle; break;
+            }
+            //分享积分大于0，且该卡片之前未通过指定方式获得过分享积分
+            if(score > 0 && !db.ScoreHistorys.Any(s=>s.UserID == UserId && s.UserCardID == id && s.Source == oper))
+            {
+                db.ScoreHistorys.Add(new ScoreHistory() {
+                    UserID = UserId,
+                    UserCardID = uc.Id,
+                     Score = score,
+                      Source = oper,
+                     CreatedAt = DateTime.UtcNow
+                });
+            }
+            #endregion
+
+            db.SaveChanges();
             return new ResultDTO(true);
         }
 
         [HttpGet]
         [Route("like/{id}")]
         [BasicAuth]
-        public ResultDTO LikeCard(int id)
+        public ResultScoreDTO LikeCard(int id)
         {
             //todo: use TransactionScope
 
             if (db.LikeHistories.Any(o => o.UserId == this.UserId && o.UserCardId == id))
             {
-                return new ResultDTO(false) { message = "您已赞过该卡片" };
+                return new ResultScoreDTO(false) { message = "您已赞过该卡片" };
             }
 
             UserCard_Live uc = db.UserCards_Live.Where(o => o.Id == id).FirstOrDefault();
@@ -187,14 +219,40 @@ namespace CFD_API.Controllers
                 LikeHistory history = new LikeHistory() { UserCardId = uc.Id, UserId = this.UserId, CreatedAt = DateTime.UtcNow };
                 db.LikeHistories.Add(history);
 
+                //没有拿过点赞积分，就给点赞人和被点赞人相应的积分
+                if(!db.ScoreHistorys.Any(s=>s.UserID == UserId && s.UserCardID == id))
+                {
+                    var scoreSetting = GetScoresSetting();
+                    db.ScoreHistorys.Add(new ScoreHistory()
+                    {
+                        UserID = UserId,
+                        Score = scoreSetting.Like,
+                        UserCardID = uc.CardId,
+                        Source = ScoreSource.Like,
+                        CreatedAt = DateTime.UtcNow
+                    });
+
+                    if (UserId != uc.UserId) //点赞者和卡片的拥有者不是同一人
+                    {
+                        db.ScoreHistorys.Add(new ScoreHistory()
+                        {
+                            UserID = uc.UserId,
+                            Score = scoreSetting.Liked,
+                            UserCardID = uc.CardId,
+                            Source = ScoreSource.Liked,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+
                 db.SaveChanges();
             }
             else
             {
-                return new ResultDTO(false);
+                return new ResultScoreDTO(false);
             }
 
-            return new ResultDTO(true);
+            return new ResultScoreDTO(true);
         }
 
         /// <summary>

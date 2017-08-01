@@ -56,6 +56,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<ReferReward> ReferRewards { get; set; }
         public virtual DbSet<ReferHistory> ReferHistorys { get; set; }
         public virtual DbSet<PartnerReferHistory> PartnerReferHistorys { get; set; }
+        public virtual DbSet<ScoreHistory> ScoreHistorys { get; set; }
         public virtual DbSet<SystemSetting> SystemSettings { get; set; }
         public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
         //public virtual DbSet<TransferHistory> TransferHistorys { get; set; }

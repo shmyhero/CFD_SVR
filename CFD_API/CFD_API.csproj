@@ -285,6 +285,7 @@
     <Compile Include="Controllers\RankController.cs" />
     <Compile Include="Controllers\ReferController.cs" />
     <Compile Include="Controllers\RewardController.cs" />
+    <Compile Include="Controllers\ScoreController.cs" />
     <Compile Include="Controllers\SecurityController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
@@ -296,6 +297,7 @@
     <Compile Include="DTO\KLineDTO.cs" />
     <Compile Include="DTO\PartnerDTO.cs" />
     <Compile Include="DTO\PositionDTO.cs" />
+    <Compile Include="DTO\ScoreDTO.cs" />
     <Compile Include="DTO\SecurityDTO.cs" />
     <Compile Include="DTO\SignalRDTO\PositionDTO.cs" />
     <Compile Include="DTO\SignalRDTO\QuoteFeed.cs" />

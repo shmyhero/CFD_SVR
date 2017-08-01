@@ -22,6 +22,18 @@ namespace CFD_API.DTO
         public JToken error { get; set; }
     }
 
+    /// <summary>
+    /// 增加Score字段
+    /// </summary>
+    public class ResultScoreDTO : ResultDTO
+    {
+        public ResultScoreDTO(bool success) 
+        {
+            this.success = success;
+        }
+        public int score { get; set; }
+    }
+
     public class VersionDTO
     {
         public int iOSLatestInt { get; set; }

@@ -645,5 +645,29 @@ namespace CFD_API.Controllers
             var jObject = JToken.Parse(str);
             return jObject;
         }
+
+        protected ScoreSetting GetScoresSetting()
+        {
+            var setting = db.Miscs.FirstOrDefault(m=>m.Key == "ScoreSetting");
+            ScoreSetting scoreSetting = new ScoreSetting() {
+                Like = 10,
+                Liked = 10,
+                AppShare = 100,
+                WeChatCircle = 100,
+                WechatFriend = 100
+            };
+            if (setting != null)
+            {
+                var jObj = JObject.Parse(setting.Value);
+
+                scoreSetting.Like = jObj["like"].Value<int>();
+                scoreSetting.Liked = jObj["liked"].Value<int>();
+                scoreSetting.AppShare = jObj["AppShare"].Value<int>();
+                scoreSetting.WechatFriend = jObj["WechatFriend"].Value<int>();
+                scoreSetting.WeChatCircle = jObj["WeChatCircle"].Value<int>();
+            }
+
+            return scoreSetting;
+        }
     }
 }
