@@ -247,6 +247,7 @@
     <Content Include="UserRankView.html" />
     <Content Include="VerifyCodeView.html" />
     <Content Include="WebsocketAlert.html" />
+    <Content Include="WebsocketCountView.html" />
     <Content Include="WebsocketQuote.html" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>

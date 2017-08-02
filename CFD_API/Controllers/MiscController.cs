@@ -242,6 +242,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("websocket")]
+        [IPAuth]
         public JObject GetWebsocketInfo()
         {
             var o = new JObject();
@@ -252,6 +253,7 @@ namespace CFD_API.Controllers
 
         [HttpGet]
         [Route("websocket/aggregate")]
+        [IPAuth]
         public JObject GetWebsocketInfoAggregate()
         {
             var arr = new JArray();

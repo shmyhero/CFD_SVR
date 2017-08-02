@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            }
+        });
+
+        Highcharts.chart('container', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function() {
+
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                        var series2 = this.series[1];
+                        var series3 = this.series[2];
+                        setInterval(function() {
+                            $.getJSON(
+                                //'http://cfd-webapi.chinacloudapp.cn/' +
+                                'api/misc/websocket/aggregate', function(result) {
+
+                                    var x = (new Date()).getTime(), // current time
+                                        y = result.total,
+                                        y2 = result.demo,
+                                        y3 = result.live;
+                                    series.addPoint([x, y], true, true);
+                                    series2.addPoint([x, y2], true, true);
+                                    series3.addPoint([x, y3], true, true);
+                                });
+                        }, 5000);
+                    }
+                }
+            },
+            title: {
+                text: '在线用户数（websocket连接数）'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                //title: {
+                //    text: 'Value'
+                //},
+                plotLines: [
+                    {
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }
+                ]
+            },
+            tooltip: {
+                formatter: function() {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                        Highcharts.numberFormat(this.y, 0);
+                }
+            },
+            //legend: {
+            //    enabled: false
+            //},
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: 'Total',
+                    data: (function() {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -99; i <= 0; i += 1) {
+                            data.push({
+                                x: time + i * 5000,
+                                y: 0
+                            });
+                        }
+                        return data;
+                    }())
+                }, {
+                    name: 'Demo',
+                    data: (function() {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -99; i <= 0; i += 1) {
+                            data.push({
+                                x: time + i * 5000,
+                                y: 0
+                            });
+                        }
+                        return data;
+                    }())
+                }, {
+                    name: 'Live',
+                    data: (function() {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -99; i <= 0; i += 1) {
+                            data.push({
+                                x: time + i * 5000,
+                                y: 0
+                            });
+                        }
+                        return data;
+                    }())
+                }
+            ]
+        });
+    });
+</script>
+</body>
+</html>
