@@ -33,6 +33,11 @@ namespace CFD_API.DTO
         public SecurityDTO fxOutright { get; set; }
 
         public CardDTO card { get; set; }
+
+        /// <summary>
+        /// 实盘下单积分
+        /// </summary>
+        public int score { get; set; }
     }
 
     /// <summary>

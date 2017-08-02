@@ -899,7 +899,7 @@ namespace CFD_API.Controllers
         public PositionDTO NewPosition(NewPositionFormDTO form, bool ignorePriceDelay = false)
         {
             var user = GetUser();
-
+            int score = 0;
             if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
@@ -1001,6 +1001,26 @@ namespace CFD_API.Controllers
                 if (!IsLiveUrl && user.AyondoAccountId != accountId)
                     user.AyondoAccountId = accountId;
 
+                #region 计算积分
+                try
+                {
+                    var scoreSetting = GetScoresSetting();
+                    score = (int)(form.invest * form.leverage * scoreSetting.LiveOrder);
+
+                    db.ScoreHistorys.Add(new ScoreHistory() {
+                        UserID = UserId,
+                        Score = score,
+                        Source = ScoreSource.LiveOrder,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+                catch(Exception ex)
+                {
+                    CFDGlobal.LogWarning("Error getting score when open position: " +
+                                              ex.Message);
+                }
+                #endregion
+
                 db.SaveChanges();
 
                 if(!IsLiveUrl) RewardDailyDemoTransaction();
@@ -1048,12 +1068,13 @@ namespace CFD_API.Controllers
                 id = result.PosMaintRptID,
                 isLong = result.LongQty != null,
                 settlePrice = settlP,
-                invest = tradedValue.Value/result.Leverage.Value,
+                invest = tradedValue.Value / result.Leverage.Value,
                 leverage = result.Leverage.Value,
                 createAt = result.CreateTime,
                 quantity = result.LongQty ?? result.ShortQty.Value,
                 stopPx = result.StopPx,
                 stopOID = result.StopOID,
+                score = score
             };
 
             posDTO.security = new SecurityDetailDTO() {id = prodDef.Id, ccy = prodDef.Ccy2};
