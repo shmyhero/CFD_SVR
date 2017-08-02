@@ -12,7 +12,7 @@
     <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(document).ready(function() {
         Highcharts.setOptions({
             global: {
                 useUTC: false
@@ -23,7 +23,7 @@
             chart: {
                 type: 'spline',
                 animation: Highcharts.svg, // don't animate in old IE
-                marginRight: 10,
+                marginRight: 30,
                 events: {
                     load: function() {
 
@@ -33,7 +33,7 @@
                         var series3 = this.series[2];
                         setInterval(function() {
                             $.getJSON(
-                                //'http://cfd-webapi.chinacloudapp.cn/' +
+                                'http://cfd-webapi.chinacloudapp.cn/' +
                                 'api/misc/websocket/aggregate', function(result) {
 
                                     var x = (new Date()).getTime(), // current time
@@ -55,18 +55,28 @@
                 type: 'datetime',
                 tickPixelInterval: 150
             },
-            yAxis: {
-                //title: {
-                //    text: 'Value'
+            yAxis: [
+                //{
+                //    title: {
+                //        text: null
+                //    },
+                //    allowDecimals: false,
+                //    labels: {
+                //        align: 'right'
+                //    }
                 //},
-                plotLines: [
-                    {
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }
-                ]
-            },
+                 {
+                     title: {
+                         text: null
+                     },
+                     allowDecimals: false,
+                     opposite:true,
+                     labels: {
+                         align: 'left',
+                         x:10
+                     }
+                 }
+            ],
             tooltip: {
                 formatter: function() {
                     return '<b>' + this.series.name + '</b><br/>' +
@@ -74,9 +84,11 @@
                         Highcharts.numberFormat(this.y, 0);
                 }
             },
-            //legend: {
-            //    enabled: false
-            //},
+            legend: {
+                align: 'center',
+                verticalAlign: 'top',
+                y:30
+            },
             exporting: {
                 enabled: false
             },
