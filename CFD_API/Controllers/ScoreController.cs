@@ -172,5 +172,24 @@ namespace CFD_API.Controllers
 
             return new ResultDTO() { success = true };
         }
+
+
+        [HttpGet]
+        [Route("prize/history")]
+        [AdminAuth]
+        public List<PrizeDTO> GetPrizeClaimList()
+        {
+            var historys = (from s in db.ScoreConsumptionHistorys
+                          join u in db.Users on s.UserID equals u.Id
+                          orderby s.CreatedAt descending
+                          select new PrizeDTO()
+                          {
+                               nickName = u.Nickname,
+                                picUrl = u.PicUrl,
+                                 prizeName = s.PrizeName
+                          }).Take(6).ToList();
+
+            return historys;
+        }
     }
 }

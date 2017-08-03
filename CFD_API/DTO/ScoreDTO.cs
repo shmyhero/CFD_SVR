@@ -110,4 +110,11 @@ namespace CFD_API.DTO
         /// </summary>
         public const string LiveOrder = "LiveOrder";
     }
+
+    public class PrizeDTO
+    {
+        public string picUrl { get; set; }
+        public string nickName { get; set; }
+        public string prizeName { get; set; }
+    }
 }
