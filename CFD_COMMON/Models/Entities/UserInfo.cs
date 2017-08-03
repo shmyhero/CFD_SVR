@@ -13,14 +13,14 @@ namespace CFD_COMMON.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int UserId { get; set; }
 
-        [Column(TypeName = "ntext")]
-        public string IdFrontImg { get; set; }
+        //[Column(TypeName = "ntext")]
+        //public string IdFrontImg { get; set; }
 
         [StringLength(10)]
         public string IdFrontImgExt { get; set; }
 
-        [Column(TypeName = "ntext")]
-        public string IdBackImg { get; set; }
+        //[Column(TypeName = "ntext")]
+        //public string IdBackImg { get; set; }
 
         [StringLength(10)]
         public string IdBackImgExt { get; set; }
@@ -39,8 +39,8 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(10)]
         public string OcrEthnic { get; set; }
 
-        [Column(TypeName = "ntext")]
-        public string OcrFaceImg { get; set; }
+        //[Column(TypeName = "ntext")]
+        //public string OcrFaceImg { get; set; }
 
         [StringLength(50)]
         public string OcrIssueAuth { get; set; }
@@ -167,8 +167,8 @@ namespace CFD_COMMON.Models.Entities
         [StringLength(50)]
         public string AppropriatenessResolution { get; set; }
 
-        [Column(TypeName = "ntext")]
-        public string ProofOfAddress { get; set; }
+        //[Column(TypeName = "ntext")]
+        //public string ProofOfAddress { get; set; }
 
         ///// <summary>
         ///// for Include operation, this field is required

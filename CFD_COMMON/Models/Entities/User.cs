@@ -124,5 +124,8 @@
         public string PromotionCode { get; set; }
 
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
+
+        [ForeignKey("Id")]
+        public virtual UserInfo UserInfo { get; set; }
     }
 }

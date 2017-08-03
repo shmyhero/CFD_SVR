@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+<script src="Scripts/jquery-1.6.4.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+<div id="container" style="min-width: 310px; max-width: 1000px; height: 800px; margin: 0 auto"></div>
+
+<script type="text/javascript">
+    function getParentStatus(status) {
+        //NULL
+        //Active
+        //PendingTrading
+        //PendingFunding
+        //PendingLogin
+
+        //PendingClassification
+        //PendingDocuments
+        //PendingIdentityConflict
+        //PendingRiskAssessment
+        //PendingUnlock
+
+        //RejectedDD
+        //RejectedDuplicate
+        //RejectedMifid
+        //AbortedByPolicy
+        if (status == 'Active' || status == 'PendingTrading' || status == 'PendingFunding' || status == 'PendingLogin')
+            return 'Approved';
+        else if (status == 'PendingClassification' || status == 'PendingDocuments' || status == 'PendingIdentityConflict' || status == 'PendingRiskAssessment' || status == 'PendingUnlock')
+            return 'Pending';
+        else if (status == 'RejectedDD' || status == 'RejectedDuplicate' || status == 'RejectedMifid' || status == 'AbortedByPolicy')
+            return 'Rejected';
+        else
+            return 'Pending';
+    }
+
+    function getCName(status) {
+        return status;
+    }
+
+    $.getJSON('api/user/live/report',function(result) {
+        var arrStatus = [['Approved', 'Active', 0],
+        ['Approved', 'PendingTrading', 0],
+        ['Approved', 'PendingFunding', 0],
+        ['Approved', 'PendingLogin', 0],
+
+        ['Pending', 'PendingClassification', 0],
+        ['Pending', 'PendingDocuments', 0],
+        ['Pending', 'PendingIdentityConflict', 0],
+        ['Pending', 'PendingRiskAssessment', 0],
+        ['Pending', 'PendingUnlock', 0],
+        ['Pending', 'Unknown', 0],
+
+        ['Rejected', 'RejectedDD', 0],
+        ['Rejected', 'RejectedDuplicate', 0],
+        ['Rejected', 'RejectedMifid', 0],
+        ['Rejected', 'AbortedByPolicy', 0]
+        ];
+        
+        //debugger;
+
+        for (var i = 0; i < result.length; i++) {
+            var user = result[i];
+
+            var status = user.status == 'PendingLogin' && user.accountId == null ? 'PendingFunding' : user.status;
+            if (status == null)
+                status = 'Unknown';
+
+            var idx = -1;
+            for (var j = 0; j < arrStatus.length; j++) {
+                if (arrStatus[j][1] == status) {
+                    idx = j;
+                    break;
+                }
+            }
+
+            if (idx == -1)
+                arrStatus.push([getParentStatus(status),status, 1]);
+            else
+                arrStatus[idx][2] = arrStatus[idx][2] + 1;
+        }
+
+        //debugger;
+
+
+        //// Build the data arrays
+        //for (i = 0; i < dataLen; i += 1) {
+
+        //    // add browser data
+        //    browserData.push({
+        //        name: categories[i],
+        //        y: data[i].y,
+        //        color: data[i].color
+        //    });
+
+        //    // add version data
+        //    drillDataLen = data[i].drilldown.data.length;
+        //    for (j = 0; j < drillDataLen; j += 1) {
+        //        brightness = 0.2 - (j / drillDataLen) / 5;
+        //        versionsData.push({
+        //            name: data[i].drilldown.categories[j],
+        //            y: data[i].drilldown.data[j],
+        //            color: Highcharts.Color(data[i].color).brighten(brightness).get()
+        //        });
+        //    }
+        //}
+
+        var colors = Highcharts.getOptions().colors;
+
+        var browserData = [];
+        var versionsData = [];
+        var childCount = 0;
+        for (i = 0; i < arrStatus.length; i += 1) {
+            var colorIdx = -1;
+
+            var idx = -1;
+            for (var j = 0; j < browserData.length; j++) {
+                if (browserData[j].name == arrStatus[i][0]) {
+                    idx = j;
+                    break;
+                }
+            }
+
+            if (idx == -1) {
+                colorIdx = browserData.length;
+                childCount = 1;
+
+                // add browser data
+                browserData.push({
+                    name: arrStatus[i][0],
+                    y: arrStatus[i][2],
+                    color: colors[colorIdx]
+                });
+            } else {
+                colorIdx = idx;
+                childCount++;
+
+                browserData[idx].y = browserData[idx].y + arrStatus[i][2];
+            }
+
+            //// add version data
+            //drillDataLen = data[i].drilldown.data.length;
+            //for (j = 0; j < drillDataLen; j += 1) {
+            //    brightness = 0.2 - (j / drillDataLen) / 5;
+            //    versionsData.push({
+            //        name: data[i].drilldown.categories[j],
+            //        y: data[i].drilldown.data[j],
+            //        color: Highcharts.Color(data[i].color).brighten(brightness).get()
+            //    });
+            //}
+            idx = -1;
+            for (var j = 0; j < versionsData.length; j++) {
+                if (versionsData[j].name == arrStatus[i][1]) {
+                    idx = j;
+                    break;
+                }
+            }
+
+            if (idx == -1)
+                versionsData.push({
+                    name: arrStatus[i][1],
+                    y: arrStatus[i][2],
+                    color: Highcharts.Color(colors[colorIdx]).brighten(0.05*childCount).get()
+                });
+            else {
+                versionsData[idx].y = versionsData[idx].y + arrStatus[i][2];
+            }
+        }
+
+        //debugger;
+
+        // Create the chart
+        Highcharts.chart('container', {
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: '实盘用户状态分布'
+            },
+            //subtitle: {
+            //    text: 'Source: <a href="http://netmarketshare.com/">netmarketshare.com</a>'
+            //},
+            yAxis: {
+                title: {
+                    text: 'Total percent market share'
+                }
+            },
+            plotOptions: {
+                pie: {
+                    shadow: false,
+                    center: ['50%', '50%']
+                }
+            },
+            tooltip: {
+                valueSuffix: '人'
+            },
+            series: [{
+                name: '用户状态',
+                data: browserData,
+                size: '60%',
+                dataLabels: {
+                    formatter: function () {
+                        return this.y > 5 ? getCName(this.point.name) : null;
+                    },
+                    color: '#ffffff',
+                    distance: -90
+                }
+            }, {
+                name: '二级用户状态',
+                data: versionsData,
+                size: '90%',
+                innerSize: '60%',
+                dataLabels: {
+                    formatter: function () {
+                        // display only if larger than 1
+                        return this.y > 1 ? '<b>' + getCName(this.point.name) + ':</b> ' +
+                            this.y + '人' : null;
+                    }
+                },
+                id: 'versions'
+            }]
+            //,
+            //responsive: {
+            //    rules: [{
+            //        condition: {
+            //            maxWidth: 400
+            //        },
+            //        chartOptions: {
+            //            series: [{
+            //                id: 'versions',
+            //                dataLabels: {
+            //                    enabled: false
+            //                }
+            //            }]
+            //        }
+            //    }]
+            //}
+        });
+    });
+</script>
+</body>
+</html>

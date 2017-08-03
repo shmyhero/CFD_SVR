@@ -34,6 +34,7 @@ using Newtonsoft.Json;
 using ServiceStack.Text;
 using System.Data.SqlTypes;
 using CFD_COMMON.IdentityVerify;
+using ServiceStack.Common;
 
 namespace CFD_API.Controllers
 {
@@ -2461,6 +2462,42 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             return new ResultDTO(true);
+        }
+
+        [HttpGet]
+        [Route("live/report")]
+        [IPAuth]
+        public List<UserReportDTO> GetUserReport()
+        {
+            var users = db.Users.Include(o=>o.UserInfo).Where(o => o.AyLiveUsername != null).ToList();
+
+            //var userIds = users.Select(o => o.Id).ToList();
+            //db.UserInfos.Include(o=>)
+
+            var chinaToday = DateTimes.GetChinaToday();
+
+            return users.Select(o=>
+            {
+                var year = o.UserInfo.IdCode.Substring(6, 4).ToInt();
+                var month = o.UserInfo.IdCode.Substring(10, 2).ToInt();
+                var day = o.UserInfo.IdCode.Substring(12, 2).ToInt();
+                var birth=new DateTime(year,month,day,0,0,0,DateTimeKind.Local);
+
+                var userAge = chinaToday.Year - year;
+                if (birth.AddYears(userAge) > chinaToday)
+                    userAge--;
+
+                var genderInt = o.UserInfo.IdCode.Substring(16, 1).ToInt();
+
+                return new UserReportDTO()
+                {
+                    id = o.Id,
+                    age = userAge,
+                    gender = genderInt%2,
+                    accountId = o.AyLiveAccountId==null?null:o.AyLiveAccountId.ToString(),
+                    status = o.AyLiveAccountStatus,
+                };
+            }).ToList();
         }
 
         /// <summary>

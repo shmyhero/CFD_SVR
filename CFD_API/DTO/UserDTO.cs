@@ -634,7 +634,6 @@ namespace CFD_API.DTO
         public string idCardNumber { get; set; }
         public string info { get; set; }
 
-
         ////在Ayondo的更新发布前，先使用老接口定义
         //public string AccountHolder { get; set; }
         //public string IdentityID { get; set; }
@@ -649,8 +648,6 @@ namespace CFD_API.DTO
         ///// </summary>
         //public string AccountNumber { get; set; }
         //public string NameOfBank { get; set; }
-
-
     }
 
     public class LiveUserRefundDTO
@@ -782,5 +779,14 @@ namespace CFD_API.DTO
     {
         public string nickName { get; set; }
         public string promotionCode { get; set; }
+    }
+
+    public class UserReportDTO
+    {
+        public int id { get; set; }
+        public int age { get; set; }
+        public int gender { get; set; }
+        public string status { get; set; }
+        public string accountId { get; set; }
     }
 }
