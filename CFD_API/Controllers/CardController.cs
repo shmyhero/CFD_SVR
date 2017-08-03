@@ -180,7 +180,7 @@ namespace CFD_API.Controllers
             {
                 case (int)ShareType.App: score = scoreSetting.AppShare; oper = ScoreSource.AppShare; break;
                 case (int)ShareType.WechatFriend: score = scoreSetting.WechatFriend; oper = ScoreSource.WechatFriend; break;
-                case (int)ShareType.WechatCircle: score = scoreSetting.WeChatCircle; oper = ScoreSource.WechatCircle; break;
+                case (int)ShareType.WechatCircle: score = scoreSetting.WechatCircle; oper = ScoreSource.WechatCircle; break;
             }
             //分享积分大于0，且该卡片之前未通过指定方式获得过分享积分
             if(score > 0 && !db.ScoreHistorys.Any(s=>s.UserID == UserId && s.UserCardID == id && s.Source == oper))
@@ -210,7 +210,7 @@ namespace CFD_API.Controllers
             {
                 return new ResultScoreDTO(false) { message = "您已赞过该卡片" };
             }
-
+            int likeScore = 0;
             UserCard_Live uc = db.UserCards_Live.Where(o => o.Id == id).FirstOrDefault();
             if (uc != null)
             {
@@ -223,6 +223,8 @@ namespace CFD_API.Controllers
                 if(!db.ScoreHistorys.Any(s=>s.UserID == UserId && s.UserCardID == id))
                 {
                     var scoreSetting = GetScoresSetting();
+                    likeScore = scoreSetting.Like;
+
                     db.ScoreHistorys.Add(new ScoreHistory()
                     {
                         UserID = UserId,
@@ -252,7 +254,7 @@ namespace CFD_API.Controllers
                 return new ResultScoreDTO(false);
             }
 
-            return new ResultScoreDTO(true);
+            return new ResultScoreDTO(true) { score = likeScore };
         }
 
         /// <summary>
