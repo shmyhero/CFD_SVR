@@ -123,6 +123,15 @@
         /// </summary>
         public string PromotionCode { get; set; }
 
+        /// <summary>
+        /// 积分兑换奖品发货手机
+        /// </summary>
+        public string DeliveryPhone { get; set; }
+        /// <summary>
+        /// 积分兑换奖品发货地址
+        /// </summary>
+        public string DeliveryAddress { get; set; }
+
         public virtual ICollection<Bookmark> Bookmarks { get; set; }
     }
 }

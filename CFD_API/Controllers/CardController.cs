@@ -210,7 +210,7 @@ namespace CFD_API.Controllers
             {
                 return new ResultScoreDTO(false) { message = "您已赞过该卡片" };
             }
-
+            int likeScore = 0;
             UserCard_Live uc = db.UserCards_Live.Where(o => o.Id == id).FirstOrDefault();
             if (uc != null)
             {
@@ -223,6 +223,8 @@ namespace CFD_API.Controllers
                 if(!db.ScoreHistorys.Any(s=>s.UserID == UserId && s.UserCardID == id))
                 {
                     var scoreSetting = GetScoresSetting();
+                    likeScore = scoreSetting.Like;
+
                     db.ScoreHistorys.Add(new ScoreHistory()
                     {
                         UserID = UserId,
@@ -252,7 +254,7 @@ namespace CFD_API.Controllers
                 return new ResultScoreDTO(false);
             }
 
-            return new ResultScoreDTO(true);
+            return new ResultScoreDTO(true) { score = likeScore };
         }
 
         /// <summary>
