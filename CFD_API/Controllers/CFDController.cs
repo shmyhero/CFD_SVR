@@ -653,8 +653,9 @@ namespace CFD_API.Controllers
                 Like = 10,
                 Liked = 10,
                 AppShare = 100,
-                WeChatCircle = 100,
-                WechatFriend = 100
+                WechatCircle = 100,
+                WechatFriend = 100,
+                LiveOrder = 0.01M
             };
             if (setting != null)
             {
@@ -664,7 +665,8 @@ namespace CFD_API.Controllers
                 scoreSetting.Liked = jObj["liked"].Value<int>();
                 scoreSetting.AppShare = jObj["AppShare"].Value<int>();
                 scoreSetting.WechatFriend = jObj["WechatFriend"].Value<int>();
-                scoreSetting.WeChatCircle = jObj["WeChatCircle"].Value<int>();
+                scoreSetting.WechatCircle = jObj["WechatCircle"].Value<int>();
+                scoreSetting.LiveOrder = jObj["LiveOrder"].Value<decimal>();
             }
 
             return scoreSetting;

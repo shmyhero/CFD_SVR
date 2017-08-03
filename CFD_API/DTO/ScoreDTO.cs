@@ -53,7 +53,7 @@ namespace CFD_API.DTO
         /// <summary>
         /// 微信朋友圈分享得分
         /// </summary>
-        public int WeChatCircle { get; set; }
+        public int WechatCircle { get; set; }
 
         /// <summary>
         /// 实盘下单获得积分的百分比
