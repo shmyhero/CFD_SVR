@@ -63,10 +63,13 @@ namespace CFD_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("draw")]
-        [BasicAuth]
-        public int Draw()
+        [Route("draw/{userID}")]
+        [AdminAuth]
+        public int Draw(int userID)
         {
+            if (userID == 0)
+                return 0;
+                 
             //奖品编号，顺时针从左上角开始1-8. 无人机是5，概率是1/1000，其他奖品概率相同
             //除无人机以外的奖品编号
             List<int> prizes = new List<int>();
@@ -79,7 +82,7 @@ namespace CFD_API.Controllers
             if (ran.Next(1, 1000) == 5)
             {
                 db.ScoreConsumptionHistorys.Add(new ScoreConsumptionHistory() {
-                    UserID = UserId,
+                    UserID = userID,
                     PrizeID = 5,
                     PrizeName = "无人机",
                     Score = score,
@@ -106,7 +109,7 @@ namespace CFD_API.Controllers
 
             db.ScoreConsumptionHistorys.Add(new ScoreConsumptionHistory()
             {
-                UserID = UserId,
+                UserID = userID,
                 PrizeID = prizeID,
                 PrizeName = prizeName,
                 Score = score,
@@ -117,14 +120,17 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("draw/count")]
-        [BasicAuth]
+        [Route("draw/{userID}/count")]
+        [AdminAuth]
         /// <summary>
         /// 获取剩余抽奖次数
         /// </summary>
         /// <returns></returns>
-        public int GetDrawCount()
+        public int GetDrawCount(int userID)
         {
+            if (userID == 0)
+                return 0;
+
             int totalScores = db.ScoreHistorys.Sum(s => s.Score);
 
             if(totalScores < 1000)
@@ -133,14 +139,14 @@ namespace CFD_API.Controllers
             }
 
             //积分在1000到2000间有一次抽奖机会，且只有一次
-            if(totalScores>= 1000 && totalScores<2000 && !db.ScoreConsumptionHistorys.Any(sch=>sch.UserID==UserId))
+            if(totalScores>= 1000 && totalScores<2000 && !db.ScoreConsumptionHistorys.Any(sch=>sch.UserID== userID))
             {
                 return 1;
             }
 
             if(totalScores >= 2000) //20002以上最多两次机会
             {
-                int count = db.ScoreConsumptionHistorys.Count(sch => sch.UserID == UserId);
+                int count = db.ScoreConsumptionHistorys.Count(sch => sch.UserID == userID);
 
                 return 2 - count > 0 ? (2 - count) : 0;
             }
@@ -149,11 +155,14 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("delivery")]
-        [BasicAuth]
-        public ResultDTO UpdateDelivery(string phone = "", string address = "")
+        [Route("delivery/{userID}")]
+        [AdminAuth]
+        public ResultDTO UpdateDelivery(int userID, string phone = "", string address = "")
         {
-            var user = db.Users.FirstOrDefault(u => u.Id == UserId);
+            if (userID == 0)
+                return new ResultDTO() { success = false };
+
+            var user = db.Users.FirstOrDefault(u => u.Id == userID);
             if (user != null)
             {
                 user.DeliveryAddress = address;
