@@ -13,6 +13,8 @@ using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils;
 using CFD_COMMON.Localization;
 
+using EntityFramework.Extensions;
+
 namespace CFD_API.Controllers
 {
     [RoutePrefix("api/score")]
@@ -70,53 +72,28 @@ namespace CFD_API.Controllers
             if (userID == 0)
                 return 0;
                  
-            //奖品编号，顺时针从左上角开始1-8. 无人机是5，概率是1/1000，其他奖品概率相同
-            //除无人机以外的奖品编号
-            List<int> prizes = new List<int>();
-            prizes.AddRange(new int[] { 1,2,3,4,6,7,8 });
             //一次兑奖消费100
             int score = 100;
 
-            Random ran = new Random();
-            //无人机是5，概率是1/1000
-            if (ran.Next(1, 1000) == 5)
+            var prize = db.ScorePrizeLists.OrderBy(sp => sp.ID).FirstOrDefault(sp => !sp.ClaimedAt.HasValue);
+            if(prize == null) //全部奖品都被领取了一遍,则重置
             {
-                db.ScoreConsumptionHistorys.Add(new ScoreConsumptionHistory() {
-                    UserID = userID,
-                    PrizeID = 5,
-                    PrizeName = "无人机",
-                    Score = score,
-                    CreatedAt = DateTime.UtcNow
-                });
-                db.SaveChanges();
-                return 5;
+                db.ScorePrizeLists.Update(sp => new ScorePrizeList { ClaimedAt = null });
+                prize = db.ScorePrizeLists.OrderBy(sp => sp.ID).FirstOrDefault(sp => !sp.ClaimedAt.HasValue);
             }
 
-            //未抽中无人机，就从其他7个奖品中抽取
-            int prizeIndex = ran.Next(1, 7);
-            int prizeID = 0;
-            string prizeName = string.Empty;
-            switch(prizeIndex)
-            {
-                case 1: prizeID = 1; prizeName = "派克钢笔"; break;
-                case 2: prizeID = 2; prizeName = "30元话费"; break;
-                case 3: prizeID = 3; prizeName = "高级笔记本"; break;
-                case 4: prizeID = 4; prizeName = "30元话费"; break;
-                case 5: prizeID = 6; prizeName = "派克钢笔"; break;
-                case 6: prizeID = 7; prizeName = "30元话费"; break;
-                case 7: prizeID = 8; prizeName = "无线蓝牙耳机"; break;
-            }
+            prize.ClaimedAt = DateTime.UtcNow;
 
             db.ScoreConsumptionHistorys.Add(new ScoreConsumptionHistory()
             {
                 UserID = userID,
-                PrizeID = prizeID,
-                PrizeName = prizeName,
+                PrizeID = prize.PrizeID,
+                PrizeName = prize.PrizeName,
                 Score = score,
                 CreatedAt = DateTime.UtcNow
             });
             db.SaveChanges();
-            return prizeID;
+            return prize.PrizeID;
         }
 
         [HttpGet]
