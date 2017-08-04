@@ -102,6 +102,18 @@ namespace CFD_API.Controllers
                 return new ResultDTO() { success = false, message = "该手机号已注册过合作人" };
             }
 
+            #region 如果已经使用合伙人推荐码注册过App User,就用该PartnerCode生成合伙人
+            var appUser = db.Users.FirstOrDefault(u => u.Phone == form.phone);
+            if(appUser != null && !string.IsNullOrEmpty(appUser.PromotionCode))
+            {
+                var appPartner = db.Partners.FirstOrDefault(p => p.PromotionCode == appUser.PromotionCode);
+                if(appPartner != null)
+                {
+                    form.partnerCode = appPartner.PartnerCode;
+                }
+            }
+            #endregion
+
             //传入的合伙人码只能是一级或二级合伙人
             //以传入的合伙人码作为上级合伙人，生成下级合伙人码
             if (!string.IsNullOrEmpty(form.partnerCode) && form.partnerCode.Length != FirstLevelCodeLength && form.partnerCode.Length != SecondLevelCodeLength)
@@ -127,51 +139,27 @@ namespace CFD_API.Controllers
                 count++;
                 if (count == 20)
                 {
-                    return new ResultDTO() { success = false, message = "推荐码创建失败" };
+                    return new ResultDTO() { success = false, message = "合伙人码创建失败" };
                 }
                 partnerCode = GetSubPartnerCode(form.partnerCode);
             }
             count = 0;
             string promotionCode = GetPromotionCode();
-            while(db.Partners.Any(p => p.PartnerCode == partnerCode) && count <= 20)
+            while(db.Partners.Any(p => p.PromotionCode == promotionCode) && count <= 20)
             {
                 count++;
                 if (count == 20)
                 {
                     return new ResultDTO() { success = false, message = "推荐码创建失败" };
                 }
-                partnerCode = GetSubPartnerCode(form.partnerCode);
+                promotionCode = GetPromotionCode();
             }
 
-
-            //如果该手机号已经通过App注册过推荐码，并且推荐码和传入的上级合伙人的不一致，就返回异常
-            //更新对应App User的Promotion Code
-            var user = db.Users.FirstOrDefault(u => u.Phone == form.phone);
-            if(user != null)
+            //如果该手机号已经通过App注册过推荐码，就用自己的推荐码更新Promotion Code
+            if (appUser != null)
             {
-                if (!string.IsNullOrEmpty(form.partnerCode))//有上级合伙人
-                {
-                    if (!string.IsNullOrEmpty(user.PromotionCode) && user.PromotionCode != parentPartner.PromotionCode)
-                    {
-                        return new ResultDTO() { success = false, message = "与App注册的推荐码不一致" };
-                    }
-
-                    //如果注册过App,但没有填过App的推荐码，就填上
-                    if (string.IsNullOrEmpty(user.PromotionCode))
-                    {
-                        user.PromotionCode = promotionCode;
-                        db.SaveChanges();
-                    }
-                }
-                else //无上级合伙人
-                {
-                    //如果注册过App,但没有填过App的推荐码，就填上
-                    if (string.IsNullOrEmpty(user.PromotionCode))
-                    {
-                        user.PromotionCode = promotionCode;
-                        db.SaveChanges();
-                    }
-                }
+                appUser.PromotionCode = promotionCode;
+                db.SaveChanges();
             }
 
             #region 保存合伙人记录
