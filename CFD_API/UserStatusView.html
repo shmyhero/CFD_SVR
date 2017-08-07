@@ -2,14 +2,122 @@
 <html>
 <head>
     <title></title>
-	<meta charset="utf-8" />
+    <meta charset="utf-8"/>
+    <style>
+        td{ padding: 5px;vertical-align: top;border: solid 1px black;font-size: 12px;}
+         
+    </style>
 </head>
 <body>
 <script src="Scripts/jquery-1.6.4.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
 
-<div id="container" style="min-width: 310px; max-width: 1000px; height: 800px; margin: 0 auto"></div>
+<div id="container" style="min-width: 800px; max-width: 1000px; height: 800px; margin: 0 auto">
+    <font style="font-size: xx-large">Loading...</font>
+</div>
+
+    <br/>
+
+<div style="text-align: center">
+    <table style="display: inline-block; font-family: sans-serif; width: 1000px; text-align: left; font-size: small; border-collapse: collapse">
+        <thead>
+        <tr>
+            <th>State</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Active</td>
+            <td>Account</td>
+            <td>The client has traded.</td>
+        </tr>
+        <tr>
+            <td>Closed</td>
+            <td>Account</td>
+            <td>The account is closed or set to inactive.</td>
+        </tr>
+        <tr>
+            <td>Locked</td>
+            <td>Account</td>
+            <td>The account is locked.</td>
+        </tr>
+        <tr>
+            <td>PendingFunding</td>
+            <td>Account</td>
+            <td>Live only: the client has logged in, but not yet funded.</td>
+        </tr>
+        <tr>
+            <td>PendingTrading</td>
+            <td>Account</td>
+            <td>The account is funded, but the client has not yet traded.</td>
+        </tr>
+        <tr>
+            <td>AbortedByExpiry</td>
+            <td>Application</td>
+            <td>Live only: The application has expired (manually by operator).</td>
+        </tr>
+        <tr>
+            <td>AbortedByPolicy</td>
+            <td>Application</td>
+            <td>Application was aborted (manually by operator) when in PendingDocuments.</td>
+        </tr>
+        <tr>
+            <td>PendingDocuments</td>
+            <td>Application</td>
+            <td>Live only: The applicant's ID, address or both could not be verified via the automated or manual ID3 checks (or the automated check was skipped altogether). An automated email has been sent to the applicant, informing her which documents are missing and how to provide them.</td>
+        </tr>
+        <tr>
+            <td>PendingIdentityCheck</td>
+            <td>Application</td>
+            <td>Live only: The automated ID check has failed, and the operator can now try to perform a manual check via the ID3 web interface. If that fails as well, the operator manually moves the application to the PendingDocuments state.</td>
+        </tr>
+        <tr>
+            <td>PendingIdentityConflict</td>
+            <td>Application</td>
+            <td>Live only: If the person identified by email has multiple live accounts a check is performed that ensures that the incoming application does not use different values for name, dob, nationality than the data we already have on record for this person. In case of deviation the workflow stops here and an email is sent to the AmsSupervisor Mailing list. Only after resolving all conflicts the app is allowed to continue. This is meant to prevent overwriting of existing KYCÔÇÖed data as well as to prevent email address sharing.</td>
+        </tr>
+        <tr>
+            <td>PendingLogin</td>
+            <td>Account</td>
+            <td>The account has been created on TradeHub, but client has not yet logged in.</td>
+        </tr>
+        <tr>
+            <td>PendingPhoneVerification</td>
+            <td>Application</td>
+            <td>Live only: After passing the Appropriateness check an application is moved to PendingPhoneVerification where it is held until the number is verified.</td>
+        </tr>
+        <tr>
+            <td>PendingRiskAssessment</td>
+            <td>Application</td>
+            <td>The application has alerts pending regarding risk assessment and needs to be processed by Compliance.</td>
+        </tr>
+        <tr>
+            <td>PendingSanctionsCheck</td>
+            <td>Application</td>
+            <td>The application has sanctions alerts pending review and needs to be processed by Compliance.</td>
+        </tr>
+        <tr>
+            <td>RejectedByDD</td>
+            <td>Application</td>
+            <td>Live only: the application was rejected due to the outcome of the KYC check.</td>
+        </tr>
+        <tr>
+            <td>RejectedMifid</td>
+            <td>Application</td>
+            <td>Live only: the application was rejected due to the outcome of the appropriateness check.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<br/>
+
+    <div id="container2" style="min-width: 800px; max-width: 1000px; height: 800px; margin: 0 auto">
+        <font style="font-size: xx-large">Loading...</font>
+    </div>
 
 <script type="text/javascript">
     function getParentStatus(status) {
@@ -165,7 +273,7 @@
                 versionsData.push({
                     name: arrStatus[i][1],
                     y: arrStatus[i][2],
-                    color: Highcharts.Color(colors[colorIdx]).brighten(0.05*childCount).get()
+                    color: Highcharts.Color(colors[colorIdx]).brighten(0.05 * childCount).get()
                 });
             else {
                 versionsData[idx].y = versionsData[idx].y + arrStatus[i][2];
@@ -180,7 +288,7 @@
                 type: 'pie'
             },
             title: {
-                text: '实盘用户状态分布'
+                text: '实盘用户/申请状态分布'
             },
             //subtitle: {
             //    text: 'Source: <a href="http://netmarketshare.com/">netmarketshare.com</a>'
@@ -240,6 +348,78 @@
             //        }
             //    }]
             //}
+        });
+
+        //、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
+        var datas = new Array();
+        var now = new Date();
+        var y = now.getYear();
+        var m = now.getMonth();
+
+        //debugger;
+
+        var earliest = new Date();
+        for (var i = 0; i < result.length; i++) {
+            if (result[i].applyAt != null && new Date(result[i].applyAt) < earliest)
+                earliest = new Date(result[i].applyAt);
+        }
+
+        //earliest.setTime(earliest.getTime() + (8 * 60 * 60 * 1000));
+
+        //debugger;
+
+
+
+        debugger;
+
+        for (var i = 0; i < result.length; i++) {
+            
+        }
+
+        // Create the chart
+        Highcharts.chart('container2', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: '实盘用户状态分布随注册时间变化'
+            },
+            //subtitle: {
+            //    text: 'Source: <a href="http://netmarketshare.com/">netmarketshare.com</a>'
+            //},
+            yAxis: {
+                title: {
+                    text: '人数'
+                }
+            },
+            tooltip: {
+                valueSuffix: '人'
+            },
+            series: [{
+                name: '用户状态',
+                data: browserData,
+                size: '60%',
+                dataLabels: {
+                    formatter: function () {
+                        return this.y > 5 ? getCName(this.point.name) : null;
+                    },
+                    color: '#ffffff',
+                    distance: -90
+                }
+            }, {
+                name: '二级用户状态',
+                data: versionsData,
+                size: '90%',
+                innerSize: '60%',
+                dataLabels: {
+                    formatter: function () {
+                        // display only if larger than 1
+                        return this.y > 1 ? '<b>' + getCName(this.point.name) + ':</b> ' +
+                            this.y + '人' : null;
+                    }
+                },
+                id: 'versions'
+            }]
         });
     });
 </script>

@@ -784,9 +784,11 @@ namespace CFD_API.DTO
     public class UserReportDTO
     {
         public int id { get; set; }
-        public int age { get; set; }
-        public int gender { get; set; }
+        public int? age { get; set; }
+        public int? gender { get; set; }
         public string status { get; set; }
         public string accountId { get; set; }
+        public DateTime? applyAt { get; set; }
+
     }
 }
