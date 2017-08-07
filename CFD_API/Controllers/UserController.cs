@@ -2469,37 +2469,43 @@ namespace CFD_API.Controllers
         [IPAuth]
         public List<UserReportDTO> GetUserReport()
         {
-            //var users = db.Users.Include(o=>o.UserInfo).Where(o => o.AyLiveUsername != null).ToList();
+            var users = db.Users.Where(o => o.AyLiveUsername != null).ToList();
 
-            ////var userIds = users.Select(o => o.Id).ToList();
-            ////db.UserInfos.Include(o=>)
+            var userIds = users.Select(o => o.Id).ToList();
+            var userInfos = db.UserInfos.Where(o => userIds.Contains(o.UserId)).ToList();
 
-            //var chinaToday = DateTimes.GetChinaToday();
+            var chinaToday = DateTimes.GetChinaToday();
 
-            //return users.Select(o=>
-            //{
-            //    var year = o.UserInfo.IdCode.Substring(6, 4).ToInt();
-            //    var month = o.UserInfo.IdCode.Substring(10, 2).ToInt();
-            //    var day = o.UserInfo.IdCode.Substring(12, 2).ToInt();
-            //    var birth=new DateTime(year,month,day,0,0,0,DateTimeKind.Local);
+            return users.Select(o =>
+            {
+                var userInfo = userInfos.FirstOrDefault(i => i.UserId == o.Id);
 
-            //    var userAge = chinaToday.Year - year;
-            //    if (birth.AddYears(userAge) > chinaToday)
-            //        userAge--;
+                int? userAge = null;
+                int? genderInt = null;
+                if (userInfo != null)
+                {
+                    var year = userInfo.IdCode.Substring(6, 4).ToInt();
+                    var month = userInfo.IdCode.Substring(10, 2).ToInt();
+                    var day = userInfo.IdCode.Substring(12, 2).ToInt();
+                    var birth = new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Local);
 
-            //    var genderInt = o.UserInfo.IdCode.Substring(16, 1).ToInt();
+                    userAge = chinaToday.Year - year;
+                    if (birth.AddYears(userAge.Value) > chinaToday)
+                        userAge--;
 
-            //    return new UserReportDTO()
-            //    {
-            //        id = o.Id,
-            //        age = userAge,
-            //        gender = genderInt%2,
-            //        accountId = o.AyLiveAccountId==null?null:o.AyLiveAccountId.ToString(),
-            //        status = o.AyLiveAccountStatus,
-            //    };
-            //}).ToList();
+                    genderInt = userInfo.IdCode.Substring(16, 1).ToInt();
+                }
 
-            return null;
+                return new UserReportDTO()
+                {
+                    id = o.Id,
+                    age = userAge,
+                    gender = genderInt % 2,
+                    accountId = o.AyLiveAccountId == null ? null : o.AyLiveAccountId.ToString(),
+                    status = o.AyLiveAccountStatus,
+                    applyAt = o.AyLiveApplyAt == null ? (DateTime?)null : DateTime.SpecifyKind(o.AyLiveApplyAt.Value, DateTimeKind.Utc)
+                };
+            }).ToList();
         }
 
         /// <summary>
