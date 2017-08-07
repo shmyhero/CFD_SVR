@@ -204,12 +204,11 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("activity")]
         [BasicAuth]
-        public ActivityDTO GetActivity()
+        public ActivityDTO GetActivity(bool isLive=false)
         {
             ActivityDTO dto = new ActivityDTO();
 
-            var user = GetUser();
-            if(user.AyLiveApproveAt == null)
+            if(!isLive)
             {
                 var demoAct = db.Miscs.FirstOrDefault(m=>m.Key=="DemoActivity");
                 if(demoAct!=null)
