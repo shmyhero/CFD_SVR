@@ -17,106 +17,106 @@
     <font style="font-size: xx-large">Loading...</font>
 </div>
 
-    <br/>
-
-<div style="text-align: center">
-    <table style="display: inline-block; font-family: sans-serif; width: 1000px; text-align: left; font-size: small; border-collapse: collapse">
-        <thead>
-        <tr>
-            <th>State</th>
-            <th>Type</th>
-            <th>Description</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>Active</td>
-            <td>Account</td>
-            <td>The client has traded.</td>
-        </tr>
-        <tr>
-            <td>Closed</td>
-            <td>Account</td>
-            <td>The account is closed or set to inactive.</td>
-        </tr>
-        <tr>
-            <td>Locked</td>
-            <td>Account</td>
-            <td>The account is locked.</td>
-        </tr>
-        <tr>
-            <td>PendingFunding</td>
-            <td>Account</td>
-            <td>Live only: the client has logged in, but not yet funded.</td>
-        </tr>
-        <tr>
-            <td>PendingTrading</td>
-            <td>Account</td>
-            <td>The account is funded, but the client has not yet traded.</td>
-        </tr>
-        <tr>
-            <td>AbortedByExpiry</td>
-            <td>Application</td>
-            <td>Live only: The application has expired (manually by operator).</td>
-        </tr>
-        <tr>
-            <td>AbortedByPolicy</td>
-            <td>Application</td>
-            <td>Application was aborted (manually by operator) when in PendingDocuments.</td>
-        </tr>
-        <tr>
-            <td>PendingDocuments</td>
-            <td>Application</td>
-            <td>Live only: The applicant's ID, address or both could not be verified via the automated or manual ID3 checks (or the automated check was skipped altogether). An automated email has been sent to the applicant, informing her which documents are missing and how to provide them.</td>
-        </tr>
-        <tr>
-            <td>PendingIdentityCheck</td>
-            <td>Application</td>
-            <td>Live only: The automated ID check has failed, and the operator can now try to perform a manual check via the ID3 web interface. If that fails as well, the operator manually moves the application to the PendingDocuments state.</td>
-        </tr>
-        <tr>
-            <td>PendingIdentityConflict</td>
-            <td>Application</td>
-            <td>Live only: If the person identified by email has multiple live accounts a check is performed that ensures that the incoming application does not use different values for name, dob, nationality than the data we already have on record for this person. In case of deviation the workflow stops here and an email is sent to the AmsSupervisor Mailing list. Only after resolving all conflicts the app is allowed to continue. This is meant to prevent overwriting of existing KYCÔÇÖed data as well as to prevent email address sharing.</td>
-        </tr>
-        <tr>
-            <td>PendingLogin</td>
-            <td>Account</td>
-            <td>The account has been created on TradeHub, but client has not yet logged in.</td>
-        </tr>
-        <tr>
-            <td>PendingPhoneVerification</td>
-            <td>Application</td>
-            <td>Live only: After passing the Appropriateness check an application is moved to PendingPhoneVerification where it is held until the number is verified.</td>
-        </tr>
-        <tr>
-            <td>PendingRiskAssessment</td>
-            <td>Application</td>
-            <td>The application has alerts pending regarding risk assessment and needs to be processed by Compliance.</td>
-        </tr>
-        <tr>
-            <td>PendingSanctionsCheck</td>
-            <td>Application</td>
-            <td>The application has sanctions alerts pending review and needs to be processed by Compliance.</td>
-        </tr>
-        <tr>
-            <td>RejectedByDD</td>
-            <td>Application</td>
-            <td>Live only: the application was rejected due to the outcome of the KYC check.</td>
-        </tr>
-        <tr>
-            <td>RejectedMifid</td>
-            <td>Application</td>
-            <td>Live only: the application was rejected due to the outcome of the appropriateness check.</td>
-        </tr>
-        </tbody>
-    </table>
-</div>
-
 <br/>
 
-    <div id="container2" style="min-width: 800px; max-width: 1000px; height: 800px; margin: 0 auto">
+    <div id="container2" style="min-width: 800px; max-width: 1600px; height: 800px; margin: 0 auto">
         <font style="font-size: xx-large">Loading...</font>
+    </div>
+
+    <br />
+
+    <div style="text-align: center">
+        <table style="display: inline-block; font-family: sans-serif; width: 1000px; text-align: left; font-size: small; border-collapse: collapse">
+            <thead>
+                <tr>
+                    <th>State</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Active</td>
+                    <td>Account</td>
+                    <td>The client has traded.</td>
+                </tr>
+                <tr>
+                    <td>Closed</td>
+                    <td>Account</td>
+                    <td>The account is closed or set to inactive.</td>
+                </tr>
+                <tr>
+                    <td>Locked</td>
+                    <td>Account</td>
+                    <td>The account is locked.</td>
+                </tr>
+                <tr>
+                    <td>PendingFunding</td>
+                    <td>Account</td>
+                    <td>Live only: the client has logged in, but not yet funded.</td>
+                </tr>
+                <tr>
+                    <td>PendingTrading</td>
+                    <td>Account</td>
+                    <td>The account is funded, but the client has not yet traded.</td>
+                </tr>
+                <tr>
+                    <td>AbortedByExpiry</td>
+                    <td>Application</td>
+                    <td>Live only: The application has expired (manually by operator).</td>
+                </tr>
+                <tr>
+                    <td>AbortedByPolicy</td>
+                    <td>Application</td>
+                    <td>Application was aborted (manually by operator) when in PendingDocuments.</td>
+                </tr>
+                <tr>
+                    <td>PendingDocuments</td>
+                    <td>Application</td>
+                    <td>Live only: The applicant's ID, address or both could not be verified via the automated or manual ID3 checks (or the automated check was skipped altogether). An automated email has been sent to the applicant, informing her which documents are missing and how to provide them.</td>
+                </tr>
+                <tr>
+                    <td>PendingIdentityCheck</td>
+                    <td>Application</td>
+                    <td>Live only: The automated ID check has failed, and the operator can now try to perform a manual check via the ID3 web interface. If that fails as well, the operator manually moves the application to the PendingDocuments state.</td>
+                </tr>
+                <tr>
+                    <td>PendingIdentityConflict</td>
+                    <td>Application</td>
+                    <td>Live only: If the person identified by email has multiple live accounts a check is performed that ensures that the incoming application does not use different values for name, dob, nationality than the data we already have on record for this person. In case of deviation the workflow stops here and an email is sent to the AmsSupervisor Mailing list. Only after resolving all conflicts the app is allowed to continue. This is meant to prevent overwriting of existing KYCÔÇÖed data as well as to prevent email address sharing.</td>
+                </tr>
+                <tr>
+                    <td>PendingLogin</td>
+                    <td>Account</td>
+                    <td>The account has been created on TradeHub, but client has not yet logged in.</td>
+                </tr>
+                <tr>
+                    <td>PendingPhoneVerification</td>
+                    <td>Application</td>
+                    <td>Live only: After passing the Appropriateness check an application is moved to PendingPhoneVerification where it is held until the number is verified.</td>
+                </tr>
+                <tr>
+                    <td>PendingRiskAssessment</td>
+                    <td>Application</td>
+                    <td>The application has alerts pending regarding risk assessment and needs to be processed by Compliance.</td>
+                </tr>
+                <tr>
+                    <td>PendingSanctionsCheck</td>
+                    <td>Application</td>
+                    <td>The application has sanctions alerts pending review and needs to be processed by Compliance.</td>
+                </tr>
+                <tr>
+                    <td>RejectedByDD</td>
+                    <td>Application</td>
+                    <td>Live only: the application was rejected due to the outcome of the KYC check.</td>
+                </tr>
+                <tr>
+                    <td>RejectedMifid</td>
+                    <td>Application</td>
+                    <td>Live only: the application was rejected due to the outcome of the appropriateness check.</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
 <script type="text/javascript">
@@ -151,31 +151,31 @@
         return status;
     }
 
-    $.getJSON('api/user/live/report',function(result) {
-        var arrStatus = [['Approved', 'Active', 0],
-        ['Approved', 'PendingTrading', 0],
-        ['Approved', 'PendingFunding', 0],
-        ['Approved', 'PendingLogin', 0],
-
-        ['Pending', 'PendingClassification', 0],
-        ['Pending', 'PendingDocuments', 0],
-        ['Pending', 'PendingIdentityConflict', 0],
-        ['Pending', 'PendingRiskAssessment', 0],
-        ['Pending', 'PendingUnlock', 0],
-        ['Pending', 'Unknown', 0],
-
-        ['Rejected', 'RejectedDD', 0],
-        ['Rejected', 'RejectedDuplicate', 0],
-        ['Rejected', 'RejectedMifid', 0],
-        ['Rejected', 'AbortedByPolicy', 0]
+    $.getJSON('api/user/live/report', function(result) {
+        var arrStatus = [
+            ['Approved', 'Active', 0],
+            ['Approved', 'PendingTrading', 0],
+            ['Approved', 'PendingFunding', 0],
+            ['Approved', 'PendingLogin', 0],
+            ['Pending', 'PendingClassification', 0],
+            ['Pending', 'PendingDocuments', 0],
+            ['Pending', 'PendingIdentityConflict', 0],
+            ['Pending', 'PendingRiskAssessment', 0],
+            ['Pending', 'PendingUnlock', 0],
+            ['Pending', 'Unknown', 0],
+            ['Rejected', 'RejectedDD', 0],
+            ['Rejected', 'RejectedDuplicate', 0],
+            ['Rejected', 'RejectedMifid', 0],
+            ['Rejected', 'AbortedByPolicy', 0]
         ];
-        
+
         //debugger;
 
         for (var i = 0; i < result.length; i++) {
             var user = result[i];
 
-            var status = user.status == 'PendingLogin' && user.accountId == null ? 'PendingFunding' : user.status;
+            user.status = user.status == 'PendingLogin' && user.accountId != null ? 'PendingFunding' : user.status;
+            var status = user.status;
             if (status == null)
                 status = 'Unknown';
 
@@ -188,7 +188,7 @@
             }
 
             if (idx == -1)
-                arrStatus.push([getParentStatus(status),status, 1]);
+                arrStatus.push([getParentStatus(status), status, 1]);
             else
                 arrStatus[idx][2] = arrStatus[idx][2] + 1;
         }
@@ -307,31 +307,33 @@
             tooltip: {
                 valueSuffix: '人'
             },
-            series: [{
-                name: '用户状态',
-                data: browserData,
-                size: '60%',
-                dataLabels: {
-                    formatter: function () {
-                        return this.y > 5 ? getCName(this.point.name) : null;
-                    },
-                    color: '#ffffff',
-                    distance: -90
-                }
-            }, {
-                name: '二级用户状态',
-                data: versionsData,
-                size: '90%',
-                innerSize: '60%',
-                dataLabels: {
-                    formatter: function () {
-                        // display only if larger than 1
-                        return this.y > 1 ? '<b>' + getCName(this.point.name) + ':</b> ' +
-                            this.y + '人' : null;
+            series: [
+                {
+                    name: '用户状态',
+                    data: browserData,
+                    size: '60%',
+                    dataLabels: {
+                        formatter: function() {
+                            return this.y > 5 ? getCName(this.point.name) : null;
+                        },
+                        color: '#ffffff',
+                        distance: -90
                     }
-                },
-                id: 'versions'
-            }]
+                }, {
+                    name: '二级用户状态',
+                    data: versionsData,
+                    size: '90%',
+                    innerSize: '60%',
+                    dataLabels: {
+                        formatter: function() {
+                            // display only if larger than 1
+                            return this.y > 1 ? '<b>' + getCName(this.point.name) + ':</b> ' +
+                                this.y + '人' : null;
+                        }
+                    },
+                    id: 'versions'
+                }
+            ]
             //,
             //responsive: {
             //    rules: [{
@@ -351,29 +353,58 @@
         });
 
         //、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
-        var datas = new Array();
         var now = new Date();
-        var y = now.getYear();
-        var m = now.getMonth();
-
-        //debugger;
-
         var earliest = new Date();
         for (var i = 0; i < result.length; i++) {
             if (result[i].applyAt != null && new Date(result[i].applyAt) < earliest)
                 earliest = new Date(result[i].applyAt);
         }
 
-        //earliest.setTime(earliest.getTime() + (8 * 60 * 60 * 1000));
+        var dtSeg = [new Date('2010-01-01T00:00:00.000Z')];
+        var ys = ['更早'];
+        var dt = earliest;
+        while (dt < now) {
+            var clone = new Date(dt);
+            dtSeg.push(clone);
+            ys.push(clone.toLocaleDateString() + ' ~');
 
-        //debugger;
+            dt.setTime(dt.getTime() + (15 * 24 * 60 * 60 * 1000));
+        }
 
-
-
-        debugger;
+        var uActive = [];
+        var uPendingTrading = [];
+        var uPendingFunding = [];
+        var uPendingLogin = [];
+        for (var i = 0; i < dtSeg.length; i++) {
+            uActive.push(0);
+            uPendingTrading.push(0);
+            uPendingFunding.push(0);
+            uPendingLogin.push(0);
+        }
 
         for (var i = 0; i < result.length; i++) {
-            
+            var user = result[i];
+
+            var idx = -1;
+            if (user.applyAt == null)
+                idx = 0;
+            else {
+                for (var j = dtSeg.length - 1; j >= 1; j--) {
+                    if (new Date(user.applyAt) >= dtSeg[j]) {
+                        idx = j;
+                        break;
+                    }
+                }
+            }
+
+            if (user.status == 'Active')
+                uActive[idx] = uActive[idx] + 1;
+            else if (user.status == 'PendingTrading')
+                uPendingTrading[idx] = uPendingTrading[idx] + 1;
+            else if (user.status == 'PendingFunding')
+                uPendingFunding[idx] = uPendingFunding[idx] + 1;
+            else if (user.status == 'PendingLogin')
+                uPendingLogin[idx] = uPendingLogin[idx] + 1;
         }
 
         // Create the chart
@@ -382,11 +413,17 @@
                 type: 'column'
             },
             title: {
-                text: '实盘用户状态分布随注册时间变化'
+                text: '实盘用户（注册申请通过）状态分布与其发起注册申请的时间'
             },
             //subtitle: {
             //    text: 'Source: <a href="http://netmarketshare.com/">netmarketshare.com</a>'
             //},
+            xAxis: {
+                categories: ys,
+                title: {
+                    text: '实盘注册申请时间'
+                }
+            },
             yAxis: {
                 title: {
                     text: '人数'
@@ -395,31 +432,30 @@
             tooltip: {
                 valueSuffix: '人'
             },
-            series: [{
-                name: '用户状态',
-                data: browserData,
-                size: '60%',
-                dataLabels: {
-                    formatter: function () {
-                        return this.y > 5 ? getCName(this.point.name) : null;
-                    },
-                    color: '#ffffff',
-                    distance: -90
-                }
-            }, {
-                name: '二级用户状态',
-                data: versionsData,
-                size: '90%',
-                innerSize: '60%',
-                dataLabels: {
-                    formatter: function () {
-                        // display only if larger than 1
-                        return this.y > 1 ? '<b>' + getCName(this.point.name) + ':</b> ' +
-                            this.y + '人' : null;
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: {
+                        enabled: true,
+                        color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
                     }
-                },
-                id: 'versions'
-            }]
+                }
+            },
+            series: [
+                {
+                    name: 'Active',
+                    data: uActive
+                }, {
+                    name: 'PendingTrading',
+                    data: uPendingTrading
+                }, {
+                    name: 'PendingFunding',
+                    data: uPendingFunding
+                }, {
+                    name: 'PendingLogin',
+                    data: uPendingLogin
+                }
+            ]
         });
     });
 </script>
