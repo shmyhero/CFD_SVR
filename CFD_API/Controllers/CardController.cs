@@ -157,7 +157,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("share/{id}")]
         [BasicAuth]
-        public ResultDTO ShareCard(int id, int shareID = 0)
+        public ResultScoreDTO ShareCard(int id, int shareID = 0)
         {
             UserCard_Live uc = db.UserCards_Live.Where(o => o.Id == id && o.UserId == this.UserId).FirstOrDefault();
             if (uc != null )
@@ -169,7 +169,7 @@ namespace CFD_API.Controllers
             }
             else
             {
-                return new ResultDTO(false);
+                return new ResultScoreDTO(false);
             }
 
             #region 积分计算
@@ -196,7 +196,7 @@ namespace CFD_API.Controllers
             #endregion
 
             db.SaveChanges();
-            return new ResultDTO(true);
+            return new ResultScoreDTO(true) { score = score };
         }
 
         [HttpGet]
