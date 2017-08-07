@@ -1001,23 +1001,27 @@ namespace CFD_API.Controllers
                 if (!IsLiveUrl && user.AyondoAccountId != accountId)
                     user.AyondoAccountId = accountId;
 
-                #region 计算积分
-                try
+                #region 计算积分 - 仅实盘
+                if(IsLiveUrl)
                 {
-                    var scoreSetting = GetScoresSetting();
-                    score = (int)(form.invest * form.leverage * scoreSetting.LiveOrder);
+                    try
+                    {
+                        var scoreSetting = GetScoresSetting();
+                        score = (int)(form.invest * form.leverage * scoreSetting.LiveOrder);
 
-                    db.ScoreHistorys.Add(new ScoreHistory() {
-                        UserID = UserId,
-                        Score = score,
-                        Source = ScoreSource.LiveOrder,
-                        CreatedAt = DateTime.UtcNow
-                    });
-                }
-                catch(Exception ex)
-                {
-                    CFDGlobal.LogWarning("Error getting score when open position: " +
-                                              ex.Message);
+                        db.ScoreHistorys.Add(new ScoreHistory()
+                        {
+                            UserID = UserId,
+                            Score = score,
+                            Source = ScoreSource.LiveOrder,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        CFDGlobal.LogWarning("Error getting score when open position: " +
+                                                  ex.Message);
+                    }
                 }
                 #endregion
 
