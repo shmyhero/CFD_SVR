@@ -11,6 +11,12 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
 </head>
 <body>
+
+<div>
+    <a href="insight.html">&lt; 首页</a>
+</div>
+
+<div style="text-align: center">
 <select id="select1" onchange="loadData($('#select2')[0].value, $('#select1')[0].value)">
     <option value="0">所有产品</option>
 </select>
@@ -19,22 +25,23 @@
     <option value="30">30天</option>
     <option value="7">7天</option>
 </select>
+    </div>
 
 <div id="container" style="height: 800px; min-width: 310px; max-width: 1200px; margin: 0 auto"></div>
 
 <script type="text/javascript">
     function loadList() {
 
-        $.getJSON('api/security/live/tradable', function (result) {
+        $.getJSON('api/security/live/tradable', function(result) {
 
             //debugger;
 
             var options = $("#select1");
-            $.each(result, function () {
+            $.each(result, function() {
                 options.append($("<option />").val(this.Id).text(this.cname));
             });
 
-            
+
         });
     }
 

@@ -791,4 +791,10 @@ namespace CFD_API.DTO
         public DateTime? applyAt { get; set; }
 
     }
+
+    public class UserDailyApprovedCountDTO
+    {
+        public DateTime? date { get; set; }
+        public int count { get; set; }
+    }
 }

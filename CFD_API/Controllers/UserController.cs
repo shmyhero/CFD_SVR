@@ -2508,6 +2508,18 @@ namespace CFD_API.Controllers
             }).ToList();
         }
 
+        [HttpGet]
+        [Route("live/report/dailyApprovedCount")]
+        [IPAuth]
+        public List<UserDailyApprovedCountDTO> GetDailyAyAccApprovedCounts()
+        {
+            var users = db.Users.Where(o=>o.AyLiveApproveAt!=null).ToList();
+
+            var groupBy = users.GroupBy(o => o.AyLiveApproveAt.Value.AddHours(8).Date).ToList();
+
+            return groupBy.Select(o => new UserDailyApprovedCountDTO() { date = DateTime.SpecifyKind(o.Key, DateTimeKind.Local), count = o.Count() }).OrderBy(o => o.date).ToList();
+        }
+
         /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式
         /// </summary>
