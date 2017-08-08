@@ -286,6 +286,18 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("~/api/position/live/report/dailyCount")]
+        [IPAuth]
+        public List<PositionDailyCountDTO> GetDailyPositionCounts()
+        {
+            var positions = db.NewPositionHistory_live.ToList();
+
+            var groupBy = positions.GroupBy(o => o.CreateTime.Value.AddHours(8).Date).ToList();
+
+            return groupBy.Select(o=>new PositionDailyCountDTO() {date=DateTime.SpecifyKind(o.Key,DateTimeKind.Local),count = o.Count()}).OrderBy(o=>o.date).ToList();
+        }
+
+        [HttpGet]
         [Route("~/api/position/live/report/openTime")]
         [IPAuth]
         public List<PositionReportDTO> GetPositionOpenTime(int week)

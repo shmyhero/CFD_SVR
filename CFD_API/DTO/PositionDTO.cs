@@ -96,6 +96,12 @@ namespace CFD_API.DTO
         public bool? isAutoClosed { get; set; }
     }
 
+    public class PositionDailyCountDTO
+    {
+        public DateTime? date { get; set; }
+        public int count { get; set; }
+    }
+
     public class ReplaceStopTakeFormDTO
     {
         public string posId { get; set; }
