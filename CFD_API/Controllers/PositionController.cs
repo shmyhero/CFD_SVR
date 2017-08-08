@@ -1495,7 +1495,7 @@ namespace CFD_API.Controllers
                 //data obfuscation
                 var max = newResult.Max(o => o.pl);
                 var min = newResult.Min(o => o.pl);
-                var ratio = 100/(max - min);
+                var ratio = max - min == 0 ? 0 : 100/(max - min);
                 foreach (var dto in newResult)
                 {
                     dto.pl = (dto.pl - min)*ratio;
@@ -1569,7 +1569,7 @@ namespace CFD_API.Controllers
                 //data obfuscation
                 var max = newResult.Max(o => o.pl);
                 var min = newResult.Min(o => o.pl);
-                var ratio = 100 / (max - min);
+                var ratio = max - min == 0 ? 0 : 100/(max - min);
                 foreach (var dto in newResult)
                 {
                     dto.pl = (dto.pl - min) * ratio;
