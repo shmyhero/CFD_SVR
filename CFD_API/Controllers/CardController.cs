@@ -193,6 +193,10 @@ namespace CFD_API.Controllers
                      CreatedAt = DateTime.UtcNow
                 });
             }
+            else
+            {
+                score = 0;
+            }
             #endregion
 
             db.SaveChanges();
