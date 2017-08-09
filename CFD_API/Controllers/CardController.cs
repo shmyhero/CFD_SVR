@@ -224,7 +224,7 @@ namespace CFD_API.Controllers
                 db.LikeHistories.Add(history);
 
                 //没有拿过点赞积分，就给点赞人和被点赞人相应的积分
-                if(!db.ScoreHistorys.Any(s=>s.UserID == UserId && s.UserCardID == id))
+                if(!db.ScoreHistorys.Any(s=>s.UserID == UserId && s.UserCardID == id && s.Source == ScoreSource.Like))
                 {
                     var scoreSetting = GetScoresSetting();
                     likeScore = scoreSetting.Like;

@@ -54,8 +54,10 @@ namespace CFD_API.Controllers
 
             dto.total = dto.share + dto.liveOrder + dto.like;
 
+            int usedScore = db.ScoreConsumptionHistorys.Where(s => s.UserID == UserId).Sum(s => s.Score).Value;
+
             //to-do 扣除已经使用的积分
-            dto.remaining = dto.total;
+            dto.remaining = dto.total - usedScore;
 
             return dto;
         }
@@ -108,7 +110,7 @@ namespace CFD_API.Controllers
             if (userID == 0)
                 return 0;
 
-            int totalScores = db.ScoreHistorys.Sum(s => s.Score);
+            int totalScores = db.ScoreHistorys.Where(s=>s.UserID == userID).Sum(s => s.Score);
 
             if(totalScores < 1000)
             {
