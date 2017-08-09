@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <div>
+        <a href="insight.html">&lt; 首页</a>
+    </div>
+
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto">Loading...</div>
+
+    <script type="text/javascript">
+    $.getJSON('api/misc/dau', function(result) {
+
+        var data = [];
+        for (var i = 0; i < result.length; i++) {
+            var obj = result[i];
+            //debugger;
+            data.push([new Date(obj.date).getTime() + 8 * 3600 * 1000, obj.count]);
+        }
+
+        Highcharts.chart('container', {
+            chart: {
+                type: 'column',
+                zoomType: 'x',
+                panning: true,
+                panKey: 'shift'
+            },
+            title: {
+                text: '赢交易注册用户DAU (不包含游客)'
+            },
+            subtitle: {
+                text: 'Click and drag to zoom in（放大）. Hold down shift key to pan（移动）.'
+            },
+            legend: {
+                enabled: false
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '用户数'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">用户数: </td>' +
+                    '<td style="padding:0"><b>{point.y:.0f}个</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true,
+                xDateFormat: '%Y-%m-%d(周%w)'
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            },
+            series: [
+                {
+                    name: '用户数',
+                    data: data
+
+                }
+            ]
+        });
+    });
+
+
+    </script>
+</body>
+</html>

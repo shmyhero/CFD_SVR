@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
 using CFD_API.Controllers.Attributes;
+using CFD_API.DTO;
 using CFD_API.SignalR;
 using CFD_COMMON;
 using CFD_COMMON.Models.Cached;
@@ -323,6 +325,32 @@ namespace CFD_API.Controllers
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, str);
+        }
+
+        [HttpGet]
+        [Route("dau")]
+        [IPAuth]
+        public List<UserDailyApprovedCountDTO> GetDAU()
+        {
+            List<UserDailyApprovedCountDTO> result;
+            //var dtStart=new DateTime(2017,1,1,0,0,0,DateTimeKind.Local);
+            using (var db2 = CFDHistoryEntities.Create())
+            {
+                result = db2.ApiHits.Where(o => o.UserId != null //&& o.HitAt>= dtStart
+                )
+                    .GroupBy(
+                        o =>
+                            new
+                            {
+                                userId = o.UserId,
+                                date = DbFunctions.TruncateTime(DbFunctions.AddHours(o.HitAt.Value, 8).Value)
+                            })
+                    .GroupBy(o => o.Key.date)
+                    .Select(o => new UserDailyApprovedCountDTO() {date = o.Key, count = o.Count()})
+                    .OrderBy(o => o.date)
+                    .ToList();
+            }
+            return result;
         }
     }
 }
