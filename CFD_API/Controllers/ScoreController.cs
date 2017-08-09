@@ -110,7 +110,14 @@ namespace CFD_API.Controllers
             if (userID == 0)
                 return 0;
 
-            int totalScores = db.ScoreHistorys.Where(s=>s.UserID == userID).Sum(s => s.Score);
+            var scoreHistoryList = db.ScoreHistorys.Where(s => s.UserID == userID).ToList();
+
+            if(scoreHistoryList.Count() == 0)
+            {
+                return 0;
+            }
+
+            int totalScores = scoreHistoryList.Sum(s => s.Score);
 
             if(totalScores < 1000)
             {
