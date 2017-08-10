@@ -18,18 +18,12 @@ namespace CFD_COMMON.Models.Entities
         [MaxLength(16)]
         public byte[] EndAddress { get; set; }
 
-        [Key]
-        [Column(Order = 2)]
         [StringLength(2)]
         public string CountryCode { get; set; }
 
-        [Key]
-        [Column(Order = 3)]
         [StringLength(200)]
         public string Province { get; set; }
 
-        [Key]
-        [Column(Order = 4)]
         [StringLength(200)]
         public string City { get; set; }
     }

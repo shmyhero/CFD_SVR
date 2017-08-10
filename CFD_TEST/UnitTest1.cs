@@ -163,6 +163,55 @@ namespace CFD_TEST
         }
 
         [TestMethod]
+        public void ImportQQWryIPTxtFile()
+        {
+            var db = CFDEntities.Create();
+
+            var sr = new StreamReader(File.Open(@"E:\Downloads\纯真网络 2017年7月30日IP数据.txt", FileMode.Open), Encoding.UTF8);
+
+            var list = new List<IP2City>();
+
+            var count = 0;
+            while (true)
+            {
+                var s = sr.ReadLine();
+                if (s == null) break;
+
+                var arr = s.Split(new[] { ' '},StringSplitOptions.RemoveEmptyEntries);
+
+                if (arr.Length == 0) break;
+
+                var arrText = arr.Skip(2).Aggregate((o, n) => o + " " + n);
+
+                list.Add(new IP2City()
+                {
+                    EndAddress = IPAddress.Parse(arr[1]).MapToIPv6().GetAddressBytes(),
+                    StartAddress = IPAddress.Parse(arr[0]).MapToIPv6().GetAddressBytes(),
+                    Province = arrText
+                });
+
+                count++;
+
+                if (list.Count % 100000 == 0)
+                {
+                    CFDGlobal.LogLine("saving " + list.Count + " total " + count);
+                    db.BulkInsert(list);
+                    db.SaveChanges();
+                    list.Clear();
+                }
+            }
+
+            if (list.Count > 0)
+            {
+                db.BulkInsert(list);
+                db.SaveChanges();
+            }
+
+            sr.Dispose();
+            db.Dispose();
+        }
+
+        [TestMethod]
         public void Test1()
         {
             //using (var db = CFDEntities.Create())

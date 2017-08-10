@@ -18,90 +18,160 @@
 <div id="container" style="height: 800px">Loading... This can take up to several minutes...</div>
 
 <script type="text/javascript">
+    //function getCode(s) {
+    //    switch (s) {
+    //        case 'Anhui':
+    //            return 'cn-ah';
+    //        case 'Beijing':
+    //        case 'Beijing Shi':
+    //            return 'cn-bj';
+    //        case 'Chongqing':
+    //            return 'cn-cq';
+    //        case 'Fujian':
+    //            return 'cn-fj';
+    //        case 'Gansu':
+    //        case 'Gansu Sheng':
+    //            return 'cn-gs';
+    //        case 'Guangdong':
+    //        case 'Guangdong Sheng':
+    //            return 'cn-gd';
+    //        case 'Guangxi':
+    //            return 'cn-gx';
+    //        case 'Guizhou':
+    //        case 'Guizhou Sheng':
+    //            return 'cn-gz';
+    //        case 'Hainan':
+    //        case 'Hainan Sheng':
+    //            return 'cn-ha';
+    //        case 'Hebei':
+    //            return 'cn-hb';
+    //        case 'Heilongjiang':
+    //        case 'Heilongjiang Sheng':
+    //            return 'cn-hl';
+    //        case 'Henan':
+    //            return 'cn-he';
+    //        case 'Hubei':
+    //        case 'Hubei Sheng':
+    //            return 'cn-hu';
+    //        case 'Hunan':
+    //        case 'Hunan Sheng':
+    //            return 'cn-hn';
+    //        case 'Inner Mongolia':
+    //        case 'Nei Mongol':
+    //        case 'Neimenggu Zizhiqu':
+    //            return 'cn-nm';
+    //        case 'Jiangsu':
+    //        case 'Jiangsu Sheng':
+    //            return 'cn-js';
+    //        case 'Jiangxi':
+    //        case 'Jiangxi Sheng':
+    //            return 'cn-jx';
+    //        case 'Jilin':
+    //        case 'Jilin Sheng':
+    //            return 'cn-jl';
+    //        case 'Liaoning':
+    //            return 'cn-ln';
+    //        case 'Ningxia':
+    //            return 'cn-nx';
+    //        case 'Qinghai':
+    //        case 'Qinghai Sheng':
+    //            return 'cn-qh';
+    //        case 'Shaanxi':
+    //        case 'Shaanxi Sheng':
+    //            return 'cn-sa';
+    //        case 'Shandong':
+    //        case 'Shandong Sheng':
+    //            return 'cn-sd';
+    //        case 'Shanghai':
+    //        case 'Shanghai Shi':
+    //            return 'cn-sh';
+    //        case 'Shanxi':
+    //        case 'Shanxi Sheng':
+    //            return 'cn-sx';
+    //        case 'Sichuan':
+    //        case 'Sichuan Sheng':
+    //            return 'cn-sc';
+    //        case 'Tianjin':
+    //            return 'cn-tj';
+    //        case 'Xinjiang':
+    //            return 'cn-xj';
+    //        case 'Xizang (tibet)':
+    //            return 'cn-xz';
+    //        case 'Yunnan':
+    //        case 'Yunnan Sheng':
+    //            return 'cn-yn';
+    //        case 'Zhejiang':
+    //        case 'Zhejiang Sheng':
+    //            return 'cn-zj';
+    //        default:
+    //            return s;
+    //    }
+    //}
+
     function getCode(s) {
-        switch (s) {
-            case 'Anhui':
+        switch (s.substr(0,2)) {
+            case '安徽':
                 return 'cn-ah';
-            case 'Beijing':
-            case 'Beijing Shi':
+            case '北京':
                 return 'cn-bj';
-            case 'Chongqing':
+            case '重庆':
                 return 'cn-cq';
-            case 'Fujian':
+            case '福建':
                 return 'cn-fj';
-            case 'Gansu':
-            case 'Gansu Sheng':
+            case '甘肃':
                 return 'cn-gs';
-            case 'Guangdong':
-            case 'Guangdong Sheng':
+            case '广东':
                 return 'cn-gd';
-            case 'Guangxi':
+            case '广西':
                 return 'cn-gx';
-            case 'Guizhou':
-            case 'Guizhou Sheng':
+            case '贵州':
                 return 'cn-gz';
-            case 'Hainan':
-            case 'Hainan Sheng':
+            case '海南':
                 return 'cn-ha';
-            case 'Hebei':
+            case '河北':
                 return 'cn-hb';
-            case 'Heilongjiang':
-            case 'Heilongjiang Sheng':
+            case '黑龙':
                 return 'cn-hl';
-            case 'Henan':
+            case '河南':
                 return 'cn-he';
-            case 'Hubei':
-            case 'Hubei Sheng':
+            case '武汉':
+            case '湖北':
                 return 'cn-hu';
-            case 'Hunan':
-            case 'Hunan Sheng':
+            case '湖南':
                 return 'cn-hn';
-            case 'Inner Mongolia':
-            case 'Nei Mongol':
-            case 'Neimenggu Zizhiqu':
+            case '内蒙':
                 return 'cn-nm';
-            case 'Jiangsu':
-            case 'Jiangsu Sheng':
+            case '江苏':
                 return 'cn-js';
-            case 'Jiangxi':
-            case 'Jiangxi Sheng':
+            case '江西':
                 return 'cn-jx';
-            case 'Jilin':
-            case 'Jilin Sheng':
+            case '吉林':
                 return 'cn-jl';
-            case 'Liaoning':
+            case '辽宁':
                 return 'cn-ln';
-            case 'Ningxia':
+            case '宁夏':
                 return 'cn-nx';
-            case 'Qinghai':
-            case 'Qinghai Sheng':
+            case '青海':
                 return 'cn-qh';
-            case 'Shaanxi':
-            case 'Shaanxi Sheng':
+            case '陕西':
                 return 'cn-sa';
-            case 'Shandong':
-            case 'Shandong Sheng':
+            case '山东':
                 return 'cn-sd';
-            case 'Shanghai':
-            case 'Shanghai Shi':
+            case '上海':
                 return 'cn-sh';
-            case 'Shanxi':
-            case 'Shanxi Sheng':
+            case '山西':
                 return 'cn-sx';
-            case 'Sichuan':
-            case 'Sichuan Sheng':
+            case '四川':
                 return 'cn-sc';
-            case 'Tianjin':
+            case '天津':
                 return 'cn-tj';
-            case 'Xinjiang':
+            case '新疆':
                 return 'cn-xj';
-            case 'Xizang (tibet)':
+            case '西藏':
                 return 'cn-xz';
-            case 'Yunnan':
-            case 'Yunnan Sheng':
+            case '云南':
                 return 'cn-yn';
-            case 'Zhejiang':
-            case 'Zhejiang Sheng':
+            case '浙江':
                 return 'cn-zj';
             default:
                 return s;

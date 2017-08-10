@@ -390,7 +390,7 @@ namespace CFD_API.Controllers
                     .ToList();
 
                 var cnCities =
-                    db.IP2City.Where(o => o.CountryCode == "CN")
+                    db.IP2City//.Where(o => o.CountryCode == "CN")
                         .Select(o => new {s = o.StartAddress, e = o.EndAddress, p = o.Province})
                         .ToList();
 
