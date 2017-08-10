@@ -378,27 +378,44 @@ namespace CFD_API.Controllers
                 var ipStrCount = db2.ApiHits.Where(o => o.HitAt >= monthAgo)
                     .GroupBy(o => o.Ip)
                     .Select(o => new {ip = o.Key, count = o.Count()})
+                    .OrderByDescending(o=>o.count)
                     .ToList();
 
                 var ipByteCount = ipStrCount
-                    .OrderBy(o => o.ip)
-                    .Select(o => new
+                    .Select(o =>
                     {
-                        ip = IPAddress.Parse(o.ip).MapToIPv6().GetAddressBytes(),
-                        count = o.count,
+                        var bytes = IPAddress.Parse(o.ip).GetAddressBytes();
+                        Array.Reverse(bytes);
+                        var ipInt = BitConverter.ToUInt32(bytes, 0);
+                        return new
+                        {
+                            ip = ipInt,
+                            count = o.count,
+                        };
                     })
+                    .OrderByDescending(o => o.count)
                     .ToList();
 
-                var cnCities =
+                var ipDB =
                     db.IP2City//.Where(o => o.CountryCode == "CN")
-                        .Select(o => new {s = o.StartAddress, e = o.EndAddress, p = o.Province})
+                        .Select(o => new { s =o.StartAddress, e = o.EndAddress, p = o.Province })
                         .ToList();
+                var ipInt32DB = ipDB.Select(o =>
+                {
+                    var s = o.s;
+                    var e = o.e;
+                    Array.Reverse(s);
+                    Array.Reverse(e);
+                    return new {s = BitConverter.ToUInt32(s, 0), e = BitConverter.ToUInt32(e, 0), p = o.p};
+                })
+                    .ToList();
 
                 result = ipByteCount.Select(o =>
                 {
-                    var city =
-                        cnCities.FirstOrDefault(
-                            c => Bytes.IsFormerBiggerOrEqual(o.ip, c.s) && Bytes.IsFormerBiggerOrEqual(c.e, o.ip));
+                    //var city =
+                    //    cnCities.FirstOrDefault(
+                    //        c => Bytes.IsFormerBiggerOrEqual(o.ip, c.s) && Bytes.IsFormerBiggerOrEqual(c.e, o.ip));
+                    var city = ipInt32DB.FirstOrDefault(c => o.ip>=c.s && c.e>=o.ip);
                     return new IPLocationDTO
                     {
                         province = city?.p,
