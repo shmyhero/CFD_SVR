@@ -362,7 +362,7 @@ namespace CFD_API.Controllers
 
             List<IPLocationDTO> result;
 
-            var monthAgo = DateTime.UtcNow.AddHours(8).Date.AddDays(-7);
+            var monthAgo = DateTime.UtcNow.AddHours(8).Date.AddDays(-6);
             using (var db2 = CFDHistoryEntities.Create())
             {
                 db2.Database.CommandTimeout = 600;

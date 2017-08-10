@@ -15,7 +15,7 @@
         <a href="insight.html">&lt; 首页</a>
     </div>
 
-<div id="container" style="height: 800px">Loading...</div>
+<div id="container" style="height: 800px">Loading... This can take up to several minutes...</div>
 
 <script type="text/javascript">
     function getCode(s) {
@@ -115,7 +115,8 @@
             data.push([getCode(obj.province),obj.count]);
         }
 
-        debugger;
+        //debugger;
+
         var groupedData = [];
         for (var i = 0; i < data.length; i++) {
             var idx = -1;
