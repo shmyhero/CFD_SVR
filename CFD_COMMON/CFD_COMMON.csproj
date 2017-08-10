@@ -160,6 +160,7 @@
     <Compile Include="Models\Entities\Bookmark.cs" />
     <Compile Include="Models\Entities\Device.cs" />
     <Compile Include="Models\Entities\Feedback.cs" />
+    <Compile Include="Models\Entities\IP2City.cs" />
     <Compile Include="Models\Entities\IP2Country.cs" />
     <Compile Include="Models\Entities\LikeHistory.cs" />
     <Compile Include="Models\Entities\LiveRank.cs" />
@@ -208,6 +209,7 @@
     <Compile Include="Service\RewardService.cs" />
     <Compile Include="Service\SecurityService.cs" />
     <Compile Include="Service\UserService.cs" />
+    <Compile Include="Utils\Bytes.cs" />
     <Compile Include="Utils\DateTimes.cs" />
     <Compile Include="Utils\Decimals.cs" />
     <Compile Include="Utils\DESUtil.cs" />

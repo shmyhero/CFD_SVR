@@ -121,6 +121,48 @@ namespace CFD_TEST
         }
 
         [TestMethod]
+        public void ImportIP2CityCsvFile()
+        {
+            var db = CFDEntities.Create();
+
+            var csv = new CsvReader(new StreamReader(File.Open(@"E:\Downloads\dbip-city-2017-08.csv", FileMode.Open)));
+
+            var list = new List<IP2City>();
+
+            var count = 0;
+            while (csv.Read())
+            {
+                list.Add(new IP2City()
+                {
+                    CountryCode = csv.GetField(2),
+                    EndAddress = IPAddress.Parse(csv.GetField(1)).MapToIPv6().GetAddressBytes(),
+                    StartAddress = IPAddress.Parse(csv.GetField(0)).MapToIPv6().GetAddressBytes(),
+                    Province = csv.GetField(3),
+                    City = csv.GetField(4)
+                });
+
+                count++;
+
+                if (list.Count%100000 == 0)
+                {
+                    CFDGlobal.LogLine("saving " + list.Count+ " total "+ count);
+                    db.BulkInsert(list);
+                    db.SaveChanges();
+                    list.Clear();
+                }
+            }
+
+            if (list.Count > 0)
+            {
+                db.BulkInsert(list);
+                db.SaveChanges();
+            }
+
+            csv.Dispose();
+            db.Dispose();
+        }
+
+        [TestMethod]
         public void Test1()
         {
             //using (var db = CFDEntities.Create())

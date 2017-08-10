@@ -352,5 +352,60 @@ namespace CFD_API.Controllers
             }
             return result;
         }
+
+        [HttpGet]
+        [Route("userLocation")]
+        [IPAuth]
+        public List<IPLocationDTO> UserLocation()
+        {
+            //return new List<IPLocationDTO>() {new IPLocationDTO() {count=100,province= "Guangdong" }, new IPLocationDTO() { count = 100, province = "Guangdong Sheng" } };
+
+            List<IPLocationDTO> result;
+
+            var monthAgo = DateTime.UtcNow.AddHours(8).Date.AddDays(-7);
+            using (var db2 = CFDHistoryEntities.Create())
+            {
+                db2.Database.CommandTimeout = 600;
+                var ipStrCount = db2.ApiHits.Where(o => o.HitAt >= monthAgo)
+                    .GroupBy(o => o.Ip)
+                    .Select(o => new {ip = o.Key, count = o.Count()})
+                    .ToList();
+
+                var ipByteCount = ipStrCount
+                    .OrderBy(o => o.ip)
+                    .Select(o => new
+                    {
+                        ip = IPAddress.Parse(o.ip).MapToIPv6().GetAddressBytes(),
+                        count = o.count,
+                    })
+                    .ToList();
+
+                var cnCities =
+                    db.IP2City.Where(o => o.CountryCode == "CN")
+                        .Select(o => new {s = o.StartAddress, e = o.EndAddress, p = o.Province})
+                        .ToList();
+
+                result = ipByteCount.Select(o =>
+                {
+                    var city =
+                        cnCities.FirstOrDefault(
+                            c => Bytes.IsFormerBiggerOrEqual(o.ip, c.s) && Bytes.IsFormerBiggerOrEqual(c.e, o.ip));
+                    return new IPLocationDTO
+                    {
+                        province = city?.p,
+                        count = o.count,
+                    };
+                })
+                    .Where(o => o.province != null)
+                    .ToList();
+
+                result = result.GroupBy(o => o.province)
+                    .Select(o => new IPLocationDTO() {province = o.Key, count = o.Sum(p => p.count)})
+                    .OrderBy(o => o.province)
+                    .ToList();
+            }
+
+            return result;
+        }
     }
 }

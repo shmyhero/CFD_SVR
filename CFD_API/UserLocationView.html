@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+
+<script src="Scripts/jquery-1.6.4.min.js"></script>
+<script src="https://code.highcharts.com/maps/highmaps.js"></script>
+<script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/mapdata/countries/cn/cn-all.js"></script>
+
+    <div>
+        <a href="insight.html">&lt; 首页</a>
+    </div>
+
+<div id="container" style="height: 800px">Loading...</div>
+
+<script type="text/javascript">
+    function getCode(s) {
+        switch (s) {
+            case 'Anhui':
+                return 'cn-ah';
+            case 'Beijing':
+            case 'Beijing Shi':
+                return 'cn-bj';
+            case 'Chongqing':
+                return 'cn-cq';
+            case 'Fujian':
+                return 'cn-fj';
+            case 'Gansu':
+            case 'Gansu Sheng':
+                return 'cn-gs';
+            case 'Guangdong':
+            case 'Guangdong Sheng':
+                return 'cn-gd';
+            case 'Guangxi':
+                return 'cn-gx';
+            case 'Guizhou':
+            case 'Guizhou Sheng':
+                return 'cn-gz';
+            case 'Hainan':
+            case 'Hainan Sheng':
+                return 'cn-ha';
+            case 'Hebei':
+                return 'cn-hb';
+            case 'Heilongjiang':
+            case 'Heilongjiang Sheng':
+                return 'cn-hl';
+            case 'Henan':
+                return 'cn-he';
+            case 'Hubei':
+            case 'Hubei Sheng':
+                return 'cn-hu';
+            case 'Hunan':
+            case 'Hunan Sheng':
+                return 'cn-hn';
+            case 'Inner Mongolia':
+            case 'Nei Mongol':
+            case 'Neimenggu Zizhiqu':
+                return 'cn-nm';
+            case 'Jiangsu':
+            case 'Jiangsu Sheng':
+                return 'cn-js';
+            case 'Jiangxi':
+            case 'Jiangxi Sheng':
+                return 'cn-jx';
+            case 'Jilin':
+            case 'Jilin Sheng':
+                return 'cn-jl';
+            case 'Liaoning':
+                return 'cn-ln';
+            case 'Ningxia':
+                return 'cn-nx';
+            case 'Qinghai':
+            case 'Qinghai Sheng':
+                return 'cn-qh';
+            case 'Shaanxi':
+            case 'Shaanxi Sheng':
+                return 'cn-sa';
+            case 'Shandong':
+            case 'Shandong Sheng':
+                return 'cn-sd';
+            case 'Shanghai':
+            case 'Shanghai Shi':
+                return 'cn-sh';
+            case 'Shanxi':
+            case 'Shanxi Sheng':
+                return 'cn-sx';
+            case 'Sichuan':
+            case 'Sichuan Sheng':
+                return 'cn-sc';
+            case 'Tianjin':
+                return 'cn-tj';
+            case 'Xinjiang':
+                return 'cn-xj';
+            case 'Xizang (tibet)':
+                return 'cn-xz';
+            case 'Yunnan':
+            case 'Yunnan Sheng':
+                return 'cn-yn';
+            case 'Zhejiang':
+            case 'Zhejiang Sheng':
+                return 'cn-zj';
+            default:
+                return s;
+        }
+    }
+
+    $.getJSON('api/misc/userlocation', function (result) {
+        var data = [];
+        for (var i = 0; i < result.length; i++) {
+            var obj = result[i];
+            data.push([getCode(obj.province),obj.count]);
+        }
+
+        debugger;
+        var groupedData = [];
+        for (var i = 0; i < data.length; i++) {
+            var idx = -1;
+            for (var j = 0; j < groupedData.length; j++) {
+                if (groupedData[j][0] == data[i][0]) {
+                    idx = j;
+                    break;
+                }
+            }
+            if (idx >= 0) {
+                groupedData[idx][1] = groupedData[idx][1] + data[i][1];
+            } else {
+                groupedData.push(data[i]);
+            }
+        }
+
+        Highcharts.mapChart('container', {
+            chart: {
+                map: 'countries/cn/cn-all'
+            },
+
+            title: {
+                text: '近一周API请求分布'
+            },
+
+            //subtitle: {
+            //    text: 'Source map: <a href="http://code.highcharts.com/mapdata/countries/cn/cn-all.js">China</a>'
+            //},
+
+            mapNavigation: {
+                enabled: true,
+                buttonOptions: {
+                    verticalAlign: 'bottom'
+                }
+            },
+
+            colorAxis: {
+                min: 0
+            },
+
+            series: [
+            {
+                data: groupedData,
+                name: 'API请求数',
+                states: {
+                    hover: {
+                        color: '#BADA55'
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.name}'
+                }
+            }]
+        });
+    })
+</script>
+</body>
+</html>
