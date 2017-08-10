@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using System.Transactions;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
@@ -19,6 +20,7 @@ using CFD_COMMON.Utils;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
+using IsolationLevel = System.Data.IsolationLevel;
 
 namespace CFD_API.Controllers
 {
@@ -334,22 +336,29 @@ namespace CFD_API.Controllers
         {
             List<UserDailyApprovedCountDTO> result;
             //var dtStart=new DateTime(2017,1,1,0,0,0,DateTimeKind.Local);
-            using (var db2 = CFDHistoryEntities.Create())
+
+            using (var scope=new TransactionScope(TransactionScopeOption.Required,new TransactionOptions{IsolationLevel =System.Transactions.IsolationLevel.ReadUncommitted}))
             {
-                result = db2.ApiHits.Where(o => o.UserId != null //&& o.HitAt>= dtStart
-                )
-                    .GroupBy(
-                        o =>
-                            new
-                            {
-                                userId = o.UserId,
-                                date = DbFunctions.TruncateTime(DbFunctions.AddHours(o.HitAt.Value, 8).Value)
-                            })
-                    .GroupBy(o => o.Key.date)
-                    .Select(o => new UserDailyApprovedCountDTO() {date = o.Key, count = o.Count()})
-                    .OrderBy(o => o.date)
-                    .ToList();
+                using (var db2 = CFDHistoryEntities.Create())
+                {
+                    result = db2.ApiHits.Where(o => o.UserId != null //&& o.HitAt>= dtStart
+                    )
+                        .GroupBy(
+                            o =>
+                                new
+                                {
+                                    userId = o.UserId,
+                                    date = DbFunctions.TruncateTime(DbFunctions.AddHours(o.HitAt.Value, 8).Value)
+                                })
+                        .GroupBy(o => o.Key.date)
+                        .Select(o => new UserDailyApprovedCountDTO() { date = o.Key, count = o.Count() })
+                        .OrderBy(o => o.date)
+                        .ToList();
+                }
+
+                scope.Complete();
             }
+            
             return result;
         }
 
