@@ -119,6 +119,7 @@
     <Compile Include="Ayondo\AyondoTransferHistoryImport.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="BaseEmail.cs" />
     <Compile Include="BaseExport.cs" />
     <Compile Include="DepositRewardReport.cs" />
     <Compile Include="PartnerReport.cs" />

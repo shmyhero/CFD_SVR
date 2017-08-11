@@ -78,7 +78,13 @@ namespace CFD_JOBS
                             excel.ExportPartner(fileName);
                         }
 
-                        SendMail(fileName, partnerMailSetting);
+                        BaseEmailHelper helper = new Mail163Helper();
+                        if (!helper.Send(fileName, partnerMailSetting, "Daily Partner Report"))
+                        {
+                            helper = new MailQQHelper();
+                            helper.Send(fileName, partnerMailSetting, "Daily Partner Report");
+                        }
+                        //SendMail(fileName, partnerMailSetting);
                     }
                 }
                 catch (Exception e)

@@ -145,7 +145,14 @@ namespace CFD_JOBS
                             excel.ExportDepositReward(fileName);
                         }
 
-                        SendMail(fileName, refundMailSetting);
+                        //SendMail(fileName, refundMailSetting);
+                        BaseEmailHelper helper = new Mail163Helper();
+                        if(!helper.Send(fileName, refundMailSetting, "First Day Deposit Reward Report"))
+                        {
+                            helper = new MailQQHelper();
+                            helper.Send(fileName, refundMailSetting, "First Day Deposit Reward Report");
+                        }
+
                     }
                 }
                 catch (Exception e)

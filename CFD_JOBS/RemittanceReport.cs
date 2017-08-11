@@ -83,7 +83,13 @@ namespace CFD_JOBS
                         }
                         excel.RemittanceExportItems = exporItems;
                         excel.ExportRemittance(fileName);
-                        SendMail(fileName, refundMailSetting);
+                        //SendMail(fileName, refundMailSetting);
+                        BaseEmailHelper helper = new Mail163Helper();
+                        if (!helper.Send(fileName, refundMailSetting, "Daily Remittance Report"))
+                        {
+                            helper = new MailQQHelper();
+                            helper.Send(fileName, refundMailSetting, "Daily Remittance Report");
+                        }
                     }
                 }
                 catch (Exception e)
