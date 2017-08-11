@@ -228,6 +228,7 @@
     <Content Include="CacheClear.html" />
     <Content Include="CacheSwitcher.html" />
     <Content Include="CompetitionView.html" />
+    <Content Include="DailyTransferView.html" />
     <Content Include="DailyPositionView.html" />
     <Content Include="DailyUserApplicationView.html" />
     <Content Include="DAUView.html" />

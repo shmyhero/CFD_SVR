@@ -35,6 +35,7 @@ using ServiceStack.Text;
 using System.Data.SqlTypes;
 using CFD_COMMON.IdentityVerify;
 using ServiceStack.Common;
+using ServiceStack.Common.Extensions;
 
 namespace CFD_API.Controllers
 {
@@ -2518,6 +2519,24 @@ namespace CFD_API.Controllers
             var groupBy = users.GroupBy(o => o.AyLiveApproveAt.Value.AddHours(8).Date).ToList();
 
             return groupBy.Select(o => new UserDailyApprovedCountDTO() { date = DateTime.SpecifyKind(o.Key, DateTimeKind.Local), count = o.Count() }).OrderBy(o => o.date).ToList();
+        }
+
+        [HttpGet]
+        [Route("live/report/dailyTransfer")]
+        [IPAuth]
+        public List<UserDailyTransferDTO> GetDailyTransferReport()
+        {
+            var result = db.AyondoTransferHistory_Live.Where(o => o.TransferType == "WeCollect - CUP")
+                .GroupBy(o => DbFunctions.TruncateTime(DbFunctions.AddHours(o.ApprovalTime.Value, 8).Value))
+                .Select(o => new UserDailyTransferDTO() {date = o.Key, withdrawal = o.Sum(p => p.Amount)})
+                .ToList()
+                .OrderBy(o => o.date)
+                .Select(o => new UserDailyTransferDTO()
+                {
+                    date = DateTime.SpecifyKind(o.date.Value, DateTimeKind.Local),
+                    withdrawal = o.withdrawal
+                }).ToList();
+            return result;
         }
 
         /// <summary>
