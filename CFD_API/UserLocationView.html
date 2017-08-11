@@ -17,6 +17,8 @@
 
 <div id="container" style="height: 800px">Loading... This can take up to several minutes...</div>
 
+    <pre id="divDetail"></pre>
+
 <script type="text/javascript">
     //function getCode(s) {
     //    switch (s) {
@@ -178,11 +180,11 @@
         }
     }
 
-    $.getJSON('api/misc/userlocation', function (result) {
+    $.getJSON('api/misc/userlocation', function(result) {
         var data = [];
         for (var i = 0; i < result.length; i++) {
             var obj = result[i];
-            data.push([getCode(obj.province),obj.count]);
+            data.push([getCode(obj.province), obj.count]);
         }
 
         //debugger;
@@ -228,21 +230,28 @@
             },
 
             series: [
-            {
-                data: groupedData,
-                name: 'API请求数',
-                states: {
-                    hover: {
-                        color: '#BADA55'
+                {
+                    data: groupedData,
+                    name: 'API请求数',
+                    states: {
+                        hover: {
+                            color: '#BADA55'
+                        }
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}'
                     }
-                },
-                dataLabels: {
-                    enabled: true,
-                    format: '{point.name}'
                 }
-            }]
+            ]
         });
-    })
+
+        var div = $('#divDetail');
+        div.html('');
+        for (var i = 0; i < result.length; i++) {
+            div.append(result[i].count + '次 ' + result[i].province+'\r\n');
+        }
+    });
 </script>
 </body>
 </html>

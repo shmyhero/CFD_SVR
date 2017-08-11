@@ -341,7 +341,7 @@ namespace CFD_API.Controllers
             {
                 using (var db2 = CFDHistoryEntities.Create())
                 {
-                    result = db2.ApiHits.Where(o => o.UserId != null //&& o.HitAt>= dtStart
+                    result = db2.ApiHits.AsNoTracking().Where(o => o.UserId != null //&& o.HitAt>= dtStart
                     )
                         .GroupBy(
                             o =>
@@ -372,13 +372,14 @@ namespace CFD_API.Controllers
             List<IPLocationDTO> result;
 
             var monthAgo = DateTime.UtcNow.AddHours(8).Date.AddDays(-6);
+
             using (var db2 = CFDHistoryEntities.Create())
             {
                 db2.Database.CommandTimeout = 600;
-                var ipStrCount = db2.ApiHits.Where(o => o.HitAt >= monthAgo)
+                var ipStrCount = db2.ApiHits.AsNoTracking().Where(o => o.HitAt >= monthAgo)
                     .GroupBy(o => o.Ip)
                     .Select(o => new {ip = o.Key, count = o.Count()})
-                    .OrderByDescending(o=>o.count)
+                    //.OrderByDescending(o => o.count)
                     .ToList();
 
                 var ipByteCount = ipStrCount
@@ -393,12 +394,12 @@ namespace CFD_API.Controllers
                             count = o.count,
                         };
                     })
-                    .OrderByDescending(o => o.count)
+                    //.OrderByDescending(o => o.count)
                     .ToList();
 
                 var ipDB =
-                    db.IP2City//.Where(o => o.CountryCode == "CN")
-                        .Select(o => new { s =o.StartAddress, e = o.EndAddress, p = o.Province })
+                    db.IP2City.AsNoTracking() //.Where(o => o.CountryCode == "CN")
+                        .Select(o => new {s = o.StartAddress, e = o.EndAddress, p = o.Province})
                         .ToList();
                 var ipInt32DB = ipDB.Select(o =>
                 {
@@ -415,7 +416,7 @@ namespace CFD_API.Controllers
                     //var city =
                     //    cnCities.FirstOrDefault(
                     //        c => Bytes.IsFormerBiggerOrEqual(o.ip, c.s) && Bytes.IsFormerBiggerOrEqual(c.e, o.ip));
-                    var city = ipInt32DB.FirstOrDefault(c => o.ip>=c.s && c.e>=o.ip);
+                    var city = ipInt32DB.FirstOrDefault(c => o.ip >= c.s && c.e >= o.ip);
                     return new IPLocationDTO
                     {
                         province = city?.p,
@@ -427,7 +428,7 @@ namespace CFD_API.Controllers
 
                 result = result.GroupBy(o => o.province)
                     .Select(o => new IPLocationDTO() {province = o.Key, count = o.Sum(p => p.count)})
-                    .OrderBy(o => o.province)
+                    .OrderByDescending(o => o.count)
                     .ToList();
             }
 
