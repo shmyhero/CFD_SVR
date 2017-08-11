@@ -64,10 +64,12 @@ namespace CFD_JOBS
             }
             catch (Exception ex)
             {
+                Console.WriteLine("163 Mail Server Failed");
                 CFDGlobal.LogException(ex);
                 return false;
             }
 
+            Console.WriteLine("Successful with 163");
             return true;
         }
     }
@@ -121,9 +123,12 @@ namespace CFD_JOBS
             }
             catch (Exception ex)
             {
+                Console.WriteLine("QQ Mail Server Failed");
                 CFDGlobal.LogException(ex);
                 return false;
             }
+
+            Console.WriteLine("Successful with QQ");
 
             return true;
         }

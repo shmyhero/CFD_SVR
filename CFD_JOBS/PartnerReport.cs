@@ -28,11 +28,14 @@ namespace CFD_JOBS
                     var end = DateTime.UtcNow.AddMinutes(5);
                     //上海的下午2点、UTC上午6点作为发送时间
                     int timeToSendHour = 6;
+                    int timeToSendMinute = 0;
                     try
                     {
                         using (var db = CFDEntities.Create())
                         {
-                            timeToSendHour = int.Parse(db.Miscs.FirstOrDefault(o => o.Key == "PartnerMailTime").Value);
+                            string timeToSendStr = db.Miscs.FirstOrDefault(o => o.Key == "PartnerMailTime").Value;
+                            timeToSendHour = int.Parse(timeToSendStr.Split(':')[0]);
+                            timeToSendMinute = int.Parse(timeToSendStr.Split(':')[1]);
                         }
                     }
                     catch
@@ -40,7 +43,7 @@ namespace CFD_JOBS
                         Console.WriteLine("读取发送时间失败");
                     }
 
-                    var timeToSend = DateTime.SpecifyKind(new DateTime(start.Year, start.Month, start.Day, timeToSendHour, 0, 0), DateTimeKind.Utc);
+                    var timeToSend = DateTime.SpecifyKind(new DateTime(start.Year, start.Month, start.Day, timeToSendHour, timeToSendMinute, 0), DateTimeKind.Utc);
                     if (start < timeToSend && end >= timeToSend)
                     {
                         Console.WriteLine("开始读取");
