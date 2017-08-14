@@ -108,6 +108,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("user/plClosed")]
         [Route("live/user/plClosed")]
         [IPAuth]
         public List<UserRankReportDTO> GetUserRank(int day)
@@ -115,18 +116,34 @@ namespace CFD_API.Controllers
             var daysAgo = DateTimes.GetChinaToday().AddDays(-(day-1));
             var twoWeeksAgoUtc = daysAgo.AddHours(-8);
 
-            var userDTOs = db.NewPositionHistory_live.Where(o => o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
-                .GroupBy(o => o.UserId).Select(o => new UserRankReportDTO()
-                {
-                    id = o.Key.Value,
+            //db.Database.CommandTimeout = 60*10;
+            //db.Database.ExecuteSqlCommand("SET ARITHABORT ON");
 
-                    posCount = o.Count(),
-                    winRate = (decimal)o.Count(p => p.PL > 0) / o.Count(),
-                    roi = o.Sum(p => p.PL.Value) / o.Sum(p => p.InvestUSD.Value),
+            var userDTOs = IsLiveUrl
+                ? db.NewPositionHistory_live.AsNoTracking().Where(o => o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
+                    .GroupBy(o => o.UserId).Select(o => new UserRankReportDTO()
+                    {
+                        id = o.Key.Value,
 
-                    pl = o.Sum(p => p.PL.Value)
+                        posCount = o.Count(),
+                        winRate = (decimal) o.Count(p => p.PL > 0)/o.Count(),
+                        roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
 
-                }).OrderByDescending(o => o.roi).ToList();
+                        pl = o.Sum(p => p.PL.Value)
+
+                    }).OrderByDescending(o => o.roi).ToList()
+                : db.NewPositionHistories.AsNoTracking().Where(o => o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
+                    .GroupBy(o => o.UserId).Select(o => new UserRankReportDTO()
+                    {
+                        id = o.Key.Value,
+
+                        posCount = o.Count(),
+                        winRate = (decimal) o.Count(p => p.PL > 0)/o.Count(),
+                        roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
+
+                        pl = o.Sum(p => p.PL.Value)
+
+                    }).OrderByDescending(o => o.roi).ToList();
             
             var result = userDTOs;
 
@@ -135,9 +152,13 @@ namespace CFD_API.Controllers
             var users = db.Users.Where(o => userIds.Contains(o.Id)).ToList();
             foreach (var userDto in result)
             {
-                var user = users.First(o => o.Id == userDto.id);
-                userDto.nickname = user.Nickname;
-                userDto.picUrl = user.PicUrl;
+                var user = users.FirstOrDefault(o => o.Id == userDto.id);
+
+                if (user != null)
+                {
+                    userDto.nickname = user.Nickname;
+                    userDto.picUrl = user.PicUrl;
+                }
             }
 
             return result;

@@ -236,13 +236,16 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("~/api/position/report")]
         [Route("~/api/position/live/report")]
         [IPAuth]
         public List<PositionReportDTO> GetPositionsByUser(int userID)
         {
             var results = new List<PositionReportDTO>();
-            var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID).OrderByDescending(p => p.CreateTime).ToList();
-            var cache = WebCache.GetInstance(true);
+            var positions = IsLiveUrl
+                ? db.NewPositionHistory_live.Where(p => p.UserId == userID).OrderByDescending(p => p.CreateTime).ToList().Select(o => o as NewPositionHistoryBase).ToList()
+                : db.NewPositionHistories.Where(p => p.UserId == userID).OrderByDescending(p => p.CreateTime).ToList().Select(o => o as NewPositionHistoryBase).ToList();
+            var cache = WebCache.GetInstance(IsLiveUrl);
 
             positions.ForEach(p =>
             {
