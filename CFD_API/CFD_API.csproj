@@ -228,6 +228,7 @@
     <Content Include="CacheClear.html" />
     <Content Include="CacheSwitcher.html" />
     <Content Include="CompetitionView.html" />
+    <Content Include="DailyClosePositionView.html" />
     <Content Include="DailyTransferView.html" />
     <Content Include="DailyPositionView.html" />
     <Content Include="DailyUserApplicationView.html" />
@@ -236,6 +237,7 @@
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="insight.html" />
     <Content Include="InvestLevView.html" />
+    <Content Include="PLView.html" />
     <Content Include="ProdRankView.html" />
     <Content Include="ProdView.html" />
     <Content Include="QuoteView.html" />
