@@ -188,12 +188,16 @@
         };
     }
 
+    if (getQueryStringByName('demo')) {
+        $('input[type="button"]').css("display", "none");
+    }
+
     function loadData() {
         var div = document.getElementById('positionTable');
         div.style.display = 'none';
 
         document.getElementById('lblDays').innerText = document.getElementById('txtDays').value;
-        var url = 'api/rank/live/user/plClosed?day=' + document.getElementById('txtDays').value;
+        var url = 'api/rank/' + (getQueryStringByName('demo') ? '' : 'live/') + 'user/plClosed?day=' + document.getElementById('txtDays').value;
 
         $rankTableBody.empty();
         $rankTableBody.append('<td style="text-align:left" colspan="8">loading...</td>');
@@ -232,7 +236,7 @@
     function loadPosData() {
         var userId = document.getElementById('txtUserId').value;
 
-        var url = 'api/position/live/report?userId=' + userId;
+        var url = 'api/position/' + (getQueryStringByName('demo') ? '' : 'live/') + 'report?userId=' + userId;
 
         $positionTableBody.empty();
         $positionTableBody.append('<td style="text-align:left" colspan="11">loading...</td>');

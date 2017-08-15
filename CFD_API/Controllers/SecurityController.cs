@@ -782,16 +782,19 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("report")]
         [Route("live/report")]
         [IPAuth]
         public List<ProdRankReportDTO> GetSecurityReport()
         {
-            var cache = WebCache.GetInstance(true);
+            var cache = WebCache.GetInstance(IsLiveUrl);
 
             var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
             var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
 
-            var positions = db.NewPositionHistory_live.AsNoTracking().ToList();
+            var positions = IsLiveUrl
+                ? db.NewPositionHistory_live.AsNoTracking().ToList().Select(o => Mapper.Map<NewPositionHistoryBase>(o)).ToList()
+                : db.NewPositionHistories.AsNoTracking().ToList().Select(o => Mapper.Map<NewPositionHistoryBase>(o)).ToList();
 
             var result = positions.GroupBy(o => o.SecurityId).Select(o =>
             {
@@ -805,7 +808,7 @@ namespace CFD_API.Controllers
                 };
             }).ToList();
 
-            var activeProds = GetActiveProds(true).Where(o=>!o.Name.EndsWith(" Outright"));
+            var activeProds = GetActiveProds(IsLiveUrl).Where(o=>!o.Name.EndsWith(" Outright"));
             foreach (var activeProd in activeProds)
             {
                 if(result.All(o => o.id != activeProd.Id))

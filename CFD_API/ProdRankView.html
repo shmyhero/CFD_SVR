@@ -158,7 +158,7 @@
 
     function loadData() {
 
-        var url = 'api/security/live/report';
+        var url = 'api/security/' + (getQueryStringByName('demo') ? '' : 'live/') + 'report';
 
         $.ajax(url).done(function(datas) {
             $rankTableBody.empty();

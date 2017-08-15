@@ -797,4 +797,10 @@ namespace CFD_API.DTO
         public DateTime? date { get; set; }
         public int count { get; set; }
     }
+
+    public class UserDailyTransferDTO
+    {
+        public DateTime? date { get; set; }
+        public decimal? withdrawal { get; set; }
+    }
 }
