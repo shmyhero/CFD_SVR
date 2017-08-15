@@ -35,26 +35,26 @@ namespace AyondoTrade
         {
         }
 
-        public void UserLogin(string account)
-        {
-            Task.Factory.StartNew(
-                () => {
-                    CFDGlobal.LogLine(string.Format("Cache - UserLogin ({0})", account));
+        //public void UserLogin(string account)
+        //{
+        //    Task.Factory.StartNew(
+        //        () => {
+        //            CFDGlobal.LogLine(string.Format("Cache - UserLogin ({0})", account));
 
-                    //if (!openPositionList.ContainsKey(account))
-                    //{
-                    //    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
+        //            //if (!openPositionList.ContainsKey(account))
+        //            //{
+        //            //    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
 
-                    //    openPositionList.TryAdd(account, null);
-                    //}
-                    if (!cfdCache.Contains(openPositionCachePrefix + account))
-                    {
-                        CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
-                        cfdCache.Set(openPositionCachePrefix + account, new List<PositionReport>(), new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(absoluteExpiration) });
-                        CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added finished", account));
-                    }
-                });
-        }
+        //            //    openPositionList.TryAdd(account, null);
+        //            //}
+        //            //if (!cfdCache.Contains(openPositionCachePrefix + account))
+        //            //{
+        //            //    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added into open position list", account));
+        //            //    cfdCache.Set(openPositionCachePrefix + account, new List<PositionReport>(), new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(absoluteExpiration) });
+        //            //    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) added finished", account));
+        //            //}
+        //        });
+        //}
 
         public void UserLogout(string account)
         {
@@ -135,7 +135,7 @@ namespace AyondoTrade
             if (cfdCache.Contains(openPositionCachePrefix + account))
             {
                 var positions = cfdCache[openPositionCachePrefix + account] as IList<PositionReport>;
-                if (positions == null || positions.Count == 0)
+                if (positions == null)
                 {
                     CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Get Open PositionReport, Pos Count:0", account));
 

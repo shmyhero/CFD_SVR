@@ -1017,24 +1017,6 @@ namespace CFD_API.Controllers
                 if (!IsLiveUrl && user.AyondoAccountId != accountId)
                     user.AyondoAccountId = accountId;
 
-                #region 刷新持仓缓存 - 为了解决用户在开仓界面Fix Session Timeout，然后重新登陆，导致Cache重置。下单后Cache就只有最近一笔记录的问题。
-                Task.Factory.StartNew(()=> {
-                    using (var wcfClient = new AyondoTradeClient(IsLiveUrl))
-                    {
-                        try
-                        {
-                            wcfClient.GetPositionReport(IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
-                                IsLiveUrl ? null : user.AyondoPassword,
-                                true);
-                        }
-                        catch (FaultException<OAuthLoginRequiredFault>)//when oauth is required
-                        {
-                            CFDGlobal.LogLine("Exception occurred when trying to refresh cache after open position");
-                        }
-                    }
-                });
-                #endregion
-
                 #region 计算积分 - 仅实盘
                 if (IsLiveUrl)
                 {
