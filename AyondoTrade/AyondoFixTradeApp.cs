@@ -396,7 +396,7 @@ namespace AyondoTrade
                     else
                         AccountUsernames.Add(account, username);
 
-                    CFDCacheManager.Instance.UserLogin(account);
+                    //CFDCacheManager.Instance.UserLogin(account);
                 }
                 else if (response.UserStatus.Obj == UserStatus.NOT_LOGGED_IN && response.UserStatusText.Obj == "Success")
                     //successfully logged out
