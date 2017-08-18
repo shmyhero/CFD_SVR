@@ -406,5 +406,12 @@ namespace CFD_API.Controllers
 
             return new ResultDTO(true);
         }
+
+        [HttpPost]
+        [Route("alipay/notify")]
+        public HttpResponseMessage AlipayNofityCallback()
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("success")};
+        }
     }
 }
