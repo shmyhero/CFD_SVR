@@ -2623,5 +2623,27 @@ namespace CFD_API.Controllers
 
             return false;
         }
+
+        //[HttpGet]
+        //[Route("live/deposit/alipay")]
+        //[BasicAuth]
+        //public HttpResponseMessage NewAlipayDeposit(decimal amount)
+        //{
+        //    IAopClient client = new DefaultAopClient("https://openapi.alipay.com/gateway.do", "app_id", "merchant_private_key", "json", "1.0", "RSA2", "alipay_public_key", "GBK", false);
+        //    AlipayTradeWapPayRequest request = new AlipayTradeWapPayRequest();
+        //    request.BizContent = "{" +
+        //    "    \"body\":\"对一笔交易的具体描述信息。如果是多种商品，请将商品描述字符串累加传给body。\"," +
+        //    "    \"subject\":\"大乐透\"," +
+        //    "    \"out_trade_no\":\"70501111111S001111119\"," +
+        //    "    \"timeout_express\":\"90m\"," +
+        //    "    \"total_amount\":"+amount+"," +
+        //    "    \"product_code\":\"QUICK_WAP_WAY\"" +
+        //    "  }";
+        //    AlipayTradeWapPayResponse response = client.pageExecute(request);
+        //    string form = response.Body;
+        //    //Response.Write(form);
+
+        //    return new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent(form) };
+        //}
     }
 }
