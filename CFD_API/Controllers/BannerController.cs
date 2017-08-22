@@ -56,7 +56,8 @@ namespace CFD_API.Controllers
         }
 
         /// <summary>
-        /// 返回所有的Banner，用于模拟
+        /// 以前的逻辑：返回所有的Banner，用于模拟
+        /// 现在的逻辑：返回DisplayFor = Demo或Both的记录
         /// </summary>
         /// <returns></returns>
         [Route("banner/all")]
@@ -78,11 +79,33 @@ namespace CFD_API.Controllers
             return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
         }
 
+        /// <summary>
+        /// 返回所有的Banner，不论Demo或Live。
+        /// 给后台管理员用
+        /// </summary>
+        /// <returns></returns>
+        [Route("banner/admin")]
+        [HttpGet]
+        public IList<SimpleBannerDTO> GetAllBanners()
+        {
+            int max = 10;
+            //get top banner
+            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(max).ToList();
+
+            if (topBanners.Count < max)
+            {
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                topBanners.AddRange(nonTopBanner);
+            }
+
+            return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
+        }
+
         [Route("nextbanner/{id}")]
         [HttpGet]
         public IList<SimpleBannerDTO> NextBanner(int id)
         {
-            int max = 5;
+            int max = 10;
             var currentBanner = db.Banners2.Where(item => item.Id == id).FirstOrDefault();
             if (currentBanner == null)
                 return null;
@@ -91,7 +114,7 @@ namespace CFD_API.Controllers
             if (currentBanner.IsTop.HasValue && currentBanner.IsTop.Value == 1) //last one is top banner
             {
                 //get top banner
-                results = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.TopAt < currentBanner.TopAt).OrderByDescending(o => o.TopAt).Take(5).ToList();
+                results = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value && item.TopAt < currentBanner.TopAt).OrderByDescending(o => o.TopAt).Take(max).ToList();
 
                 if (results.Count < max)
                 {
