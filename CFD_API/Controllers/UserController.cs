@@ -1444,8 +1444,8 @@ namespace CFD_API.Controllers
             var result = new NewAdyenDepositBaseDTO()
             {
                 merchantAccount = "AyoMarLimTHCN",
-                paymentAmount = amount.ToString(),
-                sessionValidity = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                paymentAmount = (amount*100).ToString("F0"),
+                sessionValidity = DateTime.UtcNow.AddMinutes(30).ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 shopperLocale = "en_GB",
                 currencyCode = "USD",
                 skinCode = "UtmJpnab",
