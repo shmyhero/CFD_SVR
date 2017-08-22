@@ -78,6 +78,7 @@ namespace CFD_API.DTO
         public string digest { get; set; }
         public int bannerType { get; set; }
         public string color { get; set; }
+        public string displayFor { get; set; }
     }
 
     public class BannerDTO

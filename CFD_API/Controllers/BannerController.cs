@@ -32,7 +32,8 @@ namespace CFD_API.Controllers
         }
 
         /// <summary>
-        /// 只返回BannerType为空或者为0的，用于实盘
+        /// 以前的逻辑：只返回BannerType为空或者为0或3的，用于实盘
+        /// 现在的逻辑：返回DisplayFor=Live或Display=Both的
         /// </summary>
         /// <returns></returns>
         [Route("banner2")]
@@ -41,11 +42,13 @@ namespace CFD_API.Controllers
         {
             int max = 5;
             //get top banner
-            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (!item.BannerType.HasValue || item.BannerType.Value == 0 || item.BannerType.Value == 3) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
+            //var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (!item.BannerType.HasValue || item.BannerType.Value == 0 || item.BannerType.Value == 3) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
+            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
 
             if (topBanners.Count < max)
             {
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (!item.BannerType.HasValue || item.BannerType.Value == 0 || item.BannerType.Value == 3) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                //var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (!item.BannerType.HasValue || item.BannerType.Value == 0 || item.BannerType.Value == 3) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
                 topBanners.AddRange(nonTopBanner);
             }
 
@@ -62,11 +65,13 @@ namespace CFD_API.Controllers
         {
             int max = 5;
             //get top banner
-            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
+            //var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
+            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
 
             if (topBanners.Count < max)
             {
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                //var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
                 topBanners.AddRange(nonTopBanner);
             }
 
@@ -222,6 +227,7 @@ namespace CFD_API.Controllers
                 ImgUrl = imgUrl,
                 ImgUrlBig = imgUrlBig,
                 Color = dicFormData.ContainsKey("Color") ? dicFormData["Color"] : string.Empty,
+                DisplayFor = dicFormData.ContainsKey("DisplayFor") ? dicFormData["DisplayFor"] : DisplayFor.Both,
             });
         }
 
@@ -240,6 +246,7 @@ namespace CFD_API.Controllers
                 banner.Digest = dicFormData.ContainsKey("Digest") ? dicFormData["Digest"] : string.Empty;
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
                 banner.Color = dicFormData.ContainsKey("Color")? dicFormData["Color"] : string.Empty;
+                banner.DisplayFor = dicFormData.ContainsKey("DisplayFor") ? dicFormData["DisplayFor"] : DisplayFor.Both;
                 int bannerType = 0;
                 if(dicFormData.ContainsKey("BannerType"))
                 {
@@ -261,5 +268,12 @@ namespace CFD_API.Controllers
             }
         }
 
+    }
+
+    public struct DisplayFor
+    {
+        public const string Demo = "Demo";
+        public const string Live = "Live";
+        public const string Both = "Both";
     }
 }
