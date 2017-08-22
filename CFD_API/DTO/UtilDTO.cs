@@ -108,6 +108,8 @@ namespace CFD_API.DTO
         public DateTime? expiration { get; set; }
 
         public string color { get; set; }
+
+        public string displayFor { get; set; }
     }
 
     public class OperationUserDTO
