@@ -1455,6 +1455,8 @@ namespace CFD_API.Controllers
                 shipBeforeDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 //merchantReturnData = "",
                 //shopperEmail = "",
+
+                //countryCode = "US",
             };
 
             var keyValues =
@@ -1487,7 +1489,7 @@ namespace CFD_API.Controllers
             //    "currencyCode:merchantAccount:merchantReference:paymentAmount:sessionValidity:shipBeforeDate:shopperLocale:skinCode:USD:AyoMarLimTHCN:SKINTEST-1503472799708:199:2017-08-23T07\\:50\\:11Z:2017-08-29:en_GB:UtmJpnab";
             var bytes = Encoding.UTF8.GetBytes(dataString);
 
-            var HMAC_KEY = "2BC504F6B19E96F429F4FF70E420EC89F5EBC3E6B0D93CEAA8E445ADC60C247D";
+            var HMAC_KEY = IsLiveUrl? "43AEC933ADD2761E30C956CB4254011276F487BC04A64CFD000B38B76C2D2516" : "2BC504F6B19E96F429F4FF70E420EC89F5EBC3E6B0D93CEAA8E445ADC60C247D";
             byte[] binaryHmacKey = Enumerable.Range(0, HMAC_KEY.Length)
                 .Where(x => x % 2 == 0)
                 .Select(x => Convert.ToByte(HMAC_KEY.Substring(x, 2), 16))
@@ -1519,6 +1521,8 @@ namespace CFD_API.Controllers
 
                 merchantSig = base64String,
                 signingString = dataString,
+
+                //countryCode = result.countryCode,
             };
         }
 

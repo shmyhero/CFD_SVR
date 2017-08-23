@@ -150,6 +150,8 @@ namespace CFD_API.DTO
         public string shopperEmail { get; set; }
         public string brandCode { get; set; }
         public string shopperLocale { get; set; }
+
+        public string countryCode { get; set; }
     }
 
     public class LiveUserInfoDTO
