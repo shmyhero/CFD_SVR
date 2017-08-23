@@ -132,19 +132,24 @@ namespace CFD_API.DTO
     public class NewAdyenDepositDTO : NewAdyenDepositBaseDTO
     {
         public string merchantSig { get; set; }
+        public string signingString { get; set; }
     }
 
     public class NewAdyenDepositBaseDTO
     {
-        public string brandCode { get; set; }
         public string currencyCode { get; set; }
-        public string issuerId { get; set; }
         public string merchantAccount { get; set; }
         public string merchantReference { get; set; }
         public string paymentAmount { get; set; }
         public string sessionValidity { get; set; }
-        public string shopperLocale { get; set; }
         public string skinCode { get; set; }
+        public string shipBeforeDate { get; set; }
+
+        public string issuerId { get; set; }
+        public string merchantReturnData { get; set; }
+        public string shopperEmail { get; set; }
+        public string brandCode { get; set; }
+        public string shopperLocale { get; set; }
     }
 
     public class LiveUserInfoDTO

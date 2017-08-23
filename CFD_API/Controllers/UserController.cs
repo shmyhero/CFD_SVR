@@ -1451,21 +1451,25 @@ namespace CFD_API.Controllers
                 skinCode = "UtmJpnab",
                 merchantReference = transferId,
                 brandCode = "ideal",
-                issuerId = "1121",
+                //issuerId = "1121",
+                shipBeforeDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                //merchantReturnData = "",
+                //shopperEmail = "",
             };
 
             var keyValues =
                 result.GetType()
                     .GetProperties()
                     .OrderBy(o => o.Name)
-                    .Select(o => new KeyValuePair<string, string>(o.Name, (string)o.GetValue(result, null))).ToList();
+                    .Select(o => new KeyValuePair<string, string>(o.Name, (string)o.GetValue(result, null)))
+                    .Where(o=>o.Value!=null)
+                    .ToList();
 
             StringBuilder sb = new StringBuilder();
             //keys
             for (int i = 0; i < keyValues.Count; i++)
             {
                 sb.Append(keyValues[i].Key);
-                //if (i != keyValues.Count - 1)
                 sb.Append(':');
             }
             //values
@@ -1473,6 +1477,7 @@ namespace CFD_API.Controllers
             {
                 var value = keyValues[i].Value;
                 if (value == null) value = "";
+
                 sb.Append(value.Replace("\\", "\\\\").Replace(":", "\\:"));
                 if (i != keyValues.Count - 1)
                     sb.Append(':');
@@ -1480,8 +1485,7 @@ namespace CFD_API.Controllers
             var dataString = sb.ToString();
             var bytes = Encoding.UTF8.GetBytes(dataString);
 
-            var HMAC_KEY = "5CA6A4D15E5B123757BE4ABC3B4C8780F50B8AC1A5E28D1E9B343CCC862D6FD6";
-            // import from com.google.common.io.BaseEncoding;
+            var HMAC_KEY = "1BBEDB99A24BA03FD592A22BDF7394B5D43B02BE71B4AE5ED9EA61D13813882F";
             byte[] binaryHmacKey = Enumerable.Range(0, HMAC_KEY.Length)
                 .Where(x => x % 2 == 0)
                 .Select(x => Convert.ToByte(HMAC_KEY.Substring(x, 2), 16))
@@ -1508,9 +1512,11 @@ namespace CFD_API.Controllers
                 skinCode = result.skinCode,
                 merchantReference = result.merchantReference,
                 brandCode = result.brandCode,
-                issuerId = result.issuerId,
+                //issuerId = result.issuerId,
+                shipBeforeDate = result.shipBeforeDate,
 
-                merchantSig = base64String
+                merchantSig = base64String,
+                signingString = dataString,
             };
         }
 
