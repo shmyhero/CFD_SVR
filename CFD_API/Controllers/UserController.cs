@@ -1450,7 +1450,7 @@ namespace CFD_API.Controllers
                 currencyCode = "USD",
                 skinCode = "UtmJpnab",
                 merchantReference = transferId,
-                brandCode = "ideal",
+                brandCode = "moneybookers",
                 //issuerId = "1121",
                 shipBeforeDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 //merchantReturnData = "",
@@ -1483,9 +1483,11 @@ namespace CFD_API.Controllers
                     sb.Append(':');
             }
             var dataString = sb.ToString();
+            //var dataString =
+            //    "currencyCode:merchantAccount:merchantReference:paymentAmount:sessionValidity:shipBeforeDate:shopperLocale:skinCode:USD:AyoMarLimTHCN:SKINTEST-1503472799708:199:2017-08-23T07\\:50\\:11Z:2017-08-29:en_GB:UtmJpnab";
             var bytes = Encoding.UTF8.GetBytes(dataString);
 
-            var HMAC_KEY = "1BBEDB99A24BA03FD592A22BDF7394B5D43B02BE71B4AE5ED9EA61D13813882F";
+            var HMAC_KEY = "2BC504F6B19E96F429F4FF70E420EC89F5EBC3E6B0D93CEAA8E445ADC60C247D";
             byte[] binaryHmacKey = Enumerable.Range(0, HMAC_KEY.Length)
                 .Where(x => x % 2 == 0)
                 .Select(x => Convert.ToByte(HMAC_KEY.Substring(x, 2), 16))
