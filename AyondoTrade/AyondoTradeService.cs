@@ -835,14 +835,14 @@ namespace AyondoTrade
             return account;
         }
 
-        public string NewDeposit(string username, string password, decimal amount)
+        public string NewDeposit(string username, string password, decimal amount, Model.TransferType transferType)
         {
             string account = GetAccount(username, password);
 
             string transferId = null;
             try
             {
-                transferId = SendDepositRequestAndWait(account, amount);
+                transferId = SendDepositRequestAndWait(account, amount, transferType);
             }
             catch (UserNotLoggedInException)
             {
@@ -850,7 +850,7 @@ namespace AyondoTrade
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
-                transferId = SendDepositRequestAndWait(account, amount);
+                transferId = SendDepositRequestAndWait(account, amount, transferType);
             }
             
             return transferId;
@@ -916,7 +916,7 @@ namespace AyondoTrade
             }
         }
 
-        private string SendDepositRequestAndWait(string account, decimal amount)
+        private string SendDepositRequestAndWait(string account, decimal amount, Model.TransferType transferType)
         {
             string balanceId=null;
            Global.FixApp.AccountBalanceIDs.TryGetValue(account, out balanceId);
@@ -930,7 +930,7 @@ namespace AyondoTrade
                 throw new FaultException("cannot find balance id for account " + account);
 
             //send message
-            var reqId = Global.FixApp.MDS3DepositRequest(account, balanceId, amount);
+            var reqId = Global.FixApp.MDS3DepositRequest(account, balanceId, amount, transferType);
 
             //wait/get response message(s)
             string transferId = null;

@@ -75,7 +75,7 @@ namespace AyondoTrade
 
         [OperationContract]
         [FaultContract(typeof(OAuthLoginRequiredFault))]
-        string NewDeposit(string username, string password, decimal amount);
+        string NewDeposit(string username, string password, decimal amount, TransferType transferType);
 
         [OperationContract]
         [FaultContract(typeof(OAuthLoginRequiredFault))]

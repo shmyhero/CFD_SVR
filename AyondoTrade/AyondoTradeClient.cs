@@ -131,9 +131,9 @@ namespace AyondoTrade
             return base.Channel.LoginOAuth(username, oauthToken);
         }
 
-        public string NewDeposit(string username, string password, decimal amount)
+        public string NewDeposit(string username, string password, decimal amount, TransferType transferType)
         {
-            return base.Channel.NewDeposit(username, password, amount);
+            return base.Channel.NewDeposit(username, password, amount, transferType);
         }
 
         public string NewWithdraw(string username, string password, decimal amount)

@@ -1372,7 +1372,7 @@ namespace CFD_API.Controllers
                     transferId = clientHttp.NewDeposit(
                         IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
                         IsLiveUrl ? null : user.AyondoPassword,
-                        amount);
+                        amount, TransferType.CUP_DEPOSIT);
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
@@ -1418,7 +1418,7 @@ namespace CFD_API.Controllers
                     transferId = clientHttp.NewDeposit(
                         IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
                         IsLiveUrl ? null : user.AyondoPassword,
-                        amount);
+                        amount, TransferType.ADYEN_CC_DEPOSIT);
                 }
                 catch (FaultException<OAuthLoginRequiredFault>)
                 {
@@ -1451,6 +1451,7 @@ namespace CFD_API.Controllers
                 skinCode = "UtmJpnab",
                 merchantReference = transferId,
                 brandCode = "moneybookers",
+                //brandCode = "visa",
                 //issuerId = "1121",
                 shipBeforeDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 //merchantReturnData = "",

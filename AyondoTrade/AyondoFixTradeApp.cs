@@ -55,6 +55,7 @@ namespace AyondoTrade
 
         //custim fields' enums
         public string ENUM_MDS_TransferType_CUP_DEPOSIT;
+        public string ENUM_MDS_TransferType_ADYEN_CC_DEPOSIT;
         public string ENUM_MDS_TransferType_MANUAL_WITHDRAWAL;
         public string ENUM_MDS_StatusCode_CREATED;
         public string ENUM_MDS_StatusCode_ERROR;
@@ -331,6 +332,7 @@ namespace AyondoTrade
             TAG_MDS_StatusCode = MDS_StatusCode.Tag;
 
             ENUM_MDS_TransferType_CUP_DEPOSIT = MDS_TransferType.EnumDict.First(o => o.Value == "CUP_DEPOSIT").Key;
+            ENUM_MDS_TransferType_ADYEN_CC_DEPOSIT = MDS_TransferType.EnumDict.First(o => o.Value == "ADYEN_CC_DEPOSIT").Key;
             ENUM_MDS_TransferType_MANUAL_WITHDRAWAL = MDS_TransferType.EnumDict.First(o => o.Value == "MANUAL_WITHDRAWAL").Key;
             ENUM_MDS_StatusCode_CREATED = MDS_StatusCode.EnumDict.First(o => o.Value == "CREATED").Key;
             ENUM_MDS_StatusCode_ERROR = MDS_StatusCode.EnumDict.First(o => o.Value == "ERROR").Key;
@@ -842,7 +844,7 @@ namespace AyondoTrade
             return guid;
         }
 
-        public string MDS3DepositRequest(string account, string balanceId, decimal amount)
+        public string MDS3DepositRequest(string account, string balanceId, decimal amount, Model.TransferType transferType)
         {
             var guid = Guid.NewGuid().ToString();
 
@@ -853,7 +855,8 @@ namespace AyondoTrade
             m.SetField(new Account(account));
             m.SetField(new StringField(TAG_MDS_TargetBalanceID) { Obj = balanceId });
 
-            m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(ENUM_MDS_TransferType_CUP_DEPOSIT) });
+            //m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(ENUM_MDS_TransferType_CUP_DEPOSIT) });
+            m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(transferType) });
             m.SetField(new DecimalField(TAG_MDS_TransferAmount) { Obj = amount });
             m.SetField(new StringField(TAG_MDS_TransferCurrency) { Obj = "USD" });
 
