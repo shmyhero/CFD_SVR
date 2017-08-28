@@ -192,7 +192,7 @@ namespace CFD_API.Controllers
             {
                 string log = queryNameValuePairs.Aggregate("Live OAuth error: ",
                     (current, pair) => current + (pair.Key + " " + pair.Value + ", "));
-                CFDGlobal.LogInformation(log);
+                CFDGlobal.LogWarning(log + " Callback URL: " + Request.RequestUri.AbsoluteUri);
 
                 //return "ERROR";
                 return errorResponse;
