@@ -217,6 +217,7 @@
     <Compile Include="Utils\FX.cs" />
     <Compile Include="Utils\GeTui.cs" />
     <Compile Include="Utils\KLines.cs" />
+    <Compile Include="Utils\Transfer.cs" />
     <Compile Include="Utils\UserLive.cs" />
     <Compile Include="Utils\Maths.cs" />
     <Compile Include="Utils\Phone.cs" />

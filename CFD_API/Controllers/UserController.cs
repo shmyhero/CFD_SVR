@@ -2392,6 +2392,7 @@ namespace CFD_API.Controllers
             /*
             EFT ： 出金
             WeCollect - CUP ： Wecollect入金
+            Adyen - Skrill
             Bank Wire ： 运营赠金
             Transaction Fee ： 入金手续费 （可能也包含出金）
             Trade Result ： 交易
@@ -2401,7 +2402,7 @@ namespace CFD_API.Controllers
 
             //只显示以下类型的数据
             List<string> limitedTypes = new List<string>();
-            limitedTypes.AddRange(new string[] { "EFT", "WeCollect - CUP", "Bank Wire", "Transaction Fee", });
+            limitedTypes.AddRange(Transfer.UserVisibleTypes);
 
             if (!user.AyLiveAccountId.HasValue)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.Live_Acc_Not_Exist)));
@@ -2411,7 +2412,7 @@ namespace CFD_API.Controllers
             var transfers = db.AyondoTransferHistory_Live.Where(t => t.TradingAccountId == user.AyLiveAccountId && limitedTypes.Contains(t.TransferType)).OrderByDescending(o=>o.ApprovalTime).ToList();
             transfers.ForEach(t =>
             {
-                var result = getTransDescriptionColor(t.TransferType);
+                var result = Transfer.getTransDescriptionColor(t.TransferType);
                 results.Add(new TransferDTO()
                 {
                     amount = t.Amount.HasValue ? t.Amount.Value : 0,
@@ -2424,23 +2425,6 @@ namespace CFD_API.Controllers
             );
 
             return results;
-        }
-
-        private Tuple<string,string> getTransDescriptionColor(string transType)
-        {
-            Tuple<string, string> result = new Tuple<string, string>(string.Empty,string.Empty);
-            switch(transType.ToLower().Trim())
-            {
-                case "eft": result = new Tuple<string, string>("出金", "#000000"); break;
-                case "wecollect - cup": result = new Tuple<string, string>("入金", "#1c8d13"); break;
-                case "bank wire": result = new Tuple<string, string>("交易金入金", "#1c8d13"); break;
-                case "transaction fee": result = new Tuple<string, string>("手续费", "#000000"); break;
-                case "trade result": result = new Tuple<string, string>("交易", "#000000"); break;
-                case "financing": result = new Tuple<string, string>("隔夜费", "#000000"); break;
-                case "dividend": result = new Tuple<string, string>("分红", "#000000"); break;
-            }
-
-            return result;
         }
 
         [HttpPut]
@@ -2655,7 +2639,7 @@ namespace CFD_API.Controllers
         [IPAuth]
         public List<UserDailyTransferDTO> GetDailyTransferReport()
         {
-            var result = db.AyondoTransferHistory_Live.Where(o => o.TransferType == "WeCollect - CUP")
+            var result = db.AyondoTransferHistory_Live.Where(o => Transfer.DepositTypes.Contains(o.TransferType))
                 .GroupBy(o => DbFunctions.TruncateTime(DbFunctions.AddHours(o.ApprovalTime.Value, 8).Value))
                 .Select(o => new UserDailyTransferDTO() {date = o.Key, withdrawal = o.Sum(p => p.Amount)})
                 .ToList()
