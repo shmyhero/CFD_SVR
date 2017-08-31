@@ -285,8 +285,9 @@ namespace CFD_JOBS.Ayondo
                                 }
                             }
 
-                            #region 入金奖励的相关逻辑，包括：首日如今奖励、被推荐人首次入金送推荐人30元、入金短信和消息中心
+                            #region 入金奖励的相关逻辑，包括：首日如今奖励、入金短信和消息中心
                             RewardService rewardService = new RewardService(db);
+                            //2.1.6 被推荐人注册就送30元交易金，被推荐人入金不再送钱给推荐人
                             rewardService.DepositReward(newTransferHistories);
                             #endregion
                         }

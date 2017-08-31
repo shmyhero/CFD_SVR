@@ -61,7 +61,7 @@ namespace CFD_JOBS
                             //找到所有首次入金时间大于2天前小于1天前的记录
                             var firtDayDepositUsers = (from u in db.Users
                                                        join a in db.AyondoTransferHistory_Live on u.AyLiveAccountId equals a.TradingAccountId
-                                                       where u.AyLiveAccountId != null && a.TransferType == "WeCollect - CUP"
+                                                       where u.AyLiveAccountId != null && CFD_COMMON.Utils.Transfer.DepositTypes.Contains(a.TransferType)
                                                        group new { u.Id, a.ApprovalTime } by a.TradingAccountId into g
                                                        let minApproval = g.Min(a => a.ApprovalTime)
                                                        where minApproval > utc2DaysAgo && minApproval < utc1DayAgo
@@ -77,7 +77,7 @@ namespace CFD_JOBS
                                 try
                                 {
                                     var firstDayEndTime = u.ApprovalTime.Value.AddDays(1);
-                                    var firstDayDepositAmount = db.AyondoTransferHistory_Live.Where(a => a.TradingAccountId == u.Key && a.ApprovalTime <= firstDayEndTime && a.TransferType == "WeCollect - CUP").Sum(a => a.Amount);
+                                    var firstDayDepositAmount = db.AyondoTransferHistory_Live.Where(a => a.TradingAccountId == u.Key && a.ApprovalTime <= firstDayEndTime && CFD_COMMON.Utils.Transfer.DepositTypes.Contains(a.TransferType)).Sum(a => a.Amount);
                                     decimal rewardAmount = firstDayDepositAmount.Value * rewardSvc.GetFirstDayRewadRate(firstDayDepositAmount.Value);
                                     rewardAmount = rewardAmount > 10000 ? 10000 : rewardAmount;
                                     rewardAmount = rewardAmount * RewardService.ExchangeRate;

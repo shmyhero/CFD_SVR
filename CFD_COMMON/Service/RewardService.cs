@@ -245,7 +245,7 @@ namespace CFD_COMMON.Service
         public void DepositReward(List<AyondoTransferHistoryBase> newTransferHistories)
         {
             var messages = new List<MessageBase>();
-            var referRewards = new List<ReferReward>();
+            //var referRewards = new List<ReferReward>();
             var depositRewards = new List<DepositReward>();
             foreach (var transfer in newTransferHistories)
             {
@@ -275,18 +275,19 @@ namespace CFD_COMMON.Service
                             msg.IsReaded = false;
                             messages.Add(msg);
 
-                            var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == transfer.TradingAccountId);
-                            decimal amount = RewardService.REWARD_REFEREE;
-                            if (referer != null && !string.IsNullOrEmpty(referer.Phone))
-                            {
-                                var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);
-                                if (referHistory != null && referHistory.IsRewarded != true)
-                                {
-                                    referHistory.IsRewarded = true;
-                                    referHistory.RewardedAt = DateTime.Now;
-                                    referRewards.Add(new ReferReward() { Amount = amount, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
-                                }
-                            }
+                            //2.1.6 被推荐人注册就送30元交易金，被推荐人入金不再送钱给推荐人
+                            //var referer = db.Users.FirstOrDefault(u => u.AyLiveAccountId == transfer.TradingAccountId);
+                            //decimal amount = RewardService.REWARD_REFEREE;
+                            //if (referer != null && !string.IsNullOrEmpty(referer.Phone))
+                            //{
+                            //    var referHistory = db.ReferHistorys.FirstOrDefault(r => r.ApplicantNumber == referer.Phone);
+                            //    if (referHistory != null && referHistory.IsRewarded != true)
+                            //    {
+                            //        referHistory.IsRewarded = true;
+                            //        referHistory.RewardedAt = DateTime.Now;
+                            //        referRewards.Add(new ReferReward() { Amount = amount, UserID = referHistory.RefereeID, CreatedAt = DateTime.Now });
+                            //    }
+                            //}
 
                             //由每笔入金判断是否送交易金，改为首日累计，在第二天判断要送多少交易金
                             //代码移动到Job->FirstDayDepositRewardJob
@@ -325,22 +326,23 @@ namespace CFD_COMMON.Service
                 }
             }
 
-            if (messages.Count > 0 || referRewards.Count > 0 || depositRewards.Count > 0)
+            //if (messages.Count > 0 || referRewards.Count > 0 || depositRewards.Count > 0)
+            if (messages.Count > 0 || depositRewards.Count > 0)
             {
                 if (messages.Count > 0)
                 {
                     db.Message_Live.AddRange(messages.Select(m => Mapper.Map<Message_Live>(m)));
                 }
-                if (referRewards.Count > 0)
-                {
-                    db.ReferRewards.AddRange(referRewards);
-                }
+                //if (referRewards.Count > 0)
+                //{
+                //    db.ReferRewards.AddRange(referRewards);
+                //}
                 if(depositRewards.Count > 0)
                 {
                     db.DepositRewards.AddRange(depositRewards);
                 }
 
-                CFDGlobal.LogLine(string.Format("Saving message: {0} & refer reward: {1}", messages.Count, referRewards.Count));
+                CFDGlobal.LogLine(string.Format("Saving message: {0}", messages.Count));
                 db.SaveChanges();
             }
         }
