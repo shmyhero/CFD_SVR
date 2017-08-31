@@ -8,7 +8,7 @@ namespace CFD_COMMON.Utils
 {
     public class Transfer
     {
-        public static string[] UserVisibleTypes = {"EFT", "WeCollect - CUP", "Bank Wire", "Transaction Fee", "Adyen - Skrill"};
+        public static string[] UserVisibleTypes = {"EFT", "WeCollect - CUP", "Bank Wire", "Transaction Fee", "Adyen - Skrill", "Bonus"};
 
         public static string[] DepositTypes = { "WeCollect - CUP", "Adyen - Skrill" };
 
@@ -44,6 +44,9 @@ namespace CFD_COMMON.Utils
                     break;
                 case "dividend":
                     result = new Tuple<string, string>("分红", "#000000");
+                    break;
+                case "bonus":
+                    result = new Tuple<string, string>("交易金入金", "#000000");
                     break;
             }
 

@@ -128,12 +128,16 @@ namespace CFD_API.Controllers
                     result.token = user.Token;
 
                     #region 第一次用手机号注册，如果该手机号被推荐过，则给该用户30元奖励金
+                    //需求2.1.6 被推荐人不用入金,只要注册，也可以给推荐人30元奖励
                     var referHistory = db.ReferHistorys.FirstOrDefault(o => o.ApplicantNumber == form.phone);
                     decimal amount = RewardService.REWARD_REFERER;
 
-                    if (referHistory != null)
+                    if (referHistory != null && referHistory.IsRewarded != true)
                     {
+                        referHistory.IsRewarded = true;
+                        referHistory.RewardedAt = DateTime.Now;
                         db.ReferRewards.Add(new ReferReward() { UserID = user.Id, Amount = amount, CreatedAt = DateTime.UtcNow });
+                        db.ReferRewards.Add(new ReferReward() { UserID = referHistory.RefereeID, Amount = RewardService.REWARD_REFEREE, CreatedAt = DateTime.UtcNow });
                         db.SaveChanges();
                     }
                     #endregion
@@ -2398,6 +2402,7 @@ namespace CFD_API.Controllers
             Trade Result ： 交易
             Financing ： 隔夜费
             Dividend ： 分红
+            Bonus : 交易金
              */
 
             //只显示以下类型的数据
