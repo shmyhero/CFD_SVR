@@ -1531,6 +1531,133 @@ namespace CFD_API.Controllers
             };
         }
 
+        //[HttpGet]
+        //[Route("deposit/focal")]
+        //[Route("live/deposit/focal")]
+        //[BasicAuth]
+        //public NewAdyenDepositDTO NewFocalDeposit(decimal amount)
+        //{
+        //    var user = GetUser();
+
+        //    if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
+
+        //    string transferId;
+        //    using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
+        //    {
+        //        try
+        //        {
+        //            transferId = clientHttp.NewDeposit(
+        //                IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+        //                IsLiveUrl ? null : user.AyondoPassword,
+        //                amount, TransferType.CUP_DEPOSIT);
+        //        }
+        //        catch (FaultException<OAuthLoginRequiredFault>)
+        //        {
+        //            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+        //        }
+        //    }
+
+        //    if (IsLiveUrl)
+        //    {
+        //        db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = Convert.ToInt64(transferId), CreatedAt = DateTime.Now, ClaimAmount = amount });
+        //        db.SaveChanges();
+
+        //        //var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+        //        //if (userInfo != null)
+        //        //{
+        //        //    result.firstName = userInfo.FirstName;
+        //        //    result.lastName = userInfo.LastName;
+        //        //    result.email = userInfo.Email;
+        //        //    result.addr = userInfo.Addr;
+        //        //}
+        //    }
+
+        //    var result = new NewAdyenDepositBaseDTO()
+        //    {
+        //        merchantAccount = "AyoMarLimTHCN",
+        //        paymentAmount = (amount * 100).ToString("F0"),
+        //        sessionValidity = DateTime.UtcNow.AddMinutes(30).ToString("yyyy-MM-ddTHH:mm:ssZ"),
+        //        shopperLocale = "en_GB",
+        //        currencyCode = "USD",
+        //        skinCode = "UtmJpnab",
+        //        merchantReference = transferId,
+        //        brandCode = "moneybookers",
+        //        //brandCode = "visa",
+        //        //issuerId = "1121",
+        //        shipBeforeDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ssZ"),
+        //        //merchantReturnData = "",
+        //        //shopperEmail = "",
+
+        //        //countryCode = "US",
+        //    };
+
+        //    var keyValues =
+        //        result.GetType()
+        //            .GetProperties()
+        //            .OrderBy(o => o.Name)
+        //            .Select(o => new KeyValuePair<string, string>(o.Name, (string)o.GetValue(result, null)))
+        //            .Where(o => o.Value != null)
+        //            .ToList();
+
+        //    StringBuilder sb = new StringBuilder();
+        //    //keys
+        //    for (int i = 0; i < keyValues.Count; i++)
+        //    {
+        //        sb.Append(keyValues[i].Key);
+        //        sb.Append(':');
+        //    }
+        //    //values
+        //    for (int i = 0; i < keyValues.Count; i++)
+        //    {
+        //        var value = keyValues[i].Value;
+        //        if (value == null) value = "";
+
+        //        sb.Append(value.Replace("\\", "\\\\").Replace(":", "\\:"));
+        //        if (i != keyValues.Count - 1)
+        //            sb.Append(':');
+        //    }
+        //    var dataString = sb.ToString();
+        //    //var dataString =
+        //    //    "currencyCode:merchantAccount:merchantReference:paymentAmount:sessionValidity:shipBeforeDate:shopperLocale:skinCode:USD:AyoMarLimTHCN:SKINTEST-1503472799708:199:2017-08-23T07\\:50\\:11Z:2017-08-29:en_GB:UtmJpnab";
+        //    var bytes = Encoding.UTF8.GetBytes(dataString);
+
+        //    var HMAC_KEY = IsLiveUrl ? "43AEC933ADD2761E30C956CB4254011276F487BC04A64CFD000B38B76C2D2516" : "2BC504F6B19E96F429F4FF70E420EC89F5EBC3E6B0D93CEAA8E445ADC60C247D";
+        //    byte[] binaryHmacKey = Enumerable.Range(0, HMAC_KEY.Length)
+        //        .Where(x => x % 2 == 0)
+        //        .Select(x => Convert.ToByte(HMAC_KEY.Substring(x, 2), 16))
+        //        .ToArray();
+
+        //    // Create an HMAC SHA-256 key from the raw key bytes
+
+        //    // Get an HMAC SHA-256 Mac instance and initialize with the signing key
+
+        //    // calculate the hmac on the binary representation of the signing string
+
+        //    var hmacsha256 = new HMACSHA256(binaryHmacKey);
+        //    var hash = hmacsha256.ComputeHash(bytes);
+
+        //    var base64String = Convert.ToBase64String(hash);
+
+        //    return new NewAdyenDepositDTO
+        //    {
+        //        merchantAccount = result.merchantAccount,
+        //        paymentAmount = result.paymentAmount,
+        //        sessionValidity = result.sessionValidity,
+        //        shopperLocale = result.shopperLocale,
+        //        currencyCode = result.currencyCode,
+        //        skinCode = result.skinCode,
+        //        merchantReference = result.merchantReference,
+        //        brandCode = result.brandCode,
+        //        //issuerId = result.issuerId,
+        //        shipBeforeDate = result.shipBeforeDate,
+
+        //        merchantSig = base64String,
+        //        signingString = dataString,
+
+        //        //countryCode = result.countryCode,
+        //    };
+        //}
+
         ///// <summary>
         ///// 根据transferId获取用户的姓名、邮箱
         ///// TODO: to be deleted @1.1.11
