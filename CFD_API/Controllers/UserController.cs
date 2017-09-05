@@ -1540,13 +1540,14 @@ namespace CFD_API.Controllers
         {
             Pingpp.Pingpp.SetApiKey("sk_test_GGmvzTC88uz15OeXXTX1unLC");
             string appId = "app_HSunLGTi9Wf9P44e";
-            string orderNo = Guid.NewGuid().ToString();
+            string orderNo = new Random().Next(0, 10000000).ToString();
+            orderNo = orderNo.PadLeft(8, '0');
 
             var extra = new Dictionary<string, object>();
-            if (channel == "alipay")
+            if (channel == "alipay_pc_direct")
             {
                 extra.Add("success_url", "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/success");
-                extra.Add("cancel_url", "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/cancel");
+                //extra.Add("cancel_url", "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/cancel");
             }
 
             var param = new Dictionary<string, object>
