@@ -38,6 +38,8 @@ using System.Text;
 using CFD_COMMON.IdentityVerify;
 using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
+using Pingpp;
+using Pingpp.Models;
 
 namespace CFD_API.Controllers
 {
@@ -1529,6 +1531,48 @@ namespace CFD_API.Controllers
 
                 //countryCode = result.countryCode,
             };
+        }
+
+        [HttpGet]
+        [Route("deposit/pingpp")]
+        [Route("live/deposit/pingpp")]
+        [BasicAuth]
+        public Pingpp.Models.Charge NewPingppDeposit(decimal amount, string channel)
+        {
+            Pingpp.Pingpp.SetApiKey("sk_test_GGmvzTC88uz15OeXXTX1unLC");
+            string appId = "app_HSunLGTi9Wf9P44e";
+            string orderNo = Guid.NewGuid().ToString();
+
+            var extra = new Dictionary<string, object>();
+            if (channel == "alipay")
+            {
+                extra.Add("success_url", "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/success");
+                extra.Add("cancel_url", "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/cancel");
+            }
+
+            var param = new Dictionary<string, object>
+                {
+                    {"order_no", orderNo},
+                    {"amount", amount},
+                    {"channel", channel},
+                    {"currency", "cny"},
+                    {"subject", "test"},
+                    {"body", "tests"},
+                    {"client_ip", "127.0.0.1"},
+                    {"app", new Dictionary<string, string> { { "id", appId } }},
+                    {"extra", extra}
+                };
+
+            try
+            {
+                var charge = Charge.Create(param);
+                return charge;
+            }
+            catch (Exception ex)
+            {
+                CFDGlobal.LogInformation("pingpp failed: " + ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "参数错误"));
+            }
         }
 
         ///// <summary>

@@ -413,5 +413,21 @@ namespace CFD_API.Controllers
         {
             return new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("success")};
         }
+
+        [HttpPost]
+        [Route("pingpp/success")]
+        public HttpResponseMessage PingppSuccess()
+        {
+            CFDGlobal.LogInformation("pingpp success: " + Request.Content.ReadAsStringAsync().Result);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
+        }
+
+        [HttpPost]
+        [Route("pingpp/cancel")]
+        public HttpResponseMessage PingppFail()
+        {
+            CFDGlobal.LogInformation("pingpp cancel: " + Request.Content.ReadAsStringAsync().Result);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
+        }
     }
 }
