@@ -351,6 +351,10 @@
       <Project>{c46068b7-6d4b-4f7d-aa63-e42cee169372}</Project>
       <Name>CFD_COMMON</Name>
     </ProjectReference>
+    <ProjectReference Include="..\pingpp\pingpp.csproj">
+      <Project>{AA23DD84-E82D-4D6F-8034-D35C8083F24A}</Project>
+      <Name>pingpp</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

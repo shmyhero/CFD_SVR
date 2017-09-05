@@ -86,5 +86,10 @@ namespace CFD_COMMON.Utils
         }
 
         #endregion
+
+        //public static string GetHMAC256(string text, string key)
+        //{
+            
+        //}
     }
 }
