@@ -414,17 +414,18 @@ namespace CFD_API.Controllers
             return new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("success")};
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("pingpp/success")]
-        public HttpResponseMessage PingppSuccess()
+        public HttpResponseMessage PingppSuccess(string result, string out_trade_no)
         {
-            CFDGlobal.LogInformation("pingpp success: " + Request.Content.ReadAsStringAsync().Result);
+            //http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/success?result=success&out_trade_no=02598870
+            CFDGlobal.LogInformation("pingpp success, order number: " + out_trade_no);
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("pingpp/cancel")]
-        public HttpResponseMessage PingppFail()
+        public HttpResponseMessage PingppFail(string result, string out_trade_no)
         {
             CFDGlobal.LogInformation("pingpp cancel: " + Request.Content.ReadAsStringAsync().Result);
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };

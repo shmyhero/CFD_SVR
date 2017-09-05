@@ -102,7 +102,7 @@ namespace CFD_API.Controllers
             if (refundSetting != null)
             {
                 var setting = JObject.Parse(refundSetting.Value);
-                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), alipay = setting["alipay"].Value<string>(), alipayMax = setting["alipayMax"].Value<decimal>(), alipayMin = setting["alipayMin"].Value<decimal>(), cupMax = setting["cupMax"].Value<decimal>(), cupMin = setting["cupMin"].Value<decimal>(), fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
+                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), alipay = setting["alipay"].Value<string>(), alipayPing = setting["alipay_ping"].Value<string>(),  alipayMax = setting["alipayMax"].Value<decimal>(), alipayMaxPing = setting["alipayMax_ping"].Value<decimal>(), alipayMin = setting["alipayMin"].Value<decimal>(), alipayMinPing = setting["alipayMin_ping"].Value<decimal>(), cupMax = setting["cupMax"].Value<decimal>(), cupMin = setting["cupMin"].Value<decimal>(), fxRate = FxRate("CNYUSD"), banks = Banks, charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
             }
             else
             {
