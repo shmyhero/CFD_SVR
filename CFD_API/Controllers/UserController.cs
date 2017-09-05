@@ -39,7 +39,6 @@ using CFD_COMMON.IdentityVerify;
 using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
 using Pingpp;
-using Pingpp.Models;
 
 namespace CFD_API.Controllers
 {
@@ -1565,7 +1564,7 @@ namespace CFD_API.Controllers
 
             try
             {
-                var charge = Charge.Create(param);
+                var charge = Pingpp.Models.Charge.Create(param);
                 return charge;
             }
             catch (Exception ex)
