@@ -418,8 +418,23 @@ namespace CFD_API.Controllers
         [Route("pingpp/success")]
         public HttpResponseMessage PingppSuccess(string result, string out_trade_no)
         {
-            //http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/success?result=success&out_trade_no=02598870
             CFDGlobal.LogInformation("pingpp success, order number: " + out_trade_no);
+
+            int orderNumber = 0;
+            if(!int.TryParse(out_trade_no, out orderNumber))
+            {
+                CFDGlobal.LogError("pingpp callback failed, invalid out_trade_no: " + out_trade_no);
+            }
+            else
+            {
+                var pOrder = db.PingOrders.FirstOrDefault(p => p.Id == orderNumber);
+                if(pOrder != null)
+                {
+                    pOrder.Paid = true;
+                    db.SaveChanges();
+                }
+            }
+
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
         }
 
@@ -427,7 +442,7 @@ namespace CFD_API.Controllers
         [Route("pingpp/cancel")]
         public HttpResponseMessage PingppFail(string result, string out_trade_no)
         {
-            CFDGlobal.LogInformation("pingpp cancel: " + Request.Content.ReadAsStringAsync().Result);
+            
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
         }
     }

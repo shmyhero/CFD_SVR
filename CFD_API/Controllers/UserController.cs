@@ -1533,17 +1533,36 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("deposit/pingpp")]
         [Route("live/deposit/pingpp")]
         [BasicAuth]
         public Pingpp.Models.Charge NewPingppDeposit(decimal amount, string channel)
         {
+            decimal exchangeRate = 0;
+            var exchangeRateProd = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(p => p.Name == "CNY/USD Outright");
+            if (exchangeRateProd != null)
+            {
+                exchangeRate = exchangeRateProd.Bid.Value;
+            }
+            else
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+            }
+            var pOrder = new PingOrder()
+            {
+                ExchangeRate = exchangeRate,
+                Amount = amount,
+                CreatedAt = DateTime.UtcNow,
+                Paid = false
+            };
+            db.PingOrders.Add(pOrder);
+            db.SaveChanges();
+
+            string orderNo = pOrder.Id.ToString();
             Pingpp.Pingpp.SetApiKey("sk_test_GGmvzTC88uz15OeXXTX1unLC");
             string appId = "app_HSunLGTi9Wf9P44e";
-            string orderNo = new Random().Next(0, 10000000).ToString();
-            orderNo = orderNo.PadLeft(8, '0');
 
             var extra = new Dictionary<string, object>();
+
             if (channel == "alipay_pc_direct")
             {
                 extra.Add("success_url", "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/success");
@@ -1566,6 +1585,7 @@ namespace CFD_API.Controllers
             try
             {
                 var charge = Pingpp.Models.Charge.Create(param);
+
                 return charge;
             }
             catch (Exception ex)

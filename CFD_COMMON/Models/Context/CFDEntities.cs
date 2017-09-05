@@ -48,6 +48,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Partner> Partners { get; set; }
         public virtual DbSet<PartnerView> PartnerViews { get; set; }
         public virtual DbSet<PartnerUserView> PartnerUserViews { get; set; }
+        public virtual DbSet<PingOrder> PingOrders { get; set; }
         public virtual DbSet<ProdSetting_Live> ProdSettings { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
@@ -380,6 +381,9 @@ namespace CFD_COMMON.Models.Context
                 .Property(e => e.TakePx)
                 .HasPrecision(18, 8);
 
+            modelBuilder.Entity<PingOrder>()
+                .Property(e => e.ExchangeRate)
+                .HasPrecision(18, 6);
 
             modelBuilder.Entity<UserAlert_Live>()
                 .Property(e => e.HighPrice)
