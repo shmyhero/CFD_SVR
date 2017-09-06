@@ -1533,6 +1533,128 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("deposit/focal")]
+        [Route("live/deposit/focal")]
+        [BasicAuth]
+        public NewFocalDepositDTO NewFocalDeposit(decimal amount)
+        {
+            var user = GetUser();
+
+            if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
+
+            string transferId;
+            using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
+            {
+                try
+                {
+                    transferId = clientHttp.NewDeposit(
+                        IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername,
+                        IsLiveUrl ? null : user.AyondoPassword,
+                        amount, TransferType.CUP_DEPOSIT);
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
+            }
+
+            if (IsLiveUrl)
+            {
+                db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = Convert.ToInt64(transferId), CreatedAt = DateTime.Now, ClaimAmount = amount });
+                db.SaveChanges();
+
+                //var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
+                //if (userInfo != null)
+                //{
+                //    result.firstName = userInfo.FirstName;
+                //    result.lastName = userInfo.LastName;
+                //    result.email = userInfo.Email;
+                //    result.addr = userInfo.Addr;
+                //}
+            }
+
+            var site = IsLiveUrl ? "" : "adfc6dd4-87a7-11e7-be8a-0242ac110002";
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
+            var fx = cache.ProdDefs.FirstOrDefault(o => o.Name == "USD/CNY Outright");
+            var quote = cache.Quotes.FirstOrDefault(o => o.Id == fx.Id);
+            var result = new NewFocalDepositBaseDTO() 
+            {
+                Amount = (amount *quote.Offer).ToString("F2"),
+                Currency = "CNY",
+                PaymentType = "cup",
+                Site = site,
+                TransRef = transferId,
+                //sessionValidity = DateTime.UtcNow.AddMinutes(30).ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                //shopperLocale = "en_GB",
+                //currencyCode = "USD",
+                //skinCode = "UtmJpnab",
+                //merchantReference = transferId,
+                //brandCode = "moneybookers",
+                ////brandCode = "visa",
+                ////issuerId = "1121",
+                //shipBeforeDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                ////merchantReturnData = "",
+                ////shopperEmail = "",
+
+                ////countryCode = "US",
+            };
+
+            var dataString = result.Site + result.Amount + result.Currency + result.PaymentType + result.TransRef;
+            //var dataString =
+            //    "currencyCode:merchantAccount:merchantReference:paymentAmount:sessionValidity:shipBeforeDate:shopperLocale:skinCode:USD:AyoMarLimTHCN:SKINTEST-1503472799708:199:2017-08-23T07\\:50\\:11Z:2017-08-29:en_GB:UtmJpnab";
+            var bytes = Encoding.UTF8.GetBytes(dataString);
+
+            var HMAC_KEY = IsLiveUrl ? "" : "ayondo";
+            //byte[] binaryHmacKey = Enumerable.Range(0, HMAC_KEY.Length)
+            //    .Where(x => x % 2 == 0)
+            //    .Select(x => Convert.ToByte(HMAC_KEY.Substring(x, 2), 16))
+            //    .ToArray();
+
+            // Create an HMAC SHA-256 key from the raw key bytes
+
+            // Get an HMAC SHA-256 Mac instance and initialize with the signing key
+
+            // calculate the hmac on the binary representation of the signing string
+
+            var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(HMAC_KEY));
+            var hash = hmacsha256.ComputeHash(bytes);
+
+            var base64String = Convert.ToBase64String(hash);
+
+            return new NewFocalDepositDTO()
+            {
+                //merchantAccount = result.merchantAccount,
+                //paymentAmount = result.paymentAmount,
+                //sessionValidity = result.sessionValidity,
+                //shopperLocale = result.shopperLocale,
+                //currencyCode = result.currencyCode,
+                //skinCode = result.skinCode,
+                //merchantReference = result.merchantReference,
+                //brandCode = result.brandCode,
+                ////issuerId = result.issuerId,
+                //shipBeforeDate = result.shipBeforeDate,
+
+                //merchantSig = base64String,
+                //signingString = dataString,
+
+                ////countryCode = result.countryCode,
+                Amount=result.Amount,
+                Currency = result.Currency,
+                Site = result.Site,
+                PaymentType = result.PaymentType,
+                TransRef = result.TransRef,
+
+                Merchant = "9cf7890c-87a6-11e7-bc4d-0242ac110002",
+                AttemptMode = IsLiveUrl?"0":"1",
+                lang="zh-CN",
+                Product = "lots of stuff",
+                Signature = base64String,
+                
+            };
+        }
+
+        [HttpGet]
         [Route("live/deposit/pingpp")]
         [BasicAuth]
         public Pingpp.Models.Charge NewPingppDeposit(decimal amount, string channel)
