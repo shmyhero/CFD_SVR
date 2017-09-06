@@ -1620,7 +1620,10 @@ namespace CFD_API.Controllers
             var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(HMAC_KEY));
             var hash = hmacsha256.ComputeHash(bytes);
 
-            var base64String = Convert.ToBase64String(hash);
+            StringBuilder hex = new StringBuilder(hash.Length * 2);
+            foreach (byte b in hash)
+                hex.AppendFormat("{0:x2}", b);
+            var hexString= hex.ToString();
 
             return new NewFocalDepositDTO()
             {
@@ -1649,7 +1652,7 @@ namespace CFD_API.Controllers
                 AttemptMode = IsLiveUrl?"0":"1",
                 lang="zh-CN",
                 Product = "lots of stuff",
-                Signature = base64String,
+                Signature = hexString,
                 
             };
         }
