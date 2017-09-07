@@ -154,25 +154,25 @@ namespace CFD_API.DTO
         public string countryCode { get; set; }
     }
 
-    //public class NewFocalDepositDTO : NewFocalDepositBaseDTO
-    //{
-    //    public string Signature { get; set; }
+    public class NewFocalDepositDTO : NewFocalDepositBaseDTO
+    {
+        public string Signature { get; set; }
 
-    //    public string Merchant { get; set; }
-    //    public string Product { get; set; }
-    //    public string AttemptMode { get; set; }
-    //    public string TestTrans { get; set; }
-    //    public string lang { get; set; }
-    //}
+        public string Merchant { get; set; }
+        public string Product { get; set; }
+        public string AttemptMode { get; set; }
+        public string TestTrans { get; set; }
+        public string lang { get; set; }
+    }
 
-    //public class NewFocalDepositBaseDTO
-    //{
-    //    public string Amount { get; set; }
-    //    public string PaymentType { get; set; }
-    //    public string Currency { get; set; }
-    //    public string Site { get; set; }
-    //    public string TransRef { get; set; }
-    //}
+    public class NewFocalDepositBaseDTO
+    {
+        public string Amount { get; set; }
+        public string PaymentType { get; set; }
+        public string Currency { get; set; }
+        public string Site { get; set; }
+        public string TransRef { get; set; }
+    }
 
     public class LiveUserInfoDTO
     {
