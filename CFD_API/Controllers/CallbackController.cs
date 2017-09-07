@@ -414,36 +414,36 @@ namespace CFD_API.Controllers
             return new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("success")};
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("pingpp/success")]
-        public HttpResponseMessage PingppSuccess(string result, string out_trade_no)
+        public HttpResponseMessage PingppSuccess()
         {
-            CFDGlobal.LogInformation("pingpp success, order number: " + out_trade_no);
+            string requestStr = Request.Content.ReadAsStringAsync().Result;
+            CFDGlobal.LogInformation("ping++ success, request body:" + requestStr);
 
+            var jObject = JObject.Parse(requestStr);
+            var type = jObject.SelectToken("type").ToString();
+            var orderNumberStr = jObject["data"]["object"].SelectToken("order_no").ToString();
             int orderNumber = 0;
-            if(!int.TryParse(out_trade_no, out orderNumber))
+            if (!int.TryParse(orderNumberStr, out orderNumber))
             {
-                CFDGlobal.LogError("pingpp callback failed, invalid out_trade_no: " + out_trade_no);
+                CFDGlobal.LogError("pingpp callback failed, invalid out_trade_no: " + orderNumber);
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
             }
             else
             {
                 var pOrder = db.PingOrders.FirstOrDefault(p => p.Id == orderNumber);
-                if(pOrder != null)
+                if (pOrder != null)
                 {
-                    pOrder.Paid = true;
+                    pOrder.WebHookAt = DateTime.Now;
+                    pOrder.WebHookResult = type;
                     db.SaveChanges();
                 }
             }
 
+           
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
         }
-
-        [HttpGet]
-        [Route("pingpp/cancel")]
-        public HttpResponseMessage PingppFail(string result, string out_trade_no)
-        {
-            
-            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
-        }
+        
     }
 }

@@ -12,12 +12,34 @@ namespace CFD_COMMON.Models.Entities
         /// Id就是OrderNumber，需要传入Ping++的接口
         /// </summary>
         public int Id { get; set; }
-        public decimal Amount { get; set; }
+        public int? UserId { get; set; }
+        public string OrderNumber { get; set; }
+        public decimal? AmountCNY { get; set; }
 
-        public decimal ExchangeRate { get; set; }
-
+        public decimal? AmountUSD { get; set; }
+        /// <summary>
+        /// 汇率
+        /// </summary>
+        public decimal? FxRate { get; set; }
+        /// <summary>
+        /// 汇率的获取时间
+        /// </summary>
+        public DateTime? FxRateAt { get; set; }
+        /// <summary>
+        /// 支付渠道，可能是alipay，alipay_wap，alipay_pc_direct，wx
+       /// </summary>
+        public string Channel { get; set; }
+        /// <summary>
+        /// 调用时间
+        /// </summary>
         public DateTime? CreatedAt { get; set; }
-
-        public bool? Paid { get; set; }
+        /// <summary>
+        /// 支付回调时间
+        /// </summary>
+        public DateTime? WebHookAt { get; set; }
+        /// <summary>
+        /// 回调结果
+        /// </summary>
+        public string WebHookResult { get; set; }
     }
 }

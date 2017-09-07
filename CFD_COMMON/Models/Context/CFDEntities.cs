@@ -382,7 +382,7 @@ namespace CFD_COMMON.Models.Context
                 .HasPrecision(18, 8);
 
             modelBuilder.Entity<PingOrder>()
-                .Property(e => e.ExchangeRate)
+                .Property(e => e.FxRate)
                 .HasPrecision(18, 6);
 
             modelBuilder.Entity<UserAlert_Live>()

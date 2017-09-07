@@ -1535,8 +1535,19 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("live/deposit/pingpp")]
         [BasicAuth]
-        public Pingpp.Models.Charge NewPingppDeposit(decimal amount, string channel)
+        public Pingpp.Models.Charge NewPingppDeposit(decimal amount, string channel, string payment)
         {
+            string[] acceptedChannels = new string[] { "isv_qr"};
+            string[] acceptedPayments = new string[] { "alipay", "wx" };
+            if(acceptedChannels.ToList().IndexOf(channel) == -1)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "错误的渠道"));
+            }
+            if (acceptedPayments.ToList().IndexOf(payment) == -1)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "错误的支付方式"));
+            }
+
             decimal exchangeRate = 0;
             var exchangeRateProd = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(p => p.Name == "CNY/USD Outright");
             if (exchangeRateProd != null)
@@ -1547,36 +1558,48 @@ namespace CFD_API.Controllers
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
             }
+
             var pOrder = new PingOrder()
             {
-                ExchangeRate = exchangeRate,
-                Amount = amount,
-                CreatedAt = DateTime.UtcNow,
-                Paid = false
+                UserId = UserId,
+                FxRate = exchangeRate,
+                FxRateAt = exchangeRateProd.Time,
+                CreatedAt = DateTime.Now,
+                 AmountCNY =  amount,
+                 Channel = channel
             };
             db.PingOrders.Add(pOrder);
             db.SaveChanges();
 
             string orderNo = pOrder.Id.ToString();
-            Pingpp.Pingpp.SetApiKey("sk_test_GGmvzTC88uz15OeXXTX1unLC");
+            orderNo = DateTime.Now.ToString("yyyyMMdd") + orderNo.PadLeft(8, '0');
+            pOrder.OrderNumber = orderNo;
+            db.SaveChanges();
+
+            //Pingpp.Pingpp.SetApiKey("sk_test_GGmvzTC88uz15OeXXTX1unLC");
+            Pingpp.Pingpp.SetApiKey("sk_live_OGa9m5znn1u9zLGyz91S8az5");
             string appId = "app_HSunLGTi9Wf9P44e";
 
             var extra = new Dictionary<string, object>();
 
-            if (channel == "alipay_pc_direct")
+            switch(channel)
             {
-                extra.Add("success_url", "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/success");
-                //extra.Add("cancel_url", "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/pingpp/cancel");
+                case "isv_qr":
+                    extra.Add("pay_channel", payment);
+                    //extra.Add("result_url", "https://cn.tradehero.mobi/test_form/finish.html");
+                    break;
             }
+            //terminal_id是必填项，随便写一个
+            extra.Add("terminal_id", "T0000001");
 
             var param = new Dictionary<string, object>
                 {
                     {"order_no", orderNo},
-                    {"amount", amount},
+                    {"amount", amount * 100},//Ping++以分为单位，所以要乘100
                     {"channel", channel},
                     {"currency", "cny"},
-                    {"subject", "test"},
-                    {"body", "tests"},
+                    {"subject", "payment"},
+                    {"body", "payment"},
                     {"client_ip", "127.0.0.1"},
                     {"app", new Dictionary<string, string> { { "id", appId } }},
                     {"extra", extra}
