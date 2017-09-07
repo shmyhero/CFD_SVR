@@ -424,24 +424,14 @@ namespace CFD_API.Controllers
             var jObject = JObject.Parse(requestStr);
             var type = jObject.SelectToken("type").ToString();
             var orderNumberStr = jObject["data"]["object"].SelectToken("order_no").ToString();
-            int orderNumber = 0;
-            if (!int.TryParse(orderNumberStr, out orderNumber))
+            var pOrder = db.PingOrders.FirstOrDefault(p => p.OrderNumber == orderNumberStr);
+            if (pOrder != null)
             {
-                CFDGlobal.LogError("pingpp callback failed, invalid out_trade_no: " + orderNumber);
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
-            }
-            else
-            {
-                var pOrder = db.PingOrders.FirstOrDefault(p => p.Id == orderNumber);
-                if (pOrder != null)
-                {
-                    pOrder.WebHookAt = DateTime.Now;
-                    pOrder.WebHookResult = type;
-                    db.SaveChanges();
-                }
+                pOrder.WebHookAt = DateTime.Now;
+                pOrder.WebHookResult = type;
+                db.SaveChanges();
             }
 
-           
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
         }
         
