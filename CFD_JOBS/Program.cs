@@ -156,6 +156,11 @@ namespace CFD_JOBS
                 {
                     RankJob.Run(true);
                 }
+
+                if (args.Contains("-Prize"))
+                {
+                    PrizeReport.Run();
+                }
                 return 0;
             }
             catch (Exception ex)

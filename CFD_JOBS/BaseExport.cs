@@ -16,6 +16,9 @@ namespace CFD_JOBS
 
         public List<PartnerExportItem> PartnerExportItems;
         public abstract void ExportPartner(string fileName);
+
+        public List<PrizeExportItem> PrizeExportItems;
+        public abstract void ExportPrize(string fileName);
     }
 
     class CSVExport : BaseExport
@@ -61,6 +64,11 @@ namespace CFD_JOBS
 
         public override void ExportPartner(string fileName)
         {
+        }
+
+        public override void ExportPrize(string fileName)
+        {
+            
         }
     }
 
@@ -144,6 +152,35 @@ namespace CFD_JOBS
                 }
             }
         }
+
+        public override void ExportPrize(string fileName)
+        {
+            if (PrizeExportItems == null)
+            {
+                throw new Exception("列为空");
+            }
+
+            if (PrizeExportItems == null || PrizeExportItems.Count == 0)
+                return;
+
+            //把模板copy一份
+            var templateBytes = File.ReadAllBytes("Template/Prize_Template.xls");
+            File.WriteAllBytes(fileName, templateBytes);
+
+            String sConnectionString = string.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=Excel 8.0;", fileName);
+            using (OleDbConnection oleConn = new OleDbConnection(sConnectionString))
+            {
+                oleConn.Open();
+                using (OleDbCommand ole_cmd = oleConn.CreateCommand())
+                {
+                    PrizeExportItems.ForEach(item =>
+                    {
+                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}')", item.PrizeName, item.DeliverPhone, item.DeliverAddress, item.ContactPhone);
+                        ole_cmd.ExecuteNonQuery();
+                    });
+                }
+            }
+        }
     }
 
     class ExportItem
@@ -191,5 +228,13 @@ namespace CFD_JOBS
         public string Name;
         public string Email;
         public string Phone;
+    }
+
+    class PrizeExportItem
+    {
+        public string PrizeName;
+        public string DeliverPhone;
+        public string DeliverAddress;
+        public string ContactPhone;
     }
 }
