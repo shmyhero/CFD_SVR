@@ -52,7 +52,7 @@ namespace CFD_JOBS
                             DateTime yesterday = timeToSend.AddDays(-1);
                             exporItems = (from p in db.PingOrders
                                           join u in db.Users on p.UserId equals u.Id
-                                          where p.WebHookAt.HasValue && p.WebHookAt > yesterday && p.WebHookAt <= timeToSend && p.WebHookResult == "charge.success"
+                                          where p.AmountCNY.HasValue && p.FxRate.HasValue && p.FxRateAt.HasValue && p.WebHookAt.HasValue && p.WebHookAt > yesterday && p.WebHookAt <= timeToSend && p.WebHookResult == "charge.succeeded"
                                           select new PingDepositExportItem()
                                           {
                                               Account = u.AyLiveAccountId.Value,
