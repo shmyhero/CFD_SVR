@@ -3721,14 +3721,17 @@
       <field name="MDS_SMD" required="N"/>
       <field name="MDS_GSMD" required="N"/>
       <field name="MDS_GSMS" required="N"/>
+      <field name="MDS_SFACTOR" required="N"/>
+      <field name="MDS_TICKTIME" required="N"/>
+      <field name="MDS_SESSIONTIME" required="N"/>
+      <field name="MDS_SESSIONZONE" required="N"/>
+      <field name="MDS_MULT" required="N"/>
       <field name="Text" required="N"/>
       <field name="EncodedTextLen" required="N"/>
       <field name="EncodedText" required="N"/>
       <field name="MDS_SetSize" required="N"/>
       <field name="MDS_SetIndex" required="N"/>
       <field name="UnsolicitedIndicator" required="N"/>
-      <field name="MDS_SFACTOR" required="N"/>
-      <field name="MDS_SESSIONTIME" required="N"/>
     </message>
     <message name="MDSTransferRequest" msgtype="MDS3" msgcat="app">
       <field name="MDS_RequestID" required="Y"/>
@@ -4638,7 +4641,10 @@
     <field number="7952" name="MDS_DELTA" type="FLOAT"/>
     <field number="7953" name="MDS_GUARSL" type="BOOLEAN"/>
     <field number="7954" name="MDS_SFACTOR" type="FLOAT"/>
-    <field number="7955" name="MDS_SESSIONTIME" type="UTCTIMESTAMP"/>
+    <field number="7955" name="MDS_TICKTIME" type="UTCTIMESTAMP"/>
+    <field number="7956" name="MDS_SESSIONTIME" type="STRING"/>
+    <field number="7957" name="MDS_SESSIONZONE" type="STRING"/>
+    <field number="7958" name="MDS_MULT" type="FLOAT"/>
 
     <field number="8000" name="AuxTime" type="UTCTIMESTAMP" />
     <field number="100" name="ExDestination" type="EXCHANGE"/>
