@@ -15,6 +15,7 @@ using CFD_COMMON.Models.Entities;
 using Newtonsoft.Json.Linq;
 using CFD_COMMON;
 using CFD_API.Controllers.Attributes;
+using CFD_API.Caching;
 
 namespace CFD_API.Controllers
 {
@@ -195,6 +196,24 @@ namespace CFD_API.Controllers
             {
                 request.Abort();
             }
+        }
+
+        [HttpGet]
+        [Route("fxrate/ayondo")]
+        public decimal FxRateAyondo()
+        {
+            decimal fxRate = 0;
+            var exchangeRateProd = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(p => p.Name == "USD/CNY Outright");
+            if (exchangeRateProd != null)
+            {
+                fxRate = exchangeRateProd.Offer.Value;
+            }
+            else
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+            }
+
+            return fxRate;
         }
 
         /// <summary>

@@ -1673,11 +1673,11 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "错误的支付方式"));
             }
 
-            decimal exchangeRate = 0;
-            var exchangeRateProd = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(p => p.Name == "CNY/USD Outright");
+            decimal fxRate = 0;
+            var exchangeRateProd = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(p => p.Name == "USD/CNY Outright");
             if (exchangeRateProd != null)
             {
-                exchangeRate = exchangeRateProd.Bid.Value;
+                fxRate = exchangeRateProd.Offer.Value;
             }
             else
             {
@@ -1687,7 +1687,7 @@ namespace CFD_API.Controllers
             var pOrder = new PingOrder()
             {
                 UserId = UserId,
-                FxRate = exchangeRate,
+                FxRate = fxRate,
                 FxRateAt = exchangeRateProd.Time,
                 CreatedAt = DateTime.Now,
                  AmountCNY =  amount,
