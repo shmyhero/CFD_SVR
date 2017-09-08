@@ -213,7 +213,7 @@ namespace CFD_JOBS
                 {
                     PingDepositExportItems.ForEach(item =>
                     {
-                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}','{4}','{5}')", item.UserName, item.Account, item.AmountUSD, item.AmountCNY, item.DepositTime.ToString("yyyy-MM-dd HH:mm:ss"), item.AmountCNY, item.FxRate);
+                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}','{4}','{5}')", item.UserName, item.Account, Math.Round(item.AmountUSD,4), item.DepositTime.ToString("yyyy-MM-dd HH:mm:ss"), item.AmountCNY, item.FxRate);
                         ole_cmd.ExecuteNonQuery();
                     });
                 }
