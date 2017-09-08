@@ -57,7 +57,7 @@ namespace CFD_JOBS
                                           {
                                               Account = u.AyLiveAccountId.Value,
                                               AmountCNY = p.AmountCNY.Value,
-                                              AmountUSD =  Math.Round(p.AmountCNY.Value / p.FxRate.Value,4),
+                                              AmountUSD =  Math.Round(p.AmountCNY.Value / p.FxRate.Value,2),
                                                FxRate = p.FxRate.Value,
                                                 DepositTime = p.WebHookAt.Value,
                                                  UserName = u.AyLiveUsername
