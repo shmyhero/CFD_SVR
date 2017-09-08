@@ -151,6 +151,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <None Include="Template\Ping_Template.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Template\Prize_Template.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
