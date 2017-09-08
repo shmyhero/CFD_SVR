@@ -123,6 +123,7 @@
     <Compile Include="BaseExport.cs" />
     <Compile Include="DepositRewardReport.cs" />
     <Compile Include="PartnerReport.cs" />
+    <Compile Include="PingDepositReport.cs" />
     <Compile Include="PrizeReport.cs" />
     <Compile Include="QuoteSnapshot.cs" />
     <Compile Include="RankJob.cs" />

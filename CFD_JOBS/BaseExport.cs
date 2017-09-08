@@ -19,6 +19,9 @@ namespace CFD_JOBS
 
         public List<PrizeExportItem> PrizeExportItems;
         public abstract void ExportPrize(string fileName);
+
+        public List<PingDepositExportItem> PingDepositExportItems;
+        public abstract void ExportPingDeposit(string fileName);
     }
 
     class CSVExport : BaseExport
@@ -33,7 +36,8 @@ namespace CFD_JOBS
             StringBuilder sb = new StringBuilder();
             //加标题
             sb.Append("Beneficiary Name,Beneficiary Account No.,Bank Name,Bank Branch,Province,City,ID Card No.,Currency,Transaction Amount Received\n");
-            RemittanceExportItems.ForEach(item => {
+            RemittanceExportItems.ForEach(item =>
+            {
                 sb.Append(item.BeneficiaryName);
                 sb.Append(",");
                 sb.Append(item.BeneficiaryAccountNo);
@@ -68,7 +72,12 @@ namespace CFD_JOBS
 
         public override void ExportPrize(string fileName)
         {
-            
+
+        }
+
+        public override void ExportPingDeposit(string fileName)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -181,6 +190,35 @@ namespace CFD_JOBS
                 }
             }
         }
+
+        public override void ExportPingDeposit(string fileName)
+        {
+            if (PingDepositExportItems == null)
+            {
+                throw new Exception("列为空");
+            }
+
+            if (PingDepositExportItems == null || PingDepositExportItems.Count == 0)
+                return;
+
+            //把模板copy一份
+            var templateBytes = File.ReadAllBytes("Template/Ping_Template.xls");
+            File.WriteAllBytes(fileName, templateBytes);
+
+            String sConnectionString = string.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=Excel 8.0;", fileName);
+            using (OleDbConnection oleConn = new OleDbConnection(sConnectionString))
+            {
+                oleConn.Open();
+                using (OleDbCommand ole_cmd = oleConn.CreateCommand())
+                {
+                    PingDepositExportItems.ForEach(item =>
+                    {
+                        ole_cmd.CommandText = string.Format("insert into [Sheet1$] values('{0}','{1}','{2}','{3}','{4}','{5}')", item.UserName, item.Account, item.AmountUSD, item.AmountCNY, item.DepositTime.ToString("yyyy-MM-dd HH:mm:ss"), item.AmountCNY, item.FxRate);
+                        ole_cmd.ExecuteNonQuery();
+                    });
+                }
+            }
+        }
     }
 
     class ExportItem
@@ -236,5 +274,15 @@ namespace CFD_JOBS
         public string DeliverPhone;
         public string DeliverAddress;
         public string ContactPhone;
+    }
+
+    class PingDepositExportItem
+    {
+        public string UserName;
+        public long Account;
+        public decimal AmountUSD;
+        public decimal AmountCNY;
+        public DateTime DepositTime;
+        public decimal FxRate;
     }
 }

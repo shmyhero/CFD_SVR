@@ -161,6 +161,11 @@ namespace CFD_JOBS
                 {
                     PrizeReport.Run();
                 }
+
+                if (args.Contains("-Ping"))
+                {
+                    PingDepositReport.Run();
+                }
                 return 0;
             }
             catch (Exception ex)
