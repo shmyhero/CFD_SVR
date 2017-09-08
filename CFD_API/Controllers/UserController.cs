@@ -1618,9 +1618,9 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public Pingpp.Models.Charge NewPingppDeposit(decimal amount, string channel, string payment)
         {
-            string[] acceptedChannels = new string[] { "isv_qr"};
-            string[] acceptedPayments = new string[] { "alipay", "wx" };
-            if(acceptedChannels.ToList().IndexOf(channel) == -1)
+            string[] acceptedChannels = new string[] {"isv_qr"};
+            string[] acceptedPayments = new string[] {"alipay", "wx"};
+            if (acceptedChannels.ToList().IndexOf(channel) == -1)
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "错误的渠道"));
             }
@@ -1629,25 +1629,25 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "错误的支付方式"));
             }
 
-            decimal fxRate = 0;
-            var exchangeRateProd = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(p => p.Name == "USD/CNY Outright");
-            if (exchangeRateProd != null)
-            {
-                fxRate = exchangeRateProd.Offer.Value;
-            }
-            else
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
-            }
+            //decimal fxRate = 0;
+            //var exchangeRateProd = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(p => p.Name == "USD/CNY Outright");
+            //if (exchangeRateProd != null)
+            //{
+            //    fxRate = exchangeRateProd.Offer.Value;
+            //}
+            //else
+            //{
+            //    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+            //}
 
             var pOrder = new PingOrder()
             {
                 UserId = UserId,
-                FxRate = fxRate,
-                FxRateAt = exchangeRateProd.Time,
-                CreatedAt = DateTime.Now,
-                 AmountCNY =  amount,
-                 Channel = channel
+                //FxRate = fxRate,
+                //FxRateAt = exchangeRateProd.Time,
+                CreatedAt = DateTime.UtcNow,
+                AmountCNY = amount,
+                Channel = channel
             };
             db.PingOrders.Add(pOrder);
             db.SaveChanges();
@@ -1663,7 +1663,7 @@ namespace CFD_API.Controllers
 
             var extra = new Dictionary<string, object>();
 
-            switch(channel)
+            switch (channel)
             {
                 case "isv_qr":
                     extra.Add("pay_channel", payment);
@@ -1674,17 +1674,17 @@ namespace CFD_API.Controllers
             extra.Add("terminal_id", "T0000001");
 
             var param = new Dictionary<string, object>
-                {
-                    {"order_no", orderNo},
-                    {"amount", amount * 100},//Ping++以分为单位，所以要乘100
-                    {"channel", channel},
-                    {"currency", "cny"},
-                    {"subject", "payment"},
-                    {"body", "payment"},
-                    {"client_ip", "127.0.0.1"},
-                    {"app", new Dictionary<string, string> { { "id", appId } }},
-                    {"extra", extra}
-                };
+            {
+                {"order_no", orderNo},
+                {"amount", amount*100}, //Ping++以分为单位，所以要乘100
+                {"channel", channel},
+                {"currency", "cny"},
+                {"subject", "payment"},
+                {"body", "payment"},
+                {"client_ip", "127.0.0.1"},
+                {"app", new Dictionary<string, string> {{"id", appId}}},
+                {"extra", extra}
+            };
 
             try
             {

@@ -8,6 +8,7 @@ using System.Text;
 using System.Web.Http;
 using AutoMapper;
 using AyondoTrade;
+using CFD_API.Caching;
 using CFD_API.DTO;
 using CFD_COMMON;
 using CFD_COMMON.Models.Context;
@@ -427,13 +428,30 @@ namespace CFD_API.Controllers
             var pOrder = db.PingOrders.FirstOrDefault(p => p.OrderNumber == orderNumberStr);
             if (pOrder != null)
             {
-                pOrder.WebHookAt = DateTime.Now;
+                pOrder.WebHookAt = DateTime.UtcNow;
                 pOrder.WebHookResult = type;
+
+                if (type == "charge.succeeded")
+                {
+                    var cache = WebCache.GetInstance(true);
+                    var prod = cache.ProdDefs.FirstOrDefault(p => p.Name == "USD/CNY Outright");
+                    var quote = cache.Quotes.FirstOrDefault(o => o.Id == prod.Id);
+                    if (quote != null)
+                    {
+                        pOrder.FxRate = quote.Offer;
+                        pOrder.FxRateAt = quote.Time;
+                        pOrder.AmountUSD = Decimals.RoundIfExceed(pOrder.AmountCNY.Value/quote.Offer, 2);
+                    }
+                    else
+                    {
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+                    }
+                }
+
                 db.SaveChanges();
             }
 
-            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
+            return new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("success")};
         }
-        
     }
 }
