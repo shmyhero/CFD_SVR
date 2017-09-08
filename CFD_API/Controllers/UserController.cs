@@ -1496,10 +1496,7 @@ namespace CFD_API.Controllers
             var bytes = Encoding.UTF8.GetBytes(dataString);
 
             var HMAC_KEY = IsLiveUrl? "43AEC933ADD2761E30C956CB4254011276F487BC04A64CFD000B38B76C2D2516" : "2BC504F6B19E96F429F4FF70E420EC89F5EBC3E6B0D93CEAA8E445ADC60C247D";
-            byte[] binaryHmacKey = Enumerable.Range(0, HMAC_KEY.Length)
-                .Where(x => x % 2 == 0)
-                .Select(x => Convert.ToByte(HMAC_KEY.Substring(x, 2), 16))
-                .ToArray();
+            byte[] binaryHmacKey = Converts.HexStringToBytes(HMAC_KEY);
 
             // Create an HMAC SHA-256 key from the raw key bytes
 
@@ -1585,19 +1582,6 @@ namespace CFD_API.Controllers
                 PaymentType = "cup",
                 Site = site,
                 TransRef = transferId,
-                //sessionValidity = DateTime.UtcNow.AddMinutes(30).ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                //shopperLocale = "en_GB",
-                //currencyCode = "USD",
-                //skinCode = "UtmJpnab",
-                //merchantReference = transferId,
-                //brandCode = "moneybookers",
-                ////brandCode = "visa",
-                ////issuerId = "1121",
-                //shipBeforeDate = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                ////merchantReturnData = "",
-                ////shopperEmail = "",
-
-                ////countryCode = "US",
             };
 
             var dataString = result.Site + result.Amount + result.Currency + result.PaymentType + result.TransRef;
@@ -1606,42 +1590,14 @@ namespace CFD_API.Controllers
             var bytes = Encoding.UTF8.GetBytes(dataString);
 
             var HMAC_KEY = IsLiveUrl ? "" : "ayondo";
-            //byte[] binaryHmacKey = Enumerable.Range(0, HMAC_KEY.Length)
-            //    .Where(x => x % 2 == 0)
-            //    .Select(x => Convert.ToByte(HMAC_KEY.Substring(x, 2), 16))
-            //    .ToArray();
-
-            // Create an HMAC SHA-256 key from the raw key bytes
-
-            // Get an HMAC SHA-256 Mac instance and initialize with the signing key
-
-            // calculate the hmac on the binary representation of the signing string
 
             var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(HMAC_KEY));
             var hash = hmacsha256.ComputeHash(bytes);
 
-            StringBuilder hex = new StringBuilder(hash.Length * 2);
-            foreach (byte b in hash)
-                hex.AppendFormat("{0:x2}", b);
-            var hexString= hex.ToString();
+            var hexString = Converts.BytesToHexString(hash);
 
             return new NewFocalDepositDTO()
             {
-                //merchantAccount = result.merchantAccount,
-                //paymentAmount = result.paymentAmount,
-                //sessionValidity = result.sessionValidity,
-                //shopperLocale = result.shopperLocale,
-                //currencyCode = result.currencyCode,
-                //skinCode = result.skinCode,
-                //merchantReference = result.merchantReference,
-                //brandCode = result.brandCode,
-                ////issuerId = result.issuerId,
-                //shipBeforeDate = result.shipBeforeDate,
-
-                //merchantSig = base64String,
-                //signingString = dataString,
-
-                ////countryCode = result.countryCode,
                 Amount=result.Amount,
                 Currency = result.Currency,
                 Site = result.Site,

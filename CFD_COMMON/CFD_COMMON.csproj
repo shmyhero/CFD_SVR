@@ -208,6 +208,7 @@
     <Compile Include="Service\SecurityService.cs" />
     <Compile Include="Service\UserService.cs" />
     <Compile Include="Utils\Bytes.cs" />
+    <Compile Include="Utils\Converts.cs" />
     <Compile Include="Utils\DateTimes.cs" />
     <Compile Include="Utils\Decimals.cs" />
     <Compile Include="Utils\DESUtil.cs" />
