@@ -290,8 +290,7 @@ namespace CFD_API.Controllers
             decimal liveRegisterReward = liveReward == null ? 0 : liveReward.Amount;
 
             //推荐人奖励
-            var referReward = db.ReferRewards.FirstOrDefault(o => o.UserID == userID);
-            decimal referRewardAmount = referReward == null ? 0 : referReward.Amount;
+            var referRewardAmount = db.ReferRewards.Where(o => o.UserID == userID).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
 
             //首日入金交易金
             decimal firstDepositReward = 0;
