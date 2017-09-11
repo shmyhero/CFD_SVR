@@ -28,10 +28,10 @@ namespace CFD_COMMON.Utils
                     break;
                 case "wecollect - cup":
                 case "adyen - skrill":
-                    result = new Tuple<string, string>("入金", "#1c8d13");
+                    result = new Tuple<string, string>("入金", "#000000");
                     break;
                 case "bank wire":
-                    result = new Tuple<string, string>("交易金入金", "#1c8d13");
+                    result = new Tuple<string, string>("交易金入金", "#000000");
                     break;
                 case "transaction fee":
                     result = new Tuple<string, string>("手续费", "#000000");
