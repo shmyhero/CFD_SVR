@@ -278,7 +278,7 @@ namespace CFD_JOBS
                 DateTime dtLastSent = DateTime.MinValue;
                 var tryGetValue = ErrorMailExMessages.TryGetValue(e.Message, out dtLastSent);
 
-                if (tryGetValue && DateTime.UtcNow - dtLastSent > TimeSpan.FromHours(1))
+                if (!tryGetValue || DateTime.UtcNow - dtLastSent > TimeSpan.FromHours(1))
                 {
                     try
                     {
