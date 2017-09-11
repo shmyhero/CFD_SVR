@@ -2094,34 +2094,49 @@ namespace CFD_API.Controllers
                 var accountGuid = initResult["data"]["accountGuid"].Value<string>();
 
                 user.AyLiveAccountGuid = accountGuid;
+
+                //clear previous mifid result
+                userInfo.MifidGuid = null;
+
                 db.SaveChanges();
             }
 
-            //Mifid Test
-            var mifidResult = DoMifidTest(user.AyLiveAccountGuid, form);
-
-            if (mifidResult is JArray)
+            //if no Mifid Test result, submit Mifid info
+            if (userInfo.MifidGuid == null)
             {
-                CFDGlobal.LogWarning("LIVE mifid test error:" + mifidResult);
+                var mifidResult = DoMifidTest(user.AyLiveAccountGuid, form);
 
-                return new ResultDTO
+                if (mifidResult is JArray)
                 {
-                    error = mifidResult,
-                    success = false,
-                };
+                    CFDGlobal.LogWarning("LIVE mifid test error:" + mifidResult);
+
+                    return new ResultDTO
+                    {
+                        error = mifidResult,
+                        success = false,
+                    };
+                }
+
+                var mifidGuid = mifidResult["data"]["mifidGuid"].Value<string>();
+                var rulesetId = mifidResult["data"]["rulesetId"].Value<string>();
+                var appropriatenessScore = mifidResult["data"]["appropriatenessScore"].Value<decimal>();
+                var appropriatenessResolution = mifidResult["data"]["appropriatenessResolution"].Value<string>();
+
+                CFDGlobal.LogInformation("MiFID result: account " + user.AyLiveAccountGuid + " mifid " + mifidGuid +
+                                         " ruleset " +
+                                         rulesetId + " score " + appropriatenessScore + " resolution " +
+                                         appropriatenessResolution);
+
+                //save to db
+                userInfo.MifidGuid = mifidGuid;
+                userInfo.MifidRulesetId = rulesetId;
+                userInfo.AppropriatenessScore = appropriatenessScore;
+                userInfo.AppropriatenessResolution = appropriatenessResolution;
+                db.SaveChanges();
             }
 
-            var mifidGuid = mifidResult["data"]["mifidGuid"].Value<string>();
-            var rulesetId = mifidResult["data"]["rulesetId"].Value<string>();
-            var appropriatenessScore = mifidResult["data"]["appropriatenessScore"].Value<decimal>();
-            var appropriatenessResolution = mifidResult["data"]["appropriatenessResolution"].Value<string>();
-
-            CFDGlobal.LogInformation("MiFID result: account " + user.AyLiveAccountGuid + " mifid " + mifidGuid + " ruleset " +
-                                     rulesetId + " score " + appropriatenessScore + " resolution " +
-                                     appropriatenessResolution);
-
             //When Mifid Test Failed
-            if (appropriatenessResolution == "Failed" && form.confirmMifidOverride == null)
+            if (userInfo.AppropriatenessResolution == "Failed" && form.confirmMifidOverride == null)
             {
                 return new ResultDTO() {success = false, message = "MifidTestFailed"};
             }
@@ -2172,7 +2187,7 @@ namespace CFD_API.Controllers
             //}
             #endregion
 
-            var json = AMSLiveAccountComplete(user.AyLiveAccountGuid, mifidGuid, form, user, userInfo);
+            var json = AMSLiveAccountComplete(user.AyLiveAccountGuid, userInfo.MifidGuid, form, user, userInfo);
 
             if (json is JArray)
             {
@@ -2242,11 +2257,6 @@ namespace CFD_API.Controllers
             userInfo.NoLevBalance = form.noLevBalance;
             userInfo.NoLevFrq = form.noLevFrq;
             userInfo.NoLevRisk = form.noLevRisk;
-
-            userInfo.MifidGuid = mifidGuid;
-            userInfo.MifidRulesetId = rulesetId;
-            userInfo.AppropriatenessScore = appropriatenessScore;
-            userInfo.AppropriatenessResolution = appropriatenessResolution;
 
             db.SaveChanges();
 
