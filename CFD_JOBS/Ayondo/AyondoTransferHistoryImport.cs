@@ -26,7 +26,7 @@ namespace CFD_JOBS.Ayondo
 
         public TimedWebClient()
         {
-            this.Timeout = 10*60*1000;
+            this.Timeout = 20*60*1000;
         }
 
         protected override WebRequest GetWebRequest(Uri address)
@@ -39,7 +39,7 @@ namespace CFD_JOBS.Ayondo
     }
     public class AyondoTransferHistoryImport
     {
-        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan HistoryInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan HistoryIdentifier = TimeSpan.FromHours(2);
         private static readonly TimeSpan MaxDuration = TimeSpan.FromMinutes(60*24);
