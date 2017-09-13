@@ -22,6 +22,7 @@ namespace CFD_COMMON.Models.Entities
         /// 卡片ID
         /// </summary>
         public int UserCardID { get; set; }
+        public string PositionID { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
 }

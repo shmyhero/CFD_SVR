@@ -1059,6 +1059,7 @@ namespace CFD_API.Controllers
                             UserID = UserId,
                             Score = score,
                             Source = ScoreSource.LiveOrder,
+                            PositionID = result.PosMaintRptID,
                             CreatedAt = DateTime.UtcNow
                         });
                     }
