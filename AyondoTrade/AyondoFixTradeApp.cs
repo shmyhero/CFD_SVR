@@ -48,16 +48,20 @@ namespace AyondoTrade
         public int TAG_MDS_TransferType;
         public int TAG_MDS_TransferAmount;
         public int TAG_MDS_TransferCurrency;
+        public int TAG_MDS_TransferLabel;
+        public int TAG_MDS_Actor;
         public int TAG_MDS_TargetBalanceID;
         public int TAG_MDS_SourceBalanceID;
         public int TAG_MDS_TransferID;
         public int TAG_MDS_StatusCode;
 
         //custim fields' enums
+        public string ENUM_MDS_TransferType_CASH_TRANSFER;
         public string ENUM_MDS_TransferType_CUP_DEPOSIT;
         public string ENUM_MDS_TransferType_ADYEN_CC_DEPOSIT;
         public string ENUM_MDS_TransferType_MANUAL_WITHDRAWAL;
         public string ENUM_MDS_StatusCode_CREATED;
+        public string ENUM_MDS_StatusCode_COMPLETE;
         public string ENUM_MDS_StatusCode_ERROR;
 
         public ConcurrentDictionary<string, string> UsernameAccounts = new ConcurrentDictionary<string, string>();
@@ -134,6 +138,11 @@ namespace AyondoTrade
         /// guid as key
         /// </summary>
         public ConcurrentDictionary<string, string> CreatedTransferIDs = new ConcurrentDictionary<string, string>();
+
+        /// <summary>
+        /// guid as key
+        /// </summary>
+        public ConcurrentDictionary<string, string> CompletedTransferIDs = new ConcurrentDictionary<string, string>();
 
         /// <summary>
         /// guid as key
@@ -248,6 +257,13 @@ namespace AyondoTrade
 
                         CreatedTransferIDs.TryAdd(reqId, transferId);
                     }
+                    else if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_COMPLETE))
+                    {
+                        var reqId = message.GetString(TAG_MDS_RequestID);
+                        var transferId = message.GetString(TAG_MDS_TransferID);
+
+                        CompletedTransferIDs.TryAdd(reqId, transferId);
+                    }
                     else if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_ERROR))
                     {
                         var reqId = message.GetString(TAG_MDS_RequestID);
@@ -324,6 +340,8 @@ namespace AyondoTrade
 
             TAG_MDS_TransferAmount = _dd.FieldsByName["MDS_TransferAmount"].Tag;
             TAG_MDS_TransferCurrency = _dd.FieldsByName["MDS_TransferCurrency"].Tag;
+            TAG_MDS_TransferLabel = _dd.FieldsByName["MDS_TransferLabel"].Tag;
+            TAG_MDS_Actor = _dd.FieldsByName["MDS_Actor"].Tag;
             TAG_MDS_TargetBalanceID = _dd.FieldsByName["MDS_TargetBalanceID"].Tag;
             TAG_MDS_SourceBalanceID = _dd.FieldsByName["MDS_SourceBalanceID"].Tag;
             TAG_MDS_TransferID = _dd.FieldsByName["MDS_TransferID"].Tag;
@@ -331,10 +349,12 @@ namespace AyondoTrade
             var MDS_StatusCode = _dd.FieldsByName["MDS_StatusCode"];
             TAG_MDS_StatusCode = MDS_StatusCode.Tag;
 
+            ENUM_MDS_TransferType_CASH_TRANSFER = MDS_TransferType.EnumDict.First(o => o.Value == "CASH_TRANSFER").Key;
             ENUM_MDS_TransferType_CUP_DEPOSIT = MDS_TransferType.EnumDict.First(o => o.Value == "CUP_DEPOSIT").Key;
             ENUM_MDS_TransferType_ADYEN_CC_DEPOSIT = MDS_TransferType.EnumDict.First(o => o.Value == "ADYEN_CC_DEPOSIT").Key;
             ENUM_MDS_TransferType_MANUAL_WITHDRAWAL = MDS_TransferType.EnumDict.First(o => o.Value == "MANUAL_WITHDRAWAL").Key;
             ENUM_MDS_StatusCode_CREATED = MDS_StatusCode.EnumDict.First(o => o.Value == "CREATED").Key;
+            ENUM_MDS_StatusCode_COMPLETE = MDS_StatusCode.EnumDict.First(o => o.Value == "COMPLETE").Key;
             ENUM_MDS_StatusCode_ERROR = MDS_StatusCode.EnumDict.First(o => o.Value == "ERROR").Key;
 
             ////testing
@@ -892,6 +912,30 @@ namespace AyondoTrade
             return guid;
         }
 
+        public string MDS3CashTransferRequest(string account, string balanceId, decimal amount, string targetBalanceId)
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new Message();
+            m.Header.SetField(new MsgType("MDS3"));
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+
+            m.SetField(new Account(account));
+            m.SetField(new StringField(TAG_MDS_SourceBalanceID) { Obj = balanceId });
+
+            m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(ENUM_MDS_TransferType_CASH_TRANSFER) });
+            m.SetField(new DecimalField(TAG_MDS_TransferAmount) { Obj = amount });
+            m.SetField(new StringField(TAG_MDS_TransferCurrency) { Obj = "USD" });
+
+            m.SetField(new StringField(TAG_MDS_TargetBalanceID) {Obj = targetBalanceId});
+            m.SetField(new StringField(TAG_MDS_TransferLabel) { Obj = "Bank Wire" });
+            //m.SetField(new StringField(TAG_MDS_Actor) {Obj = ""});
+
+            SendMessage(m);
+
+            return guid;
+        }
+
         #region console test method
 
         public void Run()
@@ -944,6 +988,8 @@ namespace AyondoTrade
                         TestOAuth();
                     else if (action == 'e')
                         QueryMDS3Withdraw();
+                    else if (action == 'f')
+                        QueryMDS3CashTransfer();
                     else if (action == 'l')
                         TestLatency();
                 }
@@ -976,7 +1022,7 @@ namespace AyondoTrade
 
         private char QueryAction()
         {
-            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a,b,e,l".Split(','));
+            HashSet<string> validActions = new HashSet<string>("1,2,3,4,5,6,7,8,9,q,Q,r,h,t,p,c,d,a,b,e,f,l".Split(','));
 
             string cmd = Console.ReadLine().Trim();
             if (cmd.Length != 1 || validActions.Contains(cmd) == false)
@@ -1088,6 +1134,30 @@ namespace AyondoTrade
 
             AyondoTradeService svr = new AyondoTradeService();
             svr.NewWithdraw("Rambo", "Windy911@163.com", 1.5M);
+        }
+
+        private void QueryMDS3CashTransfer()
+        {
+            var guid = Guid.NewGuid().ToString();
+
+            var m = new Message();
+            m.Header.SetField(new MsgType("MDS3"));
+            m.SetField(new StringField(TAG_MDS_RequestID) { Obj = guid });
+
+            m.SetField(new Account(_account));
+            m.SetField(new StringField(TAG_MDS_SourceBalanceID) { Obj = _balanceId });
+
+            m.SetField(new IntField(TAG_MDS_TransferType) { Obj = Convert.ToInt32(ENUM_MDS_TransferType_CASH_TRANSFER) });
+            m.SetField(new DecimalField(TAG_MDS_TransferAmount) { Obj = 1.49m });
+            m.SetField(new StringField(TAG_MDS_TransferCurrency) { Obj = "USD" });
+
+            m.SetField(new StringField(TAG_MDS_TargetBalanceID) { Obj = "139344959096" });
+            m.SetField(new StringField(TAG_MDS_TransferLabel) { Obj = "Bank Wire" });
+            m.SetField(new StringField(TAG_MDS_Actor) {Obj = "139344791535" });
+
+            SendMessage(m);
+
+            //return guid;
         }
 
         private void TestNewOrder()

@@ -83,6 +83,11 @@ namespace AyondoTrade
         string NewWithdraw(string username, string password, decimal amount);
 
         [OperationContract]
+        [FaultContract(typeof(OAuthLoginRequiredFault))]
+        [FaultContract(typeof(MDSTransferErrorFault))]
+        string NewCashTransfer(string username, string password, decimal amount, string targetBalanceId);
+
+        [OperationContract]
         void LogOut(string username);
     }
 }
