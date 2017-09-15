@@ -877,14 +877,14 @@ namespace AyondoTrade
             return transferId;
         }
 
-        public string NewCashTransfer(string username, string password, decimal amount,string targetBalanceId)
+        public string NewCashTransfer(string username, string password, decimal amount, string targetBalanceId, string targetActorId)
         {
             string account = GetAccount(username, password);
 
             string transferId = null;
             try
             {
-                transferId = SendCashTransferRequestAndWait(account, amount, targetBalanceId);
+                transferId = SendCashTransferRequestAndWait(account, amount, targetBalanceId, targetActorId);
             }
             catch (UserNotLoggedInException)
             {
@@ -892,7 +892,7 @@ namespace AyondoTrade
                 account = SendLoginRequestAndWait(username, password);
 
                 //get data again
-                transferId = SendCashTransferRequestAndWait(account, amount, targetBalanceId);
+                transferId = SendCashTransferRequestAndWait(account, amount, targetBalanceId, targetActorId);
             }
 
             return transferId;
@@ -1040,7 +1040,7 @@ namespace AyondoTrade
             return transferId;
         }
 
-        private string SendCashTransferRequestAndWait(string account, decimal amount,string targetBalanceId)
+        private string SendCashTransferRequestAndWait(string account, decimal amount, string targetBalanceId, string targetActorId)
         {
             string balanceId = null;
             Global.FixApp.AccountBalanceIDs.TryGetValue(account, out balanceId);
@@ -1054,23 +1054,22 @@ namespace AyondoTrade
                 throw new FaultException("cannot find balance id for account " + account);
 
             //send message
-            var reqId = Global.FixApp.MDS3CashTransferRequest(account, balanceId, amount, targetBalanceId);
+            var reqId = Global.FixApp.MDS3CashTransferRequest(account, balanceId, amount, targetBalanceId, targetActorId);
 
             //wait/get response message(s)
-            string transferId = null;
+            DateTime sentAt = DateTime.MinValue;
             var dt = DateTime.UtcNow;
             do
             {
                 Thread.Sleep(SCAN_WAIT_MILLI_SECOND);
 
-                //check completed transfer ids
-                if (Global.FixApp.CompletedTransferIDs.ContainsKey(reqId))
+                if (Global.FixApp.SentTransfers.ContainsKey(reqId))
                 {
-                    var tryGetValue = Global.FixApp.CompletedTransferIDs.TryGetValue(reqId, out transferId);
+                    var tryGetValue = Global.FixApp.SentTransfers.TryGetValue(reqId, out sentAt);
 
                     if (!tryGetValue) continue;
 
-                    if (transferId != null)
+                    if (sentAt != DateTime.MinValue)
                         break;
                 }
 
@@ -1093,10 +1092,10 @@ namespace AyondoTrade
                 CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dt <= TIMEOUT);
 
-            if (transferId == null)
+            if (sentAt == DateTime.MinValue)
                 throw new FaultException("fail getting cash transfer result " + reqId);
 
-            return transferId;
+            return reqId;
         }
     }
 

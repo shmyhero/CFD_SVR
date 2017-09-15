@@ -85,7 +85,7 @@ namespace AyondoTrade
         [OperationContract]
         [FaultContract(typeof(OAuthLoginRequiredFault))]
         [FaultContract(typeof(MDSTransferErrorFault))]
-        string NewCashTransfer(string username, string password, decimal amount, string targetBalanceId);
+        string NewCashTransfer(string username, string password, decimal amount, string targetBalanceId, string targetActorId);
 
         [OperationContract]
         void LogOut(string username);

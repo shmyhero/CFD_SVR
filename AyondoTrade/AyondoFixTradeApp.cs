@@ -50,6 +50,7 @@ namespace AyondoTrade
         public int TAG_MDS_TransferCurrency;
         public int TAG_MDS_TransferLabel;
         public int TAG_MDS_Actor;
+        public int TAG_MDS_BalanceID;
         public int TAG_MDS_TargetBalanceID;
         public int TAG_MDS_SourceBalanceID;
         public int TAG_MDS_TransferID;
@@ -60,6 +61,7 @@ namespace AyondoTrade
         public string ENUM_MDS_TransferType_CUP_DEPOSIT;
         public string ENUM_MDS_TransferType_ADYEN_CC_DEPOSIT;
         public string ENUM_MDS_TransferType_MANUAL_WITHDRAWAL;
+        public string ENUM_MDS_StatusCode_SENT;
         public string ENUM_MDS_StatusCode_CREATED;
         public string ENUM_MDS_StatusCode_COMPLETE;
         public string ENUM_MDS_StatusCode_ERROR;
@@ -133,6 +135,11 @@ namespace AyondoTrade
         /// </summary>
         public ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>> AutoClosedPositionReports =
             new ConcurrentDictionary<string, IList<KeyValuePair<DateTime, PositionReport>>>();
+
+        /// <summary>
+        /// guid as key
+        /// </summary>
+        public ConcurrentDictionary<string, DateTime> SentTransfers = new ConcurrentDictionary<string, DateTime>();
 
         /// <summary>
         /// guid as key
@@ -257,6 +264,13 @@ namespace AyondoTrade
 
                         CreatedTransferIDs.TryAdd(reqId, transferId);
                     }
+                    else if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_SENT))
+                    {
+                        var reqId = message.GetString(TAG_MDS_RequestID);
+                        //var transferId = message.GetString(TAG_MDS_TransferID);
+
+                        SentTransfers.TryAdd(reqId, DateTime.UtcNow);
+                    }
                     else if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_COMPLETE))
                     {
                         var reqId = message.GetString(TAG_MDS_RequestID);
@@ -342,6 +356,7 @@ namespace AyondoTrade
             TAG_MDS_TransferCurrency = _dd.FieldsByName["MDS_TransferCurrency"].Tag;
             TAG_MDS_TransferLabel = _dd.FieldsByName["MDS_TransferLabel"].Tag;
             TAG_MDS_Actor = _dd.FieldsByName["MDS_Actor"].Tag;
+            TAG_MDS_BalanceID = _dd.FieldsByName["MDS_BalanceID"].Tag;
             TAG_MDS_TargetBalanceID = _dd.FieldsByName["MDS_TargetBalanceID"].Tag;
             TAG_MDS_SourceBalanceID = _dd.FieldsByName["MDS_SourceBalanceID"].Tag;
             TAG_MDS_TransferID = _dd.FieldsByName["MDS_TransferID"].Tag;
@@ -353,6 +368,7 @@ namespace AyondoTrade
             ENUM_MDS_TransferType_CUP_DEPOSIT = MDS_TransferType.EnumDict.First(o => o.Value == "CUP_DEPOSIT").Key;
             ENUM_MDS_TransferType_ADYEN_CC_DEPOSIT = MDS_TransferType.EnumDict.First(o => o.Value == "ADYEN_CC_DEPOSIT").Key;
             ENUM_MDS_TransferType_MANUAL_WITHDRAWAL = MDS_TransferType.EnumDict.First(o => o.Value == "MANUAL_WITHDRAWAL").Key;
+            ENUM_MDS_StatusCode_SENT = MDS_StatusCode.EnumDict.First(o => o.Value == "SENT").Key;
             ENUM_MDS_StatusCode_CREATED = MDS_StatusCode.EnumDict.First(o => o.Value == "CREATED").Key;
             ENUM_MDS_StatusCode_COMPLETE = MDS_StatusCode.EnumDict.First(o => o.Value == "COMPLETE").Key;
             ENUM_MDS_StatusCode_ERROR = MDS_StatusCode.EnumDict.First(o => o.Value == "ERROR").Key;
@@ -912,7 +928,7 @@ namespace AyondoTrade
             return guid;
         }
 
-        public string MDS3CashTransferRequest(string account, string balanceId, decimal amount, string targetBalanceId)
+        public string MDS3CashTransferRequest(string account, string balanceId, decimal amount, string targetBalanceId, string targetActorId)
         {
             var guid = Guid.NewGuid().ToString();
 
@@ -929,7 +945,7 @@ namespace AyondoTrade
 
             m.SetField(new StringField(TAG_MDS_TargetBalanceID) {Obj = targetBalanceId});
             m.SetField(new StringField(TAG_MDS_TransferLabel) { Obj = "Bank Wire" });
-            //m.SetField(new StringField(TAG_MDS_Actor) {Obj = ""});
+            m.SetField(new StringField(TAG_MDS_Actor) {Obj = targetActorId });
 
             SendMessage(m);
 
