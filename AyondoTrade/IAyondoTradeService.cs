@@ -59,7 +59,7 @@ namespace AyondoTrade
 
         [OperationContract]
         [FaultContract(typeof(OAuthLoginRequiredFault))]
-        decimal GetBalance(string username, string password, bool ignoreCache = false);
+        BalanceReport GetBalance(string username, string password, bool ignoreCache = false);
 
         [OperationContract]
         string PrintCache(string username);

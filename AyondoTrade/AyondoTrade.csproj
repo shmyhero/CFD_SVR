@@ -117,6 +117,7 @@
     <Compile Include="FaultModel\OAuthLoginRequiredFault.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="IAyondoTradeService.cs" />
+    <Compile Include="Model\Balance.cs" />
     <Compile Include="Model\PositionReport.cs" />
     <Compile Include="Model\Transfer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

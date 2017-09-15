@@ -596,7 +596,7 @@ namespace CFD_API.Controllers
 
             if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
-            decimal balance;
+            BalanceReport balance;
             IList<PositionReport> positionReports;
             using (var clientHttp = new AyondoTradeClient(IsLiveUrl))
             {
@@ -614,6 +614,16 @@ namespace CFD_API.Controllers
                 {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
                 }
+            }
+
+            //update balanceID and actorID
+            if (IsLiveUrl)
+            {
+                if (!string.IsNullOrEmpty(balance.BalanceId) && user.AyLiveBalanceId.ToString() != balance.BalanceId)
+                    user.AyLiveBalanceId = Convert.ToInt64(balance.BalanceId);
+                if (!string.IsNullOrEmpty(balance.ActorId) && user.AyLiveActorId.ToString() != balance.ActorId)
+                    user.AyLiveActorId = Convert.ToInt64(balance.ActorId);
+                db.SaveChanges();
             }
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
@@ -660,7 +670,7 @@ namespace CFD_API.Controllers
             {
                 Misc refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundFee");
                 Misc refundCommentSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "RefundFeeComment");
-                decimal available = balance - marginUsed;
+                decimal available = balance.Value - marginUsed;
 
                 if (refundSetting != null)
                 {
@@ -669,7 +679,7 @@ namespace CFD_API.Controllers
                     //按百分比计算的手续费
                     decimal percentage = JObject.Parse(refundSetting.Value)["rate"].Value<decimal>() * available;
                     //手续费按大的算
-                    maxRefundable = GetAvailableWithdraw(balance, totalUPL, balance - marginUsed);  //minimum > percentage ? (available - minimum) : (available - percentage);
+                    maxRefundable = GetAvailableWithdraw(balance.Value, totalUPL, balance.Value - marginUsed);  //minimum > percentage ? (available - minimum) : (available - percentage);
                     //最小可出金金额
                     miniRefundable = JObject.Parse(refundSetting.Value)["miniRefundable"].Value<decimal>();
                 }
@@ -685,9 +695,9 @@ namespace CFD_API.Controllers
             return new BalanceDTO()
             {
                 id = user.Id,
-                balance = balance,
-                total = balance + totalUPL,
-                available = balance - marginUsed,
+                balance = balance.Value,
+                total = balance.Value + totalUPL,
+                available = balance.Value - marginUsed,
                 refundable = maxRefundable > 0 ? ((int)(maxRefundable * 100))/100.00M : 0, //截取两位小数，但不四舍五入。 不能用Math.Round
                 minRefundable = miniRefundable,
                 comment = refundComment

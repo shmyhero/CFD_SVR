@@ -128,7 +128,7 @@ namespace AyondoTrade
         /// <summary>
         /// guid as key
         /// </summary>
-        public ConcurrentDictionary<string, KeyValuePair<DateTime, decimal>> Balances = new ConcurrentDictionary<string, KeyValuePair<DateTime, decimal>>();
+        public ConcurrentDictionary<string, KeyValuePair<DateTime, Model.BalanceReport>> Balances = new ConcurrentDictionary<string, KeyValuePair<DateTime, Model.BalanceReport>>();
 
         /// <summary>
         /// username as key
@@ -247,10 +247,23 @@ namespace AyondoTrade
 
                     var guid = message.GetString(TAG_MDS_RequestID);
                     var quantity = message.GetDecimal(Tags.Quantity);
-                    Balances.TryAdd(guid, new KeyValuePair<DateTime, decimal>(DateTime.UtcNow, quantity));
+                    var balanceId = message.GetString(TAG_MDS_BalanceID);
+                    var actorId = message.GetString(TAG_MDS_Actor);
+
+                    Balances.TryAdd(guid, new KeyValuePair<DateTime, Model.BalanceReport>(DateTime.UtcNow, new Model.BalanceReport()
+                    {
+                        ActorId = actorId,
+                        BalanceId = balanceId,
+                        Value = quantity,
+                    }));
 
                     var account = message.GetString(Tags.Account);
-                    CFDCacheManager.Instance.SetBalance(account, quantity);
+                    CFDCacheManager.Instance.SetBalance(account, new Model.BalanceReport()
+                    {
+                        ActorId = actorId,
+                        BalanceId = balanceId,
+                        Value = quantity,
+                    });
                 }
                 else if (msgType == "MDS4")
                 {

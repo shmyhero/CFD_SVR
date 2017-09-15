@@ -200,11 +200,11 @@ namespace AyondoTrade
             return result;
         }
 
-        public decimal GetBalance(string username, string password, bool ignoreCache = false)
+        public Model.BalanceReport GetBalance(string username, string password, bool ignoreCache = false)
         {
             string account = GetAccount(username, password);
 
-            decimal balance;
+            Model.BalanceReport balance;
 
             if (!ignoreCache && CFDCacheManager.Instance.TryGetBalance(account, out balance))
             {
@@ -586,10 +586,10 @@ namespace AyondoTrade
             return report;
         }
 
-        private decimal SendBalanceRequestAndWait(string account)
+        private Model.BalanceReport SendBalanceRequestAndWait(string account)
         {
             var reqId = Global.FixApp.MDS5BalanceRequest(account);
-            KeyValuePair<DateTime, decimal> balanceWithTime = new KeyValuePair<DateTime, decimal>(DateTime.UtcNow, -1);
+            KeyValuePair<DateTime, Model.BalanceReport> balanceWithTime = new KeyValuePair<DateTime, Model.BalanceReport>(DateTime.UtcNow, null);
             var dt = DateTime.UtcNow;
             do
             {
@@ -607,7 +607,7 @@ namespace AyondoTrade
                 CheckBusinessMessageReject(reqId);
             } while (DateTime.UtcNow - dt <= TIMEOUT); // timeout
 
-            if (balanceWithTime.Value == -1)
+            if (balanceWithTime.Value == null)
                 throw new FaultException("fail getting balance " + reqId);
 
             return balanceWithTime.Value;

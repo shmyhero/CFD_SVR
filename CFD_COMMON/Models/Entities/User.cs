@@ -57,6 +57,10 @@
 
         public long? AyLiveAccountId { get; set; }
 
+        public long? AyLiveBalanceId { get; set; }
+
+        public long? AyLiveActorId { get; set; }
+
         [StringLength(50)]
         public string AyLiveAccountGuid { get; set; }
 

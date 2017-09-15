@@ -114,7 +114,7 @@ namespace AyondoTrade
             keysToRemove = FixApp.Balances.Where(pair => dtNow - pair.Value.Key > ts).Select(pair => pair.Key).ToList();
             foreach (var key in keysToRemove)
             {
-                KeyValuePair<DateTime, decimal> value;
+                KeyValuePair<DateTime, Model.BalanceReport> value;
                 FixApp.Balances.TryRemove(key, out value);
             }
             countNew = FixApp.Balances.Count;
@@ -166,6 +166,7 @@ namespace AyondoTrade
 
             CFDGlobal.LogLine("FailedUserResponses:" + FixApp.FailedUserResponses.Count);
             CFDGlobal.LogLine("LoggedOutUserResponses:" + FixApp.LoggedOutUserResponses.Count);
+            CFDGlobal.LogLine("SentTransfers:" + FixApp.SentTransfers.Count);
             CFDGlobal.LogLine("CreatedTransferIDs:" + FixApp.CreatedTransferIDs.Count);
             CFDGlobal.LogLine("CompleteTransferIDs:" + FixApp.CompletedTransferIDs.Count);
             CFDGlobal.LogLine("ErroredTransferRequests:" + FixApp.ErroredTransferRequests.Count);
