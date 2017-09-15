@@ -166,6 +166,10 @@ namespace CFD_JOBS
                 {
                     PingDepositReport.Run();
                 }
+                if (args.Contains("-PingPPCashTransfer"))
+                {
+                    PingPPCashTransfer.Run();
+                }
                 return 0;
             }
             catch (Exception ex)

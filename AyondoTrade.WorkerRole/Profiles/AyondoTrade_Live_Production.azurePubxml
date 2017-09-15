@@ -21,5 +21,6 @@
     <EnableRemoteDebugger>True</EnableRemoteDebugger>
     <RemoteDebuggerConnectorCertificateThumbprint>A0CE1142E4958C83BA806600C57754830A9CDA4A</RemoteDebuggerConnectorCertificateThumbprint>
     <AzureHostedServiceResourceGroup>ayondotrade-live</AzureHostedServiceResourceGroup>
+    <EnableApplicationInsights>False</EnableApplicationInsights>
   </PropertyGroup>
 </Project>

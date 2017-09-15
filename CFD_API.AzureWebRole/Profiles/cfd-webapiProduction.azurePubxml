@@ -18,5 +18,7 @@
     <AzureStorageAccountLabel>cfdstorage</AzureStorageAccountLabel>
     <AzureStorageAccountName>cfdstorage</AzureStorageAccountName>
     <AzureAppendTimestampToDeploymentLabel>True</AzureAppendTimestampToDeploymentLabel>
+    <AzureHostedServiceResourceGroup />
+    <EnableApplicationInsights>False</EnableApplicationInsights>
   </PropertyGroup>
 </Project>

@@ -391,7 +391,7 @@ namespace AyondoTrade
                     }
                     else
                     {
-                        //do not set balance cache if it's incomplete (only value, no balanceId/actorId)
+                        //do not create balance report cache if it's incomplete (only value, no balanceId/actorId)
                     }
                 });
         }

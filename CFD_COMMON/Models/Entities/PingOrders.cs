@@ -41,5 +41,17 @@ namespace CFD_COMMON.Models.Entities
         /// 回调结果
         /// </summary>
         public string WebHookResult { get; set; }
+
+        [StringLength(50)]
+        public string AyTransReqId { get; set; }
+        public DateTime? AyTransReqSentAt { get; set; }
+        public long? AyTransId { get; set; }
+        [StringLength(20)]
+        public string AyTransStatus { get; set; }
+        public DateTime? AyTransUpdateAt { get; set; }
+        [StringLength(50)]
+        public string AyTransText { get; set; }
+
+        public virtual User User { get; set; }
     }
 }
