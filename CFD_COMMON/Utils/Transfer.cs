@@ -31,7 +31,7 @@ namespace CFD_COMMON.Utils
                     result = new Tuple<string, string>("入金", "#1c8d13");
                     break;
                 case "bank wire":
-                    result = amount >= 0? new Tuple<string, string>("退回", "#1c8d13") : new Tuple<string, string>("出金受理", "#1c8d13");
+                    result = amount >= 0? new Tuple<string, string>("转账", "#1c8d13") : new Tuple<string, string>("出金受理", "#1c8d13");
                     break;
                 case "transaction fee":
                     result = new Tuple<string, string>("手续费", "#000000");
