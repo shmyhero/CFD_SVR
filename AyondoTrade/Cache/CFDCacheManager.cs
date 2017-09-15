@@ -390,10 +390,9 @@ namespace AyondoTrade
                         balanceReport.Value = balance;
                     }
                     else
-                    cfdCache.Set(balancePrefix + account, new Model.BalanceReport()
                     {
-                        Value = balance,
-                    }, new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(absoluteExpiration) });
+                        //do not set balance cache if it's incomplete (only value, no balanceId/actorId)
+                    }
                 });
         }
 
