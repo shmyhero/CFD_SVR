@@ -419,6 +419,13 @@ namespace CFD_API.Controllers
         [Route("pingpp/success")]
         public HttpResponseMessage PingppSuccess()
         {
+            //using (var client = new AyondoTradeClient(true))
+            //{
+            //    var balance = client.GetBalance("TradeHeroHoldingAC", "dY$Tqn4KQ#");
+            //    var balance2 = client.GetBalance("jiangyi1985", "tradehero");
+            //    //var newCashTransferId = client.NewCashTransfer("TradeHeroHoldingAC", "dY$Tqn4KQ#", 1, "");
+            //}
+
             string requestStr = Request.Content.ReadAsStringAsync().Result;
             CFDGlobal.LogInformation("ping++ success, request body:" + requestStr);
 

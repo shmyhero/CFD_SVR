@@ -106,7 +106,7 @@ namespace AyondoTrade
             return base.Channel.CancelOrder(username, password, securityId, orderId, nettingPositionId);
         }
 
-        public decimal GetBalance(string username, string password, bool ignoreCache = false)
+        public BalanceReport GetBalance(string username, string password, bool ignoreCache = false)
         {
             return base.Channel.GetBalance(username, password);
         }
@@ -139,6 +139,11 @@ namespace AyondoTrade
         public string NewWithdraw(string username, string password, decimal amount)
         {
             return base.Channel.NewWithdraw(username, password, amount);
+        }
+
+        public string NewCashTransfer(string username, string password, decimal amount, string targetBalanceId, string targetActorId)
+        {
+            return base.Channel.NewCashTransfer(username, password, amount, targetBalanceId, targetActorId);
         }
 
         public void LogOut(string username)

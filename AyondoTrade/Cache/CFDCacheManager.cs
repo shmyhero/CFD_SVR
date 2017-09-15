@@ -359,11 +359,11 @@ namespace AyondoTrade
             return null;
         }
 
-        public void SetBalance(string account, decimal? balance)
+        public void SetBalance(string account, Model.BalanceReport balance)
         {
             Task.Factory.StartNew(
                 () => {
-                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) set balance: {1}", account, balance));
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) set balance report: {1}", account, balance));
 
                     //if (balanceList.ContainsKey(account))
                     //{
@@ -378,9 +378,28 @@ namespace AyondoTrade
                 });
         }
 
-        public bool TryGetBalance(string account, out decimal balance)
+        public void SetBalance(string account, decimal balance)
         {
-            balance = default(decimal);
+            Task.Factory.StartNew(
+                () => {
+                    CFDGlobal.LogLine(string.Format("Cache - Account ({0}) set balance: {1}", account, balance));
+
+                    if (cfdCache.Contains(balancePrefix + account))
+                    {
+                        var balanceReport = (Model.BalanceReport)cfdCache[balancePrefix + account];
+                        balanceReport.Value = balance;
+                    }
+                    else
+                    cfdCache.Set(balancePrefix + account, new Model.BalanceReport()
+                    {
+                        Value = balance,
+                    }, new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddSeconds(absoluteExpiration) });
+                });
+        }
+
+        public bool TryGetBalance(string account, out Model.BalanceReport balance)
+        {
+            balance = null;
 
             if (!isEnabled)
                 return false;
@@ -396,7 +415,7 @@ namespace AyondoTrade
             //}
             if (cfdCache.Contains(balancePrefix + account))
             {
-                balance = (decimal)cfdCache[balancePrefix + account];
+                balance = (Model.BalanceReport)cfdCache[balancePrefix + account];
                 return true;
             }
             else

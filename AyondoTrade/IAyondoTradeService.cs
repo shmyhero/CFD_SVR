@@ -59,7 +59,7 @@ namespace AyondoTrade
 
         [OperationContract]
         [FaultContract(typeof(OAuthLoginRequiredFault))]
-        decimal GetBalance(string username, string password, bool ignoreCache = false);
+        BalanceReport GetBalance(string username, string password, bool ignoreCache = false);
 
         [OperationContract]
         string PrintCache(string username);
@@ -81,6 +81,11 @@ namespace AyondoTrade
         [FaultContract(typeof(OAuthLoginRequiredFault))]
         [FaultContract(typeof(MDSTransferErrorFault))]
         string NewWithdraw(string username, string password, decimal amount);
+
+        [OperationContract]
+        [FaultContract(typeof(OAuthLoginRequiredFault))]
+        [FaultContract(typeof(MDSTransferErrorFault))]
+        string NewCashTransfer(string username, string password, decimal amount, string targetBalanceId, string targetActorId);
 
         [OperationContract]
         void LogOut(string username);
