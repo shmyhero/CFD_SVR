@@ -2572,10 +2572,10 @@ namespace CFD_API.Controllers
             var user = GetUser();
 
             /*
-            EFT ： 出金
+            EFT ： 出金申请
             WeCollect - CUP ： Wecollect入金
             Adyen - Skrill
-            Bank Wire ： 运营赠金
+            Bank Wire ： 大于0是退回，小于0是出金受理
             Transaction Fee ： 入金手续费 （可能也包含出金）
             Trade Result ： 交易
             Financing ： 隔夜费
@@ -2595,7 +2595,7 @@ namespace CFD_API.Controllers
             var transfers = db.AyondoTransferHistory_Live.Where(t => t.TradingAccountId == user.AyLiveAccountId && limitedTypes.Contains(t.TransferType)).OrderByDescending(o=>o.ApprovalTime).ToList();
             transfers.ForEach(t =>
             {
-                var result = Transfer.getTransDescriptionColor(t.TransferType);
+                var result = Transfer.getTransDescriptionColor(t.TransferType, t.Amount.HasValue? t.Amount.Value : 0);
                 results.Add(new TransferDTO()
                 {
                     amount = t.Amount.HasValue ? t.Amount.Value : 0,

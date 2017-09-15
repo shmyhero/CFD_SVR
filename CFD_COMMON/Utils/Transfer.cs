@@ -18,7 +18,7 @@ namespace CFD_COMMON.Utils
             return lower == "wecollect - cup" || lower == "adyen - skrill";
         }
 
-        public static Tuple<string, string> getTransDescriptionColor(string transType)
+        public static Tuple<string, string> getTransDescriptionColor(string transType, decimal amount)
         {
             Tuple<string, string> result = new Tuple<string, string>(string.Empty, string.Empty);
             switch (transType.ToLower().Trim())
@@ -31,7 +31,7 @@ namespace CFD_COMMON.Utils
                     result = new Tuple<string, string>("入金", "#1c8d13");
                     break;
                 case "bank wire":
-                    result = new Tuple<string, string>("交易金入金", "#1c8d13");
+                    result = amount >= 0? new Tuple<string, string>("退回", "#1c8d13") : new Tuple<string, string>("出金受理", "#1c8d13");
                     break;
                 case "transaction fee":
                     result = new Tuple<string, string>("手续费", "#000000");

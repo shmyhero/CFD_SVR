@@ -50,7 +50,7 @@ namespace CFD_API.Controllers
             string pushType = string.IsNullOrEmpty(form.deepLink) ? "0" : "3";
 
             List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
-            string format = "{{\"type\":\"{1}\", \"title\":\"盈交易测试\", \"StockID\":0, \"CName\":\"\", \"message\":\"{0}\", \"deepLink\":\"{2}\"}}";
+            string format = "{{\"type\":\"{1}\", \"title\":\"盈交易通知\", \"StockID\":0, \"CName\":\"\", \"message\":\"{0}\", \"deepLink\":\"{2}\"}}";
             foreach(var token in tokenList)
             {
                 list.Add(new KeyValuePair<string, string>(token.deviceToken, string.Format(format,msg, pushType, form.deepLink)));
