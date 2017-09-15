@@ -898,6 +898,13 @@ namespace AyondoTrade
             return transferId;
         }
 
+        public Model.TransferReport GetCashTransferResult(string guid)
+        {
+            Model.TransferReport report;
+            Global.FixApp.CashTransferReports.TryGetValue(guid, out report);
+            return report;
+        }
+
         public void LogOut(string username)
         {
             string account = null;

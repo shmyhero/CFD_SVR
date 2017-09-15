@@ -170,6 +170,7 @@ namespace AyondoTrade
             CFDGlobal.LogLine("CreatedTransferIDs:" + FixApp.CreatedTransferIDs.Count);
             CFDGlobal.LogLine("CompleteTransferIDs:" + FixApp.CompletedTransferIDs.Count);
             CFDGlobal.LogLine("ErroredTransferRequests:" + FixApp.ErroredTransferRequests.Count);
+            CFDGlobal.LogLine("CashTransferReports:" + FixApp.CashTransferReports.Count);
 
             //AutoClosedPositionReports
             countOld = FixApp.AutoClosedPositionReports.Sum(o => o.Value.Count);

@@ -146,6 +146,11 @@ namespace AyondoTrade
             return base.Channel.NewCashTransfer(username, password, amount, targetBalanceId, targetActorId);
         }
 
+        public TransferReport GetCashTransferResult(string guid)
+        {
+            return base.Channel.GetCashTransferResult(guid);
+        }
+
         public void LogOut(string username)
         {
             base.Channel.LogOut(username);

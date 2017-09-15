@@ -88,6 +88,9 @@ namespace AyondoTrade
         string NewCashTransfer(string username, string password, decimal amount, string targetBalanceId, string targetActorId);
 
         [OperationContract]
+        TransferReport GetCashTransferResult(string guid);
+
+        [OperationContract]
         void LogOut(string username);
     }
 }

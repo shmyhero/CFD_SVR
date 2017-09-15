@@ -156,6 +156,11 @@ namespace AyondoTrade
         /// </summary>
         public ConcurrentDictionary<string, string> ErroredTransferRequests = new ConcurrentDictionary<string, string>();
 
+        /// <summary>
+        /// guid as key
+        /// </summary>
+        public ConcurrentDictionary<string, Model.TransferReport> CashTransferReports = new ConcurrentDictionary<string, Model.TransferReport>();
+
         //ayondodemo01 136824778776
         //ivantradehero 138673044476
 
@@ -232,6 +237,7 @@ namespace AyondoTrade
 
         public void FromApp(Message message, SessionID sessionID)
         {
+            //var s = message.GetString(1234);
             //return;
 
             try
@@ -270,33 +276,47 @@ namespace AyondoTrade
                     CFDGlobal.LogLine("MDS4:MDSTransfer: " + GetMessageString(message));
 
                     var statusCode = message.GetInt(TAG_MDS_StatusCode);
+                    var reqId = message.GetString(TAG_MDS_RequestID);
                     if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_CREATED))
                     {
-                        var reqId = message.GetString(TAG_MDS_RequestID);
                         var transferId = message.GetString(TAG_MDS_TransferID);
 
                         CreatedTransferIDs.TryAdd(reqId, transferId);
                     }
                     else if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_SENT))
                     {
-                        var reqId = message.GetString(TAG_MDS_RequestID);
                         //var transferId = message.GetString(TAG_MDS_TransferID);
 
                         SentTransfers.TryAdd(reqId, DateTime.UtcNow);
                     }
                     else if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_COMPLETE))
                     {
-                        var reqId = message.GetString(TAG_MDS_RequestID);
                         var transferId = message.GetString(TAG_MDS_TransferID);
 
                         CompletedTransferIDs.TryAdd(reqId, transferId);
                     }
                     else if (statusCode == Convert.ToInt32(ENUM_MDS_StatusCode_ERROR))
                     {
-                        var reqId = message.GetString(TAG_MDS_RequestID);
                         var text = message.GetString(Tags.Text);
 
                         ErroredTransferRequests.TryAdd(reqId, text);
+                    }
+
+                    var transferType = (Model.TransferType)message.GetInt(TAG_MDS_TransferType);
+                    if (transferType == Model.TransferType.CASH_TRANSFER)
+                    {
+                        var report = new Model.TransferReport()
+                        {
+                            RequestId = reqId,
+                            StatusCode = (Model.StatusCode) statusCode,
+                            Timestamp = message.Header.GetDateTime(Tags.SendingTime),
+                            Text = message.Any(o => o.Key == Tags.Text) ? message.GetString(Tags.Text) : null,
+                            TransferId =
+                                message.Any(o => o.Key == TAG_MDS_TransferID)
+                                    ? message.GetString(TAG_MDS_TransferID)
+                                    : null,
+                        };
+                        CashTransferReports.AddOrUpdate(reqId, report, (k, v) => report);
                     }
                 }
                 else

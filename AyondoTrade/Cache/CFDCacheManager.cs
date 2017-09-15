@@ -492,7 +492,7 @@ namespace AyondoTrade
                 CFDGlobal.LogLine(string.Format("Cache - Account ({0}) Print Balance", account));
 
                 sb.Append("<pre>");
-                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Balance:{1}</span><hr/>", userName, (decimal)cfdCache[balancePrefix + account]));
+                sb.Append(string.Format("<span style='color:green; font-size:24px;'>{0} - Balance:{1}</span><hr/>", userName, ((Model.BalanceReport)cfdCache[balancePrefix + account]).Value));
                 sb.Append("</pre>");
             }
 
