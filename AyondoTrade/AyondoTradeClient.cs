@@ -9,10 +9,12 @@ namespace AyondoTrade
 {
     public class AyondoTradeClient : ClientBase<IAyondoTradeService>, IAyondoTradeService, IDisposable
     {
+        private OperationContextScope _scope;
+
         public AyondoTradeClient(System.ServiceModel.Channels.Binding binding, EndpointAddress edpAddr)
             : base(binding, edpAddr)
         {
-            var scope = new OperationContextScope(base.InnerChannel);
+            _scope = new OperationContextScope(base.InnerChannel);
             MessageHeader myHeader = MessageHeader.CreateHeader(Global.WCF_MSG_HEADER_TOKEN_KEY, Global.WCF_MSG_HEADER_TOKEN_NS, Global.WCF_MSG_HEADER_TOKEN_VALUE);
             OperationContext.Current.OutgoingMessageHeaders.Add(myHeader);
         }
@@ -177,6 +179,8 @@ namespace AyondoTrade
                     Abort();
                 }
             }
+
+            _scope.Dispose();
         }
     }
 }
