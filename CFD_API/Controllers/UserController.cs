@@ -1375,6 +1375,8 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public NewDepositDTO GetDepositTransferId(decimal amount)
         {
+            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest,__(TransKey.PAYMENT_METHOD_DISABLED)));
+
             var user = GetUser();
 
             if(!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);

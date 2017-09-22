@@ -43,7 +43,9 @@ namespace CFD_COMMON.Localization
             { TransKey.NO_APPROVED_BANK_CARD, "未绑定银行卡" },
 
             { TransKey.PRICEDOWN, "当前价格中断,无法交易" },
-            {TransKey.Live_Acc_Not_Exist, "实盘账号不存在" }
+            {TransKey.Live_Acc_Not_Exist, "实盘账号不存在" },
+
+            {TransKey.PAYMENT_METHOD_DISABLED, "该入金方式暂不可用" },
         };
         
         public static Dictionary<string, string> ProdCNames = new Dictionary<string, string>

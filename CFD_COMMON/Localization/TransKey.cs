@@ -45,6 +45,8 @@ namespace CFD_COMMON.Localization
 
         PRICEDOWN,
 
-        Live_Acc_Not_Exist
+        Live_Acc_Not_Exist,
+
+        PAYMENT_METHOD_DISABLED,
     }
 }
