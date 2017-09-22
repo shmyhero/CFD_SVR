@@ -16,6 +16,12 @@ namespace CFD_JOBS
         {
             CFDGlobal.LogLine("Starting...");
 
+            //using (var client = new AyondoTradeClient(false)) //live
+            //{
+            //    var s=new AyondoTradeService();
+            //    var newCashTransfer = s.NewCashTransfer("thcn3QKRz", "meFjCt", 1.99m, "139344959096", "139344791535");
+            //}
+
             while (true)
             {
                 try
@@ -26,36 +32,41 @@ namespace CFD_JOBS
                         var list =
                             db.PingOrders.Include(o => o.User).Where(
                                 o =>
-                                    o.WebHookResult == "charge.succeeded" && (o.AyTransId == null ||
-                                    o.AyTransReqId == null)).ToList();
+                                    o.WebHookResult == "charge.succeeded" && (o.AyTransReqSentAt == null ||
+                                                                              o.AyTransId == null)).ToList();
 
-                        CFDGlobal.LogLine(list.Count+" unsent/incomplete data...");
+                        CFDGlobal.LogLine(list.Count + " unsent/incomplete data...");
 
-                        using (var client = new AyondoTradeClient(true))//live
+                        using (var client = new AyondoTradeClient(true)) //live
                         {
                             foreach (var pay in list)
                             {
-                                if (pay.AyTransReqId == null)
+                                if (pay.AyTransReqSentAt == null)
                                 {
-                                   if (pay.User.AyLiveBalanceId == null || pay.User.AyLiveActorId == null)
+                                    if (pay.User.AyLiveBalanceId == null || pay.User.AyLiveActorId == null)
                                         CFDGlobal.LogLine(pay.Id + ": user " + pay.UserId + " has no balanceId/actorId");
                                     else
                                     {
+                                        pay.AyTransReqSentAt = DateTime.UtcNow;
+
                                         try
                                         {
                                             var guid = client.NewCashTransfer("TradeHeroHoldingAC", "dY$Tqn4KQ#",
                                                 pay.AmountUSD.Value, pay.User.AyLiveBalanceId.ToString(),
                                                 pay.User.AyLiveActorId.ToString());
+
                                             pay.AyTransReqId = guid;
-                                            pay.AyTransReqSentAt = DateTime.UtcNow;
 
                                             CFDGlobal.LogLine(pay.Id + ": request sent " + pay.AyTransReqId);
                                         }
                                         catch (Exception e)
                                         {
+                                            pay.AyTransReqSentResult = e.Message + "\r\n" + e.StackTrace;
+
                                             CFDGlobal.LogLine(pay.Id + ": user " + pay.UserId + " sending transfer request error:");
                                             CFDGlobal.LogException(e);
                                         }
+
                                     }
                                 }
                                 else if (pay.AyTransId == null)
@@ -72,7 +83,8 @@ namespace CFD_JOBS
                                     }
                                     catch (Exception e)
                                     {
-                                        CFDGlobal.LogLine(pay.Id + ": guid " + pay.AyTransReqId + " getting transfer result error:");
+                                        CFDGlobal.LogLine(pay.Id + ": guid " + pay.AyTransReqId +
+                                                          " getting transfer result error:");
                                         CFDGlobal.LogException(e);
                                     }
                                 }
