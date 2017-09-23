@@ -27,6 +27,12 @@
 
     <br />
 
+    <div id="container3" style="min-width: 800px; max-width: 1600px; height: 800px; margin: 0 auto">
+        <font style="font-size: xx-large">Loading...</font>
+    </div>
+
+    <br />
+
     <div style="text-align: center">
         <table style="display: inline-block; font-family: sans-serif; width: 1000px; text-align: left; font-size: small; border-collapse: collapse">
             <thead>
@@ -456,6 +462,92 @@
                 }, {
                     name: 'PendingLogin',
                     data: uPendingLogin
+                }
+            ]
+        });
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        var ages = [18, 25, 35, 45, 55, 65,999];
+
+        var xsAges = new Array();
+        for (var i = 0; i < ages.length; i++) {
+            if (i == 0)
+                xsAges.push('<' + ages[i]);
+            else if(i==ages.length-1)
+                xsAges.push('>=' + ages[ages.length - 2]);
+            else
+                xsAges.push(ages[i - 1] + '-' + (ages[i] - 1));
+        }
+
+        var male = new Array();
+        var female = new Array();
+
+        for (var i = 0; i < ages.length; i++) {
+            male.push(0);
+            female.push(0);
+        }
+
+        for (var i = 0; i < result.length; i++) {
+            var user = result[i];
+
+            if (user.status != 'Active' && user.status != 'PendingLogin' && user.status != 'PendingFunding' && user.status != 'PendingTrading') {
+                continue;
+            }
+
+            var idx = -1;
+            for (var j = 0; j < ages.length ; j++) {
+                if (user.age < ages[j]) {
+                    idx = j;
+                    break;
+                }
+            }
+            if (user.gender == 1)
+                male[idx] = male[idx] + 1;
+            else
+                female[idx] = female[idx] + 1;
+        }
+
+        // Create the chart
+        Highcharts.chart('container3', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: '实盘用户（Approved）年龄性别分布'
+            },
+            //subtitle: {
+            //    text: 'Source: <a href="http://netmarketshare.com/">netmarketshare.com</a>'
+            //},
+            xAxis: {
+                categories: xsAges,
+                title: {
+                    text: '年龄'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: '人数'
+                }
+            },
+            tooltip: {
+                valueSuffix: '人'
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: {
+                        enabled: true,
+                        color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+                    }
+                }
+            },
+            series: [
+                {
+                    name: '男',
+                    data: male
+                }, {
+                    name: '女',
+                    data: female
                 }
             ]
         });
