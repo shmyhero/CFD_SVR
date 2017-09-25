@@ -1619,7 +1619,7 @@ namespace CFD_API.Controllers
                 Merchant = "9cf7890c-87a6-11e7-bc4d-0242ac110002",
                 AttemptMode = "1",
                 TestTrans = IsLiveUrl?"0":"1",
-                lang="zh-CN",
+                lang="zh_CN",
                 Product = "lots of stuff",
                 Signature = hexString,
                 
