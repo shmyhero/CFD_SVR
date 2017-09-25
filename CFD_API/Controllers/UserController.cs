@@ -1582,12 +1582,12 @@ namespace CFD_API.Controllers
                 //}
             }
 
-            var site = IsLiveUrl ? "" : "adfc6dd4-87a7-11e7-be8a-0242ac110002";
+            var site = IsLiveUrl ? "8d4e7dda-87a6-11e7-b212-0242ac110002" : "adfc6dd4-87a7-11e7-be8a-0242ac110002";
 
             var cache = WebCache.GetInstance(IsLiveUrl);
             var fx = cache.ProdDefs.FirstOrDefault(o => o.Name == "USD/CNY Outright");
             var quote = cache.Quotes.FirstOrDefault(o => o.Id == fx.Id);
-            var result = new NewFocalDepositBaseDTO() 
+            var baseDTO = new NewFocalDepositBaseDTO() 
             {
                 Amount = (amount *quote.Offer).ToString("F2"),
                 Currency = "CNY",
@@ -1596,33 +1596,52 @@ namespace CFD_API.Controllers
                 TransRef = transferId,
             };
 
-            var dataString = result.Site + result.Amount + result.Currency + result.PaymentType + result.TransRef;
+            var dataString = baseDTO.Site + baseDTO.Amount + baseDTO.Currency + baseDTO.PaymentType + baseDTO.TransRef;
             //var dataString =
             //    "currencyCode:merchantAccount:merchantReference:paymentAmount:sessionValidity:shipBeforeDate:shopperLocale:skinCode:USD:AyoMarLimTHCN:SKINTEST-1503472799708:199:2017-08-23T07\\:50\\:11Z:2017-08-29:en_GB:UtmJpnab";
             var bytes = Encoding.UTF8.GetBytes(dataString);
 
-            var HMAC_KEY = IsLiveUrl ? "" : "ayondo";
+            var HMAC_KEY = IsLiveUrl ? "ayondo" : "ayondo";
 
             var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(HMAC_KEY));
             var hash = hmacsha256.ComputeHash(bytes);
 
             var hexString = Converts.BytesToHexString(hash);
 
-            return new NewFocalDepositDTO()
+            var result = new NewFocalDepositDTO()
             {
-                Amount=result.Amount,
-                Currency = result.Currency,
-                Site = result.Site,
-                PaymentType = result.PaymentType,
-                TransRef = result.TransRef,
+                Amount=baseDTO.Amount,
+                Currency = baseDTO.Currency,
+                Site = baseDTO.Site,
+                PaymentType = baseDTO.PaymentType,
+                TransRef = baseDTO.TransRef,
 
                 Merchant = "9cf7890c-87a6-11e7-bc4d-0242ac110002",
-                AttemptMode = IsLiveUrl?"0":"1",
+                AttemptMode = "1",
+                TestTrans = IsLiveUrl?"0":"1",
                 lang="zh-CN",
                 Product = "lots of stuff",
                 Signature = hexString,
                 
             };
+
+            var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == user.Id);
+            if (userInfo != null)
+            {
+                result.customer_email = userInfo.Email;
+                result.customer_first_name = userInfo.FirstName;
+                result.customer_last_name = userInfo.LastName;
+                result.customer_country = "CN";
+                result.customer_address1 = userInfo.Addr;
+
+                var addr = userInfo.Addr;
+                var idx = addr.IndexOf('市');
+                if (idx < 0) idx = addr.IndexOf('县');
+                if (idx < 0) idx = addr.Length - 1;
+                result.customer_city = addr.Substring(0, idx + 1);
+            }
+
+            return result;
         }
 
         [HttpGet]

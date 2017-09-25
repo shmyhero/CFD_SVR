@@ -163,6 +163,13 @@ namespace CFD_API.DTO
         public string AttemptMode { get; set; }
         public string TestTrans { get; set; }
         public string lang { get; set; }
+
+        public string customer_email { get; set; }
+        public string customer_first_name { get; set; }
+        public string customer_last_name { get; set; }
+        public string customer_country { get; set; }
+        public string customer_address1 { get; set; }
+        public string customer_city { get; set; }
     }
 
     public class NewFocalDepositBaseDTO
