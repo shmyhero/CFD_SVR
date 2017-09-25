@@ -8,14 +8,14 @@ namespace CFD_COMMON.Utils
 {
     public class Transfer
     {
-        public static string[] UserVisibleTypes = {"EFT", "WeCollect - CUP", "Bank Wire", "Transaction Fee", "Adyen - Skrill", "Bonus"};
+        public static string[] UserVisibleTypes = {"EFT", "WeCollect - CUP", "Bank Wire", "Transaction Fee", "Adyen - Skrill", "Bonus", "Focal - CUP" };
 
-        public static string[] DepositTypes = { "WeCollect - CUP", "Adyen - Skrill" };
+        public static string[] DepositTypes = { "WeCollect - CUP", "Adyen - Skrill", "Focal - CUP" };
 
         public static bool IsDeposit(string transferType)
         {
             var lower = transferType.ToLower();
-            return lower == "wecollect - cup" || lower == "adyen - skrill";
+            return lower == "wecollect - cup" || lower == "adyen - skrill" || lower== "focal - cup";
         }
 
         public static Tuple<string, string> getTransDescriptionColor(string transType, decimal amount)
@@ -28,6 +28,7 @@ namespace CFD_COMMON.Utils
                     break;
                 case "wecollect - cup":
                 case "adyen - skrill":
+                case "focal - cup":
                     result = new Tuple<string, string>("入金", "#1c8d13");
                     break;
                 case "bank wire":
