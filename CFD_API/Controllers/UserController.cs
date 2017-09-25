@@ -1639,6 +1639,9 @@ namespace CFD_API.Controllers
                 if (idx < 0) idx = addr.IndexOf('县');
                 if (idx < 0) idx = addr.Length - 1;
                 result.customer_city = addr.Substring(0, idx + 1);
+
+                result.customer_id_type = "1";
+                result.customer_id_number = userInfo.IdCode;
             }
 
             return result;

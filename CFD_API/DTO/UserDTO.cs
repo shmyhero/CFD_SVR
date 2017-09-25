@@ -170,6 +170,8 @@ namespace CFD_API.DTO
         public string customer_country { get; set; }
         public string customer_address1 { get; set; }
         public string customer_city { get; set; }
+        public string customer_id_number { get; set; }
+        public string customer_id_type { get; set; }
     }
 
     public class NewFocalDepositBaseDTO
