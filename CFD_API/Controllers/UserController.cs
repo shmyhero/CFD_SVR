@@ -1733,6 +1733,20 @@ namespace CFD_API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("live/deposit/pingpp/result/{order}")]
+        [BasicAuth]
+        public bool GetPingDepositResult(string order)
+        {
+            var item = db.PingOrders.FirstOrDefault(p => p.UserId == this.UserId && p.OrderNumber == order);
+            if(item.WebHookResult == "charge.succeeded")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         ///// <summary>
         ///// 根据transferId获取用户的姓名、邮箱
         ///// TODO: to be deleted @1.1.11
