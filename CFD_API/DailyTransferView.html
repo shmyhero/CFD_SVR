@@ -15,6 +15,9 @@
 
 <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto">Loading...</div>
 
+    <br/>
+<div id="container2" style="min-width: 310px; height: 400px; margin: 0 auto">Loading...</div>
+
 <script type="text/javascript">
     $.getJSON('api/user/live/report/dailytransfer', function(result) {
 
@@ -78,6 +81,27 @@
     });
 
 
+    $.getJSON('api/user/live/report/transfer', function (result) {
+
+        var table = document.createElement('table');
+
+        var th = document.createElement('tr');
+        th.innerHTML = '<td>昵称</td><td>用户名</td><td>金额</td><td>时间</td>';
+        table.appendChild(th);
+
+        for (var i = 0; i < result.length; i++) {
+            var o = result[i];
+
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + o.nickname + '</td><td>' + o.ayLiveUsername + '</td><td>' + o.amount + '</td><td>' + (new Date(o.time)).toLocaleString() + '</td><td></td>';
+
+            table.appendChild(tr);
+        }
+
+        var div = document.getElementById('container2');
+        div.innerHTML = '明细：';
+        div.appendChild(table);
+    });
 </script>
 </body>
 </html>

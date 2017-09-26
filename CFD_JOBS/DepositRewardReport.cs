@@ -12,6 +12,7 @@ using System.Net.Mail;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CFD_COMMON.Utils;
 
 namespace CFD_JOBS
 {
@@ -62,8 +63,8 @@ namespace CFD_JOBS
                             var utc1DayAgo = DateTime.UtcNow.AddDays(-1);
                             //找到所有首次入金时间大于2天前小于1天前的记录
                             var firtDayDepositUsers = (from u in db.Users
-                                                       join a in db.AyondoTransferHistory_Live on u.AyLiveAccountId equals a.TradingAccountId
-                                                       where u.AyLiveAccountId != null && CFD_COMMON.Utils.Transfer.DepositTypes.Contains(a.TransferType)
+                                                       join a in db.AyondoTransferHistory_Live.Where(Transfer.IsDeposit()) on u.AyLiveAccountId equals a.TradingAccountId
+                                                       where u.AyLiveAccountId != null //&& Transfer.DepositTypes.Contains(a.TransferType)
                                                        group new { u.Id, a.ApprovalTime } by a.TradingAccountId into g
                                                        let minApproval = g.Min(a => a.ApprovalTime)
                                                        where minApproval > utc2DaysAgo && minApproval < utc1DayAgo
@@ -94,7 +95,9 @@ namespace CFD_JOBS
                                     var firstDayEndTime = u.ApprovalTime.Value.AddDays(1);
                                     decimal firstDayDepositAmount = 0;
                                     //因为有两张入金表，存在一个表里是首日，另一个不是首日的情况。因此这里要再去两张表核对一下
-                                    bool ayondoDepositBefore = db.AyondoTransferHistory_Live.Any(a => CFD_COMMON.Utils.Transfer.DepositTypes.Contains(a.TransferType) && a.TradingAccountId == u.Key && a.ApprovalTime < u.ApprovalTime);
+                                    bool ayondoDepositBefore = db.AyondoTransferHistory_Live.Where(Transfer.IsDeposit())
+                                            .Any(a => //Transfer.DepositTypes.Contains(a.TransferType) && 
+                                                a.TradingAccountId == u.Key && a.ApprovalTime < u.ApprovalTime);
                                     if(ayondoDepositBefore)
                                     {
                                         return;
@@ -106,17 +109,19 @@ namespace CFD_JOBS
                                     }
 
                                     //通过Adyen - Skrill，WeCollect的入金
-                                    var ayondoTransferDeposits = db.AyondoTransferHistory_Live.Where(a => a.TradingAccountId == u.Key && a.ApprovalTime <= firstDayEndTime && CFD_COMMON.Utils.Transfer.DepositTypes.Contains(a.TransferType)).ToList();//.Sum(a => a.Amount);
+                                    var ayondoTransferDeposits = db.AyondoTransferHistory_Live.Where(Transfer.IsDeposit())
+                                    .Where(a => a.TradingAccountId == u.Key && a.ApprovalTime <= firstDayEndTime //&& Transfer.DepositTypes.Contains(a.TransferType)
+                                    ).ToList();//.Sum(a => a.Amount);
                                     if(ayondoTransferDeposits!=null)
                                     {
                                         firstDayDepositAmount = ayondoTransferDeposits.Sum(a => a.Amount).Value;
                                     }
-                                    //通过Ping++的入金
-                                    var pingDeposits = db.PingOrders.Where(p => p.UserId == u.UserID && p.WebHookAt.HasValue && p.WebHookResult == PingSucceed && p.WebHookAt <= firstDayEndTime).ToList();
-                                    if (pingDeposits != null)
-                                    {
-                                        firstDayDepositAmount = pingDeposits.Sum(p => p.AmountUSD).Value;
-                                    }
+                                    ////通过Ping++的入金
+                                    //var pingDeposits = db.PingOrders.Where(p => p.UserId == u.UserID && p.WebHookAt.HasValue && p.WebHookResult == PingSucceed && p.WebHookAt <= firstDayEndTime).ToList();
+                                    //if (pingDeposits != null)
+                                    //{
+                                    //    firstDayDepositAmount = pingDeposits.Sum(p => p.AmountUSD).Value;
+                                    //}
 
                                     decimal rewardAmount = firstDayDepositAmount * rewardSvc.GetFirstDayRewadRate(firstDayDepositAmount);
                                     rewardAmount = rewardAmount > 10000 ? 10000 : rewardAmount;

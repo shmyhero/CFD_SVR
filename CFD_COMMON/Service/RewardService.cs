@@ -250,7 +250,7 @@ namespace CFD_COMMON.Service
             foreach (var transfer in newTransferHistories)
             {
                 //入金的短信
-                if (Transfer.IsDeposit(transfer.TransferType))
+                if (Transfer.IsDepositData(transfer))
                 {
                     try
                     {
