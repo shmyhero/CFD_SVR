@@ -855,6 +855,15 @@ namespace CFD_API.DTO
     public class UserDailyTransferDTO
     {
         public DateTime? date { get; set; }
-        public decimal? withdrawal { get; set; }
+        public decimal? deposit { get; set; }
+    }
+
+    public class TransferReportDTO
+    {
+        public DateTime? time { get; set; }
+        public decimal? amount { get; set; }
+        public string nickname { get; set; }
+        public string ayLiveUsername { get; set; }
+        public string picUrl { get; set; }
     }
 }

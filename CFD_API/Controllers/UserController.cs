@@ -2859,14 +2859,38 @@ namespace CFD_API.Controllers
         {
             var result = db.AyondoTransferHistory_Live.Where(Transfer.IsDeposit())
                 .GroupBy(o => DbFunctions.TruncateTime(DbFunctions.AddHours(o.ApprovalTime.Value, 8).Value))
-                .Select(o => new UserDailyTransferDTO() {date = o.Key, withdrawal = o.Sum(p => p.Amount)})
+                .Select(o => new UserDailyTransferDTO() {date = o.Key, deposit = o.Sum(p => p.Amount)})
                 .ToList()
                 .OrderBy(o => o.date)
                 .Select(o => new UserDailyTransferDTO()
                 {
                     date = DateTime.SpecifyKind(o.date.Value, DateTimeKind.Local),
-                    withdrawal = o.withdrawal
+                    deposit = o.deposit
                 }).ToList();
+            return result;
+        }
+
+        [HttpGet]
+        [Route("live/report/transfer")]
+        [IPAuth]
+        public List<TransferReportDTO> GetTransferReport()
+        {
+            var result = db.AyondoTransferHistory_Live.Where(Transfer.IsDeposit())
+                .Join(db.Users, o => o.TradingAccountId, o => o.AyLiveAccountId,
+                    (o, u) => new TransferReportDTO()
+                    {
+                        amount = o.Amount,
+                        ayLiveUsername = u.AyLiveUsername,
+                        nickname = u.Nickname,
+                        picUrl = u.PicUrl,
+                        time = o.ApprovalTime
+                    })
+                .OrderByDescending(o => o.time)
+                .ToList();
+            foreach (var o in result)
+            {
+                o.time = DateTime.SpecifyKind(o.time.Value, DateTimeKind.Utc);
+            }
             return result;
         }
 
