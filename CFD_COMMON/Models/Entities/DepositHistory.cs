@@ -15,6 +15,9 @@ namespace CFD_COMMON.Models.Entities
 
         public int? UserID { get; set; }
 
+        [StringLength(50)]
+        public string Type { get; set; }
+
         public DateTime? CreatedAt { get; set; }
 
         public decimal? ClaimAmount { get; set; }

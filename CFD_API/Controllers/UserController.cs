@@ -1446,7 +1446,7 @@ namespace CFD_API.Controllers
 
             if (IsLiveUrl)
             {
-                db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = Convert.ToInt64(transferId), CreatedAt = DateTime.Now, ClaimAmount = amount });
+                db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = Convert.ToInt64(transferId), Type = "adyen", CreatedAt = DateTime.Now, ClaimAmount = amount });
                 db.SaveChanges();
 
                 //var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
@@ -1570,7 +1570,7 @@ namespace CFD_API.Controllers
 
             if (IsLiveUrl)
             {
-                db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = Convert.ToInt64(transferId), CreatedAt = DateTime.Now, ClaimAmount = amount });
+                db.DepositHistories.Add(new DepositHistory() { UserID = user.Id, TransferID = Convert.ToInt64(transferId), Type = "focal", CreatedAt = DateTime.Now, ClaimAmount = amount });
                 db.SaveChanges();
 
                 //var userInfo = db.UserInfos.FirstOrDefault(o => o.UserId == UserId);
