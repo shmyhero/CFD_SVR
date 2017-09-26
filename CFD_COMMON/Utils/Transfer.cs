@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using CFD_COMMON.Models.Entities;
 
 namespace CFD_COMMON.Utils
 {
@@ -10,13 +12,27 @@ namespace CFD_COMMON.Utils
     {
         public static string[] UserVisibleTypes = {"EFT", "WeCollect - CUP", "Bank Wire", "Transaction Fee", "Adyen - Skrill", "Bonus", "Focal - CUP" };
 
-        public static string[] DepositTypes = { "WeCollect - CUP", "Adyen - Skrill", "Focal - CUP" };
+        private static readonly string[] DepositTypes = { "WeCollect - CUP", "Adyen - Skrill", "Focal - CUP" };
 
-        public static bool IsDeposit(string transferType)
+        public static Expression<Func<AyondoTransferHistory_Live, bool>> IsDeposit()
         {
-            var lower = transferType.ToLower();
-            return lower == "wecollect - cup" || lower == "adyen - skrill" || lower== "focal - cup";
+            return
+                o =>
+                    Transfer.DepositTypes.Contains(o.TransferType) ||
+                    (o.TransferType == "Bank Wire" && o.Amount > 0 && o.TransferId.Length == 36);
         }
+
+        public static bool IsDepositData(AyondoTransferHistoryBase o)
+        {
+            return Transfer.DepositTypes.Contains(o.TransferType) ||
+                    (o.TransferType == "Bank Wire" && o.Amount > 0 && o.TransferId.Length == 36);
+        }
+
+        //public static bool IsDeposit(string transferType)
+        //{
+        //    var lower = transferType.ToLower();
+        //    return lower == "wecollect - cup" || lower == "adyen - skrill" || lower== "focal - cup";
+        //}
 
         public static Tuple<string, string> getTransDescriptionColor(string transType, decimal amount)
         {

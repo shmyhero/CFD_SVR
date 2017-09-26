@@ -229,7 +229,7 @@ namespace CFD_JOBS.Ayondo
                             if (isLive)
                             {
                                 //update DepositHistory
-                                var deposits = newTransferHistories.Where(o => Transfer.DepositTypes.Contains(o.TransferType)).ToList();
+                                var deposits = newTransferHistories.Where(o => Transfer.IsDepositData(o)).ToList();
                                 if (deposits.Count > 0)
                                 {
                                     CFDGlobal.LogLine("updating DepositHistory table...");

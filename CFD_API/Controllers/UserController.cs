@@ -33,6 +33,7 @@ using EntityFramework.Extensions;
 using Newtonsoft.Json;
 using ServiceStack.Text;
 using System.Data.SqlTypes;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
 using CFD_COMMON.IdentityVerify;
@@ -2856,7 +2857,7 @@ namespace CFD_API.Controllers
         [IPAuth]
         public List<UserDailyTransferDTO> GetDailyTransferReport()
         {
-            var result = db.AyondoTransferHistory_Live.Where(o => Transfer.DepositTypes.Contains(o.TransferType))
+            var result = db.AyondoTransferHistory_Live.Where(Transfer.IsDeposit())
                 .GroupBy(o => DbFunctions.TruncateTime(DbFunctions.AddHours(o.ApprovalTime.Value, 8).Value))
                 .Select(o => new UserDailyTransferDTO() {date = o.Key, withdrawal = o.Sum(p => p.Amount)})
                 .ToList()
