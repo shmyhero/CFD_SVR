@@ -2814,6 +2814,7 @@ namespace CFD_API.Controllers
 
                 int? userAge = null;
                 int? genderInt = null;
+                string addr=null;
                 if (userInfo != null)
                 {
                     var year = userInfo.IdCode.Substring(6, 4).ToInt();
@@ -2826,6 +2827,8 @@ namespace CFD_API.Controllers
                         userAge--;
 
                     genderInt = userInfo.IdCode.Substring(16, 1).ToInt();
+
+                    addr = userInfo.Addr;
                 }
 
                 return new UserReportDTO()
@@ -2835,7 +2838,8 @@ namespace CFD_API.Controllers
                     gender = genderInt % 2,
                     accountId = o.AyLiveAccountId == null ? null : o.AyLiveAccountId.ToString(),
                     status = o.AyLiveAccountStatus,
-                    applyAt = o.AyLiveApplyAt == null ? (DateTime?)null : DateTime.SpecifyKind(o.AyLiveApplyAt.Value, DateTimeKind.Utc)
+                    applyAt = o.AyLiveApplyAt == null ? (DateTime?)null : DateTime.SpecifyKind(o.AyLiveApplyAt.Value, DateTimeKind.Utc),
+                    addr = addr,
                 };
             }).ToList();
         }

@@ -843,6 +843,7 @@ namespace CFD_API.DTO
         public string status { get; set; }
         public string accountId { get; set; }
         public DateTime? applyAt { get; set; }
+        public string addr { get; set; }
 
     }
 

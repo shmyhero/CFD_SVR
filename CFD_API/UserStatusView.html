@@ -9,9 +9,14 @@
     </style>
 </head>
 <body>
-<script src="Scripts/jquery-1.6.4.min.js"></script>
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+<!--<script src="https://code.highcharts.com/maps/highmaps.js"></script>-->
+    <script src="http://code.highcharts.com/maps/modules/map.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/mapdata/countries/cn/cn-all.js"></script>
 
     <div><a href="insight.html">&lt; 首页</a></div>
 
@@ -33,7 +38,11 @@
 
     <br />
 
-    <div style="text-align: center">
+<div id="container4" style="height: 800px">Loading...</div>
+
+    <br/>
+
+<div style="text-align: center">
         <table style="display: inline-block; font-family: sans-serif; width: 1000px; text-align: left; font-size: small; border-collapse: collapse">
             <thead>
                 <tr>
@@ -157,6 +166,76 @@
 
     function getCName(status) {
         return status;
+    }
+
+    function getCode(s) {
+        switch (s.substr(0, 2)) {
+            case '安徽':
+                return 'cn-ah';
+            case '北京':
+                return 'cn-bj';
+            case '重庆':
+                return 'cn-cq';
+            case '福建':
+                return 'cn-fj';
+            case '甘肃':
+                return 'cn-gs';
+            case '广东':
+                return 'cn-gd';
+            case '广西':
+                return 'cn-gx';
+            case '贵州':
+                return 'cn-gz';
+            case '海南':
+                return 'cn-ha';
+            case '河北':
+                return 'cn-hb';
+            case '黑龙':
+                return 'cn-hl';
+            case '河南':
+                return 'cn-he';
+            case '武汉':
+            case '湖北':
+                return 'cn-hu';
+            case '湖南':
+                return 'cn-hn';
+            case '内蒙':
+                return 'cn-nm';
+            case '江苏':
+                return 'cn-js';
+            case '江西':
+                return 'cn-jx';
+            case '吉林':
+                return 'cn-jl';
+            case '辽宁':
+                return 'cn-ln';
+            case '宁夏':
+                return 'cn-nx';
+            case '青海':
+                return 'cn-qh';
+            case '陕西':
+                return 'cn-sa';
+            case '山东':
+                return 'cn-sd';
+            case '上海':
+                return 'cn-sh';
+            case '山西':
+                return 'cn-sx';
+            case '四川':
+                return 'cn-sc';
+            case '天津':
+                return 'cn-tj';
+            case '新疆':
+                return 'cn-xj';
+            case '西藏':
+                return 'cn-xz';
+            case '云南':
+                return 'cn-yn';
+            case '浙江':
+                return 'cn-zj';
+            default:
+                return s;
+        }
     }
 
     $.getJSON('api/user/live/report', function(result) {
@@ -360,7 +439,7 @@
             //}
         });
 
-        //、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         var now = new Date();
         var earliest = new Date();
         for (var i = 0; i < result.length; i++) {
@@ -490,7 +569,7 @@
         for (var i = 0; i < result.length; i++) {
             var user = result[i];
 
-            if (user.status != 'Active' && user.status != 'PendingLogin' && user.status != 'PendingFunding' && user.status != 'PendingTrading') {
+            if (getParentStatus(user.status) != 'Approved') {
                 continue;
             }
 
@@ -548,6 +627,74 @@
                 }, {
                     name: '女',
                     data: female
+                }
+            ]
+        });
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        var data = [];
+        for (var i = 0; i < result.length; i++) {
+            var obj = result[i];
+            if (getParentStatus(obj.status) != 'Approved')
+                continue;
+            if (!obj.addr)
+                continue;
+            data.push([getCode(obj.addr), 1]);
+        }
+
+        var groupedData = [];
+        for (var i = 0; i < data.length; i++) {
+            var idx = -1;
+            for (var j = 0; j < groupedData.length; j++) {
+                if (groupedData[j][0] == data[i][0]) {
+                    idx = j;
+                    break;
+                }
+            }
+            if (idx >= 0) {
+                groupedData[idx][1] = groupedData[idx][1] + data[i][1];
+            } else {
+                groupedData.push(data[i]);
+            }
+        }
+
+        Highcharts.mapChart('container4', {
+            chart: {
+                map: 'countries/cn/cn-all'
+            },
+
+            title: {
+                text: '实盘用户 (Approved)身份证地域分布'
+            },
+
+            //subtitle: {
+            //    text: 'Source map: <a href="http://code.highcharts.com/mapdata/countries/cn/cn-all.js">China</a>'
+            //},
+
+            mapNavigation: {
+                enabled: false,
+                buttonOptions: {
+                    verticalAlign: 'bottom'
+                }
+            },
+
+            colorAxis: {
+                min: 0
+            },
+
+            series: [
+                {
+                    data: groupedData,
+                    name: '人数',
+                    states: {
+                        hover: {
+                            color: '#BADA55'
+                        }
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}'
+                    }
                 }
             ]
         });
