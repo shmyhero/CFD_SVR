@@ -15,7 +15,18 @@ namespace CFD_COMMON.Models.Entities
         public int? UserId { get; set; }
         public string OrderNumber { get; set; }
         public decimal? AmountCNY { get; set; }
+        /// <summary>
+        /// 去掉Ping++手续费之后的人民币金额,通过Ping++的Callback接口得到
+        /// </summary>
+        public decimal? AmountNet { get; set; }
+        /// <summary>
+        /// TradeHero扣除手续费之后的金额，手续费暂定1%
+        /// </summary>
+        public decimal? AmountAdjusted { get; set; }
 
+        /// <summary>
+        /// 根据AmountAdjusted计算得出
+        /// </summary>
         public decimal? AmountUSD { get; set; }
         /// <summary>
         /// 汇率

@@ -432,6 +432,14 @@ namespace CFD_API.Controllers
             var jObject = JObject.Parse(requestStr);
             var type = jObject.SelectToken("type").ToString();
             var orderNumberStr = jObject["data"]["object"].SelectToken("order_no").ToString();
+            var amountNet = jObject["data"]["object"].SelectToken("amount_settle").Value<decimal>();
+            decimal thFeeRate = 0.01M; //TradeHero收取的手续费
+            Misc feeSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "PingFeeRate");
+            if (feeSetting != null)
+            {
+                thFeeRate = decimal.Parse(feeSetting.Value);
+            }
+
             var pOrder = db.PingOrders.FirstOrDefault(p => p.OrderNumber == orderNumberStr);
             if (pOrder != null)
             {
@@ -447,7 +455,9 @@ namespace CFD_API.Controllers
                     {
                         pOrder.FxRate = quote.Offer;
                         pOrder.FxRateAt = quote.Time;
-                        pOrder.AmountUSD = Decimals.RoundIfExceed(pOrder.AmountCNY.Value/quote.Offer, 2);
+                        pOrder.AmountNet = amountNet;
+                        pOrder.AmountAdjusted = pOrder.AmountCNY * (1 - thFeeRate);
+                        pOrder.AmountUSD = Decimals.RoundIfExceed(pOrder.AmountAdjusted.Value/quote.Offer, 2);
                     }
                     else
                     {
