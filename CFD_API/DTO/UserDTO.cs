@@ -866,5 +866,6 @@ namespace CFD_API.DTO
         public string nickname { get; set; }
         public string ayLiveUsername { get; set; }
         public string picUrl { get; set; }
+        public string type { get; set; }
     }
 }

@@ -2901,7 +2901,8 @@ namespace CFD_API.Controllers
                         ayLiveUsername = u.AyLiveUsername,
                         nickname = u.Nickname,
                         picUrl = u.PicUrl,
-                        time = o.ApprovalTime
+                        time = o.ApprovalTime,
+                        type=o.TransferType,
                     })
                 .OrderByDescending(o => o.time)
                 .ToList();

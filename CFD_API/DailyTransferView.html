@@ -2,7 +2,10 @@
 <html>
 <head>
     <title></title>
-	<meta charset="utf-8" />
+    <meta charset="utf-8"/>
+    <style>
+        table td {padding-left: 5px }
+    </style>
 </head>
 <body>
 
@@ -86,14 +89,14 @@
         var table = document.createElement('table');
 
         var th = document.createElement('tr');
-        th.innerHTML = '<td>昵称</td><td>用户名</td><td>金额</td><td>时间</td>';
+        th.innerHTML = '<td>昵称</td><td>用户名</td><td>金额</td><td>渠道</td><td>时间</td>';
         table.appendChild(th);
 
         for (var i = 0; i < result.length; i++) {
             var o = result[i];
 
             var tr = document.createElement('tr');
-            tr.innerHTML = '<td>' + o.nickname + '</td><td>' + o.ayLiveUsername + '</td><td>' + o.amount + '</td><td>' + (new Date(o.time)).toLocaleString() + '</td><td></td>';
+            tr.innerHTML = '<td>' + o.nickname + '</td><td>' + o.ayLiveUsername + '</td><td>' + o.amount + '</td><td>' + o.type + '</td><td>' + (new Date(o.time)).toLocaleString() + '</td>';
 
             table.appendChild(tr);
         }
