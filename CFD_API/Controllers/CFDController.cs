@@ -392,9 +392,15 @@ namespace CFD_API.Controllers
             {
                 webResponse = httpWebRequest.GetResponse();
             }
-            catch (WebException e)
+            catch (Exception e)
             {
-                webResponse = e.Response;
+                CFDGlobal.LogExceptionAsWarning(e);
+
+                var webException = e as WebException;
+                if (webException?.Response == null)
+                    throw;
+
+                webResponse = webException.Response;
             }
 
             var responseStream = webResponse.GetResponseStream();
