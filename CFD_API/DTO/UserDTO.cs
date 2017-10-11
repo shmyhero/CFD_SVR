@@ -847,6 +847,12 @@ namespace CFD_API.DTO
 
     }
 
+    public class THHoldingAccReportDTO
+    {
+        public decimal balance { get; set; }
+        public List<TransferReportDTO> transfers { get; set; }
+    }
+
     public class UserDailyApprovedCountDTO
     {
         public DateTime? date { get; set; }

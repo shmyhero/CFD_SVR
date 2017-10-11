@@ -2913,6 +2913,46 @@ namespace CFD_API.Controllers
             return result;
         }
 
+        [HttpGet]
+        [Route("live/report/thHoldingAcc")]
+        [IPAuth]
+        public THHoldingAccReportDTO GetTHHoldingAccReport()
+        {
+            var result=new THHoldingAccReportDTO();
+
+            using (var clientHttp = new AyondoTradeClient(true))
+            {
+                try
+                {
+                    var report = clientHttp.GetBalance("TradeHeroHoldingAC", "dY$Tqn4KQ#");
+                    result.balance = report.Value;
+                }
+                catch (FaultException<OAuthLoginRequiredFault>)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKey.OAUTH_LOGIN_REQUIRED)));
+                }
+            }
+
+            result.transfers = db.AyondoTransferHistory_Live.Where(o => o.TradingAccountId == 104347406265)
+                .Join(db.AyondoTransferHistory_Live, o => o.TransferId, o => o.TransferId,
+                    delegate(AyondoTransferHistory_Live o, AyondoTransferHistory_Live u)
+                    {
+                        if (o.Id == u.Id) return null;
+                        else
+                        return new TransferReportDTO()
+                        {
+                            amount = o.Amount,
+                            ayLiveUsername = u.Username,
+                            time =DateTime.SpecifyKind(o.ApprovalTime.Value,DateTimeKind.Utc),
+                            type = o.TransferType,
+                        };
+                    }).Where(o=>o!=null)
+                .OrderByDescending(o => o.time)
+                .ToList();
+
+            return result;
+        }
+
         /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式
         /// </summary>

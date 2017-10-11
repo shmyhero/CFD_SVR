@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+
+<div>
+    <a href="insight.html">&lt; 首页</a>
+</div>
+
+    <br/>
+
+账户余额：<label id="lblBalance"></label>
+
+    <br />
+    <br />
+
+<div id="container2" style="min-width: 310px; height: 400px; margin: 0 auto">Loading...</div>
+
+<script src="Scripts/jquery-1.6.4.min.js"></script>
+<script type="text/javascript">
+    $.getJSON('api/user/live/report/thholdingacc', function(result) {
+
+        $('#lblBalance').text(result.balance);
+
+        var table = document.createElement('table');
+
+        var th = document.createElement('tr');
+        th.innerHTML = '<td>target username</td><td>amount</td><td>type</td><td>time</td>';
+        table.appendChild(th);
+
+        for (var i = 0; i < result.transfers.length; i++) {
+            var o = result.transfers[i];
+
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + o.ayLiveUsername + '</td><td>' + o.amount + '</td><td>' + o.type + '</td><td>' + (new Date(o.time)).toLocaleString() + '</td>';
+
+            table.appendChild(tr);
+        }
+
+        var div = document.getElementById('container2');
+        div.innerHTML = '明细：';
+        div.appendChild(table);
+    });
+</script>
+</body>
+</html>
