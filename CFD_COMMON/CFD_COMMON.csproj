@@ -131,6 +131,7 @@
     <Compile Include="Models\Context\CFDEntitiesFactory.cs" />
     <Compile Include="Models\Context\CFDHistoryEntitiesFactory.cs" />
     <Compile Include="Models\Context\CFDHistoryEntities.cs" />
+    <Compile Include="Models\Entities\HitIP.cs" />
     <Compile Include="Models\Entities\ApiHit.cs" />
     <Compile Include="Models\Entities\Area.cs" />
     <Compile Include="Models\Entities\AyondoTradeHistory.cs" />
