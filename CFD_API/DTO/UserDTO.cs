@@ -844,7 +844,10 @@ namespace CFD_API.DTO
         public string accountId { get; set; }
         public DateTime? applyAt { get; set; }
         public string addr { get; set; }
-
+        public string phone { get; set; }
+        public DateTime? approveAt { get; set; }
+        public string nickname { get; set; }
+        public string username { get; set; }
     }
 
     public class THHoldingAccReportDTO

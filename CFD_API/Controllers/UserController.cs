@@ -2815,7 +2815,7 @@ namespace CFD_API.Controllers
         [IPAuth]
         public List<UserReportDTO> GetUserReport()
         {
-            var users = db.Users.Where(o => o.AyLiveUsername != null).ToList();
+            var users = db.Users.Where(o => o.AyLiveUsername != null).OrderByDescending(o=>o.AyLiveApplyAt).ToList();
 
             var userIds = users.Select(o => o.Id).ToList();
             var userInfos = db.UserInfos.Where(o => userIds.Contains(o.UserId)).ToList();
@@ -2849,11 +2849,21 @@ namespace CFD_API.Controllers
                 {
                     id = o.Id,
                     age = userAge,
-                    gender = genderInt % 2,
+                    gender = genderInt%2,
                     accountId = o.AyLiveAccountId == null ? null : o.AyLiveAccountId.ToString(),
                     status = o.AyLiveAccountStatus,
-                    applyAt = o.AyLiveApplyAt == null ? (DateTime?)null : DateTime.SpecifyKind(o.AyLiveApplyAt.Value, DateTimeKind.Utc),
+                    applyAt =
+                        o.AyLiveApplyAt == null
+                            ? (DateTime?) null
+                            : DateTime.SpecifyKind(o.AyLiveApplyAt.Value, DateTimeKind.Utc),
                     addr = addr,
+                    nickname = o.Nickname,
+                    phone = o.Phone,
+                    approveAt =
+                        o.AyLiveApproveAt == null
+                            ? (DateTime?) null
+                            : DateTime.SpecifyKind(o.AyLiveApproveAt.Value, DateTimeKind.Utc),
+                    username = o.AyLiveUsername,
                 };
             }).ToList();
         }

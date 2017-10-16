@@ -2,7 +2,16 @@
 <html>
 <head>
     <title></title>
-	<meta charset="utf-8" />
+    <meta charset="utf-8"/>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        td {
+            padding-right: 15px
+        }
+    </style>
 </head>
 <body>
 
@@ -14,7 +23,9 @@
         <a href="insight.html">&lt; 首页</a>
     </div>
 
-    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto">Loading...</div>
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto">Loading...</div>
+
+    <div id="container2" style="min-width: 310px; height: 400px; margin: 0 auto">Loading...</div>
 
     <script type="text/javascript">
         $.getJSON('api/user/live/report/dailyApprovedCount', function (result) {
@@ -76,6 +87,34 @@
         });
     });
 
+        $.getJSON('api/user/live/report', function (result) {
+
+            var table = document.createElement('table');
+
+            var th = document.createElement('tr');
+            th.style.fontWeight = 'bold';
+            th.innerHTML = '<td>nickname</td><td>phone</td><td>username</td><td>apply at</td><td>status</td><td>approve at</td>';
+            table.appendChild(th);
+
+            for (var i = 0; i < result.length; i++) {
+                var user = result[i];
+
+                user.status = user.status == 'PendingLogin' && user.accountId != null ? 'PendingFunding' : user.status;
+                
+                if (user.status == null)
+                    user.status = 'Unknown';
+
+                
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + user.nickname + '</td><td>' + user.phone + '</td><td>' + user.username + '</td><td>' + (user.applyAt ? (new Date(user.applyAt)).toLocaleString() : '') + '</td><td>' + user.status + '</td><td>' + (user.approveAt?(new Date(user.approveAt)).toLocaleString():'') + '</td>';
+
+                table.appendChild(tr);
+            }
+
+            var div = document.getElementById('container2');
+            div.innerHTML = '明细：';
+            div.appendChild(table);
+        });
 
     </script>
 
