@@ -49,6 +49,10 @@ namespace CFD_API.DTO
         /// 推广码
         /// </summary>
         public string promotionCode { get; set; }
+        /// <summary>
+        /// 是否可以手机入金
+        /// </summary>
+        public bool mobileDeposit { get; set; }
     }
 
     public class UserDTO : UserBaseDTO

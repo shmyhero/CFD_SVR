@@ -307,6 +307,22 @@ namespace CFD_API.Controllers
             userDto.firstDayClicked = user.FirstDayClicked.HasValue ? user.FirstDayClicked.Value : false;
             userDto.firstDayRewarded = user.FirstDayRewarded.HasValue ? user.FirstDayRewarded.Value : false;
             userDto.promotionCode = user.PromotionCode;
+
+            bool canMobileDeposit = true;
+            Misc mobileDeposit = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "MobileDeposit");
+            if (mobileDeposit != null)
+            {
+                if (!string.IsNullOrEmpty(mobileDeposit.Value) && mobileDeposit.Value.ToLower() == "true")
+                {
+                    canMobileDeposit = true;
+                }
+                else
+                {
+                    canMobileDeposit = false;
+                }
+            }
+            userDto.mobileDeposit = canMobileDeposit;
+
             return userDto;
         }
 
@@ -1714,7 +1730,7 @@ namespace CFD_API.Controllers
                 {"amount", amount*100}, //Ping++以分为单位，所以要乘100
                 {"channel", channel},
                 {"currency", "cny"},
-                {"subject", "payment"},
+                {"subject", "支付"},
                 {"body", "payment"},
                 {"client_ip", "127.0.0.1"},
                 {"app", new Dictionary<string, string> {{"id", appId}}},
