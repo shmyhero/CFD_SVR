@@ -2940,6 +2940,57 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("live/report/transfer/cumulative")]
+        [IPAuth]
+        public List<CumulativeTransferReportDTO> GetTransferCumulativeReport()
+        {
+            var deposits = db.AyondoTransferHistory_Live.Where(Transfer.IsDeposit())
+                .GroupBy(o => DbFunctions.TruncateTime(DbFunctions.AddHours(o.ApprovalTime.Value, 8).Value))
+                .Select(o => new  { date = o.Key, sum = o.Sum(p => p.Amount) })
+                .ToList()
+                .OrderBy(o => o.date)
+                .Select(o => new
+                {
+                    date = DateTime.SpecifyKind(o.date.Value, DateTimeKind.Local),
+                    deposit = o.sum
+                }).ToList();
+
+            var withdrawals = db.AyondoTransferHistory_Live.Where(o=>o.TransferType=="EFT")
+               .GroupBy(o => DbFunctions.TruncateTime(DbFunctions.AddHours(o.ApprovalTime.Value, 8).Value))
+               .Select(o => new { date = o.Key, sum = -o.Sum(p => p.Amount) })
+               .ToList()
+               .OrderBy(o => o.date)
+               .Select(o => new
+               {
+                   date = DateTime.SpecifyKind(o.date.Value, DateTimeKind.Local),
+                   withdrawal = o.sum
+               }).ToList();
+
+            var result = new List<CumulativeTransferReportDTO>();
+
+            var beginDate = deposits.First().date > withdrawals.First().date
+                ? withdrawals.First().date
+                : deposits.First().date;
+            var endDate = DateTimes.GetChinaToday();
+            decimal cumulativeDeposit = 0;
+            decimal cumulativeWithdrawal = 0;
+            for (DateTime d = beginDate; d <= endDate; d = d.AddDays(1))
+            {
+                var deposit = deposits.FirstOrDefault(o => o.date == d);
+                if (deposit != null)
+                    cumulativeDeposit += deposit.deposit.Value;
+                
+                var withdrawal = withdrawals.FirstOrDefault(o => o.date == d);
+                if (withdrawal != null)
+                    cumulativeWithdrawal += withdrawal.withdrawal.Value;
+
+                result.Add(new CumulativeTransferReportDTO() { date = d, deposit = cumulativeDeposit, withdrawal = cumulativeWithdrawal });
+            }
+            
+            return result;
+        }
+
+        [HttpGet]
         [Route("live/report/thHoldingAcc")]
         [IPAuth]
         public THHoldingAccReportDTO GetTHHoldingAccReport()

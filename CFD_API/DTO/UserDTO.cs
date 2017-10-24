@@ -872,6 +872,13 @@ namespace CFD_API.DTO
         public decimal? deposit { get; set; }
     }
 
+    public class CumulativeTransferReportDTO
+    {
+        public DateTime? date { get; set; }
+        public decimal? deposit { get; set; }
+        public decimal? withdrawal { get; set; }
+    }
+
     public class TransferReportDTO
     {
         public DateTime? time { get; set; }

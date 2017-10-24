@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+</head>
+<body>
+
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <div>
+        <a href="insight.html">&lt; 首页</a>
+    </div>
+
+    <div id="container" style="min-width: 310px; height: 800px; margin: 0 auto">Loading...</div>
+
+    <script type="text/javascript">
+        $.getJSON('api/user/live/report/transfer/cumulative', function (result) {
+
+            var data = [];
+            var data2 = [];
+        for (var i = 0; i < result.length; i++) {
+            var obj = result[i];
+            //debugger;
+            data.push([new Date(obj.date).getTime() + 8 * 3600 * 1000, obj.deposit]);
+            data2.push([new Date(obj.date).getTime() + 8 * 3600 * 1000, obj.withdrawal]);
+        }
+
+        Highcharts.chart('container', {
+            chart: {
+                //type: 'column',
+                zoomType: 'x',
+                panning: true,
+                panKey: 'shift'
+            },
+            title: {
+                text: '所有用户累计总收益（平仓）'
+            },
+            subtitle: {
+                text: 'Click and drag to zoom in（放大）. Hold down shift key to pan（移动）.'
+            },
+            legend: {
+                enabled: true, align: 'left', verticalAlign: 'top', x: 100, y: 100, floating: true, borderWidth: 1
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                //min: 0,
+                title: {
+                    text: '美元'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">PL: </td>' +
+                    '<td style="padding:0"><b>{point.y:.0f} USD</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true,
+                xDateFormat: '%Y-%m-%d(周%w)'
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            },
+            series: [
+                {
+                    name: '入金',
+                    data: data
+
+                },
+                {
+                    name: '出金',
+                    data: data2
+
+                }
+            ]
+        });
+    });
+
+
+    </script>
+</body>
+</html>
