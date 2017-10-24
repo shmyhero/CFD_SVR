@@ -10,8 +10,10 @@ namespace CFD_COMMON.Utils
         Rejected = 3,
     }
 
-    public class UserLive
+    public class CFDUsers
     {
+        public static bool DEFAULT_SHOW_DATA = true;
+
         public static UserLiveStatus GetUserLiveAccountStatus(string ayLiveAccountStatus)
         {
             switch (ayLiveAccountStatus)

@@ -342,7 +342,7 @@ namespace CFD_API.Controllers
 
             //get birthday from id number instead of the birthday field
             //amsForm.dateOfBirth = form.birthday.Replace('.', '-');
-            amsForm.dateOfBirth = UserLive.GetBirthdayFromIdCode(userInfo.IdCode,"-");
+            amsForm.dateOfBirth = CFDUsers.GetBirthdayFromIdCode(userInfo.IdCode,"-");
 
             amsForm.email = form.email;
             amsForm.employmentStatus = form.empStatus;

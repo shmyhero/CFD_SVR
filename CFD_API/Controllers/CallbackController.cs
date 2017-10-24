@@ -51,8 +51,8 @@ namespace CFD_API.Controllers
                     var user = db.Users.FirstOrDefault(o => o.AyLiveAccountGuid == accountGuid);
                     if (user != null)
                     {
-                        if (UserLive.GetUserLiveAccountStatus(user.AyLiveAccountStatus) != UserLiveStatus.Active &&
-                            UserLive.GetUserLiveAccountStatus(form.status) == UserLiveStatus.Active)
+                        if (CFDUsers.GetUserLiveAccountStatus(user.AyLiveAccountStatus) != UserLiveStatus.Active &&
+                            CFDUsers.GetUserLiveAccountStatus(form.status) == UserLiveStatus.Active)
                         {
                             user.AyLiveApproveAt = DateTime.UtcNow;
                         }

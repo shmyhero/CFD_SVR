@@ -297,13 +297,13 @@ namespace CFD_API.Controllers
                 userDto.rewardAmount = amount;
             }
 
-            userDto.liveAccStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            userDto.liveAccStatus = CFDUsers.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (userDto.liveAccStatus == UserLiveStatus.Rejected)
                 userDto.liveAccRejReason = GetUserLiveAccountRejectReason(user.AyLiveAccountStatus);
             userDto.liveUsername = user.AyLiveUsername;
             userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
             userDto.bankCardStatus = user.BankCardStatus;
-            userDto.showData = user.ShowData ?? false;
+            userDto.showData = user.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA;
             userDto.firstDayClicked = user.FirstDayClicked.HasValue ? user.FirstDayClicked.Value : false;
             userDto.firstDayRewarded = user.FirstDayRewarded.HasValue ? user.FirstDayRewarded.Value : false;
             userDto.promotionCode = user.PromotionCode;
@@ -1080,7 +1080,7 @@ namespace CFD_API.Controllers
             if (userID != UserId) //not myself
             {
                 var user = db.Users.FirstOrDefault(o => o.Id == userID);
-                if (user == null || !(user.ShowData ?? false))
+                if (user == null || !(user.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA))
                     return new List<PLReportDTO> {stockUSPL, indexPL, fxPL, commodityPL};
             }
 
@@ -1818,7 +1818,7 @@ namespace CFD_API.Controllers
             var user = GetUser();
 
             //LIVE account is Created or Pending
-            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = CFDUsers.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
                 var errorResult = new ResultDTO(false) {message = __(TransKey.LIVE_ACC_EXISTS)};
@@ -1968,7 +1968,7 @@ namespace CFD_API.Controllers
             var user = GetUser();
 
             //LIVE account is Created or Pending
-            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = CFDUsers.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
                 var errorResult = new ResultDTO(false) { message = __(TransKey.LIVE_ACC_EXISTS) };
@@ -2135,7 +2135,7 @@ namespace CFD_API.Controllers
             }
 
             //LIVE account is Created or Pending
-            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = CFDUsers.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus == UserLiveStatus.Active || liveStatus == UserLiveStatus.Pending)
             {
                 return new ResultDTO(false) { message = __(TransKey.LIVE_ACC_EXISTS)};
@@ -2152,7 +2152,7 @@ namespace CFD_API.Controllers
 
             //Create Application
             if (user.AyLiveAccountGuid == null //new live user
-                || UserLive.GetUserLiveAccountStatus(user.AyLiveAccountStatus) == UserLiveStatus.Rejected //has been rejected, new application guid is required
+                || CFDUsers.GetUserLiveAccountStatus(user.AyLiveAccountStatus) == UserLiveStatus.Rejected //has been rejected, new application guid is required
                 )
             {
                 var initResult = AMSLiveAccountInitiate();
@@ -2283,7 +2283,7 @@ namespace CFD_API.Controllers
 
             //
             //userInfo.Birthday = form.birthday;
-            userInfo.Birthday = UserLive.GetBirthdayFromIdCode(userInfo.IdCode, ".");
+            userInfo.Birthday = CFDUsers.GetBirthdayFromIdCode(userInfo.IdCode, ".");
 
             userInfo.Ethnic = form.ethnic;
             //userInfo.IdCode = form.idCode;
@@ -2398,7 +2398,7 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
 
-            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = CFDUsers.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
             if (liveStatus != UserLiveStatus.Active)
                 return new ResultDTO(false);
 
@@ -2439,7 +2439,7 @@ namespace CFD_API.Controllers
             }
 
             //LIVE account is Created or Pending
-            var liveStatus = UserLive.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
+            var liveStatus = CFDUsers.GetUserLiveAccountStatus(user.AyLiveUsername, user.AyLiveAccountStatus);
 
             //in which status can user bind a bank card?
             if (liveStatus != UserLiveStatus.Active)
@@ -2727,7 +2727,7 @@ namespace CFD_API.Controllers
                         id = o.Following.Id,
                         nickname = o.Following.Nickname,
                         picUrl = o.Following.PicUrl,
-                        showData = o.Following.ShowData ?? false,
+                        showData = o.Following.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA,
                         rank = o.Following.LiveRank ?? 0,
                     }).ToList();
 
