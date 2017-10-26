@@ -98,7 +98,20 @@ namespace CFD_API.Controllers
                 refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "DepositStaging");
             }
 
-            var Banks = GetBanks();
+            List<string> depositBanks = new List<string>();
+            Misc depositBankSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "DepositBanks");
+            if(depositBankSetting != null)
+            {
+                depositBankSetting.Value.Split(';').ToList().ForEach(bank => {
+                    depositBanks.Add(bank);
+                });
+            }
+            else
+            {
+                depositBanks.AddRange(new string[] { "建设银行", "招商银行", "光大银行" });
+            }
+
+            var Banks = GetBanks().Where(b=> { return depositBanks.Contains(b.cname); }).ToList();
 
             if (refundSetting != null)
             {
