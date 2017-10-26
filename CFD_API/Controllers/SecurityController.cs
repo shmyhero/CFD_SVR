@@ -325,18 +325,18 @@ namespace CFD_API.Controllers
                     //prodDTO.last = Quotes.GetLastPrice(quote);
 
                     //calculate min/max trade value
-                    var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == prodDTO.Id);
+                    //var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == prodDTO.Id);
 
-                    var perPriceCcy2 = prodDef.LotSize/prodDef.PLUnits;
+                    var perPriceCcy2 = prodDTO.LotSize/ prodDTO.PLUnits;
 
-                    decimal minLong = perPriceCcy2*quote.Offer*prodDef.MinSizeLong;
-                    decimal minShort = perPriceCcy2*quote.Bid*prodDef.MinSizeShort;
-                    decimal maxLong = perPriceCcy2*quote.Offer*prodDef.MaxSizeLong;
-                    decimal maxShort = perPriceCcy2*quote.Bid*prodDef.MaxSizeShort;
+                    decimal minLong = perPriceCcy2*quote.Offer* prodDTO.MinSizeLong;
+                    decimal minShort = perPriceCcy2*quote.Bid* prodDTO.MinSizeShort;
+                    decimal maxLong = perPriceCcy2*quote.Offer* prodDTO.MaxSizeLong;
+                    decimal maxShort = perPriceCcy2*quote.Bid* prodDTO.MaxSizeShort;
 
                     try
                     {
-                        var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
+                        var perSizeValueUSD = FX.ConvertByOutrightMidPrice(1, prodDTO.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
 
                         prodDTO.minValueLong = minLong*perSizeValueUSD;
                         prodDTO.minValueShort = minShort*perSizeValueUSD;

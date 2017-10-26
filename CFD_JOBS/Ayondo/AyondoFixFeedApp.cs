@@ -132,6 +132,9 @@ namespace CFD_JOBS.Ayondo
             {
                 /*other new fields:
                 MDS_SFACTOR: This is the slippage factor for a product.  It is a value used in margin calculations.
+
+                MDS_SFACTOR is Slippage Factor. It is used in the margin calculation.
+                MDS_MULT is a scaling factor used in some PL calculations.  It's important for spread bets (which you do not trade). 
                 */
 
                 //CFDGlobal.LogLine(message.ToString());
@@ -166,6 +169,12 @@ namespace CFD_JOBS.Ayondo
                 var gsmd = message.GetDecimal(DD.FieldsByName["MDS_GSMD"].Tag);
                 var gsms = message.GetDecimal(DD.FieldsByName["MDS_GSMS"].Tag);
 
+                //var sFactor = message.GetDecimal(DD.FieldsByName["MDS_SFACTOR"].Tag);
+                //var tickTime = message.Any(o=>o.Key== DD.FieldsByName["MDS_TICKTIME"].Tag)? message.GetDateTime(DD.FieldsByName["MDS_TICKTIME"].Tag):(DateTime?)null;
+                var sessionTime = message.GetString(DD.FieldsByName["MDS_SESSIONTIME"].Tag);
+                var sessionZone = message.GetString(DD.FieldsByName["MDS_SESSIONZONE"].Tag);
+                //var mult = message.GetDecimal(DD.FieldsByName["MDS_MULT"].Tag);
+
                 QueueProdDefs.Enqueue(new ProdDef
                 {
                     Id = id,
@@ -191,6 +200,9 @@ namespace CFD_JOBS.Ayondo
                     SMD = smd,
                     GSMD = gsmd,
                     GSMS = gsms,
+
+                    SessionTime = sessionTime,
+                    SessionZone = sessionZone,
                 });
 
                 ProdDefs[id] = new ProdDef
@@ -218,6 +230,9 @@ namespace CFD_JOBS.Ayondo
                     SMD = smd,
                     GSMD = gsmd,
                     GSMS = gsms,
+
+                    SessionTime = sessionTime,
+                    SessionZone = sessionZone,
                 };
             }
             else

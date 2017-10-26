@@ -5,7 +5,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-            font-size: 16px;
+            font-size: 12px;
         }
 
         #stockTable table {
@@ -38,15 +38,18 @@
                 <th>Ccy2</th><th>Time</th>
                 <th>Bid</th><th>Ask</th>
                 <th>LastOpen</th><th>LastClose</th><th>PreClose</th><th>OpenBid</th><th>OpenAsk</th><th>CloseBid</th><th>CloseAsk</th>
-                <th>MaxLeverage</th><th>Shortable</th><th>MinSizeShort</th><th>MaxSizeShort</th><th>MinSizeLong</th><th>MaxSizeLong</th>
+                <th>MaxLeverage</th><th>Shortable</th>
+                <th>MinSizeShort</th><th>MaxSizeShort</th><th>MinSizeLong</th><th>MaxSizeLong</th>
+                <th>MinValueShort</th><th>MaxValueShort</th><th>MinValueLong</th><th>MaxValueLong</th>
                 <th>PLUnits</th><th>LotSize</th><th>Precision</th>
                 <th>SMD<br/>stop<br />minimum<br />distance</th>
                 <th>GSMD<br />guarrenteed<br />stop<br />minimum<br />distance</th>
-                <th>GSMS<br />guarrenteed<br />stop<br />maximum<br />size</th><!--<th>%</th>-->
+                <th>GSMS<br/>guarrenteed<br/>stop<br/>maximum<br/>size</th><!--<th>%</th>-->
+                <th>SessionTime</th><th>SessionZone</th>
             </tr>
             </thead>
             <tbody>
-                <tr class="loading"><td colspan="26">loading...</td></tr>
+                <tr class="loading"><td colspan="35">loading...</td></tr>
             </tbody>
         </table>
         <!--<textarea id="log" style="width: 800px; height: 600px"></textarea>-->
@@ -89,8 +92,10 @@
             rowTemplate = '<tr data-symbol="{id}"><td>{Id}</td><td>{Name}</td><td>{Symbol}</td><td>{AssetClass}</td><td>{cname}</td><td>{QuoteType}</td><td>{Ccy2}</td><td>{Time}</td>'
                 + '<td>{Bid}</td><td>{Offer}</td>'
                 + '<td>{LastOpen}</td><td>{LastClose}</td><td>{PreClose}</td><td>{OpenBid}</td><td>{OpenAsk}</td><td>{CloseBid}</td><td>{CloseAsk}</td>'
-                + '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
-                + '<td>{PLUnits}</td><td>{LotSize}</td><td>{Prec}</td><td>{SMD}</td><td>{GSMD}</td><td>{GSMS}</td></tr>';
+                + '<td>{MaxLeverage}</td><td>{Shortable}</td>'
+                + '<td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
+                + '<td>{minValueShort}</td><td>{maxValueShort}</td><td>{minValueLong}</td><td>{maxValueLong}</td>'
+                + '<td>{PLUnits}</td><td>{LotSize}</td><td>{Prec}</td><td>{SMD}</td><td>{GSMD}</td><td>{GSMS}</td><td>{SessionTime}</td><td>{SessionZone}</td></tr>';
 
         function formatStock(stock) {
             //return $.extend(stock, {
@@ -102,7 +107,7 @@
         }
 
         $(function () {
-            var url = 'api/security/'+(getQueryStringByName('live')?'live/':'')+'all';
+            var url = 'api/security/' + (getQueryStringByName('live') ? 'live/' : '') + 'all';
 
             $.ajax(url).done(function (stocks) {
                 $stockTableBody.empty();

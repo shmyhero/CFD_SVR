@@ -50,6 +50,9 @@ namespace CFD_COMMON.Models.Cached
         public decimal GSMD { get; set; }
         public decimal GSMS { get; set; }
 
+        public string SessionTime { get; set; }
+        public string SessionZone { get; set; }
+
     }
 
     public enum enmQuoteType

@@ -572,6 +572,9 @@ namespace CFD_JOBS.Ayondo
                                     old.GSMD = newProdDef.GSMD;
                                     old.GSMS = newProdDef.GSMS;
 
+                                    old.SessionTime = newProdDef.SessionTime;
+                                    old.SessionZone = newProdDef.SessionZone;
+
                                     listToSave.Add(old);
                                 }
                                 else //appending new prod def into redis
