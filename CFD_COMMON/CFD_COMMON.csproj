@@ -178,6 +178,8 @@
     <Compile Include="Models\Entities\PingOrders.cs" />
     <Compile Include="Models\Entities\PriceDownInterval.cs" />
     <Compile Include="Models\Entities\ProdSetting.cs" />
+    <Compile Include="Models\Entities\QuizBet.cs" />
+    <Compile Include="Models\Entities\Quiz.cs" />
     <Compile Include="Models\Entities\QuoteHistory.cs" />
     <Compile Include="Models\Entities\QuoteSnapshot.cs" />
     <Compile Include="Models\Entities\ReferHistory.cs" />

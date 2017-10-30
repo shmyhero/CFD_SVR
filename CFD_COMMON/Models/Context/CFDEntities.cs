@@ -51,6 +51,8 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<PingOrder> PingOrders { get; set; }
         public virtual DbSet<ProdSetting_Live> ProdSettings { get; set; }
         public virtual DbSet<PhoneSignupHistory> PhoneSignupHistories { get; set; }
+        public virtual DbSet<Quiz> Quizzes { get; set; }
+        public virtual DbSet<QuizBet> QuizBets { get; set; }
         public virtual DbSet<QuoteHistory> QuoteHistories { get; set; }
         public virtual DbSet<QuoteSnapshot> QuoteSnapshots { get; set; }
         public virtual DbSet<RewardTransfer> RewardTransfers { get; set; }

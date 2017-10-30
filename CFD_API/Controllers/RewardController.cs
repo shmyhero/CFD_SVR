@@ -182,46 +182,10 @@ namespace CFD_API.Controllers
         [BasicAuth]
         public RewardDTO GetTotalUnpaidReward()
         {
-            //reward for daily sign
-            decimal totalDailySignReward = db.DailySigns
-                .Where(o => o.UserId == UserId && !o.IsPaid.Value)
-                .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+            RewardService service = new RewardService(db);
+            var rewardDetail = service.GetTotalReward(UserId);
 
-            //reward for daily demo trasaction
-            var totalDemoTransactionReward = db.DailyTransactions
-                .Where(o => o.UserId == UserId && !o.IsPaid.Value)
-                .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
-
-            var totalCard = db.UserCards_Live.Where(o => (!o.IsPaid.HasValue || !o.IsPaid.Value) && o.UserId == UserId).Select(o => o.Reward).DefaultIfEmpty(0).Sum();
-
-            //reward for demo register
-            var reward = db.DemoRegisterRewards.FirstOrDefault(o => o.UserId == UserId);
-            decimal demoRegisterReward = reward == null ? 0 : reward.Amount;
-
-            //实盘账户注册交易金
-            var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == UserId);
-            decimal liveRegisterReward = liveReward == null ? 0 : liveReward.Amount;
-
-            //推荐人奖励
-            var referRewardAmount = db.ReferRewards.Where(o => o.UserID == UserId).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
-
-            //首日入金交易金
-            decimal firstDepositReward = 0;
-            var depositRewards = db.DepositRewards.Where(o => o.UserId == UserId);
-            if(!(depositRewards == null || depositRewards.Count() == 0))
-            {
-                firstDepositReward = depositRewards.Sum(o => o.Amount);
-            }
-            
-            //模拟收益交易金
-            decimal demoProfit = 0;
-            var demoRewards = db.DemoProfitRewards.Where(o => o.UserId == UserId);
-            if (!(demoRewards == null || demoRewards.Count() == 0))
-            {
-                demoProfit = demoRewards.Sum(o => o.Amount);
-            }
-
-            return new RewardDTO() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward };
+            return new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit };
         }
 
         [HttpGet]
@@ -238,7 +202,9 @@ namespace CFD_API.Controllers
             var user = GetUser();
             //to-do 用户入金的交易类型是不是：WeCollect - CUP 和 Bank Wire
             //Bank Wire可能是运营给的赠金，也可能是用户的入金，需要区分开吗？
-            var totalDeposit = db.AyondoTransferHistory_Live.Where(o => o.TradingAccountId == user.AyLiveAccountId && (o.TransferType == "WeCollect - CUP")).Select(o=>o.Amount).Sum();
+            //var totalDeposit = db.AyondoTransferHistory_Live.Where(o => o.TradingAccountId == user.AyLiveAccountId && CFD_COMMON.Utils.Transfer.IsDepositData(o)).Select(o=>o.Amount).Sum();
+            var totalDeposit = db.AyondoTransferHistory_Live.Where(CFD_COMMON.Utils.Transfer.IsDeposit(user.AyLiveAccountId)).Select(o => o.Amount).Sum();
+
             decimal rewardTransferLimit = 60; //转出交易金的限制，必须大于60
             decimal depositLimit = 200; //入金的限制，必须累计大于200
             string rewardLimitMessage = "剩余交易金≥60元, 才能转⼊实盘账户";

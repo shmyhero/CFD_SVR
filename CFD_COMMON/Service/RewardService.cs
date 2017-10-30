@@ -394,5 +394,89 @@ namespace CFD_COMMON.Service
 
             return CHECK_IN_DAY_11_TO_X;
         }
+
+        public RewardDetail GetTotalReward(int userID)
+        {
+            //reward for daily sign
+            decimal totalDailySignReward = db.DailySigns
+                .Where(o => o.UserId == userID && !o.IsPaid.Value)
+                .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+
+            //reward for daily demo trasaction
+            var totalDemoTransactionReward = db.DailyTransactions
+                .Where(o => o.UserId == userID && !o.IsPaid.Value)
+                .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+
+            var totalCard = db.UserCards_Live.Where(o => (!o.IsPaid.HasValue || !o.IsPaid.Value) && o.UserId == userID).Select(o => o.Reward).DefaultIfEmpty(0).Sum();
+
+            //reward for demo register
+            var reward = db.DemoRegisterRewards.FirstOrDefault(o => o.UserId == userID);
+            decimal demoRegisterReward = reward == null ? 0 : reward.Amount;
+
+            //实盘账户注册交易金
+            var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == userID);
+            decimal liveRegisterReward = liveReward == null ? 0 : liveReward.Amount;
+
+            //推荐人奖励
+            var referRewardAmount = db.ReferRewards.Where(o => o.UserID == userID).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+
+            //首日入金交易金
+            decimal firstDepositReward = 0;
+            var depositRewards = db.DepositRewards.Where(o => o.UserId == userID);
+            if (!(depositRewards == null || depositRewards.Count() == 0))
+            {
+                firstDepositReward = depositRewards.Sum(o => o.Amount);
+            }
+
+            //模拟收益交易金
+            decimal demoProfit = 0;
+            var demoRewards = db.DemoProfitRewards.Where(o => o.UserId == userID);
+            if (!(demoRewards == null || demoRewards.Count() == 0))
+            {
+                demoProfit = demoRewards.Sum(o => o.Amount);
+            }
+
+            return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward };
+        }
+    }
+
+    public struct RewardDetail
+    {
+        public decimal totalDailySign { get; set; }
+        /// <summary>
+        /// 模拟交易奖励汇总
+        /// </summary>
+        public decimal totalDemoTransaction { get; set; }
+        /// <summary>
+        /// 卡牌产生的交易金
+        /// </summary>
+        public decimal totalCard { get; set; }
+        /// <summary>
+        /// 模拟盘注册奖励
+        /// </summary>
+        public decimal demoRegister { get; set; }
+
+        /// <summary>
+        /// 实盘注册奖励
+        /// </summary>
+        public decimal liveRegister { get; set; }
+
+        /// <summary>
+        /// 好友推荐奖励
+        /// </summary>
+        public decimal referralReward { get; set; }
+        /// <summary>
+        /// 首笔入金的交易金
+        /// </summary>
+        public decimal firstDeposit { get; set; }
+        /// <summary>
+        /// 模拟收益交易金
+        /// </summary>
+        public decimal demoProfit { get; set; }
+
+        public decimal GetTotal()
+        {
+            return totalDailySign + totalDemoTransaction + totalCard + demoRegister + liveRegister + referralReward + firstDeposit + demoProfit;
+        }
     }
 }
