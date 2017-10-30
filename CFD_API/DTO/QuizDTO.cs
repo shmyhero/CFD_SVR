@@ -38,20 +38,27 @@ namespace CFD_API.DTO
 
     public class QuizBetDTO
     {
+        public int? ID { get; set; }
+        public int? QID { get; set; }
+        public int? ProdID { get; set; }
         public string ProdName { get; set; }
         public DateTime? OpenAt { get; set; }
         public DateTime? ClosedAt { get; set; }
-        public decimal LongAmount { get; set; }
-        public int LongPersons { get; set; }
+        public decimal? LongAmount { get; set; }
+        public int? LongPersons { get; set; }
 
-        public decimal ShortAmount { get; set; }
+        public decimal? ShortAmount { get; set; }
 
-        public int ShortPersons { get; set; }
+        public int? ShortPersons { get; set; }
 
-        public decimal AvailableBonus { get; set; }
+        public decimal? AvailableBonus { get; set; }
 
-        public decimal BetAmount { get; set; }
+        public decimal? BetAmount { get; set; }
 
         public string BetDirection { get; set; }
+
+        public decimal? PL { get; set; }
+
+        public bool? IsViewed { get; set; }
     }
 }

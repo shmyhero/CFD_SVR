@@ -194,7 +194,7 @@ namespace CFD_API.Controllers
             int max = 30;
             List<QuizDTO> result = null;
             //get top N quizzes
-            var quizzes = db.Quizzes.Where(item => item.ExpiredAt.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.ID).Take(max).ToList();
+            var quizzes = db.Quizzes.Where(item => item.ExpiredAt.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.OpenAt).Take(max).ToList();
             if(quizzes != null)
             {
                 result = quizzes.Select(q => {
@@ -219,7 +219,7 @@ namespace CFD_API.Controllers
             int max = 30;
             List<QuizDTO> result = null;
             //get top N quizzes
-            var quizzes = db.Quizzes.Where(item => item.ID > qid && item.ExpiredAt.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.ID).Take(max).ToList();
+            var quizzes = db.Quizzes.Where(item => item.ID > qid && item.ExpiredAt.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.OpenAt).Take(max).ToList();
             if (quizzes != null)
             {
                 result = quizzes.Select(q => {
@@ -242,25 +242,28 @@ namespace CFD_API.Controllers
         #region 前台页面使用的接口
         /// <summary>
         /// 获取用户当天的竞猜活动信息，包括可用交易金、投注金额、方向
+        /// 这里的当天是指最近未发生的一个竞猜活动，比如今天是周一，返回的就是周二的竞猜
+        /// 如果今天是周五，返回的就是下周一的竞猜
         /// </summary>
         /// <param name="userID"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("{userID}/today")]
-        public QuizBetDTO GetTodayBet(int userID)
+        [Route("{userID}/next")]
+        [AdminAuth]
+        public QuizBetDTO GetNextQuizBet(int userID)
         {
-            QuizBetDTO dto = null;
-            var todayQuiz = db.Quizzes.FirstOrDefault(q => q.OpenAt < DateTime.Now && q.ClosedAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
+            QuizBetDTO dto = new QuizBetDTO();
+            var nextQuiz = db.Quizzes.OrderBy(q=>q.OpenAt).FirstOrDefault(q => q.OpenAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
 
-            if(todayQuiz == null)
+            if(nextQuiz == null)
             {
                 return dto;
             }
 
-            var quizBets = db.QuizBets.Where(q => q.ID == todayQuiz.ID).ToList();
-            dto.ProdName = todayQuiz.ProdName;
-            dto.OpenAt = todayQuiz.OpenAt;
-            dto.ClosedAt = todayQuiz.ClosedAt;
+            var quizBets = db.QuizBets.Where(q => q.ID == nextQuiz.ID).ToList();
+            dto.ProdName = nextQuiz.ProdName;
+            dto.OpenAt = nextQuiz.OpenAt;
+            dto.ClosedAt = nextQuiz.ClosedAt;
 
             var longBets = quizBets.Where(q => q.BetDirection == "long");
             if (longBets != null)
@@ -280,7 +283,7 @@ namespace CFD_API.Controllers
             var paid = db.RewardTransfers.Where(o => o.UserID == userID).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
             dto.AvailableBonus = totalReward.GetTotal() - paid;
 
-            var myBet = db.QuizBets.FirstOrDefault(q => q.ID == todayQuiz.ID && q.UserID == userID);
+            var myBet = db.QuizBets.FirstOrDefault(q => q.ID == nextQuiz.ID && q.UserID == userID);
             if(myBet!=null)
             {
                 dto.BetAmount = myBet.BetAmount?? 0;
@@ -289,6 +292,144 @@ namespace CFD_API.Controllers
             
 
             return dto;
+        }
+
+        /// <summary>
+        /// 获取用户上一个竞猜活动的信息，包括可用交易金、投注金额、方向、盈亏结果
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{userID}/last")]
+        [AdminAuth]
+        public QuizBetDTO GetLastBet(int userID)
+        {
+            QuizBetDTO dto = new QuizBetDTO();
+            //var lastQuiz = db.Quizzes.OrderByDescending(q=>q.ID).FirstOrDefault(q => q.OpenAt < DateTime.Now &&  && q.ExpiredAt == SqlDateTime.MaxValue.Value);
+            //找出该用户参与过的最后一个竞猜活动
+            var lastQuizBet = (from b in db.QuizBets
+                            join q in db.Quizzes on b.QuizID equals q.ID
+                            where q.OpenAt < DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value && b.UserID == userID
+                            orderby b.QuizID descending
+                            select new QuizBetDTO()
+                            {
+                                ID = b.ID,
+                                ClosedAt = q.ClosedAt,
+                                OpenAt = q.OpenAt,
+                                ProdID = q.ProdID,
+                                ProdName = q.ProdName,
+                                BetAmount = b.BetAmount,
+                                BetDirection = b.BetDirection,
+                                PL = b.PL,
+                                IsViewed = b.IsPLViewed?? false
+                            }).FirstOrDefault();
+
+
+            if (lastQuizBet == null)
+            {
+                return dto;
+            }
+
+            dto.OpenAt = lastQuizBet.OpenAt;
+            dto.ProdID = lastQuizBet.ProdID;
+            dto.BetAmount = lastQuizBet.BetAmount ?? 0;
+            dto.BetDirection = lastQuizBet.BetDirection;
+            dto.PL = lastQuizBet.PL ?? 0;
+            dto.IsViewed = lastQuizBet.IsViewed;
+
+            if(!lastQuizBet.IsViewed.HasValue || lastQuizBet.IsViewed == false)
+            {
+                var quizBet = db.QuizBets.FirstOrDefault(q => q.ID == lastQuizBet.ID);
+                if(quizBet!=null)
+                {
+                    quizBet.IsPLViewed = true;
+                }
+            }
+             
+            db.SaveChanges();
+
+            return dto;
+        }
+
+        /// <summary>
+        /// 对下一个竞猜活动下注
+        /// </summary>
+        [HttpPost]
+        [Route("{userID}/bet")]
+        public ResultDTO BetOnNext(int userID, QuizBetDTO form)
+        {
+            var nextQuiz = db.Quizzes.OrderBy(q => q.OpenAt).FirstOrDefault(q => q.OpenAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
+
+            if (nextQuiz == null)
+            {
+                return new ResultDTO(false) { message = "竞猜活动不存在" };
+            }
+
+            var quizBet = new QuizBet()
+            {
+                BetAmount = form.BetAmount,
+                BetDirection = form.BetDirection,
+                CreatedAt = DateTime.Now,
+                QuizID = form.QID?? 0,
+                UserID = userID
+            };
+
+            db.QuizBets.Add(quizBet);
+            db.SaveChanges();
+
+            return new ResultDTO(true);
+        }
+
+        [HttpGet]
+        [Route("{userID}/all")]
+        public List<QuizBetDTO> GetTopN(int userID)
+        {
+            int max = 20;
+            var quizBets = (from b in db.QuizBets
+                               join q in db.Quizzes on b.QuizID equals q.ID
+                               where q.ExpiredAt == SqlDateTime.MaxValue.Value && b.UserID == userID
+                               orderby q.OpenAt descending
+                               select new QuizBetDTO()
+                               {
+                                   ID = b.ID,
+                                   QID = q.ID,
+                                   ClosedAt = q.ClosedAt,
+                                   OpenAt = q.OpenAt,
+                                   ProdID = q.ProdID,
+                                   ProdName = q.ProdName,
+                                   BetAmount = b.BetAmount,
+                                   BetDirection = b.BetDirection,
+                                   PL = b.PL,
+                                   IsViewed = b.IsPLViewed ?? false
+                               }).Take(max).ToList();
+
+            return quizBets;
+        }
+
+        [HttpGet]
+        [Route("{userID}/all/{bid}")]
+        public List<QuizBetDTO> GetNextN(int userID, int bid)
+        {
+            int max = 20;
+            var quizBets = (from b in db.QuizBets
+                            join q in db.Quizzes on b.QuizID equals q.ID
+                            where q.ExpiredAt == SqlDateTime.MaxValue.Value && b.UserID == userID && b.ID < bid
+                            orderby q.OpenAt descending
+                            select new QuizBetDTO()
+                            {
+                                ID = b.ID,
+                                QID = q.ID,
+                                ClosedAt = q.ClosedAt,
+                                OpenAt = q.OpenAt,
+                                ProdID = q.ProdID,
+                                ProdName = q.ProdName,
+                                BetAmount = b.BetAmount,
+                                BetDirection = b.BetDirection,
+                                PL = b.PL,
+                                IsViewed = b.IsPLViewed ?? false
+                            }).Take(max).ToList();
+
+            return quizBets;
         }
 
         #endregion
