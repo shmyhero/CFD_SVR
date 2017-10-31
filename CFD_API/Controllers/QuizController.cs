@@ -416,7 +416,7 @@ namespace CFD_API.Controllers
         [Route("{userID}/bet")]
         public ResultDTO BetOnNext(int userID, QuizBetDTO form)
         {
-            var nextQuiz = db.Quizzes.OrderBy(q => q.OpenAt).FirstOrDefault(q => q.OpenAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
+            var nextQuiz = db.Quizzes.OrderBy(q => q.OpenAt).FirstOrDefault(q => q.OpenAt < DateTime.Now && q.ClosedAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
 
             if (nextQuiz == null)
             {
@@ -428,7 +428,7 @@ namespace CFD_API.Controllers
                 BetAmount = form.BetAmount,
                 BetDirection = form.BetDirection,
                 CreatedAt = DateTime.Now,
-                QuizID = form.QID?? 0,
+                QuizID = nextQuiz.ID,
                 UserID = userID
             };
 
