@@ -1521,6 +1521,10 @@ namespace CFD_API.Controllers
                 }
             }
 
+            //if the first data is not zero, add a zero before it as a reference point
+            if (newResult.First().pl != 0)
+                newResult.Insert(0, new PosChartDTO() {date = newResult.First().date.AddDays(-1), pl = 0});
+
             #endregion
 
             var user = db.Users.FirstOrDefault(o => o.Id == userId);
@@ -1594,6 +1598,10 @@ namespace CFD_API.Controllers
                     newResult.Add(new PosChartDTO() { date = d, pl = cumulativePL });
                 }
             }
+
+            //if the first data is not zero, add a zero before it as a reference point
+            if (newResult.First().pl != 0)
+                newResult.Insert(0, new PosChartDTO() { date = newResult.First().date.AddDays(-1), pl = 0 });
 
             #endregion
 
