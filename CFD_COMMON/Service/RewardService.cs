@@ -436,7 +436,15 @@ namespace CFD_COMMON.Service
                 demoProfit = demoRewards.Sum(o => o.Amount);
             }
 
-            return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward };
+            //只取大于0的
+            decimal quizReward = 0;
+            var quizRewards = db.QuizBets.Where(o => o.UserID == userID && o.PL > 0);
+            if (!(quizRewards == null || quizRewards.Count() == 0))
+            {
+                quizReward = quizRewards.Select(o => o.PL).DefaultIfEmpty(0).Sum(o=>o.Value);
+            }
+
+            return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward, quizReward = quizReward };
         }
     }
 
@@ -473,10 +481,14 @@ namespace CFD_COMMON.Service
         /// 模拟收益交易金
         /// </summary>
         public decimal demoProfit { get; set; }
+        /// <summary>
+        /// 竞猜活动
+        /// </summary>
+        public decimal quizReward { get; set; }
 
         public decimal GetTotal()
         {
-            return totalDailySign + totalDemoTransaction + totalCard + demoRegister + liveRegister + referralReward + firstDeposit + demoProfit;
+            return totalDailySign + totalDemoTransaction + totalCard + demoRegister + liveRegister + referralReward + firstDeposit + demoProfit + quizReward;
         }
     }
 }

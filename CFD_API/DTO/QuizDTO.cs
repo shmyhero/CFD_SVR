@@ -19,6 +19,11 @@ namespace CFD_API.DTO
         /// </summary>
         public DateTime? ClosedAt { get; set; }
         /// <summary>
+        /// 竞猜对应的交易日
+        /// </summary>
+        public DateTime? TradeDay { get; set; }
+        public string Result { get; set; }
+        /// <summary>
         /// 买涨的金额
         /// </summary>
         public decimal? LongAmount { get; set; }
@@ -44,6 +49,8 @@ namespace CFD_API.DTO
         public string ProdName { get; set; }
         public DateTime? OpenAt { get; set; }
         public DateTime? ClosedAt { get; set; }
+        public DateTime? TradeDay { get; set; }
+        public string Result { get; set; }
         public decimal? LongAmount { get; set; }
         public int? LongPersons { get; set; }
 

@@ -170,6 +170,11 @@ namespace CFD_JOBS
                 {
                     PingPPCashTransfer.Run();
                 }
+
+                if (args.Contains("-QuizJob"))
+                {
+                    QuizJob.Run();
+                }
                 return 0;
             }
             catch (Exception ex)

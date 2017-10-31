@@ -344,6 +344,10 @@ namespace CFD_API.DTO
         /// 模拟收益交易金
         /// </summary>
         public decimal demoProfit { get; set; }
+        /// <summary>
+        /// 竞猜活动
+        /// </summary>
+        public decimal quizReward { get; set; }
     }
 
     public class TotalRewardDTO

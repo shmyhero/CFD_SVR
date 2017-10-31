@@ -126,6 +126,7 @@
     <Compile Include="PingDepositReport.cs" />
     <Compile Include="PingPPCashTransfer.cs" />
     <Compile Include="PrizeReport.cs" />
+    <Compile Include="QuizJob.cs" />
     <Compile Include="QuoteSnapshot.cs" />
     <Compile Include="RankJob.cs" />
     <Compile Include="RemittanceReport.cs" />

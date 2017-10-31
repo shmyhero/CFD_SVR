@@ -185,7 +185,7 @@ namespace CFD_API.Controllers
             RewardService service = new RewardService(db);
             var rewardDetail = service.GetTotalReward(UserId);
 
-            return new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit };
+            return new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit, quizReward = rewardDetail.quizReward };
         }
 
         [HttpGet]
@@ -197,6 +197,9 @@ namespace CFD_API.Controllers
             var reward = GetTotalUnpaidReward();
             //所有已经被转的交易金
             var transfer = db.RewardTransfers.Where(o => o.UserID == UserId).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+            //小于0的竞猜收益作为支出
+            transfer += db.QuizBets.Where(o => o.UserID == UserId && o.PL < 0).Select(o => o.PL).DefaultIfEmpty(0).Sum(o => o.Value);
+
 
             //用户累计入金
             var user = GetUser();
@@ -219,7 +222,7 @@ namespace CFD_API.Controllers
                 depositLimitMessage = setting["depositLimitMessage"].Value<string>();
             }
             var totalReward = new TotalRewardDTO() {
-                total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction + reward.firstDeposit + reward.demoProfit,
+                total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction + reward.firstDeposit + reward.demoProfit + reward.quizReward,
                 paid = transfer,
                 canTransfer = true,
                 minTransfer = rewardTransferLimit,

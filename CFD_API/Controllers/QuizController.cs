@@ -38,6 +38,12 @@ namespace CFD_API.Controllers
             form.OpenAt = form.OpenAt ?? DateTime.Now.Date.AddDays(1);
             form.ClosedAt = form.ClosedAt ?? DateTime.Now.Date.AddDays(2).AddSeconds(-1);
 
+            //周五就加两天，确保周五、六、日只有一个竞猜活动
+            if(form.OpenAt.Value.DayOfWeek == DayOfWeek.Friday)
+            {
+                form.ClosedAt = form.ClosedAt.Value.AddDays(2);
+            }
+
             DateTime openTime = form.OpenAt.Value;
             DateTime closeTime = form.ClosedAt.Value;
 
@@ -55,9 +61,9 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false) { message = "产品编号错误" };
             }
 
-            
-
             var quiz = new Quiz() { ProdID = form.ProdID, ProdName = prod.Name, OpenAt = form.OpenAt, ClosedAt = form.ClosedAt, CreatedAt = DateTime.Now, ExpiredAt = SqlDateTime.MaxValue.Value };
+            //交易日是在竞猜结束后的一天
+            quiz.TradeDay = closeTime.Date.AddDays(1); 
             db.Quizzes.Add(quiz);
             db.SaveChanges();
             return new ResultDTO(true);
@@ -75,6 +81,11 @@ namespace CFD_API.Controllers
 
             form.OpenAt = form.OpenAt ?? DateTime.Now.Date.AddDays(1);
             form.ClosedAt = form.ClosedAt ?? DateTime.Now.Date.AddDays(2).AddSeconds(-1);
+            //周五就加两天，确保周五、六、日只有一个竞猜活动
+            if (form.OpenAt.Value.DayOfWeek == DayOfWeek.Friday)
+            {
+                form.ClosedAt = form.ClosedAt.Value.AddDays(2);
+            }
 
             var result = VerifyQuiz(form);
             if (!result.success)
@@ -93,6 +104,16 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false) { message = "活动已经开始，不能修改" };
             }
 
+            DateTime openTime = form.OpenAt.Value;
+            DateTime closeTime = form.ClosedAt.Value;
+
+            //判断当天是否已经有竞猜
+            bool hasQuiz = db.Quizzes.Any(q => q.OpenAt.HasValue && q.OpenAt.Value == openTime && q.ID != form.ID && q.ExpiredAt == SqlDateTime.MaxValue.Value);
+            if (hasQuiz)
+            {
+                return new ResultDTO(false) { message = "该天已经有竞猜活动" };
+            }
+
             var cache = WebCache.GetInstance(true);
             var prod = cache.ProdDefs.FirstOrDefault(p => p.Id == form.ProdID);
             if (prod == null)
@@ -104,6 +125,7 @@ namespace CFD_API.Controllers
             quiz.ProdName = prod.Name;
             quiz.OpenAt = form.OpenAt;
             quiz.ClosedAt = form.ClosedAt;
+            quiz.TradeDay = closeTime.Date.AddDays(1);
 
             db.SaveChanges();
             return new ResultDTO(true);
@@ -127,10 +149,10 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false) { message = "竞猜结束时间必须大于开始时间" };
             }
 
-            if (form.ClosedAt.Value.Date != form.OpenAt.Value.Date)
-            {
-                return new ResultDTO(false) { message = "竞猜开始时间和结束时间必须在同一天内" };
-            }
+            //if (form.ClosedAt.Value.Date != form.OpenAt.Value.Date)
+            //{
+            //    return new ResultDTO(false) { message = "竞猜开始时间和结束时间必须在同一天内" };
+            //}
 
             return new ResultDTO(true);
         }
@@ -164,7 +186,7 @@ namespace CFD_API.Controllers
                 dto.ProdName = quiz.ProdName;
                 dto.OpenAt = quiz.OpenAt;
                 dto.ClosedAt = quiz.ClosedAt;
-
+                dto.TradeDay = quiz.TradeDay;
                 var longBets = quizBets.Where(q => q.BetDirection == "long");
                 if(longBets != null)
                 {
@@ -195,15 +217,19 @@ namespace CFD_API.Controllers
             List<QuizDTO> result = null;
             //get top N quizzes
             var quizzes = db.Quizzes.Where(item => item.ExpiredAt.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.OpenAt).Take(max).ToList();
-            if(quizzes != null)
+            if (quizzes != null)
             {
-                result = quizzes.Select(q => {
-                    return new QuizDTO() {
-                         ID = q.ID,
-                         ProdID =q.ProdID,
-                         ProdName = q.ProdName,
-                          ClosedAt = q.ClosedAt,
-                          OpenAt = q.OpenAt,
+                result = quizzes.Select(q =>
+                {
+                    return new QuizDTO()
+                    {
+                        ID = q.ID,
+                        ProdID = q.ProdID,
+                        ProdName = q.ProdName,
+                        ClosedAt = q.ClosedAt,
+                        OpenAt = q.OpenAt,
+                        TradeDay = q.TradeDay,
+                        Result = q.Result
                     };
                 }).ToList();
             }
@@ -230,11 +256,39 @@ namespace CFD_API.Controllers
                         ProdName = q.ProdName,
                         ClosedAt = q.ClosedAt,
                         OpenAt = q.OpenAt,
+                        TradeDay = q.TradeDay,
+                        Result = q.Result
                     };
                 }).ToList();
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 上一个竞猜的情况
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("admin/last")]
+        [AdminAuth]
+        public QuizDTO Last()
+        {
+            var dto = new QuizDTO();
+            DateTime today = DateTime.Now.Date;
+            var lastQuiz = db.Quizzes.OrderByDescending(q => q.OpenAt).FirstOrDefault(q => q.TradeDay < today);
+            if(lastQuiz != null)
+            {
+                dto.ID = lastQuiz.ID;
+                dto.ProdID = lastQuiz.ProdID;
+                dto.ProdName = lastQuiz.ProdName;
+                dto.ClosedAt = lastQuiz.ClosedAt;
+                dto.OpenAt = lastQuiz.OpenAt;
+                dto.TradeDay = lastQuiz.TradeDay;
+                dto.Result = lastQuiz.Result;
+            }
+
+            return dto;
         }
 
         #endregion
@@ -264,7 +318,7 @@ namespace CFD_API.Controllers
             dto.ProdName = nextQuiz.ProdName;
             dto.OpenAt = nextQuiz.OpenAt;
             dto.ClosedAt = nextQuiz.ClosedAt;
-
+            dto.TradeDay = nextQuiz.TradeDay;
             var longBets = quizBets.Where(q => q.BetDirection == "long");
             if (longBets != null)
             {
@@ -315,6 +369,8 @@ namespace CFD_API.Controllers
                             {
                                 ID = b.ID,
                                 ClosedAt = q.ClosedAt,
+                                TradeDay = q.TradeDay,
+                                Result = q.Result,
                                 OpenAt = q.OpenAt,
                                 ProdID = q.ProdID,
                                 ProdName = q.ProdName,
@@ -332,6 +388,8 @@ namespace CFD_API.Controllers
 
             dto.OpenAt = lastQuizBet.OpenAt;
             dto.ProdID = lastQuizBet.ProdID;
+            dto.TradeDay = lastQuizBet.TradeDay;
+            dto.Result = lastQuizBet.Result;
             dto.BetAmount = lastQuizBet.BetAmount ?? 0;
             dto.BetDirection = lastQuizBet.BetDirection;
             dto.PL = lastQuizBet.PL ?? 0;
@@ -394,6 +452,8 @@ namespace CFD_API.Controllers
                                    ID = b.ID,
                                    QID = q.ID,
                                    ClosedAt = q.ClosedAt,
+                                   TradeDay = q.TradeDay,
+                                   Result = q.Result,
                                    OpenAt = q.OpenAt,
                                    ProdID = q.ProdID,
                                    ProdName = q.ProdName,
@@ -420,6 +480,8 @@ namespace CFD_API.Controllers
                                 ID = b.ID,
                                 QID = q.ID,
                                 ClosedAt = q.ClosedAt,
+                                TradeDay = q.TradeDay,
+                                Result = q.Result,
                                 OpenAt = q.OpenAt,
                                 ProdID = q.ProdID,
                                 ProdName = q.ProdName,

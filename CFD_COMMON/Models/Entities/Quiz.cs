@@ -29,7 +29,11 @@ namespace CFD_COMMON.Models.Entities
         /// 竞猜活动结束时间
         /// </summary>
         public DateTime? ClosedAt { get; set; }
-        
+        /// <summary>
+        /// 竞猜活动对应的交易日
+        /// </summary>
+        public DateTime? TradeDay { get; set; }
+        public string Result { get; set; }
         /// <summary>
         /// 竞猜活动的创建时间
         /// </summary>
