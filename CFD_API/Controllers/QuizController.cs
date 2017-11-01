@@ -18,9 +18,13 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/quiz")]
     public class QuizController : CFDController
     {
+        private Dictionary<int, string> AcceptProds = new Dictionary<int, string>();
         public QuizController(CFDEntities db, IMapper mapper)
             : base(db, mapper)
         {
+            AcceptProds.Add(36011,"华尔街");
+            AcceptProds.Add(36004, "美国科技股100");
+            AcceptProds.Add(36003, "美国标准500");
         }
 
         #region 管理后台使用的接口
@@ -61,7 +65,7 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false) { message = "产品编号错误" };
             }
 
-            var quiz = new Quiz() { ProdID = form.ProdID, ProdName = prod.Name, OpenAt = form.OpenAt, ClosedAt = form.ClosedAt, CreatedAt = DateTime.Now, ExpiredAt = SqlDateTime.MaxValue.Value };
+            var quiz = new Quiz() { ProdID = form.ProdID, ProdName = AcceptProds[form.ProdID], OpenAt = form.OpenAt, ClosedAt = form.ClosedAt, CreatedAt = DateTime.Now, ExpiredAt = SqlDateTime.MaxValue.Value };
             //交易日是在竞猜结束后的一天
             quiz.TradeDay = closeTime.Date.AddDays(1); 
             db.Quizzes.Add(quiz);
@@ -122,7 +126,7 @@ namespace CFD_API.Controllers
             }
 
             quiz.ProdID = form.ProdID;
-            quiz.ProdName = prod.Name;
+            quiz.ProdName = AcceptProds[form.ProdID];
             quiz.OpenAt = form.OpenAt;
             quiz.ClosedAt = form.ClosedAt;
             quiz.TradeDay = closeTime.Date.AddDays(1);
@@ -307,14 +311,14 @@ namespace CFD_API.Controllers
         public QuizBetDTO GetNextQuizBet(int userID)
         {
             QuizBetDTO dto = new QuizBetDTO();
-            var nextQuiz = db.Quizzes.OrderBy(q=>q.OpenAt).FirstOrDefault(q => q.OpenAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
+            var nextQuiz = db.Quizzes.OrderBy(q=>q.OpenAt).FirstOrDefault(q => q.OpenAt < DateTime.Now && q.ClosedAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
 
             if(nextQuiz == null)
             {
                 return dto;
             }
 
-            var quizBets = db.QuizBets.Where(q => q.ID == nextQuiz.ID).ToList();
+            var quizBets = db.QuizBets.Where(q => q.QuizID == nextQuiz.ID).ToList();
             dto.ProdName = nextQuiz.ProdName;
             dto.OpenAt = nextQuiz.OpenAt;
             dto.ClosedAt = nextQuiz.ClosedAt;
