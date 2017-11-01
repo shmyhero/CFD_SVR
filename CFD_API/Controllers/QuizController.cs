@@ -336,6 +336,9 @@ namespace CFD_API.Controllers
                 dto.ShortPersons = shortBets.Count();
             }
 
+            dto.LongBenefit = dto.LongPersons == 0 ? 0 : dto.ShortAmount / dto.LongPersons;
+            dto.ShortAmount = dto.ShortPersons == 0 ? 0 : dto.LongAmount / dto.ShortPersons;
+
             RewardService service = new RewardService(db);
             var totalReward = service.GetTotalReward(userID);
             var paid = db.RewardTransfers.Where(o => o.UserID == userID).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
@@ -362,8 +365,6 @@ namespace CFD_API.Controllers
         [AdminAuth]
         public QuizBetDTO GetLastBet(int userID)
         {
-            QuizBetDTO dto = new QuizBetDTO();
-            //var lastQuiz = db.Quizzes.OrderByDescending(q=>q.ID).FirstOrDefault(q => q.OpenAt < DateTime.Now &&  && q.ExpiredAt == SqlDateTime.MaxValue.Value);
             //找出该用户参与过的最后一个竞猜活动
             var lastQuizBet = (from b in db.QuizBets
                             join q in db.Quizzes on b.QuizID equals q.ID
@@ -381,23 +382,15 @@ namespace CFD_API.Controllers
                                 BetAmount = b.BetAmount,
                                 BetDirection = b.BetDirection,
                                 PL = b.PL,
+                                SettledAt = b.SettledAt,
                                 IsViewed = b.IsPLViewed?? false
                             }).FirstOrDefault();
 
 
             if (lastQuizBet == null)
             {
-                return dto;
+                return lastQuizBet;
             }
-
-            dto.OpenAt = lastQuizBet.OpenAt;
-            dto.ProdID = lastQuizBet.ProdID;
-            dto.TradeDay = lastQuizBet.TradeDay;
-            dto.Result = lastQuizBet.Result;
-            dto.BetAmount = lastQuizBet.BetAmount ?? 0;
-            dto.BetDirection = lastQuizBet.BetDirection;
-            dto.PL = lastQuizBet.PL ?? 0;
-            dto.IsViewed = lastQuizBet.IsViewed;
 
             if(!lastQuizBet.IsViewed.HasValue || lastQuizBet.IsViewed == false)
             {
@@ -410,15 +403,15 @@ namespace CFD_API.Controllers
              
             db.SaveChanges();
 
-            return dto;
+            return lastQuizBet;
         }
 
         /// <summary>
-        /// 对下一个竞猜活动下注
+        /// 对下当前竞猜活动下注
         /// </summary>
         [HttpPost]
         [Route("{userID}/bet")]
-        public ResultDTO BetOnNext(int userID, QuizBetDTO form)
+        public ResultDTO BetOnCurrent(int userID, QuizBetDTO form)
         {
             var nextQuiz = db.Quizzes.OrderBy(q => q.OpenAt).FirstOrDefault(q => q.OpenAt < DateTime.Now && q.ClosedAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
 
@@ -431,6 +424,7 @@ namespace CFD_API.Controllers
             {
                 BetAmount = form.BetAmount,
                 BetDirection = form.BetDirection,
+                PL = -form.BetAmount,
                 CreatedAt = DateTime.Now,
                 QuizID = nextQuiz.ID,
                 UserID = userID

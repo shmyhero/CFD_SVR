@@ -50,12 +50,15 @@ namespace CFD_API.DTO
         public DateTime? OpenAt { get; set; }
         public DateTime? ClosedAt { get; set; }
         public DateTime? TradeDay { get; set; }
+        public DateTime? SettledAt { get; set; }
+
         public string Result { get; set; }
         public decimal? LongAmount { get; set; }
+        public decimal? LongBenefit { get; set; }
         public int? LongPersons { get; set; }
 
         public decimal? ShortAmount { get; set; }
-
+        public decimal? ShortBenefit { get; set; }
         public int? ShortPersons { get; set; }
 
         public decimal? AvailableBonus { get; set; }

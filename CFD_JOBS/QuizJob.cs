@@ -70,7 +70,7 @@ namespace CFD_JOBS
                                     {
                                         if(result.Close > result.Open) //涨
                                         {
-                                            //如果有人买涨，就把买跌人的钱平分给买涨的人
+                                            //如果有人买涨，就把本金+买跌人的钱平分给买涨的人
                                             //如果没人买涨，不做任何操作
                                             if (db.QuizBets.Any(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long"))
                                             {
@@ -79,17 +79,14 @@ namespace CFD_JOBS
 
                                                 //把买跌的人的交易金平分给所有买涨的人
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long")
-                                                    .Update(qb => new QuizBet() { PL = shortAmount ?? 0 / longPersons });
-                                                //买跌的人PL=-BetAmount
-                                                db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short")
-                                                    .Update(qb => new QuizBet() { PL = -qb.BetAmount });
+                                                    .Update(qb => new QuizBet() { PL = qb.BetAmount + (shortAmount ?? 0 / longPersons), SettledAt = DateTime.Now });
                                             }
-
+                                           
                                             quiz.Result = "long";
                                         }
                                         else//跌
                                         {
-                                            //如果有人买跌，就把买涨人的钱平分给买跌的人
+                                            //如果有人买跌，就把本金+买涨人的钱平分给买跌的人
                                             //如果没人买跌，不做任何操作
                                             if (db.QuizBets.Any(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short"))
                                             {
@@ -98,10 +95,7 @@ namespace CFD_JOBS
 
                                                 //把买跌的人的交易金平分给所有买涨的人
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short")
-                                                    .Update(qb => new QuizBet() { PL = longAmount ?? 0 / shortPersons });
-                                                //买跌的人PL=-BetAmount
-                                                db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long")
-                                                    .Update(qb => new QuizBet() { PL = -qb.BetAmount });
+                                                    .Update(qb => new QuizBet() { PL = qb.BetAmount + (longAmount ?? 0 / shortPersons), SettledAt = DateTime.Now });
                                             }
 
                                             quiz.Result = "short";
