@@ -39,13 +39,15 @@ namespace CFD_API.Controllers
                 return result;
             }
 
-            form.OpenAt = form.OpenAt ?? DateTime.Now.Date.AddDays(1);
-            form.ClosedAt = form.ClosedAt ?? DateTime.Now.Date.AddDays(2).AddSeconds(-1);
-
             //周五就加两天，确保周五、六、日只有一个竞猜活动
             if(form.OpenAt.Value.DayOfWeek == DayOfWeek.Friday)
             {
-                form.ClosedAt = form.ClosedAt.Value.AddDays(2);
+                //开始时间是周五的话，结束时间必须是周日
+                while(form.ClosedAt.Value.DayOfWeek == DayOfWeek.Friday||
+                    form.ClosedAt.Value.DayOfWeek == DayOfWeek.Saturday)
+                {
+                    form.ClosedAt = form.ClosedAt.Value.AddDays(1);
+                }
             }
 
             DateTime openTime = form.OpenAt.Value;
@@ -143,14 +145,25 @@ namespace CFD_API.Controllers
                 return new ResultDTO(false) { message = "缺少产品ID" };
             }
 
+            if(!form.OpenAt.HasValue || !form.ClosedAt.HasValue)
+            {
+                return new ResultDTO(false) { message = "缺少开始时间/结束时间" };
+            }
+
             if (form.OpenAt < DateTime.Now)
             {
                 return new ResultDTO(false) { message = "竞猜开始时间不能小于当前时间" };
             }
 
-            if (form.ClosedAt <= form.OpenAt.Value.Date)
+            if (form.ClosedAt <= form.OpenAt)
             {
                 return new ResultDTO(false) { message = "竞猜结束时间必须大于开始时间" };
+            }
+
+            if(form.OpenAt.Value.DayOfWeek == DayOfWeek.Saturday ||
+                form.OpenAt.Value.DayOfWeek== DayOfWeek.Sunday)
+            {
+                return new ResultDTO(false) { message = "竞猜开始时间不能是周六、日" };
             }
 
             //if (form.ClosedAt.Value.Date != form.OpenAt.Value.Date)
@@ -280,7 +293,7 @@ namespace CFD_API.Controllers
         {
             var dto = new QuizDTO();
             DateTime today = DateTime.Now.Date;
-            var lastQuiz = db.Quizzes.OrderByDescending(q => q.OpenAt).FirstOrDefault(q => q.TradeDay < today);
+            var lastQuiz = db.Quizzes.OrderByDescending(q => q.OpenAt).FirstOrDefault(q => q.SettledAt.HasValue);
             if(lastQuiz != null)
             {
                 dto.ID = lastQuiz.ID;
@@ -368,7 +381,7 @@ namespace CFD_API.Controllers
             //找出该用户参与过的最后一个竞猜活动
             var lastQuizBet = (from b in db.QuizBets
                             join q in db.Quizzes on b.QuizID equals q.ID
-                            where q.OpenAt < DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value && b.UserID == userID
+                            where q.SettledAt.HasValue && b.SettledAt.HasValue && q.OpenAt < DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value && b.UserID == userID
                             orderby b.QuizID descending
                             select new QuizBetDTO()
                             {

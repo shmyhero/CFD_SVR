@@ -66,6 +66,7 @@ namespace CFD_JOBS
                                     //var result = klines.GetRange(beginIndex < 0 ? 0 : beginIndex, klines.Count - 1)
                                     //    .FirstOrDefault(k=>k.Time.Date == quiz.TradeDay.Value.Date);
                                     var result = klines.FirstOrDefault(k => k.Time.Date == quiz.TradeDay.Value.Date);
+                                    quiz.SettledAt = DateTime.Now;
                                     if (result != null)
                                     {
                                         if(result.Close > result.Open) //涨
@@ -80,6 +81,10 @@ namespace CFD_JOBS
                                                 //把买跌的人的交易金平分给所有买涨的人
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long")
                                                     .Update(qb => new QuizBet() { PL = qb.BetAmount + (shortAmount ?? 0 / longPersons), SettledAt = DateTime.Now });
+
+                                                //买跌的人PL清零
+                                                db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short")
+                                                    .Update(qb => new QuizBet() { PL = 0, SettledAt = DateTime.Now });
                                             }
                                            
                                             quiz.Result = "long";
@@ -96,6 +101,10 @@ namespace CFD_JOBS
                                                 //把买跌的人的交易金平分给所有买涨的人
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short")
                                                     .Update(qb => new QuizBet() { PL = qb.BetAmount + (longAmount ?? 0 / shortPersons), SettledAt = DateTime.Now });
+
+                                                //买涨的人PL清零
+                                                db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long")
+                                                    .Update(qb => new QuizBet() { PL = 0, SettledAt = DateTime.Now });
                                             }
 
                                             quiz.Result = "short";

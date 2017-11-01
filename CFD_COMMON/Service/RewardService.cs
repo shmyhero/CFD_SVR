@@ -436,12 +436,22 @@ namespace CFD_COMMON.Service
                 demoProfit = demoRewards.Sum(o => o.Amount);
             }
 
-            //只取大于0的
+            //竞猜活动
             decimal quizReward = 0;
-            var quizRewards = db.QuizBets.Where(o => o.UserID == userID && o.PL > 0);
+            var quizRewards = db.QuizBets.Where(o => o.UserID == userID).ToList();
             if (!(quizRewards == null || quizRewards.Count() == 0))
             {
-                quizReward = quizRewards.Select(o => o.PL).DefaultIfEmpty(0).Sum(o=>o.Value);
+                quizRewards.ForEach(q => {
+                    if(!q.SettledAt.HasValue) //还未计算竞猜结果，也要扣除交易金
+                    {
+                        quizReward += q.PL?? 0;
+                    }
+                    else //竞猜有结果的话，PL要减去BetAmount
+                    {
+                        quizReward += (q.PL ?? 0 - q.BetAmount?? 0);
+                    }
+
+                });
             }
 
             return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward, quizReward = quizReward };

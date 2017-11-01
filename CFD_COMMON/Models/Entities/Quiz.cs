@@ -33,6 +33,10 @@ namespace CFD_COMMON.Models.Entities
         /// 竞猜活动对应的交易日
         /// </summary>
         public DateTime? TradeDay { get; set; }
+        /// <summary>
+        /// 竞猜结果处理时间
+        /// </summary>
+        public DateTime? SettledAt { get; set; }
         public string Result { get; set; }
         /// <summary>
         /// 竞猜活动的创建时间
