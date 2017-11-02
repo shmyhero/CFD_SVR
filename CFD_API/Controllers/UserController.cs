@@ -304,6 +304,7 @@ namespace CFD_API.Controllers
             userDto.liveEmail = db.UserInfos.FirstOrDefault(o => o.UserId == UserId)?.Email;
             userDto.bankCardStatus = user.BankCardStatus;
             userDto.showData = user.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA;
+            userDto.showOpenCloseData = user.ShowOpenCloseData ?? CFDUsers.DEFAULT_SHOW_DATA;
             userDto.firstDayClicked = user.FirstDayClicked.HasValue ? user.FirstDayClicked.Value : false;
             userDto.firstDayRewarded = user.FirstDayRewarded.HasValue ? user.FirstDayRewarded.Value : false;
             userDto.promotionCode = user.PromotionCode;
@@ -1185,6 +1186,49 @@ namespace CFD_API.Controllers
             #endregion
           
             return plReports;
+        }
+
+        /// <summary>
+        /// 达人榜首页盈亏分布
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{userID}/live/plSpread")]
+        [BasicAuth]
+        public List<PLSpreadDTO> GetOthersPLSpread(int userID)
+        {
+            List<PLSpreadDTO> spreads = new List<PLSpreadDTO>();
+
+            var user = db.Users.FirstOrDefault(o => o.Id == userID);
+            if(!user.ShowData ??CFDUsers.DEFAULT_SHOW_DATA)
+            {
+                return spreads;
+            }
+            //找出平仓笔数最多的三个产品
+            var prodIDs = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue)
+                .GroupBy(n => n.SecurityId).Select(s=>new {
+                    prodID = s.Key,
+                    count = s.Count(),
+                }).OrderByDescending(s=>s.count).Take(3).ToList();
+
+            prodIDs.ForEach(p => {
+                //平均收益
+                var pl = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Sum(n => n.PL);
+                var investment = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Sum(n => n.InvestUSD);
+                //胜率
+                decimal wins = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID && n.PL > 0).Count();
+               // var totals = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Count();
+
+                spreads.Add(new PLSpreadDTO() {
+                    name = Translator.GetCName(WebCache.Live.ProdDefs.FirstOrDefault(prod => prod.Id == p.prodID).Name),
+                     pl = pl.Value / investment.Value,
+                     rate = wins / p.count
+                });
+
+            });
+
+            return spreads;
         }
 
         [HttpGet]
@@ -2820,7 +2864,8 @@ namespace CFD_API.Controllers
         {
             var user = GetUser();
             user.ShowData = form.showData;
-
+            //如果showData为false，则showOpenCloseData一定为False
+            user.ShowOpenCloseData = form.showData? form.showOpenCloseData:false;
             db.SaveChanges();
 
             return new ResultDTO(true);

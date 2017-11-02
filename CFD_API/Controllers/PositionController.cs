@@ -197,7 +197,7 @@ namespace CFD_API.Controllers
             if (userID != UserId) //not myself
             {
                 var user = db.Users.FirstOrDefault(o => o.Id == userID);
-                if (user == null || !(user.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA))
+                if (user == null || !(user.ShowOpenCloseData ?? CFDUsers.DEFAULT_SHOW_DATA))
                     return new List<SimplePositionDTO>();
             }
 
@@ -910,7 +910,7 @@ namespace CFD_API.Controllers
             if (userID != UserId) //not myself
             {
                 var user = db.Users.FirstOrDefault(o => o.Id == userID);
-                if (user == null || !(user.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA))
+                if (user == null || !(user.ShowOpenCloseData ?? CFDUsers.DEFAULT_SHOW_DATA))
                     return new List<SimplePositionDTO>();
             }
 

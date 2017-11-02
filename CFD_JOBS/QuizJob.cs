@@ -48,8 +48,10 @@ namespace CFD_JOBS
                             //找到当天交易日对应的竞猜活动
                             DateTime today = DateTime.Now.Date;
                             var quiz = db.Quizzes.FirstOrDefault(q => q.TradeDay.HasValue && q.TradeDay.Value == today);
-                            if(quiz != null)
+                            
+                            if (quiz != null)
                             {
+                                Console.WriteLine("Quiz found with trade day:" + quiz.TradeDay);
                                 using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(true).GetClient())
                                 {
                                     var redisKLineClient = redisClient.As<KLine>();
@@ -113,6 +115,10 @@ namespace CFD_JOBS
 
                                     db.SaveChanges();
                                 }
+                            }
+                            else
+                            {
+                                Console.WriteLine("no quiz found");
                             }
                         }
                     }

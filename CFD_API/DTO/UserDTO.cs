@@ -37,6 +37,7 @@ namespace CFD_API.DTO
         public bool autoCloseAlert_Live { get; set; }
         public string bankCardStatus { get; set; }
         public bool showData { get; set; }
+        public bool showOpenCloseData { get; set; }
         /// <summary>
         /// 首日入金奖励的消息是否点过
         /// </summary>
@@ -260,6 +261,22 @@ namespace CFD_API.DTO
         public string name { get; set; }
         public decimal invest { get; set; }
         public decimal pl { get; set; }
+    }
+
+    public class PLSpreadDTO
+    {
+        /// <summary>
+        /// 商品名
+        /// </summary>
+        public string name { get; set; }
+        /// <summary>
+        /// 平均盈利
+        /// </summary>
+        public decimal pl { get; set; }
+        /// <summary>
+        /// 胜率
+        /// </summary>
+        public decimal rate { get; set; }
     }
 
     public class StockAlertDTO
@@ -750,6 +767,10 @@ namespace CFD_API.DTO
         /// 是否显示用户数据
         /// </summary>
         public bool showData { get; set; }
+        /// <summary>
+        /// 显示持仓和平仓数据
+        /// </summary>
+        public bool showOpenCloseData { get; set; }
     }
 
     public struct DemoUserDTO

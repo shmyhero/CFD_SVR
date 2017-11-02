@@ -110,7 +110,11 @@
         /// show data in Profit List
         /// </summary>
         public bool? ShowData { get; set; }
-
+        /// <summary>
+        /// 显示持仓平仓数据，如果ShowData为False，此处必定为False
+        /// 相当于ShowData的子开关
+        /// </summary>
+        public bool? ShowOpenCloseData { get; set; }
         public DateTime? AyLiveApproveAt { get; set; }
 
         /// <summary>

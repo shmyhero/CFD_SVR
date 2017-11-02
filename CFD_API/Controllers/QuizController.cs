@@ -90,7 +90,12 @@ namespace CFD_API.Controllers
             //周五就加两天，确保周五、六、日只有一个竞猜活动
             if (form.OpenAt.Value.DayOfWeek == DayOfWeek.Friday)
             {
-                form.ClosedAt = form.ClosedAt.Value.AddDays(2);
+                //开始时间是周五的话，结束时间必须是周日
+                while (form.ClosedAt.Value.DayOfWeek == DayOfWeek.Friday ||
+                    form.ClosedAt.Value.DayOfWeek == DayOfWeek.Saturday)
+                {
+                    form.ClosedAt = form.ClosedAt.Value.AddDays(1);
+                }
             }
 
             var result = VerifyQuiz(form);
@@ -357,7 +362,7 @@ namespace CFD_API.Controllers
             var paid = db.RewardTransfers.Where(o => o.UserID == userID).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
             dto.AvailableBonus = totalReward.GetTotal() - paid;
 
-            var myBet = db.QuizBets.FirstOrDefault(q => q.ID == nextQuiz.ID && q.UserID == userID);
+            var myBet = db.QuizBets.FirstOrDefault(q => q.QuizID == nextQuiz.ID && q.UserID == userID);
             if(myBet!=null)
             {
                 dto.BetAmount = myBet.BetAmount?? 0;
