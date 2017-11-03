@@ -274,14 +274,10 @@ namespace CFD_JOBS
 
     public class ElmahLogForJOB
     {
-        public static ConcurrentDictionary<string,DateTime> ErrorMailExMessages = new ConcurrentDictionary<string, DateTime>();  
+        public static ConcurrentDictionary<string, DateTime> ErrorMailExMessages = new ConcurrentDictionary<string, DateTime>();
 
         public static void Log(Exception e, bool sendMail = true)
         {
-            ErrorLog errorLog = ErrorLog.GetDefault(null);
-            errorLog.ApplicationName = "/LM/W3SVC/1273337584/ROOT";
-            errorLog.Log(new Error(e));
-
             if (sendMail)
             {
                 DateTime dtLastSent = DateTime.MinValue;
@@ -291,6 +287,10 @@ namespace CFD_JOBS
                 {
                     try
                     {
+                        ErrorLog errorLog = ErrorLog.GetDefault(null);
+                        errorLog.ApplicationName = "/LM/W3SVC/1273337584/ROOT";
+                        errorLog.Log(new Error(e));
+
                         var mail = new ElmahMailForJOB();
                         mail.Log(new Error(e));
                     }
