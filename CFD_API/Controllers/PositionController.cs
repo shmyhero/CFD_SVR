@@ -1710,6 +1710,7 @@ namespace CFD_API.Controllers
             result.picUrl = user.PicUrl;
             result.isFollowing = isFollowing;
             result.showData = user.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA;
+            result.showOpenCloseData = user.ShowOpenCloseData ?? CFDUsers.DEFAULT_SHOW_DATA;
             result.rankDescription = string.Empty; //默认值，为了使返回的json包含该字段
             result.cards = new List<CardDTO>(); //默认值，为了使返回的json包含该字段
 

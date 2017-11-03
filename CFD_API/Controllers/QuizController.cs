@@ -355,7 +355,7 @@ namespace CFD_API.Controllers
             }
 
             dto.LongBenefit = dto.LongPersons == 0 ? 0 : dto.ShortAmount / dto.LongPersons;
-            dto.ShortAmount = dto.ShortPersons == 0 ? 0 : dto.LongAmount / dto.ShortPersons;
+            dto.ShortBenefit = dto.ShortPersons == 0 ? 0 : dto.LongAmount / dto.ShortPersons;
 
             RewardService service = new RewardService(db);
             var totalReward = service.GetTotalReward(userID);

@@ -106,7 +106,10 @@ namespace CFD_API.DTO
         /// 收益榜是否显示用户数据
         /// </summary>
         public bool showData { get; set; }
-
+        /// <summary>
+        /// 达人榜是否显示开仓平仓
+        /// </summary>
+        public bool showOpenCloseData { get; set; }
         /// <summary>
         /// 平均杠杆
         /// </summary>
@@ -269,6 +272,11 @@ namespace CFD_API.DTO
         /// 商品名
         /// </summary>
         public string name { get; set; }
+        public string symbol { get; set; }
+        /// <summary>
+        /// 交易笔数
+        /// </summary>
+        public int count { get; set; }
         /// <summary>
         /// 平均盈利
         /// </summary>

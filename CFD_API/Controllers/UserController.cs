@@ -1218,10 +1218,13 @@ namespace CFD_API.Controllers
                 var investment = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Sum(n => n.InvestUSD);
                 //胜率
                 decimal wins = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID && n.PL > 0).Count();
-               // var totals = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Count();
+                // var totals = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Count();
 
+                var prodDef = WebCache.Live.ProdDefs.FirstOrDefault(prod => prod.Id == p.prodID);
                 spreads.Add(new PLSpreadDTO() {
-                    name = Translator.GetCName(WebCache.Live.ProdDefs.FirstOrDefault(prod => prod.Id == p.prodID).Name),
+                    name = Translator.GetCName(prodDef.Name),
+                    symbol = prodDef.Symbol,
+                    count = p.count,
                      pl = pl.Value / investment.Value,
                      rate = wins / p.count
                 });
