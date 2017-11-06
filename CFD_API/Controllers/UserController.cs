@@ -308,7 +308,7 @@ namespace CFD_API.Controllers
             userDto.firstDayClicked = user.FirstDayClicked.HasValue ? user.FirstDayClicked.Value : false;
             userDto.firstDayRewarded = user.FirstDayRewarded.HasValue ? user.FirstDayRewarded.Value : false;
             userDto.promotionCode = user.PromotionCode;
-
+            userDto.rank = user.LiveRank?? 0;
             bool canMobileDeposit = true;
             Misc mobileDeposit = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "MobileDeposit");
             if (mobileDeposit != null)
