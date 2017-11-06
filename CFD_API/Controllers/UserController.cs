@@ -1206,7 +1206,7 @@ namespace CFD_API.Controllers
                 return spreads;
             }
             //找出平仓笔数最多的三个产品
-            var prodIDs = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue)
+            var prodIDs = db.NewPositionHistory_live.Where(n => n.UserId == userID && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue)
                 .GroupBy(n => n.SecurityId).Select(s=>new {
                     prodID = s.Key,
                     count = s.Count(),
@@ -1214,10 +1214,10 @@ namespace CFD_API.Controllers
 
             prodIDs.ForEach(p => {
                 //平均收益
-                var pl = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Sum(n => n.PL);
-                var investment = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Sum(n => n.InvestUSD);
+                var pl = db.NewPositionHistory_live.Where(n => n.UserId == userID && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Sum(n => n.PL);
+                var investment = db.NewPositionHistory_live.Where(n => n.UserId == userID && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Sum(n => n.InvestUSD);
                 //胜率
-                decimal wins = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID && n.PL > 0).Count();
+                decimal wins = db.NewPositionHistory_live.Where(n => n.UserId == userID && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID && n.PL > 0).Count();
                 // var totals = db.NewPositionHistory_live.Where(n => n.UserId == UserId && n.InvestUSD.HasValue && n.PL.HasValue && n.ClosedAt.HasValue && n.SecurityId == p.prodID).Count();
 
                 var prodDef = WebCache.Live.ProdDefs.FirstOrDefault(prod => prod.Id == p.prodID);
