@@ -71,18 +71,22 @@ namespace CFD_JOBS
                                     quiz.SettledAt = DateTime.Now;
                                     if (result != null)
                                     {
-                                        if(result.Close > result.Open) //涨
+                                        decimal shortAmount = db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short").Select(qb=>qb.BetAmount).DefaultIfEmpty(0).Sum().Value;
+                                        decimal longAmount = db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long").Select(qb => qb.BetAmount).DefaultIfEmpty(0).Sum().Value;
+
+                                        if (result.Close > result.Open) //涨
                                         {
                                             //如果有人买涨，就把本金+买跌人的钱平分给买涨的人
                                             //如果没人买涨，不做任何操作
                                             if (db.QuizBets.Any(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long"))
                                             {
-                                                decimal? shortAmount = db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short").Sum(qb => qb.BetAmount);
+                                                
                                                 int longPersons = db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long").Count();
 
+                                                decimal rate = (longAmount + shortAmount) / longAmount;
                                                 //把买跌的人的交易金平分给所有买涨的人
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long")
-                                                    .Update(qb => new QuizBet() { PL = qb.BetAmount + (shortAmount ?? 0 / longPersons), SettledAt = DateTime.Now });
+                                                    .Update(qb => new QuizBet() { PL = qb.BetAmount * rate, SettledAt = DateTime.Now });
 
                                                 //买跌的人PL清零
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short")
@@ -97,12 +101,13 @@ namespace CFD_JOBS
                                             //如果没人买跌，不做任何操作
                                             if (db.QuizBets.Any(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short"))
                                             {
-                                                decimal? longAmount = db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long").Sum(qb => qb.BetAmount);
+                                                
                                                 int shortPersons = db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short").Count();
 
+                                                decimal rate = (longAmount + shortAmount) / shortAmount;
                                                 //把买跌的人的交易金平分给所有买涨的人
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short")
-                                                    .Update(qb => new QuizBet() { PL = qb.BetAmount + (longAmount ?? 0 / shortPersons), SettledAt = DateTime.Now });
+                                                    .Update(qb => new QuizBet() { PL = qb.BetAmount * rate, SettledAt = DateTime.Now });
 
                                                 //买涨的人PL清零
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long")
