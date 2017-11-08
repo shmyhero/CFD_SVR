@@ -238,7 +238,11 @@ namespace CFD_API.Controllers
                 totalReward.message = depositLimitMessage;
                 totalReward.canTransfer = false;
             }
-            
+
+            //竞猜盈利部分统计
+            decimal? quizProfit = db.QuizBets.Where(qb => qb.UserID == UserId && qb.PL > 0).Select(qb => qb.PL - qb.BetAmount).DefaultIfEmpty(0).Sum();
+            totalReward.quiz = quizProfit ?? 0;
+
             return totalReward;
         }
 

@@ -397,6 +397,10 @@ namespace CFD_API.DTO
         /// canTansfer为false时，显示原因信息
         /// </summary>
         public string message { get; set; }
+        /// <summary>
+        /// 竞猜活动收益金额(去除本金)
+        /// </summary>
+        public decimal quiz { get; set; }
     }
 
     public class MessageDTO {
