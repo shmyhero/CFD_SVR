@@ -6,6 +6,7 @@ using CFD_COMMON.Utils;
 using EntityFramework.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -47,7 +48,7 @@ namespace CFD_JOBS
                         {
                             //找到当天交易日对应的竞猜活动
                             DateTime today = DateTime.Now.Date;
-                            var quiz = db.Quizzes.FirstOrDefault(q => q.TradeDay.HasValue && q.TradeDay.Value == today);
+                            var quiz = db.Quizzes.FirstOrDefault(q => q.TradeDay.HasValue && q.TradeDay.Value == today && q.ExpiredAt == SqlDateTime.MaxValue.Value);
                             
                             if (quiz != null)
                             {

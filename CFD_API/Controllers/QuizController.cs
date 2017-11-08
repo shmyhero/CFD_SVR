@@ -54,7 +54,7 @@ namespace CFD_API.Controllers
             DateTime closeTime = form.ClosedAt.Value;
 
             //判断当天是否已经有竞猜
-            bool hasQuiz = db.Quizzes.Any(q => q.OpenAt.HasValue && q.OpenAt.Value > openTime && q.OpenAt.Value < closeTime && q.ExpiredAt == SqlDateTime.MaxValue.Value);
+            bool hasQuiz = db.Quizzes.Any(q => q.OpenAt.HasValue && q.OpenAt.Value >= openTime && q.OpenAt.Value < closeTime && q.ExpiredAt == SqlDateTime.MaxValue.Value);
             if(hasQuiz)
             {
                 return new ResultDTO(false) { message = "该天已经有竞猜活动" };
