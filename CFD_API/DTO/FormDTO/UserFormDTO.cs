@@ -60,4 +60,15 @@ namespace CFD_API.DTO.Form
         public string phone;
         public string verifyCode;
     }
+
+    public class ChannelUserDTO
+    {
+        public int channelID;
+        public string channelName;
+        public DateTime createdAt;
+        /// <summary>
+        /// 注册量
+        /// </summary>
+        public int registerCount;
+    }
 }

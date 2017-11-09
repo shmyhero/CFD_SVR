@@ -823,6 +823,10 @@ namespace CFD_API.DTO
         /// 渠道
         /// </summary>
         public string channel { get; set; }
+        /// <summary>
+        /// 是否入过金
+        /// </summary>
+        public bool isDeposited { get; set; }
     }
 
     public struct UserRewardDTO

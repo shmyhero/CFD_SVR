@@ -4,6 +4,7 @@ using CFD_API.DTO;
 using CFD_API.DTO.Form;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
+using CFD_COMMON.Service;
 using CFD_COMMON.Utils;
 using Newtonsoft.Json.Linq;
 using ServiceStack.Redis;
@@ -136,6 +137,27 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("channel/statistics")]
+        [AdminAuth]
+        public List<ChannelUserDTO> GetChannelStatistics()
+        {
+            var channelUsers = (from c in db.Channels
+                                join r in db.RewardPhoneHistorys
+                                on c.ChannelID equals r.ChannelID
+                                where c.ExpiredAt == SqlDateTime.MaxValue.Value
+                                group new { c.CreatedAt, c.ChannelName, r.ID, r.Phone } by c.ChannelID into g
+                                select new ChannelUserDTO()
+                                {
+                                    channelID = g.Key,
+                                     channelName = g.FirstOrDefault().ChannelName,
+                                      createdAt = g.FirstOrDefault().CreatedAt?? DateTime.MinValue,
+                                       registerCount = g.Count()
+                                }).ToList();
+
+            return channelUsers;
+        }
+
+        [HttpGet]
         [Route("demouser")]
         [AdminAuth]
         /// <summary>
@@ -208,7 +230,7 @@ namespace CFD_API.Controllers
                         dto.channel = referee.Nickname;
                     }
                 }
-
+                dto.isDeposited = db.AyondoTransferHistory_Live.Any(CFD_COMMON.Utils.Transfer.IsDeposit(u.AyLiveAccountId));
 
                 result.Add(dto);
             });
@@ -269,47 +291,10 @@ namespace CFD_API.Controllers
 
         private Tuple<decimal, RewardDTO> GetTotalReward(int userID)
         {
-            //reward for daily sign
-            decimal totalDailySignReward = db.DailySigns
-                .Where(o => o.UserId == userID && !o.IsPaid.Value)
-                .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
-
-            //reward for daily demo trasaction
-            var totalDemoTransactionReward = db.DailyTransactions
-                .Where(o => o.UserId == userID && !o.IsPaid.Value)
-                .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
-
-            var totalCard = db.UserCards_Live.Where(o => (!o.IsPaid.HasValue || !o.IsPaid.Value) && o.UserId == userID).Select(o => o.Reward).DefaultIfEmpty(0).Sum();
-
-            //reward for demo register
-            var reward = db.DemoRegisterRewards.FirstOrDefault(o => o.UserId == userID);
-            decimal demoRegisterReward = reward == null ? 0 : reward.Amount;
-
-            //实盘账户注册交易金
-            var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => o.UserId == userID);
-            decimal liveRegisterReward = liveReward == null ? 0 : liveReward.Amount;
-
-            //推荐人奖励
-            var referRewardAmount = db.ReferRewards.Where(o => o.UserID == userID).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
-
-            //首日入金交易金
-            decimal firstDepositReward = 0;
-            var depositRewards = db.DepositRewards.Where(o => o.UserId == userID);
-            if (!(depositRewards == null || depositRewards.Count() == 0))
-            {
-                firstDepositReward = depositRewards.Sum(o => o.Amount);
-            }
-
-            //模拟收益交易金
-            decimal demoProfit = 0;
-            var demoRewards = db.DemoProfitRewards.Where(o => o.UserId == userID);
-            if (!(demoRewards == null || demoRewards.Count() == 0))
-            {
-                demoProfit = demoRewards.Sum(o => o.Amount);
-            }
-
-            RewardDTO totalReward = new RewardDTO() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward };
-            return new Tuple<decimal, RewardDTO>(demoProfit + referRewardAmount + liveRegisterReward + demoRegisterReward + totalDailySignReward + totalCard.Value + totalDemoTransactionReward + firstDepositReward, totalReward) ;
+            RewardService service = new RewardService(db);
+            var rewardDetail = service.GetTotalReward(userID);
+            var rewardDTO = new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit, quizReward = rewardDetail.quizReward };
+            return new Tuple<decimal, RewardDTO>(rewardDetail.GetTotal(), rewardDTO);
         }
         
     }
