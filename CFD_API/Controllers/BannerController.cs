@@ -38,21 +38,32 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [Route("banner2")]
         [HttpGet]
-        public IList<SimpleBannerDTO> GetBanners2()
+        public IList<SimpleBannerDTO> GetBanners2(string version = "")
         {
             int max = 5;
-            //get top banner
-            //var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (!item.BannerType.HasValue || item.BannerType.Value == 0 || item.BannerType.Value == 3) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
-            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
 
-            if (topBanners.Count < max)
+            List<Banner2> finalBanners = new List<Banner2>();
+
+            //如果带了version参数，就优先返回有相同版本信息的Banner
+            if(!string.IsNullOrEmpty(version))
             {
-                //var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (!item.BannerType.HasValue || item.BannerType.Value == 0 || item.BannerType.Value == 3) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
-                topBanners.AddRange(nonTopBanner);
+                var versionBanners = db.Banners2.Where(item => item.Expiration.HasValue && item.Version == version && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max).ToList();
+                finalBanners.AddRange(versionBanners);
             }
 
-            return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
+            if (finalBanners.Count < max)
+            {
+                var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(max - finalBanners.Count).ToList();
+                finalBanners.AddRange(topBanners);
+            }
+
+            if (finalBanners.Count < max)
+            {
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - finalBanners.Count).ToList();
+                finalBanners.AddRange(nonTopBanner);
+            }
+
+            return finalBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
         }
 
         /// <summary>
@@ -62,21 +73,30 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [Route("banner/all")]
         [HttpGet]
-        public IList<SimpleBannerDTO> GetBannersWithType()
+        public IList<SimpleBannerDTO> GetBannersWithType(string version="")
         {
             int max = 5;
-            //get top banner
-            //var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
-            var topBanners = db.Banners2.Where(item => item.IsTop == 1 && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(5).ToList();
-
-            if (topBanners.Count < max)
+            List<Banner2> finalBanners = new List<Banner2>();
+            //如果带了version参数，就优先返回有相同版本信息的Banner
+            if (!string.IsNullOrEmpty(version))
             {
-                //var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - topBanners.Count).ToList();
-                topBanners.AddRange(nonTopBanner);
+                var versionBanners = db.Banners2.Where(item => item.Version == version && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max).ToList();
+                finalBanners.AddRange(versionBanners);
             }
 
-            return topBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
+            if (finalBanners.Count < max)
+            {
+                var topBanners = db.Banners2.Where(item => item.IsTop == 1 && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(max - finalBanners.Count).ToList();
+                finalBanners.AddRange(topBanners);
+            }
+
+            if (finalBanners.Count < max)
+            {
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - finalBanners.Count).ToList();
+                finalBanners.AddRange(nonTopBanner);
+            }
+
+            return finalBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
         }
 
         /// <summary>

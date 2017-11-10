@@ -1,4 +1,4 @@
-namespace CFD_COMMON.Models.Entities
+﻿namespace CFD_COMMON.Models.Entities
 {
     using System;
     using System.Collections.Generic;
@@ -47,7 +47,11 @@ namespace CFD_COMMON.Models.Entities
         public DateTime? Expiration { get; set; }
 
         public string Color { get; set; }
-
+        /// <summary>
+        /// 模拟盘、实盘或全部
+        /// </summary>
         public string DisplayFor { get; set; }
+
+        public string Version { get; set; }
     }
 }
