@@ -449,7 +449,7 @@ namespace CFD_COMMON.Service
                     }
                     else //竞猜有结果的话，PL要减去BetAmount
                     {
-                        quizSettled += (q.PL ?? 0 - q.BetAmount?? 0);
+                        quizSettled += (q.PL ?? 0) - (q.BetAmount?? 0);
                     }
 
                 });
