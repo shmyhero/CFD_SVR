@@ -387,7 +387,7 @@ namespace CFD_API.Controllers
             var lastQuizBet = (from b in db.QuizBets
                             join q in db.Quizzes on b.QuizID equals q.ID
                             where q.SettledAt.HasValue && b.SettledAt.HasValue && q.OpenAt < DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value && b.UserID == userID
-                            orderby b.QuizID descending
+                            orderby q.TradeDay descending
                             select new QuizBetDTO()
                             {
                                 ID = b.ID,

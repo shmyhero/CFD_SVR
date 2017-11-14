@@ -93,6 +93,11 @@ namespace CFD_JOBS
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short")
                                                     .Update(qb => new QuizBet() { PL = 0, SettledAt = DateTime.Now });
                                             }
+                                            else//如果无人买涨，就把买跌人的钱还回去
+                                            {
+                                                db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short")
+                                                    .Update(qb => new QuizBet() { PL = qb.BetAmount, SettledAt = DateTime.Now });
+                                            }
                                            
                                             quiz.Result = "long";
                                         }
@@ -113,6 +118,11 @@ namespace CFD_JOBS
                                                 //买涨的人PL清零
                                                 db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long")
                                                     .Update(qb => new QuizBet() { PL = 0, SettledAt = DateTime.Now });
+                                            }
+                                            else//如果无人买跌，就把买涨人的钱还回去
+                                            {
+                                                db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long")
+                                                    .Update(qb => new QuizBet() { PL = qb.BetAmount, SettledAt = DateTime.Now });
                                             }
 
                                             quiz.Result = "short";
