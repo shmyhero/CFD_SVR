@@ -293,7 +293,7 @@ namespace CFD_API.Controllers
         {
             RewardService service = new RewardService(db);
             var rewardDetail = service.GetTotalReward(userID);
-            var rewardDTO = new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit, quizReward = rewardDetail.quizReward };
+            var rewardDTO = new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit, quiz = rewardDetail.quizSettled };
             return new Tuple<decimal, RewardDTO>(rewardDetail.GetTotal(), rewardDTO);
         }
         

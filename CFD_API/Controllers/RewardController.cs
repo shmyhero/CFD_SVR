@@ -185,7 +185,7 @@ namespace CFD_API.Controllers
             RewardService service = new RewardService(db);
             var rewardDetail = service.GetTotalReward(UserId);
 
-            return new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit, quizReward = rewardDetail.quizReward };
+            return new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit, quiz = rewardDetail.quizSettled };
         }
 
         [HttpGet]
@@ -222,7 +222,7 @@ namespace CFD_API.Controllers
                 depositLimitMessage = setting["depositLimitMessage"].Value<string>();
             }
             var totalReward = new TotalRewardDTO() {
-                total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction + reward.firstDeposit + reward.demoProfit + reward.quizReward,
+                total = reward.referralReward + reward.liveRegister + reward.demoRegister + reward.totalCard + reward.totalDailySign + reward.totalDemoTransaction + reward.firstDeposit + reward.demoProfit + reward.quiz,
                 paid = transfer,
                 canTransfer = true,
                 minTransfer = rewardTransferLimit,

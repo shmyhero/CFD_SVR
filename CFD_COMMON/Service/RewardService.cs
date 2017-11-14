@@ -437,24 +437,25 @@ namespace CFD_COMMON.Service
             }
 
             //竞猜活动
-            decimal quizReward = 0;
+            decimal quizSettled = 0;
+            decimal quizUnSettled = 0;
             var quizRewards = db.QuizBets.Where(o => o.UserID == userID).ToList();
             if (!(quizRewards == null || quizRewards.Count() == 0))
             {
                 quizRewards.ForEach(q => {
-                    if(!q.SettledAt.HasValue) //还未计算竞猜结果，也要扣除交易金
+                    if(!q.SettledAt.HasValue) //还出结果的竞猜
                     {
-                        quizReward += q.PL?? 0;
+                        quizUnSettled += q.PL?? 0;
                     }
                     else //竞猜有结果的话，PL要减去BetAmount
                     {
-                        quizReward += (q.PL ?? 0 - q.BetAmount?? 0);
+                        quizSettled += (q.PL ?? 0 - q.BetAmount?? 0);
                     }
 
                 });
             }
 
-            return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward, quizReward = quizReward };
+            return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward, quizSettled = quizSettled };
         }
     }
 
@@ -492,13 +493,16 @@ namespace CFD_COMMON.Service
         /// </summary>
         public decimal demoProfit { get; set; }
         /// <summary>
-        /// 竞猜活动
+        /// 已结算的竞猜活动
         /// </summary>
-        public decimal quizReward { get; set; }
+        public decimal quizSettled { get; set; }
+
+        //未结算的竞猜活动
+        public decimal quizUnSettled { get; set; }
 
         public decimal GetTotal()
         {
-            return totalDailySign + totalDemoTransaction + totalCard + demoRegister + liveRegister + referralReward + firstDeposit + demoProfit + quizReward;
+            return totalDailySign + totalDemoTransaction + totalCard + demoRegister + liveRegister + referralReward + firstDeposit + demoProfit + quizSettled + quizUnSettled;
         }
     }
 }

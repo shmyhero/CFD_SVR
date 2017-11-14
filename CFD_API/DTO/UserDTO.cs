@@ -373,7 +373,7 @@ namespace CFD_API.DTO
         /// <summary>
         /// 竞猜活动
         /// </summary>
-        public decimal quizReward { get; set; }
+        public decimal quiz { get; set; }
     }
 
     public class TotalRewardDTO
