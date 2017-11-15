@@ -183,7 +183,7 @@ namespace CFD_API.Controllers
         public SignupResultDTO signupByChannel(SignupByChannelDTO form)
         {
             var signupByPhoneResult = SignupByPhone(form);
-            if(signupByPhoneResult.success) //手机注册成功后，记录下渠道、活动
+            if(signupByPhoneResult.success && (signupByPhoneResult.isNewUser == true)) //手机注册成功后，并且是新用户，记录下渠道、活动
             {
                 var user = db.Users.FirstOrDefault(u => u.Id == signupByPhoneResult.userId);
                 if(user!=null)
