@@ -539,7 +539,8 @@ namespace CFD_API.Controllers
 
             //for single stocks and ..., reduct max lev so that gsmd will be much smaller than 100%
             var lev = prodDef.AssetClass == CFDGlobal.ASSET_CLASS_STOCK ||
-                      (prodDef.AssetClass == CFDGlobal.ASSET_CLASS_FX && prodDef.Symbol.StartsWith("XBT"))
+                      (//prodDef.AssetClass == CFDGlobal.ASSET_CLASS_FX &&
+                      prodDef.Symbol.StartsWith("XBT"))
                 ? (int) (prodDef.MaxLeverage/2)
                 : (int) prodDef.MaxLeverage;
 
