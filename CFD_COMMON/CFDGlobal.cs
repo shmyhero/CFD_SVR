@@ -41,6 +41,7 @@ namespace CFD_COMMON
 
         public static string ASSET_CLASS_STOCK = "Single Stocks";
         public static string ASSET_CLASS_FX = "Currencies";
+        public static string ASSET_CLASS_CRYPTO_FX = "Cryptocurrencies";
         public static string ASSET_CLASS_INDEX = "Stock Indices";
         public static string ASSET_CLASS_COMMODITY = "Commodities";
 

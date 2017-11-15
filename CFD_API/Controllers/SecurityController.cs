@@ -249,7 +249,11 @@ namespace CFD_API.Controllers
         {
             var activeProds = GetActiveProds(IsLiveUrl);
 
-            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_FX && !o.Name.EndsWith(" Outright")).ToList();
+            var prodDefs =
+                activeProds.Where(
+                    o =>
+                        o.AssetClass == CFDGlobal.ASSET_CLASS_FX && !o.Name.EndsWith(" Outright") ||
+                        o.AssetClass == CFDGlobal.ASSET_CLASS_CRYPTO_FX).ToList();
 
             var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
@@ -539,7 +543,8 @@ namespace CFD_API.Controllers
 
             //for single stocks and ..., reduct max lev so that gsmd will be much smaller than 100%
             var lev = prodDef.AssetClass == CFDGlobal.ASSET_CLASS_STOCK ||
-                      (prodDef.AssetClass == CFDGlobal.ASSET_CLASS_FX && prodDef.Symbol.StartsWith("XBT"))
+                      (//prodDef.AssetClass == CFDGlobal.ASSET_CLASS_FX &&
+                      prodDef.Symbol.StartsWith("XBT"))
                 ? (int) (prodDef.MaxLeverage/2)
                 : (int) prodDef.MaxLeverage;
 
