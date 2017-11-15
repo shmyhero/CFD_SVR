@@ -249,7 +249,11 @@ namespace CFD_API.Controllers
         {
             var activeProds = GetActiveProds(IsLiveUrl);
 
-            var prodDefs = activeProds.Where(o => o.AssetClass == CFDGlobal.ASSET_CLASS_FX && !o.Name.EndsWith(" Outright")).ToList();
+            var prodDefs =
+                activeProds.Where(
+                    o =>
+                        o.AssetClass == CFDGlobal.ASSET_CLASS_FX && !o.Name.EndsWith(" Outright") ||
+                        o.AssetClass == CFDGlobal.ASSET_CLASS_CRYPTO_FX).ToList();
 
             var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
