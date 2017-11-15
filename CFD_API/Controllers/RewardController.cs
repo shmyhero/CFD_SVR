@@ -197,8 +197,8 @@ namespace CFD_API.Controllers
             var reward = GetTotalUnpaidReward();
             //所有已经被转的交易金
             var transfer = db.RewardTransfers.Where(o => o.UserID == UserId).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
-            //小于0的竞猜收益作为支出
-            transfer += db.QuizBets.Where(o => o.UserID == UserId && o.PL < 0).Select(o => o.PL).DefaultIfEmpty(0).Sum(o => o.Value);
+            //未结算的竞猜结果作为支出
+            transfer += db.QuizBets.Where(o => o.UserID == UserId && !o.SettledAt.HasValue).Select(o => o.PL).DefaultIfEmpty(0).Sum(o => Math.Abs(o.Value));
 
 
             //用户累计入金
@@ -240,7 +240,7 @@ namespace CFD_API.Controllers
             }
 
             //竞猜盈利部分统计
-            decimal? quizProfit = db.QuizBets.Where(qb => qb.UserID == UserId && qb.PL > 0).Select(qb => qb.PL - qb.BetAmount).DefaultIfEmpty(0).Sum();
+            decimal? quizProfit = db.QuizBets.Where(qb => qb.UserID == UserId && qb.SettledAt.HasValue).Select(qb => qb.PL - qb.BetAmount).DefaultIfEmpty(0).Sum();
             totalReward.quiz = quizProfit ?? 0;
 
             return totalReward;
