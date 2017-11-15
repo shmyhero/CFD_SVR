@@ -145,5 +145,9 @@
         //[ForeignKey("Id")]
         //public virtual UserInfo UserInfo { get; set; }
 
+        //渠道ID
+        public int? ChannelID { get; set; }
+        //活动ID
+        public int? ActivityID { get; set; }
     }
 }

@@ -179,6 +179,25 @@ namespace CFD_API.Controllers
         }
 
         [HttpPost]
+        [ActionName("signupByChannel")]
+        public SignupResultDTO signupByChannel(SignupByChannelDTO form)
+        {
+            var signupByPhoneResult = SignupByPhone(form);
+            if(signupByPhoneResult.success) //手机注册成功后，记录下渠道、活动
+            {
+                var user = db.Users.FirstOrDefault(u => u.Id == signupByPhoneResult.userId);
+                if(user!=null)
+                {
+                    user.ChannelID = form.channelID;
+                    user.ActivityID = form.activityID;
+                    db.SaveChanges();
+                }
+            }
+
+            return signupByPhoneResult;
+        }
+
+        [HttpPost]
         //[RequireHttps]
         [ActionName("signupByWeChat")]
         public SignupResultDTO SignupByWeChat(SignupByWeChatFormDTO form)

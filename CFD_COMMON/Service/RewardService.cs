@@ -455,7 +455,7 @@ namespace CFD_COMMON.Service
                 });
             }
 
-            return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward, quizSettled = quizSettled };
+            return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward, quizSettled = quizSettled, quizUnSettled = quizUnSettled };
         }
     }
 

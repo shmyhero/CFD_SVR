@@ -8,6 +8,12 @@ namespace CFD_API.DTO.Form
         public string verifyCode { get; set; }
     }
 
+    public class SignupByChannelDTO : SignupByPhoneFormDTO
+    {
+        public int channelID { get; set; }
+        public int activityID { get; set; }
+    }
+
     public class SignupByWeChatFormDTO
     {
         public string openid { get; set; }
