@@ -304,6 +304,7 @@
     <Compile Include="Controllers\SecurityController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
+    <Compile Include="DTO\ActivityChannelDTO.cs" />
     <Compile Include="DTO\Ayondo\CreateAccountRequest.cs" />
     <Compile Include="DTO\CardDTO.cs" />
     <Compile Include="DTO\CompetitionDTO.cs" />

@@ -282,7 +282,7 @@ namespace CFD_API.Controllers
                 dto.cardReward = reward.Item2.totalCard;
                 dto.liveRegisterReward = reward.Item2.liveRegister;
                 dto.friendsReward = reward.Item2.referralReward;
-
+                dto.quizReward = reward.Item2.quiz;
                 result.Add(dto);
             });
 
@@ -297,5 +297,32 @@ namespace CFD_API.Controllers
             return new Tuple<decimal, RewardDTO>(rewardDetail.GetTotal(), rewardDTO);
         }
         
+        [HttpGet]
+        [Route("activity/all")]
+        [AdminAuth]
+        public List<ActivityChannelDTO> GetAllActivities()
+        {
+            var activities = db.Activities.Where(a => a.ExpiredAt == SqlDateTime.MaxValue.Value).ToList();
+            var channels = db.Channels.Where(c => c.ExpiredAt == SqlDateTime.MaxValue.Value).ToList();
+
+            var result = (from u in db.Users
+                                where u.ChannelID.HasValue && u.ActivityID.HasValue
+                                group u by new { u.ActivityID, u.ChannelID } into g
+                                select new ActivityChannelDTO()
+                                {
+                                    activityID = g.Key.ActivityID.Value,
+                                    //activityName = activities.FirstOrDefault(a=>a.ActivityID == g.Key.ActivityID.Value) == null? string.Empty : activities.FirstOrDefault(a => a.ActivityID == g.Key.ActivityID.Value).Name,
+                                    channelID = g.Key.ChannelID.Value,
+                                    //channelName = channels.FirstOrDefault(c => c.ChannelID == g.Key.ChannelID.Value) == null ? string.Empty : channels.FirstOrDefault(c => c.ChannelID == g.Key.ChannelID.Value).ChannelName,
+                                    personCount = g.Count()
+                                }).ToList();
+
+            result.ForEach(r => {
+                r.activityName = activities.FirstOrDefault(a => a.ActivityID == r.activityID) == null ? string.Empty : activities.FirstOrDefault(a => a.ActivityID == r.activityID).Name;
+                r.channelName = channels.FirstOrDefault(c => c.ChannelID == r.channelID) == null ? string.Empty : channels.FirstOrDefault(c => c.ChannelID == r.channelID).ChannelName;
+            });
+
+            return result;
+        }
     }
 }

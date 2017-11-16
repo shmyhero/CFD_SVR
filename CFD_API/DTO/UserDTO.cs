@@ -873,6 +873,10 @@ namespace CFD_API.DTO
         /// 邀请好友交易金
         /// </summary>
         public decimal friendsReward;
+        /// <summary>
+        /// 竞猜交易金
+        /// </summary>
+        public decimal quizReward;
     }
 
     public struct FirstLoginInfoDTO

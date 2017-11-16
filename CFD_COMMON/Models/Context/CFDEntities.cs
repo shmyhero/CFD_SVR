@@ -13,6 +13,7 @@ namespace CFD_COMMON.Models.Context
             : base("name=CFDEntities")
         {
         }
+        public virtual DbSet<Activity> Activities { get; set; }
         public virtual DbSet<Area> Areas { get; set; }
         public virtual DbSet<AyondoSecurity> AyondoSecurities { get; set; }
         public virtual DbSet<AyondoTradeHistory> AyondoTradeHistories { get; set; }
