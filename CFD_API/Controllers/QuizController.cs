@@ -312,8 +312,8 @@ namespace CFD_API.Controllers
                 dto.ProdName = lastQuiz.ProdName;
                 dto.ClosedAt = lastQuiz.ClosedAt;
                 dto.OpenAt = lastQuiz.OpenAt;
-                dto.OpenPrice = lastQuiz.OpenPrice,
-                dto.ClosePrice = lastQuiz.ClosePrice,
+                dto.OpenPrice = lastQuiz.OpenPrice;
+                dto.ClosePrice = lastQuiz.ClosePrice;
                 dto.TradeDay = lastQuiz.TradeDay;
                 dto.Result = lastQuiz.Result;
             }
