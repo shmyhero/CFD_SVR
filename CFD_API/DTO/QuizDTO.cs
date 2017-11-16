@@ -39,6 +39,10 @@ namespace CFD_API.DTO
         /// 买跌的人数
         /// </summary>
         public int? ShortPersons { get; set; }
+
+        public decimal? OpenPrice { get; set; }
+
+        public decimal? ClosePrice { get; set; }
     }
 
     public class QuizBetDTO
@@ -49,6 +53,8 @@ namespace CFD_API.DTO
         public string ProdName { get; set; }
         public DateTime? OpenAt { get; set; }
         public DateTime? ClosedAt { get; set; }
+        public decimal? OpenPrice { get; set; }
+        public decimal? ClosePrice { get; set; }
         public DateTime? TradeDay { get; set; }
         public DateTime? SettledAt { get; set; }
 

@@ -208,6 +208,8 @@ namespace CFD_API.Controllers
                 dto.ProdName = quiz.ProdName;
                 dto.OpenAt = quiz.OpenAt;
                 dto.ClosedAt = quiz.ClosedAt;
+                dto.OpenPrice = quiz.OpenPrice;
+                dto.ClosePrice = quiz.ClosePrice;
                 dto.TradeDay = quiz.TradeDay;
                 var longBets = quizBets.Where(q => q.BetDirection == "long");
                 if(longBets != null)
@@ -250,6 +252,8 @@ namespace CFD_API.Controllers
                         ProdName = q.ProdName,
                         ClosedAt = q.ClosedAt,
                         OpenAt = q.OpenAt,
+                        OpenPrice = q.OpenPrice,
+                        ClosePrice = q.ClosePrice,
                         TradeDay = q.TradeDay,
                         Result = q.Result
                     };
@@ -278,6 +282,8 @@ namespace CFD_API.Controllers
                         ProdName = q.ProdName,
                         ClosedAt = q.ClosedAt,
                         OpenAt = q.OpenAt,
+                        OpenPrice = q.OpenPrice,
+                        ClosePrice = q.ClosePrice,
                         TradeDay = q.TradeDay,
                         Result = q.Result
                     };
@@ -306,6 +312,8 @@ namespace CFD_API.Controllers
                 dto.ProdName = lastQuiz.ProdName;
                 dto.ClosedAt = lastQuiz.ClosedAt;
                 dto.OpenAt = lastQuiz.OpenAt;
+                dto.OpenPrice = lastQuiz.OpenPrice,
+                dto.ClosePrice = lastQuiz.ClosePrice,
                 dto.TradeDay = lastQuiz.TradeDay;
                 dto.Result = lastQuiz.Result;
             }
@@ -341,6 +349,7 @@ namespace CFD_API.Controllers
             dto.OpenAt = nextQuiz.OpenAt;
             dto.ClosedAt = nextQuiz.ClosedAt;
             dto.TradeDay = nextQuiz.TradeDay;
+            
             var longBets = quizBets.Where(q => q.BetDirection == "long");
             if (longBets != null)
             {
@@ -395,6 +404,8 @@ namespace CFD_API.Controllers
                                 TradeDay = q.TradeDay,
                                 Result = q.Result,
                                 OpenAt = q.OpenAt,
+                                OpenPrice = q.OpenPrice,
+                                ClosePrice = q.ClosePrice,
                                 ProdID = q.ProdID,
                                 ProdName = q.ProdName,
                                 BetAmount = b.BetAmount,
@@ -471,6 +482,8 @@ namespace CFD_API.Controllers
                                    TradeDay = q.TradeDay,
                                    Result = q.Result,
                                    OpenAt = q.OpenAt,
+                                   OpenPrice = q.OpenPrice,
+                                   ClosePrice = q.ClosePrice,
                                    ProdID = q.ProdID,
                                    ProdName = q.ProdName,
                                    BetAmount = b.BetAmount,
@@ -499,6 +512,8 @@ namespace CFD_API.Controllers
                                 TradeDay = q.TradeDay,
                                 Result = q.Result,
                                 OpenAt = q.OpenAt,
+                                OpenPrice = q.OpenPrice,
+                                ClosePrice = q.ClosePrice,
                                 ProdID = q.ProdID,
                                 ProdName = q.ProdName,
                                 BetAmount = b.BetAmount,

@@ -38,6 +38,8 @@ namespace CFD_COMMON.Models.Entities
         /// </summary>
         public DateTime? SettledAt { get; set; }
         public string Result { get; set; }
+        public decimal? OpenPrice { get; set; }
+        public decimal? ClosePrice { get; set; }
         /// <summary>
         /// 竞猜活动的创建时间
         /// </summary>
