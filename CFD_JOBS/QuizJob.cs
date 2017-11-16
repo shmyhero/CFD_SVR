@@ -45,13 +45,39 @@ namespace CFD_JOBS
                     if (start < jobTime && end >= jobTime)
                     {
                         using (var db = CFDEntities.Create())
-                        {
+                        {                            
                             //找到当天交易日对应的竞猜活动
                             DateTime today = DateTime.Now.Date;
                             var quiz = db.Quizzes.FirstOrDefault(q => q.TradeDay.HasValue && q.TradeDay.Value == today && q.ExpiredAt == SqlDateTime.MaxValue.Value);
                             
                             if (quiz != null)
                             {
+                                //两边都增加一些下注
+                                int amouont = new Random().Next(500, 1000);
+                                var quizBetShort = new QuizBet()
+                                {
+                                    BetAmount = amouont,
+                                    BetDirection = "short",
+                                    PL = amouont,
+                                    CreatedAt = DateTime.Now,
+                                    QuizID = quiz.ID,
+                                    UserID = 2031
+                                };
+
+                                var quizBetLong = new QuizBet()
+                                {
+                                    BetAmount = amouont,
+                                    BetDirection = "long",
+                                    PL = amouont,
+                                    CreatedAt = DateTime.Now,
+                                    QuizID = quiz.ID,
+                                    UserID = 2031
+                                };
+
+                                db.QuizBets.Add(quizBetShort);
+                                db.QuizBets.Add(quizBetLong);
+                                db.SaveChanges();
+
                                 Console.WriteLine("Quiz found with trade day:" + quiz.TradeDay);
                                 using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(true).GetClient())
                                 {
@@ -74,7 +100,8 @@ namespace CFD_JOBS
                                     {
                                         decimal shortAmount = db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "short").Select(qb=>qb.BetAmount).DefaultIfEmpty(0).Sum().Value;
                                         decimal longAmount = db.QuizBets.Where(qb => qb.QuizID == quiz.ID && qb.BetDirection == "long").Select(qb => qb.BetAmount).DefaultIfEmpty(0).Sum().Value;
-
+                                        quiz.OpenPrice = result.Open;
+                                        quiz.ClosePrice = result.Close;
                                         if (result.Close > result.Open) //涨
                                         {
                                             //如果有人买涨，就把本金+买跌人的钱平分给买涨的人
