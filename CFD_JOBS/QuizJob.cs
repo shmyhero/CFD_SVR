@@ -49,35 +49,40 @@ namespace CFD_JOBS
                             //找到当天交易日对应的竞猜活动
                             DateTime today = DateTime.Now.Date;
                             var quiz = db.Quizzes.FirstOrDefault(q => q.TradeDay.HasValue && q.TradeDay.Value == today && q.ExpiredAt == SqlDateTime.MaxValue.Value);
-                            
+
+                            //DateTime nextDay = today.AddDays(1);
+                            //var nextQuiz = db.Quizzes.FirstOrDefault(q => q.TradeDay.HasValue && q.TradeDay.Value == nextDay && q.ExpiredAt == SqlDateTime.MaxValue.Value);
+                            //if(nextQuiz != null)
+                            //{
+                            //    //给下一个竞猜活动加注
+                            //    int amouont = new Random().Next(500, 1000);
+                            //    var quizBetShort = new QuizBet()
+                            //    {
+                            //        BetAmount = amouont,
+                            //        BetDirection = "short",
+                            //        PL = amouont,
+                            //        CreatedAt = DateTime.Now,
+                            //        QuizID = nextQuiz.ID,
+                            //        UserID = 2031
+                            //    };
+
+                            //    var quizBetLong = new QuizBet()
+                            //    {
+                            //        BetAmount = amouont,
+                            //        BetDirection = "long",
+                            //        PL = amouont,
+                            //        CreatedAt = DateTime.Now,
+                            //        QuizID = nextQuiz.ID,
+                            //        UserID = 2031
+                            //    };
+
+                            //    db.QuizBets.Add(quizBetShort);
+                            //    db.QuizBets.Add(quizBetLong);
+                            //    db.SaveChanges();
+                            //}
+
                             if (quiz != null)
-                            {
-                                //两边都增加一些下注
-                                int amouont = new Random().Next(500, 1000);
-                                var quizBetShort = new QuizBet()
-                                {
-                                    BetAmount = amouont,
-                                    BetDirection = "short",
-                                    PL = amouont,
-                                    CreatedAt = DateTime.Now,
-                                    QuizID = quiz.ID,
-                                    UserID = 2031
-                                };
-
-                                var quizBetLong = new QuizBet()
-                                {
-                                    BetAmount = amouont,
-                                    BetDirection = "long",
-                                    PL = amouont,
-                                    CreatedAt = DateTime.Now,
-                                    QuizID = quiz.ID,
-                                    UserID = 2031
-                                };
-
-                                db.QuizBets.Add(quizBetShort);
-                                db.QuizBets.Add(quizBetLong);
-                                db.SaveChanges();
-
+                            {                                
                                 Console.WriteLine("Quiz found with trade day:" + quiz.TradeDay);
                                 using (var redisClient = CFDGlobal.GetDefaultPooledRedisClientsManager(true).GetClient())
                                 {

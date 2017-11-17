@@ -72,6 +72,34 @@ namespace CFD_API.Controllers
             quiz.TradeDay = closeTime.Date.AddDays(1); 
             db.Quizzes.Add(quiz);
             db.SaveChanges();
+
+            #region 给竞猜活动两边都加注
+            int amouont = new Random().Next(500, 1000);
+            var quizBetShort = new QuizBet()
+            {
+                BetAmount = amouont,
+                BetDirection = "short",
+                PL = amouont,
+                CreatedAt = DateTime.Now,
+                QuizID = quiz.ID,
+                UserID = 2031
+            };
+
+            var quizBetLong = new QuizBet()
+            {
+                BetAmount = amouont,
+                BetDirection = "long",
+                PL = amouont,
+                CreatedAt = DateTime.Now,
+                QuizID = quiz.ID,
+                UserID = 2031
+            };
+
+            db.QuizBets.Add(quizBetShort);
+            db.QuizBets.Add(quizBetLong);
+            db.SaveChanges();
+            #endregion
+
             return new ResultDTO(true);
         }
 
