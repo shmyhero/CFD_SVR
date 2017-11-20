@@ -74,12 +74,13 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             #region 给竞猜活动两边都加注
-            int amouont = new Random().Next(500, 1000);
+            int amount = new Random().Next(500, 1000);
+            amount = amount / 5 * 5;
             var quizBetShort = new QuizBet()
             {
-                BetAmount = amouont,
+                BetAmount = amount,
                 BetDirection = "short",
-                PL = amouont,
+                PL = amount,
                 CreatedAt = DateTime.Now,
                 QuizID = quiz.ID,
                 UserID = 2031
@@ -87,9 +88,9 @@ namespace CFD_API.Controllers
 
             var quizBetLong = new QuizBet()
             {
-                BetAmount = amouont,
+                BetAmount = amount,
                 BetDirection = "long",
-                PL = amouont,
+                PL = amount,
                 CreatedAt = DateTime.Now,
                 QuizID = quiz.ID,
                 UserID = 2031
