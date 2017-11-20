@@ -122,6 +122,13 @@ namespace CFD_API.Controllers
                         user.PromotionCode = partner.PromotionCode;
                     }
 
+                    #region
+                    Random ran = new Random();
+                    //1-12中随机取值
+                    string url = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + ran.Next(1, 13) + ".jpg";
+                    user.PicUrl = url;
+                    #endregion
+
                     db.SaveChanges();
 
                     result.success = true;
