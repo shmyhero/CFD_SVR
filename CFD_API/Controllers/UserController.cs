@@ -520,7 +520,7 @@ namespace CFD_API.Controllers
             var user = GetUser();
 
             string picName = string.Empty;
-            if(!string.IsNullOrEmpty(user.PicUrl)) //delete existing blob before upload
+            if(!string.IsNullOrEmpty(user.PicUrl) && !isSystemPic(user.PicUrl.Split('/').Last())) //delete existing blob before upload
             {
                 picName = user.PicUrl.Split('/').Last();
                 Blob.DeleteBlob(CFDGlobal.USER_PIC_BLOB_CONTAINER, picName);
@@ -533,6 +533,18 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             return new ResultDTO { success = true };
+        }
+
+        /// <summary>
+        /// 是否为系统默认的头像
+        /// </summary>
+        /// <param name="picName"></param>
+        /// <returns></returns>
+        private bool isSystemPic(string picName)
+        {
+            List<string> systemPics = new List<string>();
+            systemPics.AddRange(new string[] {"1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg", "12.jpg", });
+            return systemPics.Contains(picName);
         }
 
         [HttpPost]
