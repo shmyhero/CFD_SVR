@@ -131,6 +131,9 @@ namespace CFD_API.Controllers
 
                     db.SaveChanges();
 
+                    var rewardService = new RewardService(db);
+                    rewardService.DemoRegReward(user.Id, user.Phone);
+
                     result.success = true;
                     result.isNewUser = true;
                     result.userId = user.Id;
