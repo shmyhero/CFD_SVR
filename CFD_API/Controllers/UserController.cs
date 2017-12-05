@@ -983,13 +983,17 @@ namespace CFD_API.Controllers
 
             if (!IsLiveUrl) CheckAndCreateAyondoDemoAccount(user);
 
-            var endTime = DateTime.UtcNow;
-            var startTime = endTime.AddDays(-30);
+            //var endTime = DateTime.UtcNow;
+            //var startTime = endTime.AddDays(-30);
 
             //closed position
+            //var positionHistoryReports = IsLiveUrl
+            //    ? db.NewPositionHistory_live.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList().Select(o=>o as NewPositionHistoryBase).ToList()
+            //    : db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList().Select(o => o as NewPositionHistoryBase).ToList();
             var positionHistoryReports = IsLiveUrl
-                ? db.NewPositionHistory_live.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList().Select(o=>o as NewPositionHistoryBase).ToList()
-                : db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.ClosedAt.Value > startTime && o.UserId == UserId).ToList().Select(o => o as NewPositionHistoryBase).ToList();
+              ? db.NewPositionHistory_live.Where(o => o.ClosedAt.HasValue && o.UserId == UserId).ToList().Select(o => o as NewPositionHistoryBase).ToList()
+              : db.NewPositionHistories.Where(o => o.ClosedAt.HasValue && o.UserId == UserId).ToList().Select(o => o as NewPositionHistoryBase).ToList();
+
 
             //open position
             IList<PositionReport> positionOpenReports;
