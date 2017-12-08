@@ -159,6 +159,13 @@ namespace CFD_API.Controllers
                     userDto.nickname = user.Nickname;
                     userDto.picUrl = user.PicUrl;
                 }
+
+                //计算user的出入金总额
+                if(IsLiveUrl)
+                {
+                    userDto.totalDeposit = db.AyondoTransferHistory_Live.Where(Transfer.IsDeposit(user.AyLiveAccountId)).Select(a => a.Amount).DefaultIfEmpty(0).Sum().Value;
+                    userDto.totalRemittance = db.AyondoTransferHistory_Live.Where(Transfer.IsRemittance(user.AyLiveAccountId)).Select(a => a.Amount).DefaultIfEmpty(0).Sum().Value;
+                }
             }
 
             return result;

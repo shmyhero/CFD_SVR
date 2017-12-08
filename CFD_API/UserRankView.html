@@ -74,6 +74,8 @@
             <th>胜率</th>
             <th onclick="sortTable('tblRank', 4)" style="cursor: pointer; color: navy">平仓数</th>
             <th onclick="sortTable('tblRank', 5)" style="cursor: pointer; color: navy">净收益</th>
+            <th>累计入金</th>
+            <th>累计出金</th>
             <th></th>
         </tr>
         </thead>
@@ -180,6 +182,13 @@
                             return '';
                     }
 
+                    if (b == 'totalDeposit') {
+                       return '<font style="color:#f4415f; font-weight:' + Math.floor((r + 100 > 900 ? 900 : r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                    }
+
+                    if (b == 'totalRemittance') {
+                        return '<font style="color:#32c17a; font-weight:' + Math.floor((r + 100 > 900 ? 900 : r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                    }
                     //debugger;
 
                     return r;
@@ -257,7 +266,8 @@
             $rankTableBody = $rankTable.find('tbody'),
             rankRowTemplate = '<tr data-symbol="{id}">'
                 //+'<td>{id}</td>'
-            +'<td>{picUrl}</td><td>{nickname}</td><td>{roi}</td><td>{winRate}</td><td>{posCount}</td><td>{pl}</td>'
+            + '<td>{picUrl}</td><td>{nickname}</td><td>{roi}</td><td>{winRate}</td><td>{posCount}</td><td>{pl}</td>'
+            + '<td>{totalDeposit}</td><td>{totalRemittance}</td>'
             +'<td><a href="#" onclick="showPositions(this,{id});return false;">明细</a></td>'
                 //+ '<td>{Bid}</td><td>{Offer}</td>'
                 //+ '<td>{LastOpen}</td><td>{LastClose}</td><td>{PreClose}</td><td>{OpenBid}</td><td>{OpenAsk}</td><td>{CloseBid}</td><td>{CloseAsk}</td>'

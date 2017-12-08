@@ -81,6 +81,14 @@ namespace CFD_API.DTO
         public decimal winRate { get; set; }
 
         public decimal pl { get; set; }
+        /// <summary>
+        /// 累计入金
+        /// </summary>
+        public decimal totalDeposit { get; set; }
+        /// <summary>
+        /// 累计出金
+        /// </summary>
+        public decimal totalRemittance { get; set; }
     }
 
     public class MyInfoDTO
