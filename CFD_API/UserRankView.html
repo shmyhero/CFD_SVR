@@ -74,8 +74,8 @@
             <th>胜率</th>
             <th onclick="sortTable('tblRank', 4)" style="cursor: pointer; color: navy">平仓数</th>
             <th onclick="sortTable('tblRank', 5)" style="cursor: pointer; color: navy">净收益</th>
-            <th>累计入金</th>
-            <th>累计出金</th>
+            <th onclick="sortTable('tblRank', 6)" style="cursor: pointer; color: navy">累计入金</th>
+            <th onclick="sortTable('tblRank', 7)" style="cursor: pointer; color: navy">累计出金</th>
             <th></th>
         </tr>
         </thead>
@@ -98,6 +98,7 @@
                     <th>收益</th>
                     <th>收益率</th>
                     <th>平仓时间</th>
+                    <th>持仓时间</th>
                     <th>平仓价</th>
                     <th>系统平仓?</th>
                 </tr>
@@ -278,7 +279,7 @@
         $positionTableBody = $positionTable.find('tbody'),
         positionRowTemplate = '<tr data-symbol="{id}"><td>{security.name}</td><td>{isLong}</td><td>{invest}</td><td>{leverage}</td><td>{openAt}</td><td>{openPrice}</td>'
         + '<td>{pl}</td><td>{roi}</td>'
-        + '<td>{closeAt}</td><td>{closePrice}</td>'
+        + '<td>{closeAt}</td><td>{duration}</td><td>{closePrice}</td>'
         + '<td>{isAutoClosed}</td>'
         //+ '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
         + '</tr>';

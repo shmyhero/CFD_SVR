@@ -92,7 +92,7 @@ namespace CFD_API.DTO
 
         public DateTime? openAt { get; set; }
         public DateTime? closeAt { get; set; }
-
+        public string duration { get; set; }
         public bool? isAutoClosed { get; set; }
     }
 
