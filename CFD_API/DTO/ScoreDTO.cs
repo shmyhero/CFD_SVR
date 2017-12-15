@@ -27,6 +27,28 @@ namespace CFD_API.DTO
         /// 分享
         /// </summary>
         public int share { get; set; }
+        /// <summary>
+        /// 打赏积分
+        /// </summary>
+        public int reward { get; set; }
+    }
+    public class ScoreDTOV2
+    {
+        /// <summary>
+        /// 累计获得积分
+        /// </summary>
+        public int total { get; set; }
+        /// <summary>
+        /// 剩余积分
+        /// </summary>
+        public int remaining { get; set; }
+        public List<NameScorePair> Items { get; set; }
+    }
+
+    public struct NameScorePair
+    {
+        public string name;
+        public int score;
     }
 
     public class ScoreSetting
@@ -109,6 +131,10 @@ namespace CFD_API.DTO
         /// 实盘下单
         /// </summary>
         public const string LiveOrder = "LiveOrder";
+        /// <summary>
+        /// 打赏
+        /// </summary>
+        public const string Reward = "Reward";
     }
 
     public class PrizeDTO

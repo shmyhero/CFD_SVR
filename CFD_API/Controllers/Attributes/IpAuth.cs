@@ -19,7 +19,10 @@ namespace CFD_API.Controllers.Attributes
                 var requestBase = ((HttpContextWrapper)actionContext.Request.Properties["MS_HttpContext"]).Request;
                 ip = requestBase.UserHostAddress;
 
-                if(ip!="::1" && ip!= "101.231.88.242")
+
+                string[] allowedIPs = new string[] { "::1", "101.231.88.242", "42.159.235.236", "10.0.0.22" };
+
+                if(!allowedIPs.Contains(ip))
                     actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized);
             }
 

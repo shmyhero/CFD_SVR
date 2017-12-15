@@ -49,10 +49,11 @@ namespace CFD_API.Controllers
                     case ScoreSource.Like: dto.like += shg.Score; break;
                     case ScoreSource.Liked: dto.like += shg.Score; break;
                     case ScoreSource.LiveOrder: dto.liveOrder += shg.Score; break;
+                    case ScoreSource.Reward: dto.reward += shg.Score; break;
                 }
             });
 
-            dto.total = dto.share + dto.liveOrder + dto.like;
+            dto.total = dto.share + dto.liveOrder + dto.like + dto.reward;
 
             int usedScore = 0;
             var sch = db.ScoreConsumptionHistorys.Where(s => s.UserID == UserId).ToList();
@@ -61,9 +62,83 @@ namespace CFD_API.Controllers
                 usedScore = sch.Sum(s => s.Score).Value;
             }
 
-            //to-do 扣除已经使用的积分
-            dto.remaining = dto.total - usedScore;
+            var trendRewards = db.TrendRewardHistorys.Where(t => t.RewardUserID == UserId).ToList();
+            int trendRewardScore = 0;
+            if (trendRewards.Count() > 0)
+            {
+                trendRewardScore = trendRewards.Sum(s => s.Amount);
+            }
 
+            //to-do 扣除已经使用的积分
+            dto.remaining = dto.total - usedScore - trendRewardScore;
+
+            return dto;
+        }
+
+        /// <summary>
+        /// 返回数组形式的积分列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v2")]
+        [BasicAuth]
+        public ScoreDTOV2 GetScoreV2()
+        {           
+            int scoreLiveOrder = 0;
+            int scoreShare = 0;
+            int scoreLike = 0;
+            int scoreReward = 0;
+
+            var scoreHistorys = (from sh in db.ScoreHistorys
+                                 where sh.UserID == UserId
+                                 group sh by sh.Source into shg
+                                 select new
+                                 {
+                                     Source = shg.Key,
+                                     Score = shg.Sum(sh => sh.Score)
+                                 }).ToList();
+
+            scoreHistorys.ForEach(shg => {
+                switch (shg.Source)
+                {
+                    case ScoreSource.AppShare: scoreShare += shg.Score; break;
+                    case ScoreSource.WechatCircle: scoreShare += shg.Score; break;
+                    case ScoreSource.WechatFriend: scoreShare += shg.Score; break;
+                    case ScoreSource.Like: scoreLike += shg.Score; break;
+                    case ScoreSource.Liked: scoreLike += shg.Score; break;
+                    case ScoreSource.LiveOrder: scoreLiveOrder += shg.Score; break;
+                    case ScoreSource.Reward: scoreReward += shg.Score; break;
+                }
+            });
+
+            List<NameScorePair> result = new List<NameScorePair>();
+            result.Add(new NameScorePair() { name = "实盘下单积分", score = scoreLiveOrder });
+            result.Add(new NameScorePair() { name = "卡片分享积分", score = scoreShare });
+            result.Add(new NameScorePair() { name = "卡片点赞积分", score = scoreLike });
+            result.Add(new NameScorePair() { name = "获得打赏积分", score = scoreReward });
+
+            ScoreDTOV2 dto = new ScoreDTOV2();
+            dto.total = scoreShare + scoreLike + scoreLiveOrder + scoreReward;
+            dto.Items = result;
+
+            //抽奖用掉的积分
+            int usedScore = 0;
+            var sch = db.ScoreConsumptionHistorys.Where(s => s.UserID == UserId).ToList();
+            if (sch.Count() > 0)
+            {
+                usedScore = sch.Sum(s => s.Score).Value;
+            }
+            //打赏用掉的积分
+            var trendRewards = db.TrendRewardHistorys.Where(t => t.RewardUserID == UserId).ToList();
+            int trendRewardScore = 0;
+            if (trendRewards.Count() > 0)
+            {
+                trendRewardScore = trendRewards.Sum(s => s.Amount);
+            }
+            
+            //to-do 扣除已经使用的积分
+            dto.remaining = dto.total - usedScore - trendRewardScore;
+            
             return dto;
         }
 

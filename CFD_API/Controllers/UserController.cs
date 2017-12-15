@@ -1246,7 +1246,7 @@ namespace CFD_API.Controllers
             List<PLSpreadDTO> spreads = new List<PLSpreadDTO>();
 
             var user = db.Users.FirstOrDefault(o => o.Id == userID);
-            if(!user.ShowData ??CFDUsers.DEFAULT_SHOW_DATA)
+            if(!(user.ShowData ??CFDUsers.DEFAULT_SHOW_DATA))
             {
                 return spreads;
             }

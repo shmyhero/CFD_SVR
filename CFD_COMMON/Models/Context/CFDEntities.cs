@@ -68,6 +68,9 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<SystemSetting> SystemSettings { get; set; }
         public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
         //public virtual DbSet<TransferHistory> TransferHistorys { get; set; }
+        public virtual DbSet<Trend> Trends { get; set; }
+        public virtual DbSet<TrendLikeHistory> TrendLikeHistorys { get; set; }
+        public virtual DbSet<TrendRewardHistory> TrendRewardHistorys { get; set; }
         public virtual DbSet<UserCard> UserCards { get; set; }
         public virtual DbSet<UserFollow> UserFollows { get; set; }
         public virtual DbSet<User> Users { get; set; }

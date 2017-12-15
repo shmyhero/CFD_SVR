@@ -42,6 +42,8 @@ namespace CFD_API.DTO
 
         public decimal fxRate { get; set; }
 
+        public string notice { get; set; }
+
         public DepositChargeDTO charge { get; set; }
 
         public List<BankDTO> banks { get; set; }
@@ -57,6 +59,7 @@ namespace CFD_API.DTO
     {
         public RefundChargeDTO charge { get; set; }
         public string eta { get; set; }
+        public string notice { get; set; }
     }
 
     public class RefundChargeDTO

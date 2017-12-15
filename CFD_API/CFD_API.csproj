@@ -302,6 +302,7 @@
     <Compile Include="Controllers\RewardController.cs" />
     <Compile Include="Controllers\ScoreController.cs" />
     <Compile Include="Controllers\SecurityController.cs" />
+    <Compile Include="Controllers\TrendController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\UtilController.cs" />
     <Compile Include="DTO\ActivityChannelDTO.cs" />
@@ -322,6 +323,7 @@
     <Compile Include="DTO\TickDTO.cs" />
     <Compile Include="DTO\TimeStampDTO.cs" />
     <Compile Include="DTO\TransferDTO.cs" />
+    <Compile Include="DTO\TrendDTO.cs" />
     <Compile Include="DTO\UserDTO.cs" />
     <Compile Include="DTO\UtilDTO.cs" />
     <Compile Include="Global.asax.cs">

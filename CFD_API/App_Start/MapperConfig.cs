@@ -81,6 +81,8 @@ namespace CFD_API
                 cfg.CreateMap<PartnerSignUpDTO, Partner>();
                 cfg.CreateMap<PartnerView, PartnerReportRecordDTO>();
                 cfg.CreateMap<PartnerUserView, PartnerUserReportRecordDTO>();
+
+                cfg.CreateMap<Trend, TrendDTO>();
             });
         }
     }
