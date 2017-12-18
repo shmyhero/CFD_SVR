@@ -384,6 +384,12 @@ namespace CFD_API.DTO
         public decimal quiz { get; set; }
     }
 
+    public class RewardDTOV2
+    {
+        public string name;
+        public decimal amount;
+    }
+
     public class TotalRewardDTO
     {
         public decimal? total { get; set; }

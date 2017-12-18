@@ -44,6 +44,24 @@ namespace CFD_API.Controllers
 
         }
 
+        [HttpGet]
+        [Route("{id}")]
+        [AdminAuth]
+        public TrendDTO GetTrend(int id)
+        {
+            var trend = db.Trends.FirstOrDefault(t => t.ID == id);
+            var dto = new TrendDTO()
+            {
+                createdAt = trend.CreatedAt,
+                id = trend.ID,
+                likes = trend.Likes,
+                message = trend.Message,
+                rewardCount = trend.RewardCount
+            };
+
+            return dto;
+        }
+
         /// <summary>
         /// 
         /// </summary>
