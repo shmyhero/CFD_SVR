@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using CFD_COMMON.Utils;
 
 namespace CFD_API.Controllers
 {
@@ -52,7 +53,7 @@ namespace CFD_API.Controllers
             var trend = db.Trends.FirstOrDefault(t => t.ID == id);
             var dto = new TrendDTO()
             {
-                createdAt = trend.CreatedAt,
+                createdAt = DateTimes.UtcToChinaTime(trend.CreatedAt),
                 id = trend.ID,
                 likes = trend.Likes,
                 message = trend.Message,
@@ -71,8 +72,9 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("{userId}/next/{id}")]
         [BasicAuth]
-        public List<TrendDTO> NextTrend(int userID, int id)
+        public List<TrendDTOV2> NextTrend(int userID, int id)
         {
+            List<TrendDTOV2> result = new List<TrendDTOV2>();
             int pageSize = 10;
             var trends = db.Trends.Where(t => t.UserID == userID && t.ID > id && t.ExpiredAt == SqlDateTime.MaxValue.Value).OrderByDescending(t => t.CreatedAt).Take(pageSize);
             var trendDTOs = trends.Select(t => new TrendDTO() {
@@ -85,7 +87,21 @@ namespace CFD_API.Controllers
             trendDTOs.ForEach(t => {
                 t.Liked = db.TrendLikeHistorys.Any(tl => tl.UserID == this.UserId && tl.TrendID == t.id);
             });
-            return trendDTOs;
+
+            trendDTOs.ForEach(t =>
+            {
+                result.Add(new TrendDTOV2()
+                {
+                    createdAt = DateTimes.UtcToChinaTime(t.createdAt.Value).ToString("yyyy.MM.dd HH:mm"),
+                    id = t.id,
+                    Liked = t.Liked,
+                    likes = t.likes,
+                    message = t.message,
+                    rewardCount = t.rewardCount
+                });
+            });
+
+            return result;
         }
 
         [HttpGet]
