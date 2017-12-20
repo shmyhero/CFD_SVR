@@ -3123,6 +3123,25 @@ namespace CFD_API.Controllers
             return result;
         }
 
+        [HttpPost]
+        [Route("language")]
+        [BasicAuth]
+        public ResultDTO SetLanguage(MeDTO form)
+        {
+            ResultDTO dto = new ResultDTO(true);
+            var user = db.Users.FirstOrDefault(u => u.Id == this.UserId);
+            if(user == null)
+            {
+                dto.success = false;
+                dto.message = "User不存在";
+                return dto;
+            }
+
+            user.language = form.language;
+            db.SaveChanges();
+            return dto;
+        }
+
         /// <summary>
         /// 将用户提交的帮卡信息转换为Ayondo需要的格式
         /// </summary>

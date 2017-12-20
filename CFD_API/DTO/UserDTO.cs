@@ -55,6 +55,7 @@ namespace CFD_API.DTO
         /// </summary>
         public bool mobileDeposit { get; set; }
         public int rank { get; set; }
+        public string language { get; set; }
     }
 
     public class UserDTO : UserBaseDTO

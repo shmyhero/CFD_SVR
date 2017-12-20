@@ -149,5 +149,10 @@
         public int? ChannelID { get; set; }
         //活动ID
         public int? ActivityID { get; set; }
+
+        /// <summary>
+        /// en/cn分别代表中英文
+        /// </summary>
+        public string language { get; set; }
     }
 }
