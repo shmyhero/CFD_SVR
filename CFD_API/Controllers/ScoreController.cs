@@ -112,10 +112,14 @@ namespace CFD_API.Controllers
             });
 
             List<NameScorePair> result = new List<NameScorePair>();
-            result.Add(new NameScorePair() { name = "实盘下单积分", score = scoreLiveOrder });
-            result.Add(new NameScorePair() { name = "卡片分享积分", score = scoreShare });
-            result.Add(new NameScorePair() { name = "卡片点赞积分", score = scoreLike });
-            result.Add(new NameScorePair() { name = "获得打赏积分", score = scoreReward });
+            //result.Add(new NameScorePair() { name = "实盘下单积分", score = scoreLiveOrder });
+            //result.Add(new NameScorePair() { name = "卡片分享积分", score = scoreShare });
+            //result.Add(new NameScorePair() { name = "卡片点赞积分", score = scoreLike });
+            //result.Add(new NameScorePair() { name = "获得打赏积分", score = scoreReward });
+            result.Add(new NameScorePair() { name = Resources.Resource.ScoreLiveOrder, score = scoreLiveOrder });
+            result.Add(new NameScorePair() { name = Resources.Resource.ScoreShare, score = scoreShare });
+            result.Add(new NameScorePair() { name = Resources.Resource.ScoreLike, score = scoreLike });
+            result.Add(new NameScorePair() { name = Resources.Resource.ScoreReward, score = scoreReward });
 
             ScoreDTOV2 dto = new ScoreDTOV2();
             dto.total = scoreShare + scoreLike + scoreLiveOrder + scoreReward;

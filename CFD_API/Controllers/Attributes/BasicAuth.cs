@@ -7,6 +7,8 @@ using System.Web;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using CFD_COMMON.Models.Context;
+using System.Threading;
+using System.Globalization;
 
 namespace CFD_API.Controllers.Attributes
 {
@@ -17,6 +19,8 @@ namespace CFD_API.Controllers.Attributes
         // it means that the dbcontext can become stale and will not return
         // the expected result (which might be a problem for authentication...)
         //private tradeheroEntities db = tradeheroEntities.Create();
+        private const string CN = "cn";
+        private const string EN = "en";
 
         public override void OnAuthorization(HttpActionContext actionContext)
         {
@@ -67,9 +71,32 @@ namespace CFD_API.Controllers.Attributes
                 //}
 
                 HttpContext.Current.User = new GenericPrincipal(new GenericIdentity(userId.ToString()), null);
+
+                InitCulture(userId, db);
             }
 
             base.OnAuthorization(actionContext);
+        }
+
+        private void InitCulture(int userId, CFDEntities db)
+        {
+            //如果用户没有登录，默认是中文
+            if (userId == 0)
+            {
+                Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("cn");
+            }
+            else
+            {
+                var user = db.Users.FirstOrDefault(o => o.Id == userId);
+                if (user != null && (user.language == CN || string.IsNullOrEmpty(user.language)))
+                {
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CN);
+                }
+                else
+                {
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(EN);
+                }
+            }
         }
     }
 }

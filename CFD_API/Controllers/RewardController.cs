@@ -203,15 +203,25 @@ namespace CFD_API.Controllers
             var rewardDTO = new RewardDTO() { demoProfit = rewardDetail.demoProfit, referralReward = rewardDetail.referralReward, liveRegister = rewardDetail.liveRegister, demoRegister = rewardDetail.demoRegister, totalDailySign = rewardDetail.totalDailySign, totalCard = rewardDetail.totalCard, totalDemoTransaction = rewardDetail.totalDemoTransaction, firstDeposit = rewardDetail.firstDeposit, quiz = rewardDetail.quizSettled };
 
             List<RewardDTOV2> result = new List<RewardDTOV2>();
-            result.Add(new RewardDTOV2() { name = "签到交易金(元)", amount = rewardDTO.totalDailySign });
-            result.Add(new RewardDTOV2() { name = "模拟下单交易金(元)", amount = rewardDTO.totalDemoTransaction });
-            result.Add(new RewardDTOV2() { name = "卡片交易金(元)", amount = rewardDTO.totalCard });
-            result.Add(new RewardDTOV2() { name = "注册交易金(元)", amount = rewardDTO.demoRegister });
-            result.Add(new RewardDTOV2() { name = "开户交易金(元)", amount = rewardDTO.liveRegister });
-            result.Add(new RewardDTOV2() { name = "邀请好友交易金(元)", amount = rewardDTO.referralReward });
-            result.Add(new RewardDTOV2() { name = "首日入金交易金(元)", amount = rewardDTO.firstDeposit });
-            result.Add(new RewardDTOV2() { name = "模拟收益交易金(元)", amount = rewardDTO.demoProfit });
-            result.Add(new RewardDTOV2() { name = "竞猜盈利交易金(元)", amount = rewardDTO.quiz });
+            //result.Add(new RewardDTOV2() { name = "签到交易金(元)", amount = rewardDTO.totalDailySign });
+            //result.Add(new RewardDTOV2() { name = "模拟下单交易金(元)", amount = rewardDTO.totalDemoTransaction });
+            //result.Add(new RewardDTOV2() { name = "卡片交易金(元)", amount = rewardDTO.totalCard });
+            //result.Add(new RewardDTOV2() { name = "注册交易金(元)", amount = rewardDTO.demoRegister });
+            //result.Add(new RewardDTOV2() { name = "开户交易金(元)", amount = rewardDTO.liveRegister });
+            //result.Add(new RewardDTOV2() { name = "邀请好友交易金(元)", amount = rewardDTO.referralReward });
+            //result.Add(new RewardDTOV2() { name = "首日入金交易金(元)", amount = rewardDTO.firstDeposit });
+            //result.Add(new RewardDTOV2() { name = "模拟收益交易金(元)", amount = rewardDTO.demoProfit });
+            //result.Add(new RewardDTOV2() { name = "竞猜盈利交易金(元)", amount = rewardDTO.quiz });
+            
+            result.Add(new RewardDTOV2() { name = Resources.Resource.DailySign, amount = rewardDTO.totalDailySign });
+            result.Add(new RewardDTOV2() { name = Resources.Resource.DemoTransaction, amount = rewardDTO.totalDemoTransaction });
+            result.Add(new RewardDTOV2() { name = Resources.Resource.CardReward, amount = rewardDTO.totalCard });
+            result.Add(new RewardDTOV2() { name = Resources.Resource.DemoRegister, amount = rewardDTO.demoRegister });
+            result.Add(new RewardDTOV2() { name = Resources.Resource.LiveRegister, amount = rewardDTO.liveRegister });
+            result.Add(new RewardDTOV2() { name = Resources.Resource.ReferralReward, amount = rewardDTO.referralReward });
+            result.Add(new RewardDTOV2() { name = Resources.Resource.FirstDeposit, amount = rewardDTO.firstDeposit });
+            result.Add(new RewardDTOV2() { name = Resources.Resource.DemoProfit, amount = rewardDTO.demoProfit });
+            result.Add(new RewardDTOV2() { name = Resources.Resource.Quiz, amount = rewardDTO.quiz });
             return result;
         }
 
