@@ -151,7 +151,7 @@
         public int? ActivityID { get; set; }
 
         /// <summary>
-        /// en/cn分别代表中英文
+        /// culture string
         /// </summary>
         public string language { get; set; }
     }
