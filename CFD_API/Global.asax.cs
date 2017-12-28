@@ -48,7 +48,7 @@ namespace CFD_API
 
             GlobalConfiguration.Configuration.Filters.Add(new ApiHitRecordFilter());
 
-
+            GlobalConfiguration.Configuration.MessageHandlers.Add(new CultureHandler());
 
             //var config = new MapperConfiguration(cfg => cfg.CreateMap<User, UserDTO>());
 

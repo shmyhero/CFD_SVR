@@ -115,6 +115,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 验证码错误.
+        /// </summary>
+        internal static string INVALID_VERIFY_CODE {
+            get {
+                return ResourceManager.GetString("INVALID_VERIFY_CODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 开户交易金(元).
         /// </summary>
         internal static string LiveRegister {

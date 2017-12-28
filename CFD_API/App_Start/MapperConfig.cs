@@ -42,7 +42,7 @@ namespace CFD_API
                     ;
 
                 cfg.CreateMap<ProdDef, SecurityLiteDTO>()
-                    .ForMember(dest => dest.name, opt => opt.MapFrom(src => Translator.GetCName(src.Name)))
+                    .ForMember(dest => dest.name, opt => opt.MapFrom(src => Translator.GetProductNameByThreadCulture(src.Name)))
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open))
                     .ForMember(dest => dest.status, opt => opt.MapFrom(src => src.QuoteType))
@@ -51,7 +51,7 @@ namespace CFD_API
                 cfg.CreateMap<ProdDef, SecurityDetailDTO>()
                     .ForMember(dest => dest.last, opt => opt.MapFrom(src => Quotes.GetLastPrice(src)))
                     .ForMember(dest => dest.ask, opt => opt.MapFrom(src => src.Offer))
-                    .ForMember(dest => dest.name, opt => opt.MapFrom(src => Translator.GetCName(src.Name)))
+                    .ForMember(dest => dest.name, opt => opt.MapFrom(src => Translator.GetProductNameByThreadCulture(src.Name)))
                     .ForMember(dest => dest.open, opt => opt.MapFrom(src => Quotes.GetOpenPrice(src)))
                     //.ForMember(dest => dest.preClose, opt => opt.MapFrom(src => src.CloseAsk))
                     .ForMember(dest => dest.isOpen, opt => opt.MapFrom(src => src.QuoteType == enmQuoteType.Open))

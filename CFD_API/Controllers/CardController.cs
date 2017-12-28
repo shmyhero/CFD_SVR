@@ -76,7 +76,7 @@ namespace CFD_API.Controllers
                     if (prodDef != null)
                     {
                         cardDTO.ccy = prodDef.Ccy2;
-                        cardDTO.stockName = Translator.GetCName(prodDef.Name);
+                        cardDTO.stockName = Translator.GetProductNameByThreadCulture(prodDef.Name);
                     }
                 });
                 coll.hasNew = coll.cards.Any(item => !item.isNew.HasValue || !item.isNew.Value);
@@ -130,7 +130,7 @@ namespace CFD_API.Controllers
             if(prodDef != null)
             {
                 cardDTO.ccy = prodDef.Ccy2;
-                cardDTO.stockName = Translator.GetCName(prodDef.Name);
+                cardDTO.stockName = Translator.GetProductNameByThreadCulture(prodDef.Name);
             }
 
             var authUserId = GetAuthUserId();
@@ -387,7 +387,7 @@ namespace CFD_API.Controllers
                 if(prodDef != null)
                 {
                     cardDTO.ccy = prodDef.Ccy2;
-                    cardDTO.stockName = Translator.GetCName(prodDef.Name);
+                    cardDTO.stockName = Translator.GetProductNameByThreadCulture(prodDef.Name);
                 }
             });
 

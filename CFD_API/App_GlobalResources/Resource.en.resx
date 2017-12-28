@@ -135,6 +135,9 @@
   <data name="FirstDeposit" xml:space="preserve">
     <value>首日入金交易金(元)</value>
   </data>
+  <data name="INVALID_VERIFY_CODE" xml:space="preserve">
+    <value>Invalid Verify Code</value>
+  </data>
   <data name="LiveRegister" xml:space="preserve">
     <value>开户交易金(元)</value>
   </data>
@@ -145,15 +148,15 @@
     <value>邀请好友交易金(元)</value>
   </data>
   <data name="ScoreLike" xml:space="preserve">
-    <value>卡片点赞积分</value>
+    <value>Likes Received</value>
   </data>
   <data name="ScoreLiveOrder" xml:space="preserve">
-    <value>实盘下单积分</value>
+    <value>Live Trades</value>
   </data>
   <data name="ScoreReward" xml:space="preserve">
-    <value>获得打赏积分</value>
+    <value>Points Received</value>
   </data>
   <data name="ScoreShare" xml:space="preserve">
-    <value>卡片分享积分</value>
+    <value>Cards Shared</value>
   </data>
 </root>

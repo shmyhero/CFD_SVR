@@ -9,6 +9,7 @@ using System.Web.Http.Filters;
 using CFD_COMMON.Models.Context;
 using System.Threading;
 using System.Globalization;
+using CFD_COMMON;
 
 namespace CFD_API.Controllers.Attributes
 {
@@ -19,8 +20,6 @@ namespace CFD_API.Controllers.Attributes
         // it means that the dbcontext can become stale and will not return
         // the expected result (which might be a problem for authentication...)
         //private tradeheroEntities db = tradeheroEntities.Create();
-        private const string CN = "cn";
-        private const string EN = "en";
 
         public override void OnAuthorization(HttpActionContext actionContext)
         {
@@ -80,23 +79,40 @@ namespace CFD_API.Controllers.Attributes
 
         private void InitCulture(int userId, CFDEntities db)
         {
-            //如果用户没有登录，默认是中文
-            if (userId == 0)
+            var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            if (user != null)
             {
-                Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("cn");
-            }
-            else
-            {
-                var user = db.Users.FirstOrDefault(o => o.Id == userId);
-                if (user != null && (user.language == CN || string.IsNullOrEmpty(user.language)))
-                {
-                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CN);
-                }
+                if (string.IsNullOrWhiteSpace(user.language))
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_CN);//for ALL logged in users, default language is CN 
                 else
-                {
-                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(EN);
-                }
+                    try
+                    {
+                        Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(user.language);
+                    }
+                    catch (Exception)
+                    {
+                        //CFDGlobal.Log;
+                        Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_CN);
+                    }
             }
+
+            ////如果用户没有登录，默认是中文
+            //if (userId == 0)
+            //{
+            //    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("cn");
+            //}
+            //else
+            //{
+            //    var user = db.Users.FirstOrDefault(o => o.Id == userId);
+            //    if (user != null && (user.language == CFDGlobal.CULTURE_CN || string.IsNullOrEmpty(user.language)))
+            //    {
+            //        Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_CN);
+            //    }
+            //    else
+            //    {
+            //        Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_CN);
+            //    }
+            //}
         }
     }
 }

@@ -234,10 +234,6 @@
     <Content Include="DailyUserApplicationView.html" />
     <Content Include="DAUView.html" />
     <Content Include="Global.asax" />
-    <Content Include="App_GlobalResources\Resource.cn.resx">
-      <Generator>GlobalResourceProxyGenerator</Generator>
-      <LastGenOutput>Resource.cn.designer.cs</LastGenOutput>
-    </Content>
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="insight.html" />
     <Content Include="InvestLevView.html" />
@@ -280,11 +276,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="App_GlobalResources\Resource.cn.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resource.cn.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_Start\MapperConfig.cs" />
     <Compile Include="App_Start\OwinStartup.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
@@ -295,6 +286,7 @@
     <Compile Include="Caching\WebCache.cs" />
     <Compile Include="Caching\WebCacheInstance.cs" />
     <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\Attributes\CultureHandler.cs" />
     <Compile Include="Controllers\Attributes\ApiHitRecord.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth2.cs" />
     <Compile Include="Controllers\Attributes\BasicAuth.cs" />

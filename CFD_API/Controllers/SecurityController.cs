@@ -320,7 +320,7 @@ namespace CFD_API.Controllers
                 //var @default = securities.FirstOrDefault(o => o.Id == prodDTO.Id);
                 //if (@default != null && @default.CName != null)
                 //    prodDTO.cname = @default.CName;
-                prodDTO.cname = Translator.GetCName(prodDTO.Name);
+                prodDTO.cname = Translator.GetProductNameByThreadCulture(prodDTO.Name);
 
                 //get new price
                 var quote = cache.Quotes.FirstOrDefault(o => o.Id == prodDTO.Id);
@@ -377,7 +377,7 @@ namespace CFD_API.Controllers
                 //var @default = securities.FirstOrDefault(o => o.Id == prodDTO.Id);
                 //if (@default != null && @default.CName != null)
                 //    prodDTO.cname = @default.CName;
-                prodDTO.cname = Translator.GetCName(prodDTO.Name);
+                prodDTO.cname = Translator.GetProductNameByThreadCulture(prodDTO.Name);
             }
 
             return result.OrderBy(o => o.AssetClass).ThenBy(o => o.Name).ToList();
@@ -745,7 +745,7 @@ namespace CFD_API.Controllers
                         userCount = o.Select(p => p.UserId).Distinct().Count(),
 
                         symbol = prodDef?.Symbol,
-                        name = prodDef != null ? Translator.GetCName(prodDef.Name) : null,
+                        name = prodDef != null ? Translator.GetProductNameByThreadCulture(prodDef.Name) : null,
                     };
                 })
                     .OrderByDescending(o => o.userCount)
@@ -808,7 +808,7 @@ namespace CFD_API.Controllers
                 {
                     id = o.Key.Value,
                     symbol = prodDef.Symbol,
-                    name = Translator.GetCName(prodDef.Name),
+                    name = Translator.GetProductNameByThreadCulture(prodDef.Name),
                         totalCount = o.Count(),
                 };
             }).ToList();
@@ -821,7 +821,7 @@ namespace CFD_API.Controllers
                     {
                         id=activeProd.Id,
                         symbol = activeProd.Symbol,
-                        name=Translator.GetCName(activeProd.Name),
+                        name=Translator.GetProductNameByThreadCulture(activeProd.Name),
                     });
             }
 

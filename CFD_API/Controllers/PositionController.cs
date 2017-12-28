@@ -227,7 +227,7 @@ namespace CFD_API.Controllers
                     #endregion
 
                     dto.symbol = prodDef.Symbol;
-                    dto.name = Translator.GetCName(prodDef.Name);
+                    dto.name = Translator.GetProductNameByThreadCulture(prodDef.Name);
                 }
 
                 results.Add(dto);
@@ -625,7 +625,7 @@ namespace CFD_API.Controllers
                     {
                         id = prodDef.Id,
                         symbol = prodDef.Symbol,
-                        name = Translator.GetCName(prodDef.Name),
+                        name = Translator.GetProductNameByThreadCulture(prodDef.Name),
                         ccy = prodDef.Ccy2,
                         dcmCount = prodDef.Prec,
                     }
@@ -931,7 +931,7 @@ namespace CFD_API.Controllers
                 if (prodDef != null)
                 {
                     dto.symbol = prodDef.Symbol;
-                    dto.name = Translator.GetCName(prodDef.Name);
+                    dto.name = Translator.GetProductNameByThreadCulture(prodDef.Name);
                 }
 
                 results.Add(dto);
@@ -1260,7 +1260,7 @@ namespace CFD_API.Controllers
                             tradePrice = position.SettlePrice,
                             tradeTime = position.CreateTime.Value,
                             ccy = prodDef == null ? string.Empty : prodDef.Ccy2,
-                            stockName = prodDef == null ? string.Empty : Translator.GetCName(prodDef.Name),
+                            stockName = prodDef == null ? string.Empty : Translator.GetProductNameByThreadCulture(prodDef.Name),
                             themeColor = card.ThemeColor,
                             cardType = card.CardType.HasValue ? card.CardType.Value : 0,
                             title = card.Title
@@ -1797,7 +1797,7 @@ namespace CFD_API.Controllers
                             if (prodDef != null)
                             {
                                 cardDTO.ccy = prodDef.Ccy2;
-                                cardDTO.stockName = Translator.GetCName(prodDef.Name);
+                                cardDTO.stockName = Translator.GetProductNameByThreadCulture(prodDef.Name);
                             }
                         });
                     }

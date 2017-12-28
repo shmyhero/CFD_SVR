@@ -19,6 +19,9 @@ namespace CFD_COMMON
 {
     public class CFDGlobal
     {
+        public const string CULTURE_CN = "cn";
+        public const string CULTURE_EN = "en";
+
         public static readonly string BLOG_ENDPOINT = GetConfigurationSetting("StorageConnectionString") == null
             ? null
             : CloudStorageAccount.Parse(GetConfigurationSetting("StorageConnectionString")).BlobEndpoint.AbsoluteUri;

@@ -135,6 +135,9 @@
   <data name="FirstDeposit" xml:space="preserve">
     <value>首日入金交易金(元)</value>
   </data>
+  <data name="INVALID_VERIFY_CODE" xml:space="preserve">
+    <value>验证码错误</value>
+  </data>
   <data name="LiveRegister" xml:space="preserve">
     <value>开户交易金(元)</value>
   </data>

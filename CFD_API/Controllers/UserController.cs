@@ -182,7 +182,7 @@ namespace CFD_API.Controllers
                 db.SaveChanges();
 
                 result.success = false;
-                result.message = __(TransKey.INVALID_VERIFY_CODE);
+                result.message = Resources.Resource.INVALID_VERIFY_CODE;// __(TransKey.INVALID_VERIFY_CODE);
             }
 
             return result;
@@ -1267,7 +1267,7 @@ namespace CFD_API.Controllers
 
                 var prodDef = WebCache.Live.ProdDefs.FirstOrDefault(prod => prod.Id == p.prodID);
                 spreads.Add(new PLSpreadDTO() {
-                    name = Translator.GetCName(prodDef.Name),
+                    name = Translator.GetProductNameByThreadCulture(prodDef.Name),
                     symbol = prodDef.Symbol,
                     count = p.count,
                      pl = pl.Value / investment.Value,
