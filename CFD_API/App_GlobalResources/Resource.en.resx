@@ -118,34 +118,34 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CardReward" xml:space="preserve">
-    <value>卡片交易金(元)</value>
+    <value>Cards (￥)</value>
   </data>
   <data name="DailySign" xml:space="preserve">
-    <value>签到交易金(元)</value>
+    <value>Checkin (￥)</value>
   </data>
   <data name="DemoProfit" xml:space="preserve">
-    <value>模拟收益交易金(元)</value>
+    <value>Demo Trade Profit (￥)</value>
   </data>
   <data name="DemoRegister" xml:space="preserve">
-    <value>注册交易金(元)</value>
+    <value>Demo Registration (￥)</value>
   </data>
   <data name="DemoTransaction" xml:space="preserve">
-    <value>模拟下单交易金(元)</value>
+    <value>Demo Trades (￥)</value>
   </data>
   <data name="FirstDeposit" xml:space="preserve">
-    <value>首日入金交易金(元)</value>
+    <value>First Deposit (￥)</value>
   </data>
   <data name="INVALID_VERIFY_CODE" xml:space="preserve">
     <value>Invalid Verify Code</value>
   </data>
   <data name="LiveRegister" xml:space="preserve">
-    <value>开户交易金(元)</value>
+    <value>Live Registration (￥)</value>
   </data>
   <data name="Quiz" xml:space="preserve">
-    <value>竞猜盈利交易金(元)</value>
+    <value>Quiz (￥)</value>
   </data>
   <data name="ReferralReward" xml:space="preserve">
-    <value>邀请好友交易金(元)</value>
+    <value>Referral (￥)</value>
   </data>
   <data name="ScoreLike" xml:space="preserve">
     <value>Likes Received</value>
