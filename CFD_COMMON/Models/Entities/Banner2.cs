@@ -53,5 +53,9 @@
         public string DisplayFor { get; set; }
 
         public string Version { get; set; }
+        /// <summary>
+        /// 中文或英文
+        /// </summary>
+        public string Language { get; set; }
     }
 }

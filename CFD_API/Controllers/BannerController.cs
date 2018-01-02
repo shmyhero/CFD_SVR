@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.IO;
 using CFD_COMMON;
 using CFD_API.Controllers.Attributes;
+using System.Threading;
 
 namespace CFD_API.Controllers
 {
@@ -44,22 +45,24 @@ namespace CFD_API.Controllers
 
             List<Banner2> finalBanners = new List<Banner2>();
 
+            var languages = GetLanguageByCulture();
+
             //如果带了version参数，就优先返回有相同版本信息的Banner
-            if(!string.IsNullOrEmpty(version))
+            if (!string.IsNullOrEmpty(version))
             {
-                var versionBanners = db.Banners2.Where(item => item.Expiration.HasValue && item.Version == version && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max).ToList();
+                var versionBanners = db.Banners2.Where(item => item.Expiration.HasValue && languages.Contains(item.Language) && item.Version == version && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max).ToList();
                 finalBanners.AddRange(versionBanners);
             }
 
             if (finalBanners.Count < max)
             {
-                var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(max - finalBanners.Count).ToList();
+                var topBanners = db.Banners2.Where(item => item.IsTop == 1 && item.Expiration.HasValue && languages.Contains(item.Language) && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(max - finalBanners.Count).ToList();
                 finalBanners.AddRange(topBanners);
             }
 
             if (finalBanners.Count < max)
             {
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - finalBanners.Count).ToList();
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && languages.Contains(item.Language) && (item.DisplayFor == DisplayFor.Live || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - finalBanners.Count).ToList();
                 finalBanners.AddRange(nonTopBanner);
             }
 
@@ -77,26 +80,44 @@ namespace CFD_API.Controllers
         {
             int max = 5;
             List<Banner2> finalBanners = new List<Banner2>();
+
+            var languages = GetLanguageByCulture();
+
             //如果带了version参数，就优先返回有相同版本信息的Banner
             if (!string.IsNullOrEmpty(version))
             {
-                var versionBanners = db.Banners2.Where(item => item.Version == version && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max).ToList();
+                var versionBanners = db.Banners2.Where(item => item.Version == version && languages.Contains(item.Language) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max).ToList();
                 finalBanners.AddRange(versionBanners);
             }
 
             if (finalBanners.Count < max)
             {
-                var topBanners = db.Banners2.Where(item => item.IsTop == 1 && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(max - finalBanners.Count).ToList();
+                var topBanners = db.Banners2.Where(item => item.IsTop == 1 && languages.Contains(item.Language) && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.TopAt).Take(max - finalBanners.Count).ToList();
                 finalBanners.AddRange(topBanners);
             }
 
             if (finalBanners.Count < max)
             {
-                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - finalBanners.Count).ToList();
+                var nonTopBanner = db.Banners2.Where(item => (item.IsTop == 0 || !item.IsTop.HasValue) && languages.Contains(item.Language) && (item.DisplayFor == DisplayFor.Demo || item.DisplayFor == DisplayFor.Both) && item.Expiration.HasValue && item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.Id).Take(max - finalBanners.Count).ToList();
                 finalBanners.AddRange(nonTopBanner);
             }
 
             return finalBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
+        }
+
+        private List<string> GetLanguageByCulture()
+        {
+            List<string> languages = new List<string>();
+            if (Thread.CurrentThread.CurrentUICulture.Name == CFDGlobal.CULTURE_CN)
+            {
+                languages.AddRange(new string[] { null, CFDGlobal.CULTURE_CN });
+            }
+            else
+            {
+                languages.Add(CFDGlobal.CULTURE_EN);
+            }
+
+            return languages;
         }
 
         /// <summary>
@@ -271,7 +292,8 @@ namespace CFD_API.Controllers
                 ImgUrlBig = imgUrlBig,
                 Color = dicFormData.ContainsKey("Color") ? dicFormData["Color"] : string.Empty,
                 DisplayFor = dicFormData.ContainsKey("DisplayFor") ? dicFormData["DisplayFor"] : DisplayFor.Both,
-            });
+                Language = dicFormData.ContainsKey("Language") ? dicFormData["Language"] : CFDGlobal.CULTURE_CN
+        });
         }
 
         private void UpdateBanner(string imgUrl, string imgUrlBig, Dictionary<string, string> dicFormData)
@@ -290,6 +312,7 @@ namespace CFD_API.Controllers
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
                 banner.Color = dicFormData.ContainsKey("Color")? dicFormData["Color"] : string.Empty;
                 banner.DisplayFor = dicFormData.ContainsKey("DisplayFor") ? dicFormData["DisplayFor"] : DisplayFor.Both;
+                banner.Language = dicFormData.ContainsKey("Language") ? dicFormData["Language"] : CFDGlobal.CULTURE_CN;
                 int bannerType = 0;
                 if(dicFormData.ContainsKey("BannerType"))
                 {
