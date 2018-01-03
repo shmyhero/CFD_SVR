@@ -111,6 +111,7 @@ namespace CFD_API.DTO
         public string color { get; set; }
 
         public string displayFor { get; set; }
+        public string language { get; set; }
     }
 
     public class OperationUserDTO
