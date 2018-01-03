@@ -32,6 +32,7 @@ using CFD_COMMON.Models.Cached;
 using Newtonsoft.Json.Linq;
 using System.Configuration;
 using CFD_API.DTO.Form;
+using System.Threading;
 
 namespace CFD_API.Controllers
 {
@@ -301,7 +302,8 @@ namespace CFD_API.Controllers
 
             if (id <= 0)//take top 10 by date
             {
-                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
+                var languages = GetLanguageByCulture();
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language) && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
 
                 while (headlines == null || headlines.Count == 0)
                 {
@@ -326,7 +328,8 @@ namespace CFD_API.Controllers
                 body = o.Body,
                 image = o.ImgUrl,
                 color = o.Color.HasValue ? o.Color.Value : 0,
-                createdAt = o.CreatedAt
+                createdAt = o.CreatedAt,
+                language = o.Language
             }).ToList();
         }
 
@@ -340,12 +343,13 @@ namespace CFD_API.Controllers
             int maxCount = 14;
 
             DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
-            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+            var languages = GetLanguageByCulture();
+            headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language) && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
 
             while(headlines == null || headlines.Count == 0)
             {
                 lastDay = lastDay.AddDays(-1);
-                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language) && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
 
                 if(maxCount-- <=0)//trace back for at most 2 weeks
                 {
@@ -360,7 +364,8 @@ namespace CFD_API.Controllers
                 body = o.Body,
                 image = o.ImgUrl,
                 color = o.Color.HasValue ? o.Color.Value : 0,
-                createdAt = o.CreatedAt
+                createdAt = o.CreatedAt,
+                language = o.Language
             }).ToList();
         }
 
@@ -386,8 +391,8 @@ namespace CFD_API.Controllers
 
             DateTime chinaToday = DateTime.UtcNow.AddHours(8);
             List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
-
-            var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value).OrderByDescending(o => o.CreatedAt).Skip(skipCount).Take(maxHeadlines - skipCount).ToList();
+            var languages = GetLanguageByCulture();
+            var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language)).OrderByDescending(o => o.CreatedAt).Skip(skipCount).Take(maxHeadlines - skipCount).ToList();
             if (tempHeadlines != null && tempHeadlines.Count > 0) 
             {
                 headlines.AddRange(tempHeadlines);
@@ -419,14 +424,14 @@ namespace CFD_API.Controllers
                 HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.createdDay == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
                 if (headlineGroupDTO != null)
                 {
-                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue? headLine.Color.Value : 0, image = headLine.ImgUrl });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue? headLine.Color.Value : 0, image = headLine.ImgUrl, language = headLine.Language });
                 }
                 else
                 {
                     headlineGroupDTO = new HeadlineGroupDTO();
                     headlineGroupDTO.createdDay = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
                     headlineGroupDTO.headlines = new List<HeadlineDTO>();
-                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl, language = headLine.Language });
                     headlinesGroup.Add(headlineGroupDTO);
                 }
             }
@@ -448,7 +453,8 @@ namespace CFD_API.Controllers
             while (maxDays > 0)
             {
                 DateTime chinaLastDay = chinaToday.AddDays(-1);
-                var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).ToList();
+                var languages = GetLanguageByCulture();
+                var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language) && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).ToList();
                 chinaToday = chinaToday.AddDays(-1);
 
                 if (tempHeadlines != null && tempHeadlines.Count > 0) // find those days which has headline (total 2 days)
@@ -471,19 +477,34 @@ namespace CFD_API.Controllers
                 HeadlineGroupDTO headlineGroupDTO = headlinesGroup.FirstOrDefault(item => item.createdDay == headLine.CreatedAt.Value.ToString("yyyy-MM-dd"));
                 if (headlineGroupDTO != null)
                 {
-                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl, language = headLine.Language });
                 }
                 else
                 {
                     headlineGroupDTO = new HeadlineGroupDTO();
                     headlineGroupDTO.createdDay = headLine.CreatedAt.Value.ToString("yyyy-MM-dd");
                     headlineGroupDTO.headlines = new List<HeadlineDTO>();
-                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl });
+                    headlineGroupDTO.headlines.Add(new HeadlineDTO() { id = headLine.Id, header = headLine.Header, body = headLine.Body, createdAt = headLine.CreatedAt, color = headLine.Color.HasValue ? headLine.Color.Value : 0, image = headLine.ImgUrl, language = headLine.Language });
                     headlinesGroup.Add(headlineGroupDTO);
                 }
             }
 
             return headlinesGroup;
+        }
+
+        private List<string> GetLanguageByCulture()
+        {
+            List<string> languages = new List<string>();
+            if (Thread.CurrentThread.CurrentUICulture.Name == CFDGlobal.CULTURE_CN)
+            {
+                languages.AddRange(new string[] { null, CFDGlobal.CULTURE_CN });
+            }
+            else
+            {
+                languages.Add(CFDGlobal.CULTURE_EN);
+            }
+
+            return languages;
         }
 
         ///// <summary>
@@ -519,7 +540,7 @@ namespace CFD_API.Controllers
 
         //public decimal GetLastPrice(ProdDef prodDef)
         //{
-          
+
         //    var quotes = WebCache.GetInstance(IsLiveUrl).Quotes.Where(o => o.Id == prodDef.Id).ToList();
         //    //var prodDefs = redisProdDefClient.GetByIds(ids);
         //    var quote = quotes.FirstOrDefault(o => o.Id == prodDef.Id);
