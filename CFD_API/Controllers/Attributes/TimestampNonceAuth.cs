@@ -29,7 +29,7 @@ namespace CFD_API.Controllers.Attributes
                     if (decrypted.Length < 11) //10位TimeStamp+Nonce
                     {
                         actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
-                            "invalid signature");
+                            "invalid signature string");
                     }
                     else
                     {
@@ -41,7 +41,7 @@ namespace CFD_API.Controllers.Attributes
                         {
                             actionContext.Response =
                                 actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
-                                    "invalid signature/nonce");
+                                    "invalid signature");
                         }
                         else
                         {
@@ -49,23 +49,21 @@ namespace CFD_API.Controllers.Attributes
                             var requestScope = actionContext.Request.GetDependencyScope();
 
                             // Resolve the service you want to use.
-                            var db = requestScope.GetService(typeof (CFDEntities)) as CFDEntities;
-
-                            var record =
-                                db.TimeStampNonces.FirstOrDefault(
-                                    o =>
-                                        o.Nonce == nonce && o.TimeStamp == timeStamp &&
-                                        o.Expiration == SqlDateTime.MaxValue.Value);
-                            if (record == null)
+                            using (var db = requestScope.GetService(typeof (CFDEntities)) as CFDEntities)
                             {
-                                actionContext.Response =
-                                    actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
-                                        "signature unauthorized");
-                            }
-                            else
-                            {
-                                record.Expiration = DateTime.Now;
-                                db.SaveChanges();
+                                var record =
+                                    db.TimeStampNonces.FirstOrDefault(o => o.Nonce == nonce && o.TimeStamp == timeStamp);
+                                if (record == null || record.Expiration != SqlDateTime.MaxValue.Value)
+                                {
+                                    actionContext.Response =
+                                        actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
+                                            "signature unauthorized");
+                                }
+                                else
+                                {
+                                    record.Expiration = DateTime.Now;
+                                    db.SaveChanges();
+                                }
                             }
                         }
                     }
@@ -76,7 +74,6 @@ namespace CFD_API.Controllers.Attributes
                         "signature checking failed");
                 }
             }
-
 
             base.OnAuthorization(actionContext);
         }
