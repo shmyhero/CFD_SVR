@@ -252,7 +252,8 @@ namespace CFD_API.Controllers
                 Body = headLineDTO.body,
                 Color = headLineDTO.color,
                 CreatedAt = DateTime.UtcNow,
-                Expiration = SqlDateTime.MaxValue.Value
+                Expiration = SqlDateTime.MaxValue.Value,
+                Language = headLineDTO.language
             };
 
             if (!string.IsNullOrEmpty(headLineDTO.image))
@@ -298,6 +299,7 @@ namespace CFD_API.Controllers
                 headline.Header = headLineDTO.header;
                 headline.Body = headLineDTO.body;
                 headline.Color = headLineDTO.color;
+                headline.Language = headLineDTO.language;
             }
         }
     }

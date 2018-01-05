@@ -20,6 +20,8 @@ namespace CFD_COMMON.Models.Entities
 
         public int? Color { get; set; }
 
+        public string Language { get; set; }
+
         [StringLength(200)]
         public string CreatedBy { get; set; }
 

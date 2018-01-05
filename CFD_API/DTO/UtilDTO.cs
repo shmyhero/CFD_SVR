@@ -132,6 +132,7 @@ namespace CFD_API.DTO
         /// </summary>
         public string image { get; set; }
         public int color { get; set; }
+        public string language { get; set; }
         public DateTime? createdAt { get; set; }
     }
 
