@@ -133,6 +133,7 @@ namespace CFD_API.Controllers
 
         [Route("sendCode")]
         [HttpPost]
+        [RecordHeaders]
         //[RequireHttps]
         public ResultDTO SendCode(string phone)
         {
