@@ -140,7 +140,7 @@ namespace CFD_API.Controllers
         [IPAuth]
         public List<VerifyCode> GetVerifyCode()
         {
-            var verifyCodes = db.VerifyCodes.OrderByDescending(o => o.SentAt).Take(50).ToList();
+            var verifyCodes = db.VerifyCodes.OrderByDescending(o => o.SentAt).Take(200).ToList();
             return verifyCodes;
         }
 
