@@ -35,7 +35,8 @@ namespace CFD_API.Controllers.Attributes
             // sort the languages with quality so we can check them in order.
             langauges = langauges.OrderByDescending(l => l.Quality).ToList();
 
-            CultureInfo culture = null;
+            //默认中文
+            CultureInfo culture = new CultureInfo(CFDGlobal.CULTURE_CN);
 
             // 2. try to find one language that's available
             foreach (StringWithQualityHeaderValue lang in langauges)
