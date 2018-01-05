@@ -13,7 +13,7 @@ namespace CFD_COMMON.Models.Entities
         [Key, Column(Order = 1)]
         public int Nonce { get; set; }
 
-        public int UserID { get; set; }
+        public int? UserID { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 

@@ -10,6 +10,8 @@ namespace CFD_COMMON.Utils
 {
     public class DESUtil
     {
+        public const string SECRET_TIMESTAMP_NONCE_AUTH = "_M7h4R0!";
+
         public string Encrypt(string data, string secret)
         {
             byte[] byKey = System.Text.ASCIIEncoding.ASCII.GetBytes(secret);
