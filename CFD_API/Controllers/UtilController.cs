@@ -32,6 +32,7 @@ using CFD_COMMON.Models.Cached;
 using Newtonsoft.Json.Linq;
 using System.Configuration;
 using CFD_API.DTO.Form;
+using ServiceStack.Text;
 
 namespace CFD_API.Controllers
 {
@@ -67,6 +68,18 @@ namespace CFD_API.Controllers
             var version = db.Versions.FirstOrDefault();
 
             return Mapper.Map<VersionAndroidDTO>(version);
+        }
+
+        [HttpGet]
+        [Route("timestampNonce")]
+        public TimeStampDTO GetTimeStamp()
+        {
+            long timeStamp = DateTime.Now.ToUnixTime();
+            int nonce = new Random(DateTime.Now.Millisecond).Next(0, 100000);
+
+            db.TimeStampNonces.Add(new TimeStampNonce() { TimeStamp = timeStamp, Nonce = nonce, CreatedAt = DateTime.UtcNow, Expiration = SqlDateTime.MaxValue.Value });
+            db.SaveChanges();
+            return new TimeStampDTO() { timeStamp = timeStamp, nonce = nonce };
         }
 
         [HttpGet]
@@ -133,6 +146,7 @@ namespace CFD_API.Controllers
         [Route("sendCode")]
         [HttpPost]
         //[RequireHttps]
+        //[TimestampNonceAuth]
         public ResultDTO SendCode(string phone)
         {
             var result = new ResultDTO();
