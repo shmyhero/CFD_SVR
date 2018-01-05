@@ -148,8 +148,59 @@ namespace CFD_API.Controllers
         [HttpPost]
         [RecordHeaders]
         //[RequireHttps]
-        //[TimestampNonceAuth]
         public ResultDTO SendCode(string phone)
+        {
+            var result = new ResultDTO();
+
+            if (!Phone.IsValidPhoneNumber(phone))
+            {
+                result.message = __(TransKey.INVALID_PHONE_NUMBER);
+                result.success = false;
+                return result;
+            }
+
+            string code = string.Empty;
+
+            ////send last code instead of regenerating if within ?
+            //if (verifyCodes.Any())
+            //{
+            //    var lastCode = verifyCodes.OrderByDescending(c => c.CreatedAt).First();
+            //}
+
+            ////day limit
+            //if (verifyCodes.Count() >= 5)
+            //{
+            //    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKeys.SEND_CODE_LIMIT)));
+            //}
+
+            var r = new Random();
+            code = r.Next(10000).ToString("0000");
+
+            //TODO: prevent from brute-force attack
+
+            if (!string.IsNullOrWhiteSpace(code))
+            {
+                CFDGlobal.RetryMaxOrThrow(() => YunPianMessenger.TplSendCodeSms(string.Format("#code#={0}", code), phone), sleepMilliSeconds: 0);
+
+                db.VerifyCodes.Add(new VerifyCode
+                {
+                    Code = code,
+                    SentAt = DateTime.UtcNow,
+                    Phone = phone
+                });
+                db.SaveChanges();
+            }
+
+            result.success = true;
+            return result;
+        }
+
+        [Route("sendVerifyCode")]
+        [HttpPost]
+        [RecordHeaders]
+        //[RequireHttps]
+        [TimestampNonceAuth]
+        public ResultDTO SendVerifyCode(string phone)
         {
             var result = new ResultDTO();
 
