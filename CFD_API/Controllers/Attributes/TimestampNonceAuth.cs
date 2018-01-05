@@ -49,21 +49,20 @@ namespace CFD_API.Controllers.Attributes
                             var requestScope = actionContext.Request.GetDependencyScope();
 
                             // Resolve the service you want to use.
-                            using (var db = requestScope.GetService(typeof (CFDEntities)) as CFDEntities)
+                            var db = requestScope.GetService(typeof (CFDEntities)) as CFDEntities;
+
+                            var record =
+                                db.TimeStampNonces.FirstOrDefault(o => o.Nonce == nonce && o.TimeStamp == timeStamp);
+                            if (record == null || record.Expiration != SqlDateTime.MaxValue.Value)
                             {
-                                var record =
-                                    db.TimeStampNonces.FirstOrDefault(o => o.Nonce == nonce && o.TimeStamp == timeStamp);
-                                if (record == null || record.Expiration != SqlDateTime.MaxValue.Value)
-                                {
-                                    actionContext.Response =
-                                        actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
-                                            "signature unauthorized");
-                                }
-                                else
-                                {
-                                    record.Expiration = DateTime.Now;
-                                    db.SaveChanges();
-                                }
+                                actionContext.Response =
+                                    actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
+                                        "signature unauthorized");
+                            }
+                            else
+                            {
+                                record.Expiration = DateTime.Now;
+                                db.SaveChanges();
                             }
                         }
                     }
