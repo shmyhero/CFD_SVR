@@ -197,8 +197,37 @@ namespace CFD_API.Controllers
             }
 
             var phoneList = users.Select(u => u.Phone).ToList();
+            var userIDList = users.Select(u => u.Id).ToList();
+            var ayAccountList = users.Select(u => u.AyondoAccountId).ToList();
+            var ayLiveAccountList = users.Select(u => u.AyLiveAccountId).ToList();
 
             var referHistorys = db.ReferHistorys.Where(rh => phoneList.Contains(rh.ApplicantNumber)).ToList();
+            //避免多次查询数据库，把下面循环里的查询提升到这里
+            db.Database.CommandTimeout = 600;//时间跨度长的话会超时
+            var userInfos = db.UserInfos.Where(ui => userIDList.Contains(ui.UserId)).ToList();
+            var demoTransHistory = (from t in db.AyondoTradeHistories
+                                   group t by t.AccountId into h1
+                                   let ayAccountID = h1.Key
+                                   where ayAccountList.Contains(ayAccountID)
+                                   select new
+                                   {
+                                       AyondoAccountID = h1.Key,
+                                       DemoTransCount = h1.Count()
+                                   }).ToList();
+                                  
+            var depositHistory = db.AyondoTransferHistory_Live.Where(CFD_COMMON.Utils.Transfer.IsDeposit(ayLiveAccountList)).ToList();
+            RewardService service = new RewardService(db);
+            var rewardList = service.GetTotalReward(userIDList);
+
+            var rewardTransferList = (from r in db.RewardTransfers
+                                      group r by r.UserID into h1
+                                      let userID = h1.Key
+                                      where userIDList.Contains(userID)
+                                      select new
+                                      {
+                                          UserID = h1.Key,
+                                          Amount = h1.Select(o=>o.Amount).DefaultIfEmpty(0).Sum()
+                                      }).ToList();
 
             users.ForEach(u => {
                 DemoUserDTO dto = new DemoUserDTO();
@@ -206,13 +235,43 @@ namespace CFD_API.Controllers
                 dto.account = u.AyondoUsername;
                 dto.phone = u.Phone;
                 dto.demoSignedAt = u.CreatedAt.HasValue? u.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
-                dto.demoTransCount = db.AyondoTradeHistories.Count(t => t.AccountId == u.AyondoAccountId);
+                //dto.demoTransCount = db.AyondoTradeHistories.Count(t => t.AccountId == u.AyondoAccountId);
+                var demoTrans = demoTransHistory.FirstOrDefault(t => t.AyondoAccountID == u.AyondoAccountId);
+                if(demoTrans == null)
+                {
+                    dto.demoTransCount = 0;
+                }
+                else
+                {
+                    dto.demoTransCount = demoTrans.DemoTransCount;
+                }
+                 
                 dto.lastLoginAt = u.LastHitAt.HasValue? u.LastHitAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
-                dto.reward = GetTotalReward(u.Id).Item1 - db.RewardTransfers.Where(o => o.UserID == u.Id).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+                //dto.reward = GetTotalReward(u.Id).Item1 - db.RewardTransfers.Where(o => o.UserID == u.Id).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+                if(rewardList.ContainsKey(u.Id))
+                {
+                    decimal transferred = 0;
+                    var rewardTransfer = rewardTransferList.FirstOrDefault(rt => rt.UserID == u.Id);
+                    if(rewardTransfer != null)
+                    {
+                        transferred = rewardTransfer.Amount;
+                    }
+                    dto.reward = rewardList[u.Id].GetTotal() - transferred;
+                }
+                
                 dto.liveSignedAt = u.AyLiveApproveAt.HasValue? u.AyLiveApproveAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : string.Empty;
                 dto.liveAccountName = u.AyLiveUsername;
-                var userInfo = db.UserInfos.FirstOrDefault(ui => ui.UserId == u.Id);
-                if(userInfo == null)
+                //var userInfo = db.UserInfos.FirstOrDefault(ui => ui.UserId == u.Id);
+                //if(userInfo == null)
+                //{
+                //    dto.realName = string.Empty;
+                //}
+                //else
+                //{
+                //    dto.realName = userInfo.LastName + userInfo.FirstName;
+                //}
+                var userInfo = userInfos.FirstOrDefault(ui => ui.UserId == u.Id);
+                if (userInfo == null)
                 {
                     dto.realName = string.Empty;
                 }
@@ -220,8 +279,8 @@ namespace CFD_API.Controllers
                 {
                     dto.realName = userInfo.LastName + userInfo.FirstName;
                 }
-                
-                if(referHistorys.Any(r => r.ApplicantNumber == u.Phone))
+
+                if (referHistorys.Any(r => r.ApplicantNumber == u.Phone))
                 {
                     int refereeID = referHistorys.FirstOrDefault(r => r.ApplicantNumber == u.Phone).RefereeID;
                     var referee = db.Users.FirstOrDefault(u1 => u1.Id == refereeID);
@@ -230,7 +289,8 @@ namespace CFD_API.Controllers
                         dto.channel = referee.Nickname;
                     }
                 }
-                dto.isDeposited = db.AyondoTransferHistory_Live.Any(CFD_COMMON.Utils.Transfer.IsDeposit(u.AyLiveAccountId));
+                //dto.isDeposited = db.AyondoTransferHistory_Live.Any(CFD_COMMON.Utils.Transfer.IsDeposit(u.AyLiveAccountId));
+                dto.isDeposited = depositHistory.Any(d => d.AccountId == u.AyLiveAccountId);
 
                 result.Add(dto);
             });

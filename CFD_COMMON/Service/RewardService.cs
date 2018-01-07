@@ -457,6 +457,134 @@ namespace CFD_COMMON.Service
 
             return new RewardDetail() { demoProfit = demoProfit, referralReward = referRewardAmount, liveRegister = liveRegisterReward, demoRegister = demoRegisterReward, totalDailySign = totalDailySignReward, totalCard = totalCard.Value, totalDemoTransaction = totalDemoTransactionReward, firstDeposit = firstDepositReward, quizSettled = quizSettled, quizUnSettled = quizUnSettled };
         }
+
+        public Dictionary<int,RewardDetail> GetTotalReward(List<int> userIDList)
+        {
+            Dictionary<int, RewardDetail> result = new Dictionary<int, RewardDetail>();
+
+            userIDList.ForEach(uID => {
+                if(!result.ContainsKey(uID))
+                {
+                    result.Add(uID, new RewardDetail());
+                }
+            });
+
+            //reward for daily sign
+            var DailySignRewards = db.DailySigns
+                .Where(o => userIDList.Contains(o.UserId) && !o.IsPaid.Value).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                rewardDetail.totalDailySign = DailySignRewards.Where(d => d.UserId == uID).Select(d => d.Amount).DefaultIfEmpty(0).Sum();
+                result[uID] = rewardDetail;
+            });
+
+
+            //reward for daily demo trasaction
+            //var totalDemoTransactionReward = db.DailyTransactions
+            //    .Where(o => userIDList.Contains(o.UserId) && !o.IsPaid.Value)
+            //    .Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+            var totalDemoTransactionReward = db.DailyTransactions
+               .Where(o => userIDList.Contains(o.UserId) && !o.IsPaid.Value).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                rewardDetail.totalDemoTransaction = totalDemoTransactionReward.Where(d => d.UserId == uID).Select(d => d.Amount).DefaultIfEmpty(0).Sum();
+                result[uID] = rewardDetail;
+            });
+
+            //卡片奖励
+            //var totalCard = db.UserCards_Live.Where(o => (!o.IsPaid.HasValue || !o.IsPaid.Value) && userIDList.Contains(o.UserId)).Select(o => o.Reward).DefaultIfEmpty(0).Sum();
+            var totalCard = db.UserCards_Live.Where(o => (!o.IsPaid.HasValue || !o.IsPaid.Value) && userIDList.Contains(o.UserId)).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                rewardDetail.totalCard = totalCard.Where(d => d.UserId == uID).Select(d => d.Reward).DefaultIfEmpty(0).Sum().Value;
+                result[uID] = rewardDetail;
+            });
+
+            //reward for demo register
+            //var reward = db.DemoRegisterRewards.FirstOrDefault(o => userIDList.Contains(o.UserId));
+            //decimal demoRegisterReward = reward == null ? 0 : reward.Amount;
+            var demoRegisterReward = db.DemoRegisterRewards.Where(o => userIDList.Contains(o.UserId)).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                rewardDetail.demoRegister = demoRegisterReward.Where(d => d.UserId == uID).Select(d => d.Amount).DefaultIfEmpty(0).Sum();
+                result[uID] = rewardDetail;
+            });
+
+            //实盘账户注册交易金
+            //var liveReward = db.LiveRegisterRewards.FirstOrDefault(o => userIDList.Contains(o.UserId));
+            //decimal liveRegisterReward = liveReward == null ? 0 : liveReward.Amount;
+            var liveRegisterReward = db.LiveRegisterRewards.Where(o => userIDList.Contains(o.UserId)).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                rewardDetail.liveRegister = liveRegisterReward.Where(d => d.UserId == uID).Select(d => d.Amount).DefaultIfEmpty(0).Sum();
+                result[uID] = rewardDetail;
+            });
+
+            //推荐人奖励
+            //var referRewardAmount = db.ReferRewards.Where(o => userIDList.Contains(o.UserID)).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+            var referRewardAmount = db.ReferRewards.Where(o => userIDList.Contains(o.UserID)).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                rewardDetail.referralReward = referRewardAmount.Where(d => d.UserID == uID).Select(d => d.Amount).DefaultIfEmpty(0).Sum();
+                result[uID] = rewardDetail;
+            });
+
+
+            //首日入金交易金
+            //decimal firstDepositReward = 0;
+            //var depositRewards = db.DepositRewards.Where(o => userIDList.Contains(o.UserId));
+            //if (!(depositRewards == null || depositRewards.Count() == 0))
+            //{
+            //    firstDepositReward = depositRewards.Sum(o => o.Amount);
+            //}
+            var depositRewards = db.DepositRewards.Where(o => userIDList.Contains(o.UserId)).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                rewardDetail.firstDeposit = depositRewards.Where(d => d.UserId == uID).Select(d => d.Amount).DefaultIfEmpty(0).Sum();
+                result[uID] = rewardDetail;
+            });
+
+            //模拟收益交易金
+            //decimal demoProfit = 0;
+            //var demoRewards = db.DemoProfitRewards.Where(o => userIDList.Contains(o.UserId));
+            //if (!(demoRewards == null || demoRewards.Count() == 0))
+            //{
+            //    demoProfit = demoRewards.Sum(o => o.Amount);
+            //}
+            var demoProfitRewards = db.DemoProfitRewards.Where(o => userIDList.Contains(o.UserId)).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                rewardDetail.demoProfit = demoProfitRewards.Where(d => d.UserId == uID).Select(d => d.Amount).DefaultIfEmpty(0).Sum();
+                result[uID] = rewardDetail;
+            });
+
+            //竞猜活动
+            decimal quizSettled = 0;
+            decimal quizUnSettled = 0;
+            var quizRewards = db.QuizBets.Where(o => userIDList.Contains(o.UserID)).ToList();
+            userIDList.ForEach(uID => {
+                var rewardDetail = result[uID];
+                var quizRewardsByUserID = quizRewards.Where(o => o.UserID == uID).ToList();
+                if (!(quizRewardsByUserID == null || quizRewardsByUserID.Count() == 0))
+                {
+                    quizRewardsByUserID.ForEach(q =>
+                    {
+                        if (!q.SettledAt.HasValue) //还出结果的竞猜
+                        {
+                            quizUnSettled += q.PL ?? 0;
+                        }
+                        else //竞猜有结果的话，PL要减去BetAmount
+                        {
+                            quizSettled += (q.PL ?? 0) - (q.BetAmount ?? 0);
+                        }
+                    });
+                    rewardDetail.quizSettled = quizSettled;
+                    rewardDetail.quizUnSettled = quizUnSettled;
+                    result[uID] = rewardDetail;
+                }
+            });
+            return result;
+        }
     }
 
     public struct RewardDetail

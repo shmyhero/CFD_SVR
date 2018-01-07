@@ -30,6 +30,14 @@ namespace CFD_COMMON.Utils
                     (o.TransferType == "Bank Wire" && o.Amount > 0 && o.TransferId.Length == 36));
         }
 
+        public static Expression<Func<AyondoTransferHistory_Live, bool>> IsDeposit(List<long?> ayLiveAccountIdList)
+        {
+            return
+                o => ayLiveAccountIdList.Contains(o.TradingAccountId) &&
+                    (Transfer.DepositTypes.Contains(o.TransferType) ||
+                    (o.TransferType == "Bank Wire" && o.Amount > 0 && o.TransferId.Length == 36));
+        }
+
         public static Expression<Func<AyondoTransferHistory_Live, bool>> IsRemittance(long? ayLiveAccountId)
         {
             return
