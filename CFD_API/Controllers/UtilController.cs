@@ -31,6 +31,7 @@ using CFD_API.Caching;
 using CFD_COMMON.Models.Cached;
 using Newtonsoft.Json.Linq;
 using System.Configuration;
+using System.Drawing;
 using CFD_API.DTO.Form;
 using ServiceStack.Text;
 using System.Threading;
@@ -81,6 +82,104 @@ namespace CFD_API.Controllers
             db.TimeStampNonces.Add(new TimeStampNonce() { TimeStamp = timeStamp, Nonce = nonce, CreatedAt = DateTime.UtcNow, Expiration = SqlDateTime.MaxValue.Value });
             db.SaveChanges();
             return new TimeStampDTO() { timeStamp = timeStamp, nonce = nonce };
+        }
+
+        [HttpGet]
+        [Route("timestampCaptcha")]
+        public TimeStampDTO GetTimestampCaptcha()
+        {
+            long timeStamp = DateTime.Now.ToUnixTime();
+            int nonce = new Random(DateTime.Now.Millisecond).Next(0, 100000);
+
+
+            var code = Randoms.GetRandomAlphanumericCaptchaString(4);
+            int randAngle = 45; //随机转动角度
+            Bitmap map = new Bitmap(code.Length*16, 22); //创建图片背景
+            Graphics graph = Graphics.FromImage(map);
+
+            Random rand = new Random();
+
+            Color[] cBackground =
+            {
+                Color.AliceBlue, Color.Azure, Color.Beige, Color.BlanchedAlmond, Color.Cornsilk, Color.FloralWhite, Color.LemonChiffon,
+                Color.PapayaWhip
+            };
+            graph.Clear(cBackground[rand.Next(cBackground.Length)]); //清除画面，填充背景
+            //graph.DrawRectangle(new Pen(Color.Black, 0), 0, 0, map.Width - 1, map.Height - 1);//画一个边框
+            //graph.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;//模式
+
+            //背景噪点生成
+            Pen blackPen = new Pen(Color.LightGray, 0);
+            for (int i = 0; i < 50; i++)
+            {
+                int x = rand.Next(0, map.Width);
+                int y = rand.Next(0, map.Height);
+                graph.DrawRectangle(blackPen, x, y, 1, 1);
+            }
+
+
+            //验证码旋转，防止机器识别
+            char[] chars = code.ToCharArray(); //拆散字符串成单字符数组
+
+            //文字距中
+            StringFormat format = new StringFormat(StringFormatFlags.NoClip)
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
+
+            //定义颜色
+            Color[] cFont =
+            {
+                Color.Black, Color.Red, Color.DarkBlue, Color.Green, Color.Orange, Color.Brown, Color.DarkCyan,
+                Color.Purple
+            };
+            //定义字体
+            string[] font = {"Verdana", "Microsoft Sans Serif", "Comic Sans MS", "Arial", "宋体"};
+            int cindex = rand.Next(cFont.Length);
+
+            for (int i = 0; i < chars.Length; i++)
+            {
+                int findex = rand.Next(font.Length);
+
+                Font f = new Font(font[findex], 14, FontStyle.Bold); //字体样式(参数2为字体大小)
+                Brush b = new SolidBrush(cFont[cindex]);
+
+                Point dot = new Point(14, 14);
+                //graph.DrawString(dot.X.ToString(),fontstyle,new SolidBrush(Color.Black),10,150);//测试X坐标显示间距的
+                float angle = rand.Next(-randAngle, randAngle); //转动的度数
+
+                graph.TranslateTransform(dot.X, dot.Y); //移动光标到指定位置
+                graph.RotateTransform(angle);
+                graph.DrawString(chars[i].ToString(), f, b, 1, 1, format);
+                //graph.DrawString(chars[i].ToString(),fontstyle,new SolidBrush(Color.Blue),1,1,format);
+                graph.RotateTransform(-angle); //转回去
+                graph.TranslateTransform(-2, -dot.Y); //移动光标到指定位置，每个字符紧凑显示，避免被软件识别
+            }
+            //生成图片
+            System.IO.MemoryStream ms = new System.IO.MemoryStream();
+            map.Save(ms, System.Drawing.Imaging.ImageFormat.Gif);
+            //Response.ClearContent();
+            //Response.ContentType = "image/gif";
+            //Response.BinaryWrite(ms.ToArray());
+            graph.Dispose();
+            map.Dispose();
+
+            byte[] byteImage = ms.ToArray();
+            var base64String = Convert.ToBase64String(byteImage, Base64FormattingOptions.None);
+
+
+            db.TimeStampNonces.Add(new TimeStampNonce()
+            {
+                TimeStamp = timeStamp,
+                Nonce = nonce,
+                CreatedAt = DateTime.UtcNow,
+                Expiration = SqlDateTime.MaxValue.Value,
+                CaptchaCode = code,
+                CaptchaImg = base64String
+            });
+            db.SaveChanges();
+            return new TimeStampDTO() {timeStamp = timeStamp, nonce = nonce, captchaImg = base64String};
         }
 
         [HttpGet]
@@ -150,57 +249,10 @@ namespace CFD_API.Controllers
         //[RequireHttps]
         public ResultDTO SendCode(string phone)
         {
-            var result = new ResultDTO();
-
-            if (!Phone.IsValidPhoneNumber(phone))
-            {
-                result.message = __(TransKey.INVALID_PHONE_NUMBER);
-                result.success = false;
-                return result;
-            }
-
-            string code = string.Empty;
-
-            ////send last code instead of regenerating if within ?
-            //if (verifyCodes.Any())
-            //{
-            //    var lastCode = verifyCodes.OrderByDescending(c => c.CreatedAt).First();
-            //}
-
-            ////day limit
-            //if (verifyCodes.Count() >= 5)
-            //{
-            //    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, __(TransKeys.SEND_CODE_LIMIT)));
-            //}
-
-            var r = new Random();
-            code = r.Next(10000).ToString("0000");
-
-            //TODO: prevent from brute-force attack
-
-            if (!string.IsNullOrWhiteSpace(code))
-            {
-                CFDGlobal.RetryMaxOrThrow(() => YunPianMessenger.TplSendCodeSms(string.Format("#code#={0}", code), phone), sleepMilliSeconds: 0);
-
-                db.VerifyCodes.Add(new VerifyCode
-                {
-                    Code = code,
-                    SentAt = DateTime.UtcNow,
-                    Phone = phone
-                });
-                db.SaveChanges();
-            }
-
-            result.success = true;
-            return result;
+            return CheckAndSendSMSVerifyCode(phone);
         }
 
-        [Route("sendVerifyCode")]
-        [HttpPost]
-        [RecordHeaders]
-        //[RequireHttps]
-        [TimestampNonceAuth]
-        public ResultDTO SendVerifyCode(string phone)
+        private ResultDTO CheckAndSendSMSVerifyCode(string phone)
         {
             var result = new ResultDTO();
 
@@ -232,7 +284,8 @@ namespace CFD_API.Controllers
 
             if (!string.IsNullOrWhiteSpace(code))
             {
-                CFDGlobal.RetryMaxOrThrow(() => YunPianMessenger.TplSendCodeSms(string.Format("#code#={0}", code), phone), sleepMilliSeconds: 0);
+                CFDGlobal.RetryMaxOrThrow(() => YunPianMessenger.TplSendCodeSms(string.Format("#code#={0}", code), phone),
+                    sleepMilliSeconds: 0);
 
                 db.VerifyCodes.Add(new VerifyCode
                 {
@@ -245,6 +298,24 @@ namespace CFD_API.Controllers
 
             result.success = true;
             return result;
+        }
+
+        [Route("sendVerifyCode")]
+        [HttpPost]
+        //[RequireHttps]
+        [TimestampNonceAuth]
+        public ResultDTO SendVerifyCode(string phone)
+        {
+            return CheckAndSendSMSVerifyCode(phone);
+        }
+
+        [Route("sendSMSCode")]
+        [HttpPost]
+        //[RequireHttps]
+        [TimestampCaptchaAuth]
+        public ResultDTO SendSMSCode(string phone)
+        {
+            return CheckAndSendSMSVerifyCode(phone);
         }
 
         /// <summary>

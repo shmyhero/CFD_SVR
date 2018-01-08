@@ -23,6 +23,12 @@ namespace CFD_COMMON.Utils
             {
                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
             };
+        private static readonly char[] AlphanumericCaptcha = new char[]
+            {
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',  'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                '1','2','3','4','5','6','7','8','9'
+            };
 
         public static string GetRandomAlphabeticLowerString(int length)
         {
@@ -62,6 +68,21 @@ namespace CFD_COMMON.Utils
             {
                 var randomIndex = r.Next(0, Alphanumeric.Length);
                 result.Add(Alphanumeric[randomIndex]);
+            }
+
+            return new string(result.ToArray());
+        }
+
+        public static string GetRandomAlphanumericCaptchaString(int length)
+        {
+
+            Random r = new Random();
+
+            IList<char> result = new List<char>();
+            for (int i = 0; i < length; i++)
+            {
+                var randomIndex = r.Next(0, AlphanumericCaptcha.Length);
+                result.Add(AlphanumericCaptcha[randomIndex]);
             }
 
             return new string(result.ToArray());

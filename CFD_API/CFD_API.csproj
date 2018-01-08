@@ -286,6 +286,7 @@
     <Compile Include="Caching\WebCache.cs" />
     <Compile Include="Caching\WebCacheInstance.cs" />
     <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\Attributes\TimestampCaptchaAuth.cs" />
     <Compile Include="Controllers\Attributes\TimestampNonceAuth.cs" />
     <Compile Include="Controllers\Attributes\CultureHandler.cs" />
     <Compile Include="Controllers\Attributes\ApiHitRecord.cs" />
