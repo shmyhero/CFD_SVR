@@ -368,8 +368,7 @@ namespace CFD_API.Controllers
 
             if (id <= 0)//take top 10 by date
             {
-                var languages = GetLanguageByCulture();
-                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language) && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
+                headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).ToList();
 
                 while (headlines == null || headlines.Count == 0)
                 {
