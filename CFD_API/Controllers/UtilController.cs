@@ -721,5 +721,20 @@ namespace CFD_API.Controllers
 
             return result;
         }
+
+        [HttpGet]
+        [Route("IOSEffectDay")]
+        public string GetIOSEffectDate()
+        {
+            Misc iosEffectDay = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "ISOEffectDate");
+            if (iosEffectDay != null)
+            {
+                return iosEffectDay.Value;
+            }
+            else
+            {
+                return DateTime.Now.AddDays(7).ToString("yyyy-MM-dd");
+            }
+        }
     }
 }
