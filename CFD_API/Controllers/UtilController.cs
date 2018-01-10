@@ -326,6 +326,7 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         [Route("sendReferCode")]
         [HttpPost]
+        [TimestampCaptchaAuth]
         public ResultDTO SendReferCode(string phone)
         {
             if(db.Users.Any(u => u.Phone == phone))
@@ -333,7 +334,7 @@ namespace CFD_API.Controllers
                 return new ResultDTO() { success = false, message = "手机号已被注册" };
             }
 
-            return SendCode(phone);
+            return CheckAndSendSMSVerifyCode(phone);
         }
 
         [Route("feedback")]
