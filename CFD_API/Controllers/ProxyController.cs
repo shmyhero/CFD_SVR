@@ -60,7 +60,7 @@ namespace CFD_API.Controllers
 'addressZip': '12345',
 'clientIP': '127.0.0.1',
 'currency': 'USD',
-'email': 'thcn_demo@tradehero.mobi',
+'email': '{2}@tradehero.mobi',
 'firstname': 'User',
 'gender': 'Male',
 'isTestRecord': true,
@@ -73,7 +73,9 @@ namespace CFD_API.Controllers
 'productType': 'CFD'
 }}";
 
-            var s = string.Format(json, username, Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(password, Encryption.SHARED_SECRET_Ayondo));
+            var s = string.Format(json, username,
+                Encryption.GetCypherText_3DES_CBC_MD5ofPW_IVPrefixed(password, Encryption.SHARED_SECRET_Ayondo),
+                username);
             sw.Write(s);
             sw.Flush();
             sw.Close();
