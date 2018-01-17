@@ -12,10 +12,13 @@ namespace CFD_COMMON.Models.Entities
         {
         }
 
-        public virtual DbSet<TimeStampNonce> TimeStampNonces { get; set; }
+        public virtual DbSet<PingOrder> PingOrders { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PingOrder>()
+                .Property(e => e.FxRate)
+                .HasPrecision(18, 6);
         }
     }
 }

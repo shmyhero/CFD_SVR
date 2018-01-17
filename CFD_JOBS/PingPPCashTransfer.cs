@@ -32,8 +32,15 @@ namespace CFD_JOBS
                         var list =
                             db.PingOrders.Include(o => o.User).Where(
                                 o =>
-                                    o.WebHookResult == "charge.succeeded" && (o.AyTransReqSentAt == null ||
-                                                                              o.AyTransId == null)).ToList();
+                                    o.WebHookResult == "charge.succeeded" &&
+                                    (
+                                        o.AyTransReqSentAt == null //never sent
+                                        ||
+                                        o.AyTransReqId != null && o.AyTransId == null
+                                        //sent and has reqId, waiting for getting transId
+                                        )
+                                )
+                                .ToList();
 
                         CFDGlobal.LogLine(list.Count + " unsent/incomplete data...");
 
@@ -41,62 +48,86 @@ namespace CFD_JOBS
                         {
                             foreach (var pay in list)
                             {
-                                if (pay.AyTransReqSentAt == null)
+                                try
                                 {
-                                    if (pay.User.AyLiveBalanceId == null || pay.User.AyLiveActorId == null)
-                                        CFDGlobal.LogLine(pay.Id + ": user " + pay.UserId + " has no balanceId/actorId");
-                                    else
+                                    if (pay.AyTransReqSentAt == null)
                                     {
-                                        pay.AyTransReqSentAt = DateTime.UtcNow;
+                                        if (pay.User.AyLiveBalanceId == null || pay.User.AyLiveActorId == null)
+                                            CFDGlobal.LogLine(pay.Id + ": user " + pay.UserId +
+                                                              " has no balanceId/actorId");
+                                        else
+                                        {
+                                            pay.AyTransReqSentAt = DateTime.UtcNow;
 
+                                            //make sure that there is no replicated requesting
+                                            db.SaveChanges();
+
+                                            try
+                                            {
+                                                var guid = client.NewCashTransfer("TradeHeroHoldingAC", "dY$Tqn4KQ#",
+                                                    pay.AmountUSD.Value, pay.User.AyLiveBalanceId.ToString(),
+                                                    pay.User.AyLiveActorId.ToString());
+
+                                                pay.AyTransReqId = guid;
+
+                                                CFDGlobal.LogLine(pay.Id + ": request sent " + pay.AyTransReqId);
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                pay.AyTransReqSentResult = e.Message + "\r\n" + e.StackTrace;
+
+                                                CFDGlobal.LogLine(pay.Id + ": user " + pay.UserId +
+                                                                  " sending FIX transfer request error:");
+                                                CFDGlobal.LogException(e);
+
+                                                ElmahLogForJOB.Log(e);
+                                            }
+
+                                            db.SaveChanges();
+                                        }
+                                    }
+                                    else if (pay.AyTransId == null && pay.AyTransReqId != null)
+                                    {
                                         try
                                         {
-                                            var guid = client.NewCashTransfer("TradeHeroHoldingAC", "dY$Tqn4KQ#",
-                                                pay.AmountUSD.Value, pay.User.AyLiveBalanceId.ToString(),
-                                                pay.User.AyLiveActorId.ToString());
+                                            var transferReport = client.GetCashTransferResult(pay.AyTransReqId);
+                                            pay.AyTransId = Convert.ToInt64(transferReport.TransferId);
+                                            pay.AyTransStatus = transferReport.StatusCode.ToString();
+                                            pay.AyTransUpdateAt = transferReport.Timestamp;
+                                            pay.AyTransText = transferReport.Text;
 
-                                            pay.AyTransReqId = guid;
+                                            CFDGlobal.LogLine(pay.Id + ": transfer result updated " + pay.AyTransStatus);
 
-                                            CFDGlobal.LogLine(pay.Id + ": request sent " + pay.AyTransReqId);
+                                            db.SaveChanges();
                                         }
                                         catch (Exception e)
                                         {
-                                            pay.AyTransReqSentResult = e.Message + "\r\n" + e.StackTrace;
-
-                                            CFDGlobal.LogLine(pay.Id + ": user " + pay.UserId + " sending transfer request error:");
+                                            CFDGlobal.LogLine(pay.Id + ": guid " + pay.AyTransReqId +
+                                                              " getting transfer result error:");
                                             CFDGlobal.LogException(e);
-                                        }
 
+                                            ElmahLogForJOB.Log(e);
+                                        }
                                     }
                                 }
-                                else if (pay.AyTransId == null)
+                                catch (Exception e)
                                 {
-                                    try
-                                    {
-                                        var transferReport = client.GetCashTransferResult(pay.AyTransReqId);
-                                        pay.AyTransId = Convert.ToInt64(transferReport.TransferId);
-                                        pay.AyTransStatus = transferReport.StatusCode.ToString();
-                                        pay.AyTransUpdateAt = transferReport.Timestamp;
-                                        pay.AyTransText = transferReport.Text;
+                                    CFDGlobal.LogLine(pay.Id + ": user " + pay.UserId +
+                                                      " ping order process error:");
+                                    CFDGlobal.LogException(e);
 
-                                        CFDGlobal.LogLine(pay.Id + ": transfer result updated " + pay.AyTransStatus);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        CFDGlobal.LogLine(pay.Id + ": guid " + pay.AyTransReqId +
-                                                          " getting transfer result error:");
-                                        CFDGlobal.LogException(e);
-                                    }
+                                    ElmahLogForJOB.Log(e);
                                 }
                             }
-
-                            db.SaveChanges();
                         }
                     }
                 }
                 catch (Exception e)
                 {
+                    CFDGlobal.LogLine("PingPPCashTransfer job main loop error:");
                     CFDGlobal.LogException(e);
+
+                    ElmahLogForJOB.Log(e);
                 }
 
                 CFDGlobal.LogLine("");

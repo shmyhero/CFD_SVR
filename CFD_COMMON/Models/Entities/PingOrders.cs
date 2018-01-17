@@ -54,7 +54,7 @@ namespace CFD_COMMON.Models.Entities
         public string WebHookResult { get; set; }
 
         public DateTime? AyTransReqSentAt { get; set; }
-        [StringLength(500)]
+        [Column(TypeName = "ntext")]
         public string AyTransReqSentResult { get; set; }
         [StringLength(50)]
         public string AyTransReqId { get; set; }
