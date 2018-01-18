@@ -471,6 +471,11 @@ namespace CFD_API.Controllers
         [Route("{userID}/bet")]
         public ResultDTO BetOnCurrent(int userID, QuizBetDTO form)
         {
+            if(form.BetAmount == null || !form.BetAmount.HasValue || (form.BetAmount != 5 && form.BetAmount != 10))
+            {
+                return new ResultDTO(false) { message = "竞猜金额异常" };
+            }
+
             var nextQuiz = db.Quizzes.OrderBy(q => q.OpenAt).FirstOrDefault(q => q.OpenAt < DateTime.Now && q.ClosedAt > DateTime.Now && q.ExpiredAt == SqlDateTime.MaxValue.Value);
 
             if (nextQuiz == null)
