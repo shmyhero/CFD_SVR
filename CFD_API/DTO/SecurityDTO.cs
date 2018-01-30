@@ -80,6 +80,8 @@ namespace CFD_API.DTO
         public List<int> levList { get; set; }
 
         public SecurityDTO fxOutright { get; set; }
+
+        public string assetClass { get; set; }
     }
 
     /// <summary>
