@@ -692,7 +692,8 @@ namespace CFD_API.Controllers
         [Route("live/byPopularity")]
         public List<ByPopularityDTO> GetByPopularity()
         {
-            var activeProd = GetActiveProds(IsLiveUrl);
+            var visibleProducts =
+                GetActiveProds(IsLiveUrl).Where(o => o.AssetClass != CFDGlobal.ASSET_CLASS_CRYPTO_FX).ToList();
 
             var ts1day = TimeSpan.FromDays(1);
             var dtEnd = DateTime.UtcNow;
@@ -706,7 +707,7 @@ namespace CFD_API.Controllers
                     :db.NewPositionHistories.AsNoTracking().Where(o => o.CreateTime >= dtStart && o.CreateTime < dtEnd).ToList().Select(o => o as NewPositionHistoryBase).ToList(); // >= start and < end
                     
                 //trade history list covers more than 3 active securities
-                if (tradeHistory.Select(o => o.SecurityId).Distinct().Count(o => activeProd.Any(p => p.Id == o)) >= 3)
+                if (tradeHistory.Select(o => o.SecurityId).Distinct().Count(o => visibleProducts.Any(p => p.Id == o)) >= 3)
                     break;
 
                 //back 1 day
@@ -735,11 +736,11 @@ namespace CFD_API.Controllers
 
             var result =
                 tradeHistory.GroupBy(o => o.SecurityId)
-                .Where(o => activeProd.Any(p => p.Id == o.Key))//active products
+                .Where(o => visibleProducts.Any(p => p.Id == o.Key))//active products
                 .Select(o =>
                 {
                     var secId = o.Key.Value;
-                    var prodDef = activeProd.FirstOrDefault(p => p.Id == secId);
+                    var prodDef = visibleProducts.FirstOrDefault(p => p.Id == secId);
 
                     return new ByPopularityDTO()
                     {
