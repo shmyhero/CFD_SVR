@@ -285,10 +285,19 @@ namespace CFD_JOBS.Ayondo
                     //auto close alert/push
                     var autoClosedHistories =newTradeHistories.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
 
+                    //open/close operations
+                    var createDeleteHistories = newTradeHistories.Where(x => x.UpdateType == "DELETE" || x.UpdateType == "CREATE").ToList();
+
                     if (autoClosedHistories.Count > 0)
                     {
                         CFDGlobal.LogLine("auto close record count: " + autoClosedHistories.Count );
                         NotifyUser(autoClosedHistories, isLive);
+                    }
+
+                    if (isLive && createDeleteHistories.Count > 0)
+                    {
+                        CFDGlobal.LogLine("open/close records (to notify followers) count: " + createDeleteHistories.Count);
+                        NotifyFollower(createDeleteHistories);
                     }
                 }
                 catch (Exception e)
@@ -300,6 +309,63 @@ namespace CFD_JOBS.Ayondo
 
                 CFDGlobal.LogLine("");
                 Thread.Sleep(Interval);
+            }
+        }
+
+        private static void NotifyFollower(List<AyondoTradeHistoryBase> createDeleteHistories)
+        {
+            var accountIds =
+                createDeleteHistories.Where(o => o.AccountId.HasValue)
+                    .Select(o => o.AccountId.Value)
+                    .Distinct()
+                    .ToList();
+            var positionIds =
+                createDeleteHistories.Where(o => o.PositionId.HasValue)
+                    .Select(o => o.PositionId.Value)
+                    .Distinct()
+                    .ToList();
+            using (var db = CFDEntities.Create())
+            {
+                var users = db.Users.Where(o => accountIds.Contains(o.AyLiveAccountId.Value)).ToList();
+                var positions = db.NewPositionHistory_live.Where(o => positionIds.Contains(o.Id)).ToList();
+                var ownerIds = users.Select(o => o.Id).ToList();
+                var followers = db.UserFollows.Where(o => ownerIds.Contains(o.FollowingId)).ToList();
+
+                string msgCreateTitle = "开仓消息";
+                string msgCreateBody = "您关注的“{0}”，以{1}美元{2}倍杠杆，下单了{3}。";
+                string msgDeletTitle = "平仓消息";
+                string msgDeleteBody = "您关注的“{0}”，以{1}美元{2}倍杠杆交易的{3}，刚刚平仓了。";
+
+                foreach (var h in createDeleteHistories)
+                {
+                    var owner = users.FirstOrDefault(o => o.AyLiveAccountId == h.AccountId);
+                    if (owner.ShowOpenCloseData ?? CFDUsers.DEFAULT_SHOW_DATA)
+                    {
+                        var position = positions.FirstOrDefault(o => o.Id == h.PositionId);
+                        var hisFollowers = followers.Where(o => o.FollowingId == owner.Id);
+
+                        var title = h.UpdateType == "CREATE" ? msgCreateTitle : msgDeletTitle;
+                        var body = string.Format(h.UpdateType == "CREATE" ? msgCreateBody : msgDeleteBody,
+                            owner.Nickname,
+                            position.InvestUSD.Value.ToString("0"),
+                            position.Leverage.Value.ToString("0"),
+                            Translator.GetCName(h.SecurityName));
+
+                        foreach (var f in hisFollowers)
+                        {
+                            db.Message_Live.Add(new Message_Live()
+                            {
+                                Body = body,
+                                CreatedAt = DateTime.UtcNow,
+                                IsReaded = false,
+                                Title = title,
+                                UserId = f.UserId,
+                            });
+                        }
+                    }
+                }
+
+                db.SaveChanges();
             }
         }
 
