@@ -339,7 +339,7 @@ namespace CFD_JOBS.Ayondo
                 foreach (var h in createDeleteHistories)
                 {
                     var owner = users.FirstOrDefault(o => o.AyLiveAccountId == h.AccountId);
-                    if (owner.ShowOpenCloseData ?? CFDUsers.DEFAULT_SHOW_DATA)
+                    if ((owner.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA) && (owner.ShowOpenCloseData ?? CFDUsers.DEFAULT_SHOW_DATA))
                     {
                         var position = positions.FirstOrDefault(o => o.Id == h.PositionId);
                         var hisFollowers = followers.Where(o => o.FollowingId == owner.Id);
