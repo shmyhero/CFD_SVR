@@ -130,6 +130,10 @@ namespace CFD_API.Controllers.Attributes
                 UserId = userId
             };
 
+            //too many spam logs
+            if (apiHit.Url.Contains("api/sendCode"))
+                return;
+
             ApiHitsQueue.Enqueue(apiHit);
         }
     }

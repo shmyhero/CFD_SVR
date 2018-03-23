@@ -20,6 +20,6 @@
     <AzureAppendTimestampToDeploymentLabel>True</AzureAppendTimestampToDeploymentLabel>
     <AzureHostedServiceResourceGroup />
     <EnableRemoteDebugger>True</EnableRemoteDebugger>
-    <RemoteDebuggerConnectorCertificateThumbprint>670750687B13023428E59B99356AF0A574A429C4</RemoteDebuggerConnectorCertificateThumbprint>
+    <RemoteDebuggerConnectorCertificateThumbprint>D6296C28392F4B1D08FE99E0BD86D20F0CA7CA19</RemoteDebuggerConnectorCertificateThumbprint>
   </PropertyGroup>
 </Project>

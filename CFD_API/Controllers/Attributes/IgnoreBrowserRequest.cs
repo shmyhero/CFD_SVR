@@ -11,7 +11,7 @@ using System.Web.Http.Filters;
 
 namespace CFD_API.Controllers.Attributes
 {
-    public class RecordHeaders : ActionFilterAttribute
+    public class IgnoreBrowserRequest : ActionFilterAttribute
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
@@ -53,8 +53,9 @@ namespace CFD_API.Controllers.Attributes
                         sb.Append(System.Environment.NewLine);
                     });
 
-                    CFDGlobal.LogInformation("SMS attack detected and intercepted.");
-                    CFDGlobal.LogInformation(sb.ToString());
+                    //commented due to: too many spam logs
+                    //CFDGlobal.LogInformation("SMS attack detected and intercepted.");
+                    //CFDGlobal.LogInformation(sb.ToString());
                     
                    
 
