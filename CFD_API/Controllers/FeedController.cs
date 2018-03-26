@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -48,9 +49,9 @@ namespace CFD_API.Controllers
             //if (tryGetAuthUser != null)
             //{
             var tryGetAuthUser = GetUser();
-            //remove me from ranked user ids
-            if (feedUserIds.Contains(tryGetAuthUser.Id))
-                    feedUserIds.Remove(tryGetAuthUser.Id);
+            ////remove me from ranked user ids
+            //if (feedUserIds.Contains(tryGetAuthUser.Id))
+            //        feedUserIds.Remove(tryGetAuthUser.Id);
 
                 //following user ids
                 var followingUserIds =
@@ -59,8 +60,17 @@ namespace CFD_API.Controllers
                 feedUserIds = feedUserIds.Concat(followingUserIds).ToList();
             //}
 
+            var users = db.Users.Where(o => feedUserIds.Contains(o.Id)).ToList();
+            var feedShowOpenCloseDataUserIds = feedUserIds.Where(o =>
+            {
+                var user = users.FirstOrDefault(u => u.Id == o);
+                if ((user.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA) && (user.ShowOpenCloseData ?? CFDUsers.DEFAULT_SHOW_DATA))
+                    return true;
+                return false;
+            }).ToList();
+
             //get open feeds
-            var openFeedsWhereClause = db.NewPositionHistory_live.Where(o => feedUserIds.Contains(o.UserId.Value));
+            var openFeedsWhereClause = db.NewPositionHistory_live.Where(o => feedShowOpenCloseDataUserIds.Contains(o.UserId.Value));
             if (olderThan != null) openFeedsWhereClause = openFeedsWhereClause.Where(o => o.CreateTime < olderThan);
             var openFeeds = openFeedsWhereClause
                 .OrderByDescending(o => o.CreateTime).Take(count)
@@ -76,7 +86,7 @@ namespace CFD_API.Controllers
                 .ToList();
 
             //get close feeds
-            var closeFeedsWhereClause = db.NewPositionHistory_live.Where(o => feedUserIds.Contains(o.UserId.Value) && o.ClosedAt != null);
+            var closeFeedsWhereClause = db.NewPositionHistory_live.Where(o => feedShowOpenCloseDataUserIds.Contains(o.UserId.Value) && o.ClosedAt != null);
             if (olderThan != null) closeFeedsWhereClause = closeFeedsWhereClause.Where(o => o.ClosedAt < olderThan);
             var closeFeeds = closeFeedsWhereClause
                 .OrderByDescending(o => o.ClosedAt).Take(count)
@@ -104,8 +114,23 @@ namespace CFD_API.Controllers
                 })
                 .ToList();
 
+            //get system feed
+            var languages = Translator.GetLanguageByCulture();
+            var systemFeedsWhereClause = db.Headlines.Where(o => o.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(o.Language));
+            if (olderThan != null) systemFeedsWhereClause = systemFeedsWhereClause.Where(o => o.CreatedAt < olderThan);
+            var systemFeeds = systemFeedsWhereClause
+                .OrderByDescending(o => o.CreatedAt).Take(count)
+                .Select(o => new FeedDTO()
+                {
+                    user = new UserBaseDTO() { picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL+"11.jpg",nickname = "【热点】"},
+                    type = "system",
+                    time = o.CreatedAt.Value,
+                    status = o.Body,
+                })
+                .ToList();
+
             //concat results
-            var @resultEnumerable = openFeeds.Concat(closeFeeds).Concat(statusFeeds);
+            var @resultEnumerable = openFeeds.Concat(closeFeeds).Concat(statusFeeds).Concat(systemFeeds);
 
             //filter by time param
             if (newerThan != null)
@@ -114,15 +139,17 @@ namespace CFD_API.Controllers
             var result = @resultEnumerable.OrderByDescending(o => o.time).Take(count).ToList();
 
             //populate user/security info
-            var users = db.Users.Where(o => feedUserIds.Contains(o.Id)).ToList();
             var prods = WebCache.Live.ProdDefs;
             foreach (var feedDto in result)
             {
-                var user = users.FirstOrDefault(o => o.Id == feedDto.user.id);
-                feedDto.user.nickname = user.Nickname;
-                feedDto.user.picUrl = user.PicUrl;
+                if (feedDto.user != null && feedDto.user.id != null)
+                {
+                    var user = users.FirstOrDefault(o => o.Id == feedDto.user.id);
+                    feedDto.user.nickname = user.Nickname;
+                    feedDto.user.picUrl = user.PicUrl;
 
-                feedDto.isRankedUser = rankedUsers.Any(o => o.id == feedDto.user.id);
+                    feedDto.isRankedUser = rankedUsers.Any(o => o.id == feedDto.user.id);
+                }
 
                 if (feedDto.security != null)
                     feedDto.security.name =

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 
 namespace CFD_COMMON.Localization
 {
@@ -122,6 +123,21 @@ namespace CFD_COMMON.Localization
 
             CFDGlobal.LogWarning("Cannot find MDSTransferError translate for: [" + ayondoText + "]");
             return ayondoText;
+        }
+
+        public static List<string> GetLanguageByCulture()
+        {
+            List<string> languages = new List<string>();
+            if (Thread.CurrentThread.CurrentUICulture.Name == CFDGlobal.CULTURE_CN)
+            {
+                languages.AddRange(new string[] { null, CFDGlobal.CULTURE_CN });
+            }
+            else
+            {
+                languages.Add(CFDGlobal.CULTURE_EN);
+            }
+
+            return languages;
         }
     }
 }
