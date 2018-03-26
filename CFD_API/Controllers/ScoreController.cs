@@ -187,6 +187,9 @@ namespace CFD_API.Controllers
         [AdminAuth]
         /// <summary>
         /// 获取剩余抽奖次数
+        /// 1.3.6将逻辑修改为：
+        /// 累计积分达到 1000、3000、5000、7000、9000、11000…依此类推
+        /// ⽤户拥有 1 次抽奖机会，抽奖机会可以累加，抽奖 1 次消耗 100 积分
         /// </summary>
         /// <returns></returns>
         public int GetDrawCount(int userID)
@@ -208,20 +211,27 @@ namespace CFD_API.Controllers
                 return 0;
             }
 
-            //积分在1000到2000间有一次抽奖机会，且只有一次
-            if(totalScores>= 1000 && totalScores<2000 && !db.ScoreConsumptionHistorys.Any(sch=>sch.UserID== userID))
-            {
-                return 1;
-            }
+            ////积分在1000到2000间有一次抽奖机会，且只有一次
+            //if(totalScores>= 1000 && totalScores<2000 && !db.ScoreConsumptionHistorys.Any(sch=>sch.UserID== userID))
+            //{
+            //    return 1;
+            //}
 
-            if(totalScores >= 2000) //20002以上最多两次机会
-            {
-                int count = db.ScoreConsumptionHistorys.Count(sch => sch.UserID == userID);
+            //if(totalScores >= 2000) //20002以上最多两次机会
+            //{
+            //    int count = db.ScoreConsumptionHistorys.Count(sch => sch.UserID == userID);
 
-                return 2 - count > 0 ? (2 - count) : 0;
-            }
+            //    return 2 - count > 0 ? (2 - count) : 0;
+            //}
 
-            return 0;
+            //return 0;
+
+            int totalCount = ((totalScores - 1000) / 2000) + 1; 
+            int usedCount = db.ScoreConsumptionHistorys.Count(sch => sch.UserID == userID);
+
+            int remainCount = totalCount - usedCount;
+
+            return remainCount > 0 ? remainCount : 0;
         }
 
         [HttpGet]
