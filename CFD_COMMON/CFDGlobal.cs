@@ -104,6 +104,8 @@ B+cg+7Ook/4zS/atXL1iig1dVkgTRhBcRJvr1tJBwV52raHXTNzYJ9KPU4jvXb2H
             PooledRedisClientsManager_Live = GetNewPooledRedisClientManager_Live();
         }
 
+        public static int DEFAULT_PAGE_SIZE = 100;
+
         private static IRedisClientsManager GetNewPooledRedisClientManager()
         {
             var redisConStr = CFDGlobal.GetConfigurationSetting("redisConnectionString");

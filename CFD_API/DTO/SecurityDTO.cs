@@ -6,6 +6,13 @@ using CFD_COMMON.Models.Cached;
 
 namespace CFD_API.DTO
 {
+    public class SecurityBaseDTO
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public string symbol { get; set; }
+    }
+
     public class SecurityLiteDTO
     {
         public int id { get; set; }

@@ -3,6 +3,21 @@ using System.Collections.Generic;
 
 namespace CFD_API.DTO
 {
+    public class PositionBaseDTO
+    {
+        public string id { get; set; }
+
+        public decimal? invest { get; set; }
+        public decimal? leverage { get; set; }
+        public bool? isLong { get; set; }
+
+        public decimal? roi { get; set; }
+        public decimal? pl { get; set; }
+        public decimal? upl { get; set; }
+
+        public SecurityBaseDTO security { get; set; }
+    }
+
     public class PositionDTO
     {
         public string id { get; set; }

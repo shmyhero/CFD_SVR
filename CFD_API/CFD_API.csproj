@@ -304,6 +304,7 @@
     <Compile Include="Controllers\CFDController.cs" />
     <Compile Include="Controllers\CommonController.cs" />
     <Compile Include="Controllers\CompetitionController.cs" />
+    <Compile Include="Controllers\FeedController.cs" />
     <Compile Include="Controllers\MiscController.cs" />
     <Compile Include="Controllers\OperationController.cs" />
     <Compile Include="Controllers\PartnerController.cs" />
@@ -323,6 +324,7 @@
     <Compile Include="DTO\Ayondo\CreateAccountRequest.cs" />
     <Compile Include="DTO\CardDTO.cs" />
     <Compile Include="DTO\CompetitionDTO.cs" />
+    <Compile Include="DTO\FeedDTO.cs" />
     <Compile Include="DTO\FormDTO\PositionFormDTO.cs" />
     <Compile Include="DTO\FormDTO\UserFormDTO.cs" />
     <Compile Include="DTO\KLineDTO.cs" />

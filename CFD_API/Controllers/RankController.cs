@@ -8,6 +8,7 @@ using System.Web.Http;
 using AutoMapper;
 using CFD_API.Controllers.Attributes;
 using CFD_API.DTO;
+using CFD_COMMON;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Utils;
 
@@ -39,33 +40,56 @@ namespace CFD_API.Controllers
                     roi = o.Sum(p => p.PL.Value) / o.Sum(p => p.InvestUSD.Value),
                 }).OrderByDescending(o=>o.roi).ToList();
 
-            //move myself to the top
-            var findIndex = userDTOs.FindIndex(o => o.id == UserId);
-            if (findIndex > 0)
-            {
-                var me = userDTOs.First(o => o.id == UserId);
-                userDTOs.RemoveAt(findIndex);
-                userDTOs.Insert(0, me);
-            }
-            else if (findIndex == 0)
-            {
-                //do nothing
-            }
-            else
-            {
-                var me = GetUser();
-                userDTOs.Insert(0, new UserDTO()
-                {
-                    id = me.Id,
+            ////move myself to the top
+            //var findIndex = userDTOs.FindIndex(o => o.id == UserId);
+            //if (findIndex > 0)
+            //{
+            //    var me = userDTOs.First(o => o.id == UserId);
+            //    userDTOs.RemoveAt(findIndex);
+            //    userDTOs.Insert(0, me);
+            //}
+            //else if (findIndex == 0)
+            //{
+            //    //do nothing
+            //}
+            //else
+            //{
+            //    var me = GetUser();
+            //    userDTOs.Insert(0, new UserDTO()
+            //    {
+            //        id = me.Id,
 
-                    posCount = 0,
-                    roi = 0,
-                    winRate = 0,
-                });
-            }
+            //        posCount = 0,
+            //        roi = 0,
+            //        winRate = 0,
+            //    });
+            //}
+
+            //add myself to the top
+            var me = userDTOs.FirstOrDefault(o => o.id == UserId);
+            if (me != null)
+                userDTOs.Insert(0,
+                    new UserDTO()
+                    {
+                        id = me.id,
+
+                        posCount = me.posCount,
+                        roi = me.roi,
+                        winRate = me.winRate,
+                    });
+            else
+                userDTOs.Insert(0,
+                    new UserDTO()
+                    {
+                        id = UserId,
+
+                        posCount = 0,
+                        roi = 0,
+                        winRate = 0,
+                    });
 
             //only return users with positive ROIs
-            var result = userDTOs.Take(1).Concat(userDTOs.Skip(1).Where(o => o.roi > 0).Take(99)).ToList();
+            var result = userDTOs.Take(1).Concat(userDTOs.Skip(1).Where(o => o.roi > 0).Take(CFDGlobal.DEFAULT_PAGE_SIZE)).ToList();
 
             ////for test only
             //var result = userDTOs;
