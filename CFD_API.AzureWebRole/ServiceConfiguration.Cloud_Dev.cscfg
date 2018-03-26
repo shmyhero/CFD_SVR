@@ -19,7 +19,6 @@
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEBkLJAn07mmEQG2R4EfYf8AwDQYJKoZIhvcNAQEBBQAEggEAGTCj8kkcqHGq9ebYwx1NN8rSw+y9W39rvTF80gmMv1cCYjZa6EJ67JqnPF38OhZIbPViD6hbki1pvBxjbCQigxeGixTBqluw2Vu+u6HXiYqcv6wQkYe80TKxQRrHDMIST1LjUCizm3jfB7EtidVyhgZgWTsPinpn8kzwaLDylUED4g2hEnEeBQHrGBUC6baSBYLBz01LUE8AEutruIvL+z0P/ahZRy+iVYmQ2Oz3gATsPHbwvKW35R0spXcdTsfSCcxmWWDUhACUPieDjXPscJlXKVcvb7RtXZNEGPyHOospEwnv0uOkmGNV61EzMfKqkIdRbvuq44T0MqNMm9VUqDAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECIcpX3V98xgVgBBtm0RkWrFJBpelGKFpObKJ" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2027-05-19T23:59:59.0000000+08:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
-      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="0a4755ec-4058-48c2-a4ce-c7b2457f3dfa" />
       <Setting name="ProfileVerify" value="GuoZhengTongHost" />
     </ConfigurationSettings>
     <Certificates>

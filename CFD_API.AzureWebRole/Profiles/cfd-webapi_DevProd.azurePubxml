@@ -21,5 +21,6 @@
     <AzureHostedServiceResourceGroup>cfd-webapi-dev</AzureHostedServiceResourceGroup>
     <EnableRemoteDebugger>True</EnableRemoteDebugger>
     <RemoteDebuggerConnectorCertificateThumbprint>77CE17931CBF81C282677920590C9C375C88D2DE</RemoteDebuggerConnectorCertificateThumbprint>
+    <EnableApplicationInsights>False</EnableApplicationInsights>
   </PropertyGroup>
 </Project>

@@ -17,7 +17,6 @@
       <Setting name="YunPianTemplateId" value="1392151" />
       <Setting name="AyondoTradeSvcUrl" value="net.tcp://ayondotrade.chinacloudapp.cn:10100/ayondotrade" />
       <Setting name="AyondoTradeSvcUrl_Live" value="net.tcp://ayondotrade-live.chinacloudapp.cn:10100/ayondotrade" />
-      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="0a4755ec-4058-48c2-a4ce-c7b2457f3dfa" />
       <Setting name="ProfileVerify" value="GuoZhengTongHost" />
     </ConfigurationSettings>
     <Certificates>

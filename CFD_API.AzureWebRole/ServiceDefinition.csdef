@@ -19,7 +19,6 @@
       <Setting name="YunPianTemplateId" />
       <Setting name="AyondoTradeSvcUrl" />
       <Setting name="AyondoTradeSvcUrl_Live" />
-      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" />
       <Setting name="ProfileVerify"/>
     </ConfigurationSettings>
     <Endpoints>

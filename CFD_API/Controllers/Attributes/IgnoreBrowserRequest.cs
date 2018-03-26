@@ -57,10 +57,20 @@ namespace CFD_API.Controllers.Attributes
                     //CFDGlobal.LogInformation("SMS attack detected and intercepted.");
                     //CFDGlobal.LogInformation(sb.ToString());
                     
-                   
-
                     actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.OK, "{\"success\":true,\"message\":\"OK\"}");
-                    
+                }
+                else
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append(System.Environment.NewLine);
+                    actionContext.Request.Headers.ToList().ForEach(header =>
+                    {
+                        sb.Append(header.Key);
+                        sb.Append(":");
+                        sb.Append(string.Join(",", header.Value.ToArray()));
+                        sb.Append(System.Environment.NewLine);
+                    });
+                    CFDGlobal.LogWarning("User-Agent does not include browser info, request permitted. " + sb.ToString());
                 }
             }
            

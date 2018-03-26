@@ -245,11 +245,11 @@ namespace CFD_API.Controllers
 
         [Route("sendCode")]
         [HttpPost]
-        //[IgnoreBrowserRequest]
+        [IgnoreBrowserRequest]
         public ResultDTO SendCode(string phone)
         {
-            //return CheckAndSendSMSVerifyCode(phone);
-            return new ResultDTO(true);
+            return CheckAndSendSMSVerifyCode(phone);
+            //return new ResultDTO(true);
         }
 
         private ResultDTO CheckAndSendSMSVerifyCode(string phone)
