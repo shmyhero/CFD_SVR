@@ -24,7 +24,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("live/default")]
         [BasicAuth]
-        public List<FeedDTO> GetDefaultFeeds(int count = 50, DateTime? newerThan = null)
+        public List<FeedDTO> GetDefaultFeeds(int count = 50, DateTime? newerThan = null, DateTime? olderThan =null)
         {
             var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
             var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
@@ -60,7 +60,9 @@ namespace CFD_API.Controllers
             //}
 
             //get open feeds
-            var openFeeds = db.NewPositionHistory_live.Where(o => feedUserIds.Contains(o.UserId.Value))
+            var openFeedsWhereClause = db.NewPositionHistory_live.Where(o => feedUserIds.Contains(o.UserId.Value));
+            if (olderThan != null) openFeedsWhereClause = openFeedsWhereClause.Where(o => o.CreateTime < olderThan);
+            var openFeeds = openFeedsWhereClause
                 .OrderByDescending(o => o.CreateTime).Take(count)
                 .Select(o => new FeedDTO()
                 {
@@ -74,7 +76,9 @@ namespace CFD_API.Controllers
                 .ToList();
 
             //get close feeds
-            var closeFeeds = db.NewPositionHistory_live.Where(o => feedUserIds.Contains(o.UserId.Value) && o.ClosedAt != null)
+            var closeFeedsWhereClause = db.NewPositionHistory_live.Where(o => feedUserIds.Contains(o.UserId.Value) && o.ClosedAt != null);
+            if (olderThan != null) closeFeedsWhereClause = closeFeedsWhereClause.Where(o => o.ClosedAt < olderThan);
+            var closeFeeds = closeFeedsWhereClause
                 .OrderByDescending(o => o.ClosedAt).Take(count)
                 .Select(o => new FeedDTO()
                 {
@@ -87,7 +91,9 @@ namespace CFD_API.Controllers
                 .ToList();
 
             //get status feeds
-            var statusFeed = db.Trends.Where(o => feedUserIds.Contains(o.UserID))
+            var statusFeedsWhereClause = db.Trends.Where(o => feedUserIds.Contains(o.UserID));
+            if (olderThan != null) statusFeedsWhereClause = statusFeedsWhereClause.Where(o => o.CreatedAt < olderThan);
+            var statusFeeds = statusFeedsWhereClause
                 .OrderByDescending(o => o.CreatedAt).Take(count)
                 .Select(o => new FeedDTO()
                 {
@@ -99,7 +105,7 @@ namespace CFD_API.Controllers
                 .ToList();
 
             //concat results
-            var @resultEnumerable = openFeeds.Concat(closeFeeds).Concat(statusFeed);
+            var @resultEnumerable = openFeeds.Concat(closeFeeds).Concat(statusFeeds);
 
             //filter by time param
             if (newerThan != null)
