@@ -124,8 +124,7 @@ namespace CFD_API.Controllers
 
                     #region
                     Random ran = new Random();
-                    //1-12中随机取值
-                    string url = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + ran.Next(1, 13) + ".jpg";
+                    string url = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + DEFAULT_USER_PIC_FILE_NAMES[ran.Next(DEFAULT_USER_PIC_FILE_NAMES.Length)];
                     user.PicUrl = url;
                     #endregion
 
@@ -542,10 +541,12 @@ namespace CFD_API.Controllers
         /// <returns></returns>
         private bool isSystemPic(string picName)
         {
-            List<string> systemPics = new List<string>();
-            systemPics.AddRange(new string[] {"1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg", "12.jpg", });
-            return systemPics.Contains(picName);
+            //List<string> systemPics = new List<string>();
+            //systemPics.AddRange(new string[] {"1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "12.jpg", });
+            return DEFAULT_USER_PIC_FILE_NAMES.Contains(picName);
         }
+
+        private static readonly string[] DEFAULT_USER_PIC_FILE_NAMES = {"1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "12.jpg",};
 
         [HttpPost]
         [Route("alert/{setting}")]
