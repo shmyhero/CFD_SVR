@@ -30,6 +30,7 @@ namespace CFD_API.Controllers
             var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
             var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
 
+            //same data as 2 weeks ranked users
             var rankedUsers =
                 db.NewPositionHistory_live.Where(o => o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
                     .GroupBy(o => o.UserId)
@@ -39,6 +40,7 @@ namespace CFD_API.Controllers
                         roi = g.Sum(p => p.PL.Value) / g.Sum(p => p.InvestUSD.Value),
                     })
                     .OrderByDescending(o => o.roi)
+                    .Where(o => o.roi > 0)
                     .Take(CFDGlobal.DEFAULT_PAGE_SIZE)
                     .ToList();
 
@@ -125,7 +127,7 @@ namespace CFD_API.Controllers
                     user =
                         new UserBaseDTO()
                         {
-                            picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + "system1.jpg",
+                            picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + "system1.png",
                             nickname = "【热点】"
                         },
                     type = "system",

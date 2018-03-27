@@ -30,15 +30,20 @@ namespace CFD_API.Controllers
             var twoWeeksAgo = DateTimes.GetChinaToday().AddDays(-13);
             var twoWeeksAgoUtc = twoWeeksAgo.AddHours(-8);
 
-            var userDTOs = db.NewPositionHistory_live.Where(o => o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
-                .GroupBy(o=>o.UserId).Select(o=>new UserDTO()
+            var result = db.NewPositionHistory_live.Where(o => o.ClosedAt != null && o.ClosedAt >= twoWeeksAgoUtc)
+                .GroupBy(o => o.UserId)
+                .Select(o => new UserDTO()
                 {
                     id = o.Key.Value,
 
                     posCount = o.Count(),
-                    winRate = (decimal)o.Count(p => p.PL > 0) / o.Count(),
-                    roi = o.Sum(p => p.PL.Value) / o.Sum(p => p.InvestUSD.Value),
-                }).OrderByDescending(o=>o.roi).ToList();
+                    winRate = (decimal) o.Count(p => p.PL > 0)/o.Count(),
+                    roi = o.Sum(p => p.PL.Value)/o.Sum(p => p.InvestUSD.Value),
+                })
+                .OrderByDescending(o => o.roi)
+                .Where(o => o.roi > 0)
+                .Take(CFDGlobal.DEFAULT_PAGE_SIZE)
+                .ToList();
 
             ////move myself to the top
             //var findIndex = userDTOs.FindIndex(o => o.id == UserId);
@@ -66,9 +71,9 @@ namespace CFD_API.Controllers
             //}
 
             //add myself to the top
-            var me = userDTOs.FirstOrDefault(o => o.id == UserId);
+            var me = result.FirstOrDefault(o => o.id == UserId);
             if (me != null)
-                userDTOs.Insert(0,
+                result.Insert(0,
                     new UserDTO()
                     {
                         id = me.id,
@@ -78,7 +83,7 @@ namespace CFD_API.Controllers
                         winRate = me.winRate,
                     });
             else
-                userDTOs.Insert(0,
+                result.Insert(0,
                     new UserDTO()
                     {
                         id = UserId,
@@ -88,8 +93,8 @@ namespace CFD_API.Controllers
                         winRate = 0,
                     });
 
-            //only return users with positive ROIs
-            var result = userDTOs.Take(1).Concat(userDTOs.Skip(1).Where(o => o.roi > 0).Take(CFDGlobal.DEFAULT_PAGE_SIZE)).ToList();
+            ////only return users with positive ROIs
+            //var result = userDTOs.Take(1).Concat(userDTOs.Skip(1).Where(o => o.roi > 0).Take(CFDGlobal.DEFAULT_PAGE_SIZE)).ToList();
 
             ////for test only
             //var result = userDTOs;
@@ -103,7 +108,7 @@ namespace CFD_API.Controllers
                 userDto.nickname = user.Nickname;
                 userDto.picUrl = user.PicUrl;
                 userDto.showData = user.ShowData ?? CFDUsers.DEFAULT_SHOW_DATA;
-                userDto.rank = user.LiveRank.HasValue ? user.LiveRank.Value : 0;
+                userDto.rank = user.LiveRank ?? 0;
 
                 if (!userDto.showData && userDto.id != UserId)//not showing data, not myself
                 {
