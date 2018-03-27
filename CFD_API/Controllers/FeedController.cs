@@ -122,7 +122,12 @@ namespace CFD_API.Controllers
                 .OrderByDescending(o => o.CreatedAt).Take(count)
                 .Select(o => new FeedDTO()
                 {
-                    user = new UserBaseDTO() { picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL+"11.jpg",nickname = "【热点】"},
+                    user =
+                        new UserBaseDTO()
+                        {
+                            picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + "system1.jpg",
+                            nickname = "【热点】"
+                        },
                     type = "system",
                     time = o.CreatedAt.Value,
                     status = o.Body,
