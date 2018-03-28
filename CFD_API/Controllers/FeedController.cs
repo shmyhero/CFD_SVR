@@ -44,8 +44,8 @@ namespace CFD_API.Controllers
                     .Take(CFDGlobal.DEFAULT_PAGE_SIZE)
                     .ToList();
 
-            //ranked user ids
-            var feedUserIds = rankedUsers.Select(o => o.id).ToList();
+            ////ranked user ids
+            //var feedUserIds = rankedUsers.Select(o => o.id).ToList();
 
             //var tryGetAuthUser = TryGetAuthUser();
             //if (tryGetAuthUser != null)
@@ -56,11 +56,14 @@ namespace CFD_API.Controllers
             //        feedUserIds.Remove(tryGetAuthUser.Id);
 
                 //following user ids
-                var followingUserIds =
+                var feedUserIds =
                     db.UserFollows.Where(o => o.UserId == tryGetAuthUser.Id).Select(o => o.FollowingId).ToList();
 
-                feedUserIds = feedUserIds.Concat(followingUserIds).ToList();
+            //feedUserIds = feedUserIds.Concat(followingUserIds).ToList();
             //}
+
+            //and myself
+            feedUserIds.Add(UserId);
 
             var users = db.Users.Where(o => feedUserIds.Contains(o.Id)).ToList();
             var feedShowOpenCloseDataUserIds = feedUserIds.Where(o =>
