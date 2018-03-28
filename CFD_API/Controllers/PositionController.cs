@@ -1800,6 +1800,18 @@ namespace CFD_API.Controllers
                                 cardDTO.stockName = Translator.GetProductNameByThreadCulture(prodDef.Name);
                             }
                         });
+
+                        //当前登录的用户是否点赞过该卡片。是，liked=true。否，liked=false
+                        var userCardIDs = result.cards.Select(c => c.cardId).ToList();
+                        var likeHistories = db.LikeHistories.Where(
+                            l => userCardIDs.Contains(l.UserCardId) && l.UserId == this.UserId
+                        ).Select(l=>l.UserCardId).ToList();
+
+                        result.cards.ForEach(cardDTO =>
+                        {
+                            cardDTO.liked = likeHistories.Contains(cardDTO.cardId);
+                        });
+
                     }
                 }
             }
