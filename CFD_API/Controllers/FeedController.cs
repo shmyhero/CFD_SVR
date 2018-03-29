@@ -131,7 +131,7 @@ namespace CFD_API.Controllers
                         new UserBaseDTO()
                         {
                             picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + "system1.png",
-                            nickname = "【热点】"
+                            nickname = "热点"
                         },
                     type = "system",
                     time = o.CreatedAt.Value,
