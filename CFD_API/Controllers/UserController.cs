@@ -2929,12 +2929,15 @@ namespace CFD_API.Controllers
 
             var userIds = users.Select(o => o.Id).ToList();
             var userInfos = db.UserInfos.Where(o => userIds.Contains(o.UserId)).ToList();
+            var devices = db.Devices.Where(o => o.userId.HasValue && userIds.Contains(o.userId.Value)).ToList();
 
             var chinaToday = DateTimes.GetChinaToday();
 
             return users.Select(o =>
             {
                 var userInfo = userInfos.FirstOrDefault(i => i.UserId == o.Id);
+                var lastDevice =
+                    devices.Where(d => d.userId == o.Id).OrderByDescending(d => d.UpdateTime).FirstOrDefault();
 
                 int? userAge = null;
                 int? genderInt = null;
@@ -2955,7 +2958,7 @@ namespace CFD_API.Controllers
                     addr = userInfo.Addr;
                 }
 
-                return new UserReportDTO()
+                var dto= new UserReportDTO()
                 {
                     id = o.Id,
                     age = userAge,
@@ -2975,6 +2978,16 @@ namespace CFD_API.Controllers
                             : DateTime.SpecifyKind(o.AyLiveApproveAt.Value, DateTimeKind.Utc),
                     username = o.AyLiveUsername,
                 };
+                if (lastDevice != null)
+                {
+                    if (lastDevice.deviceType == 1)
+                        dto.lastDeviceType = "android";
+                    else if (lastDevice.deviceType == 2)
+                        dto.lastDeviceType = "ios";
+                    else
+                        dto.lastDeviceType = "unknown";
+                }
+                return dto;
             }).ToList();
         }
 

@@ -913,6 +913,7 @@ namespace CFD_API.DTO
         public DateTime? approveAt { get; set; }
         public string nickname { get; set; }
         public string username { get; set; }
+        public string lastDeviceType { get; set; }
     }
 
     public class THHoldingAccReportDTO

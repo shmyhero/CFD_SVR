@@ -93,7 +93,7 @@
 
             var th = document.createElement('tr');
             th.style.fontWeight = 'bold';
-            th.innerHTML = '<td>nickname</td><td>phone</td><td>username</td><td>apply at</td><td>status</td><td>approve at</td>';
+            th.innerHTML = '<td>nickname</td><td>phone</td><td>username</td><td>apply at</td><td>status</td><td>approve at</td><td>last device</td>';
             table.appendChild(th);
 
             for (var i = 0; i < result.length; i++) {
@@ -106,7 +106,7 @@
 
                 
                 var tr = document.createElement('tr');
-                tr.innerHTML = '<td>' + user.nickname + '</td><td>' + user.phone + '</td><td>' + user.username + '</td><td>' + (user.applyAt ? (new Date(user.applyAt)).toLocaleString() : '') + '</td><td>' + user.status + '</td><td>' + (user.approveAt?(new Date(user.approveAt)).toLocaleString():'') + '</td>';
+                tr.innerHTML = '<td>' + user.nickname + '</td><td>' + user.phone + '</td><td>' + user.username + '</td><td>' + (user.applyAt ? (new Date(user.applyAt)).toLocaleString() : '') + '</td><td>' + user.status + '</td><td>' + (user.approveAt?(new Date(user.approveAt)).toLocaleString():'') + '</td><td>'+(user.lastDeviceType?user.lastDeviceType:'')+'</td>';
 
                 table.appendChild(tr);
             }
