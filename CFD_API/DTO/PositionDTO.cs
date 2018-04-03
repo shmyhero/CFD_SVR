@@ -16,6 +16,7 @@ namespace CFD_API.DTO
         public decimal? upl { get; set; }
 
         public SecurityBaseDTO security { get; set; }
+        public CardDTO card { get; set; }
     }
 
     public class PositionDTO

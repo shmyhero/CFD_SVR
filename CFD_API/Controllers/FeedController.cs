@@ -131,11 +131,12 @@ namespace CFD_API.Controllers
                         new UserBaseDTO()
                         {
                             picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + "system1.png",
-                            nickname = "热点"
+                            nickname = "盈交易官方",
                         },
                     type = "system",
                     time = o.CreatedAt.Value,
-                    status = o.Body,
+                    body = o.Body,
+                    title = o.Header,
                 })
                 .ToList();
 
@@ -165,6 +166,58 @@ namespace CFD_API.Controllers
                     feedDto.security.name =
                         Translator.GetProductNameByThreadCulture(
                             prods.FirstOrDefault(o => o.Id == feedDto.security.id).Name);
+            }
+            
+            //populate cards info for close feeds
+            var closePositionIds = result.Where(o=>o.type=="close").Select(o => Convert.ToInt64(o.position.id)).ToList();
+            if (closePositionIds.Count > 0)
+            {
+                var posCards = db.UserCards_Live.Where(o => closePositionIds.Contains(o.PositionId)).ToList();
+                if (posCards.Count > 0)
+                {
+                    var posCardIds = posCards.Select(o => o.CardId).ToList();
+                    var cardDefs = db.Cards.Where(o => posCardIds.Contains(o.Id)).ToList();
+                    foreach (var feedDto in result)
+                    {
+                        if (feedDto.type == "close")
+                        {
+                            var card = posCards.FirstOrDefault(o => o.PositionId.ToString() == feedDto.position.id);
+                            if(card==null) continue;
+
+                            var cardDef = cardDefs.FirstOrDefault(o => o.Id == card.CardId);
+
+                            feedDto.position.card = new CardDTO()
+                            {
+                                cardId = card.Id,
+                                //ccy = u.CCY,
+                                imgUrlBig = cardDef.CardImgUrlBig,
+                                imgUrlMiddle = cardDef.CardImgUrlMiddle,
+                                imgUrlSmall = cardDef.CardImgUrlSmall,
+                                invest = card.Invest,
+                                isLong = card.IsLong,
+                                isNew = !card.IsNew.HasValue ? true : card.IsNew.Value,
+                                leverage = card.Leverage,
+                                likes = card.Likes,
+                                reward = cardDef.Reward,
+                                settlePrice = card.SettlePrice,
+                                stockID = card.SecurityId,
+                                //stockName = u.StockName,
+                                pl = card.PL,
+                                plRate =
+                                    ((card.SettlePrice - card.TradePrice)/card.TradePrice*card.Leverage*100)*
+                                    (card.IsLong.Value ? 1 : -1),
+                                themeColor = cardDef.ThemeColor,
+                                title = cardDef.Title,
+                                cardType = cardDef.CardType.HasValue ? cardDef.CardType.Value : 0,
+                                tradePrice = card.TradePrice,
+                                tradeTime = card.ClosedAt,
+                                //userName = us.Nickname,
+                                //profileUrl = us.PicUrl,
+                                liked = false
+                            };
+                        }
+                    }
+                }
             }
 
             return result;
