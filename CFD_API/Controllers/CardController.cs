@@ -145,6 +145,11 @@ namespace CFD_API.Controllers
                 }
             }
 
+            if(authUserId != 0)
+            {
+                cardDTO.liked = db.LikeHistories.Any(l => l.UserCardId == id && l.UserId == authUserId);
+            }
+
             return cardDTO;
         }
 
