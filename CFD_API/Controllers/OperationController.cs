@@ -289,6 +289,22 @@ namespace CFD_API.Controllers
                         dto.channel = referee.Nickname;
                     }
                 }
+                else if(!string.IsNullOrEmpty(u.Phone)) //如果不是推荐过来的，就去RewardHistory表找手机对应的活动号
+                {
+                    var rewardHistorys = (from r in db.RewardPhoneHistorys
+                                         join c in db.Channels
+                                         on r.ChannelID equals c.ChannelID
+                                         where r.Phone == u.Phone
+                                         select new { name = c.ChannelName }).ToList();
+                    if(rewardHistorys.Count > 0)
+                    {
+                        dto.channel = rewardHistorys[0].name;
+                    }
+                }
+                else
+                {
+                    dto.channel = string.Empty;
+                }
                 //dto.isDeposited = db.AyondoTransferHistory_Live.Any(CFD_COMMON.Utils.Transfer.IsDeposit(u.AyLiveAccountId));
                 dto.isDeposited = depositHistory.Any(d => d.AccountId == u.AyLiveAccountId);
 
