@@ -34,7 +34,7 @@ namespace CFD_API.Controllers.Attributes
             }
 
             // sort the languages with quality so we can check them in order.
-            langauges = langauges.OrderByDescending(l => l.Quality).ToList();
+            langauges = langauges.OrderByDescending(l => l.Quality ?? 1).ToList();
 
             //默认中文
             CultureInfo culture = new CultureInfo(Translator.CULTURE_SYSTEM_DEFAULT);
