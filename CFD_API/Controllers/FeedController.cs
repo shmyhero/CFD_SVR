@@ -120,7 +120,7 @@ namespace CFD_API.Controllers
                 .ToList();
 
             //get system feed
-            var languages = Translator.GetLanguageByCulture();
+            var languages = Translator.GetCultureNamesByThreadCulture();
             var systemFeedsWhereClause = db.Headlines.Where(o => o.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(o.Language));
             if (olderThan != null) systemFeedsWhereClause = systemFeedsWhereClause.Where(o => o.CreatedAt < olderThan);
             var systemFeeds = systemFeedsWhereClause

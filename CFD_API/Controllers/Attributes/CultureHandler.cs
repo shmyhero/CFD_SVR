@@ -11,6 +11,7 @@ using System.Web;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using CFD_COMMON;
+using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Context;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Utils.Extensions;
@@ -36,7 +37,7 @@ namespace CFD_API.Controllers.Attributes
             langauges = langauges.OrderByDescending(l => l.Quality).ToList();
 
             //默认中文
-            CultureInfo culture = new CultureInfo(CFDGlobal.CULTURE_CN);
+            CultureInfo culture = new CultureInfo(Translator.CULTURE_SYSTEM_DEFAULT);
 
             // 2. try to find one language that's available
             foreach (StringWithQualityHeaderValue lang in langauges)
