@@ -191,7 +191,7 @@ namespace CFD_API.Controllers
                             feedDto.position.card = new CardDTO()
                             {
                                 cardId = card.Id,
-                                //ccy = u.CCY,
+                                ccy = prodDef.Ccy2,
                                 imgUrlBig = cardDef.CardImgUrlBig,
                                 imgUrlMiddle = cardDef.CardImgUrlMiddle,
                                 imgUrlSmall = cardDef.CardImgUrlSmall,
