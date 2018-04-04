@@ -14,6 +14,7 @@ using System.IO;
 using CFD_COMMON;
 using CFD_API.Controllers.Attributes;
 using System.Threading;
+using CFD_COMMON.Localization;
 
 namespace CFD_API.Controllers
 {
@@ -45,7 +46,7 @@ namespace CFD_API.Controllers
 
             List<Banner2> finalBanners = new List<Banner2>();
 
-            var languages = GetLanguageByCulture();
+            var languages = Translator.GetCultureNamesByThreadCulture();
 
             //如果带了version参数，就优先返回有相同版本信息的Banner
             if (!string.IsNullOrEmpty(version))
@@ -81,7 +82,7 @@ namespace CFD_API.Controllers
             int max = 5;
             List<Banner2> finalBanners = new List<Banner2>();
 
-            var languages = GetLanguageByCulture();
+            var languages = Translator.GetCultureNamesByThreadCulture();
 
             //如果带了version参数，就优先返回有相同版本信息的Banner
             if (!string.IsNullOrEmpty(version))
@@ -105,20 +106,20 @@ namespace CFD_API.Controllers
             return finalBanners.Select(o => Mapper.Map<SimpleBannerDTO>(o)).ToList();
         }
 
-        private List<string> GetLanguageByCulture()
-        {
-            List<string> languages = new List<string>();
-            if (Thread.CurrentThread.CurrentUICulture.Name == CFDGlobal.CULTURE_CN)
-            {
-                languages.AddRange(new string[] { null, CFDGlobal.CULTURE_CN });
-            }
-            else
-            {
-                languages.Add(CFDGlobal.CULTURE_EN);
-            }
+        //private List<string> GetLanguageByCulture()
+        //{
+        //    List<string> languages = new List<string>();
+        //    if (Thread.CurrentThread.CurrentUICulture.Name == CFDGlobal.CULTURE_CN)
+        //    {
+        //        languages.AddRange(new string[] { null, CFDGlobal.CULTURE_CN });
+        //    }
+        //    else
+        //    {
+        //        languages.Add(CFDGlobal.CULTURE_EN);
+        //    }
 
-            return languages;
-        }
+        //    return languages;
+        //}
 
         /// <summary>
         /// 返回所有的Banner，不论Demo或Live。
@@ -292,7 +293,7 @@ namespace CFD_API.Controllers
                 ImgUrlBig = imgUrlBig,
                 Color = dicFormData.ContainsKey("Color") ? dicFormData["Color"] : string.Empty,
                 DisplayFor = dicFormData.ContainsKey("DisplayFor") ? dicFormData["DisplayFor"] : DisplayFor.Both,
-                Language = dicFormData.ContainsKey("Language") ? dicFormData["Language"] : CFDGlobal.CULTURE_CN
+                Language = dicFormData.ContainsKey("Language") ? dicFormData["Language"] : Translator.CULTURE_SYSTEM_DEFAULT,
         });
         }
 
@@ -312,7 +313,7 @@ namespace CFD_API.Controllers
                 banner.CreatedBy = dicFormData.ContainsKey("CreatedBy") ? dicFormData["CreatedBy"] : string.Empty;
                 banner.Color = dicFormData.ContainsKey("Color")? dicFormData["Color"] : string.Empty;
                 banner.DisplayFor = dicFormData.ContainsKey("DisplayFor") ? dicFormData["DisplayFor"] : DisplayFor.Both;
-                banner.Language = dicFormData.ContainsKey("Language") ? dicFormData["Language"] : CFDGlobal.CULTURE_CN;
+                banner.Language = dicFormData.ContainsKey("Language") ? dicFormData["Language"] : Translator.CULTURE_SYSTEM_DEFAULT;
                 int bannerType = 0;
                 if(dicFormData.ContainsKey("BannerType"))
                 {

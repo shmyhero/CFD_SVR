@@ -480,7 +480,7 @@ namespace CFD_API.Controllers
             int maxCount = 14;
 
             DateTime lastDay = new DateTime(DateTime.UtcNow.AddDays(-1).Year, DateTime.UtcNow.AddDays(-1).Month, DateTime.UtcNow.AddDays(-1).Day);
-            var languages = Translator.GetLanguageByCulture();
+            var languages = Translator.GetCultureNamesByThreadCulture();
             headlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language) && item.CreatedAt >= lastDay).OrderByDescending(o => o.CreatedAt).Take(maxLines).ToList();
 
             while(headlines == null || headlines.Count == 0)
@@ -528,7 +528,7 @@ namespace CFD_API.Controllers
 
             DateTime chinaToday = DateTime.UtcNow.AddHours(8);
             List<HeadlineGroupDTO> headlinesGroup = new List<HeadlineGroupDTO>();
-            var languages = Translator.GetLanguageByCulture();
+            var languages = Translator.GetCultureNamesByThreadCulture();
             var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language)).OrderByDescending(o => o.CreatedAt).Skip(skipCount).Take(maxHeadlines - skipCount).ToList();
             if (tempHeadlines != null && tempHeadlines.Count > 0) 
             {
@@ -590,7 +590,7 @@ namespace CFD_API.Controllers
             while (maxDays > 0)
             {
                 DateTime chinaLastDay = chinaToday.AddDays(-1);
-                var languages = Translator.GetLanguageByCulture();
+                var languages = Translator.GetCultureNamesByThreadCulture();
                 var tempHeadlines = db.Headlines.Where(item => item.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(item.Language) && item.CreatedAt >= chinaLastDay && item.CreatedAt <= chinaToday).OrderByDescending(o => o.CreatedAt).ToList();
                 chinaToday = chinaToday.AddDays(-1);
 

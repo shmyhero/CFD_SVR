@@ -71,28 +71,29 @@ namespace CFD_API.Controllers.Attributes
 
                 HttpContext.Current.User = new GenericPrincipal(new GenericIdentity(userId.ToString()), null);
 
-                InitCulture(userId, db);
+                InitAuthUserCulture(userId, db);
             }
 
             base.OnAuthorization(actionContext);
         }
 
-        private void InitCulture(int userId, CFDEntities db)
+        private void InitAuthUserCulture(int userId, CFDEntities db)
         {
             var user = db.Users.FirstOrDefault(o => o.Id == userId);
-            if (user != null)
+            if (user != null && !string.IsNullOrWhiteSpace(user.language))
             {
-                if (string.IsNullOrWhiteSpace(user.language))
-                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_CN);//for ALL logged in users, default language is CN 
-                else
+                //if (string.IsNullOrWhiteSpace(user.language))
+                //    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_zhCN);//for ALL logged in users, default language is CN 
+                //else
                     try
                     {
                         Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(user.language);
+                        //if(culture.displayname.contains("unkonwn language")
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
-                        //CFDGlobal.Log;
-                        Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_CN);
+                        CFDGlobal.LogExceptionAsWarning(e);
+                        //Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_SYSTEM_DEFAULT);
                     }
             }
 

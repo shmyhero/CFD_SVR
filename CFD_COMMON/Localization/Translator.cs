@@ -1,10 +1,41 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace CFD_COMMON.Localization
 {
     public class Translator
     {
+        public const string CULTURE_SYSTEM_DEFAULT = "zh-CN";
+
+        public static bool IsChineseCulture(string cultureName)
+        {
+            var lower = cultureName.ToLower();
+            return lower == "cn" || lower.StartsWith("zh");
+        }
+
+        public static bool IsEnglishCulture(string cultureName)
+        {
+            return cultureName.StartsWith("en");
+        }
+
+        public static readonly string[] CULTURE_LIST_Chinese = { "cn", "zh-CN" };
+        public static readonly string[] CULTURE_LIST_English = { "en" };
+
+        public static List<string> GetCultureNamesByThreadCulture()
+        {
+            //List<string> languages = new List<string>();
+            if (IsEnglishCulture(Thread.CurrentThread.CurrentUICulture.Name))
+            {
+                return CULTURE_LIST_English.ToList();
+            }
+
+            return CULTURE_LIST_Chinese.ToList();
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         public static string Translate(TransKey transKey)
         {
             if (Translations.Values.ContainsKey(transKey))
@@ -17,7 +48,7 @@ namespace CFD_COMMON.Localization
         {
             var str = RemoveENameSuffix(name);
 
-            if (Thread.CurrentThread.CurrentUICulture.Name == CFDGlobal.CULTURE_EN)
+            if (IsEnglishCulture(Thread.CurrentThread.CurrentUICulture.Name))
                 return str;
 
             var lower = str.ToLower();
@@ -68,11 +99,11 @@ namespace CFD_COMMON.Localization
 
         public static string RemoveENameSuffix(string name)
         {
-            return name.Replace(" CFD", string.Empty)
-                .Replace(" TradeHero", string.Empty)
-                .Replace(" Mini", string.Empty)
-                .Replace(" Outright", string.Empty)
-                .Replace(" Spot", string.Empty);//;
+            return name.Replace(" CFD", String.Empty)
+                .Replace(" TradeHero", String.Empty)
+                .Replace(" Mini", String.Empty)
+                .Replace(" Outright", String.Empty)
+                .Replace(" Spot", String.Empty);//;
         }
 
         public static string AyondoOrderRejectMessageTranslate(string ayondoText)
@@ -123,21 +154,6 @@ namespace CFD_COMMON.Localization
 
             CFDGlobal.LogWarning("Cannot find MDSTransferError translate for: [" + ayondoText + "]");
             return ayondoText;
-        }
-
-        public static List<string> GetLanguageByCulture()
-        {
-            List<string> languages = new List<string>();
-            if (Thread.CurrentThread.CurrentUICulture.Name == CFDGlobal.CULTURE_CN)
-            {
-                languages.AddRange(new string[] { null, CFDGlobal.CULTURE_CN });
-            }
-            else
-            {
-                languages.Add(CFDGlobal.CULTURE_EN);
-            }
-
-            return languages;
         }
     }
 }
