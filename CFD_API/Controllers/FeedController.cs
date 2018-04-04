@@ -186,6 +186,8 @@ namespace CFD_API.Controllers
 
                             var cardDef = cardDefs.FirstOrDefault(o => o.Id == card.CardId);
 
+                            var prodDef = prods.FirstOrDefault(o => o.Id == card.SecurityId);
+
                             feedDto.position.card = new CardDTO()
                             {
                                 cardId = card.Id,
@@ -201,7 +203,7 @@ namespace CFD_API.Controllers
                                 reward = cardDef.Reward,
                                 settlePrice = card.SettlePrice,
                                 stockID = card.SecurityId,
-                                //stockName = u.StockName,
+                                stockName = Translator.GetProductNameByThreadCulture(prodDef.Name),
                                 pl = card.PL,
                                 plRate =
                                     ((card.SettlePrice - card.TradePrice)/card.TradePrice*card.Leverage*100)*
