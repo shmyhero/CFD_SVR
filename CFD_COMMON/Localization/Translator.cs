@@ -20,7 +20,7 @@ namespace CFD_COMMON.Localization
             return cultureName.StartsWith("en");
         }
 
-        public static readonly string[] CULTURE_LIST_Chinese = { "cn", "zh-CN" };
+        public static readonly string[] CULTURE_LIST_Chinese = { "cn", "zh-CN", null };
         public static readonly string[] CULTURE_LIST_English = { "en" };
 
         public static List<string> GetCultureNamesByThreadCulture()
