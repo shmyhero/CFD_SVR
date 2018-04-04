@@ -329,6 +329,7 @@ namespace CFD_API.Controllers
 
             users.ForEach(u => {
                 UserRewardDTO dto = new UserRewardDTO();
+                dto.userName = u.AyondoUsername;
                 dto.nickName = u.Nickname;
                 dto.phone = u.Phone;
                 var reward = GetTotalReward(u.Id);
