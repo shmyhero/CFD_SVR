@@ -846,6 +846,7 @@ namespace CFD_API.DTO
 
     public struct UserRewardDTO
     {
+        public string userName;
         public string nickName;
         public string phone;
         /// <summary>
