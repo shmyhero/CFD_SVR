@@ -10,6 +10,7 @@ using CFD_COMMON.Models.Context;
 using System.Threading;
 using System.Globalization;
 using CFD_COMMON;
+using CFD_COMMON.Localization;
 
 namespace CFD_API.Controllers.Attributes
 {
@@ -85,6 +86,13 @@ namespace CFD_API.Controllers.Attributes
                 //if (string.IsNullOrWhiteSpace(user.language))
                 //    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_zhCN);//for ALL logged in users, default language is CN 
                 //else
+
+                if (Translator.IsChineseCulture(user.language))
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(Translator.CULTURE_zhCN);
+                else if (Translator.IsEnglishCulture(user.language))
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(Translator.CULTURE_en);
+                else
+                {
                     try
                     {
                         Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(user.language);
@@ -95,6 +103,7 @@ namespace CFD_API.Controllers.Attributes
                         CFDGlobal.LogExceptionAsWarning(e);
                         //Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(CFDGlobal.CULTURE_SYSTEM_DEFAULT);
                     }
+                }
             }
 
             ////如果用户没有登录，默认是中文

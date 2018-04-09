@@ -46,7 +46,7 @@ namespace CFD_API.Controllers
 
             List<Banner2> finalBanners = new List<Banner2>();
 
-            var languages = Translator.GetCultureNamesByThreadCulture();
+            var languages = Translator.GetCultureNamesForSQLLookupByThreadCulture();
 
             //如果带了version参数，就优先返回有相同版本信息的Banner
             if (!string.IsNullOrEmpty(version))
@@ -82,7 +82,7 @@ namespace CFD_API.Controllers
             int max = 5;
             List<Banner2> finalBanners = new List<Banner2>();
 
-            var languages = Translator.GetCultureNamesByThreadCulture();
+            var languages = Translator.GetCultureNamesForSQLLookupByThreadCulture();
 
             //如果带了version参数，就优先返回有相同版本信息的Banner
             if (!string.IsNullOrEmpty(version))

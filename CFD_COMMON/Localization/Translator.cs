@@ -8,6 +8,8 @@ namespace CFD_COMMON.Localization
     public class Translator
     {
         public const string CULTURE_SYSTEM_DEFAULT = "zh-CN";
+        public const string CULTURE_zhCN = "zh-CN";
+        public const string CULTURE_en = "en";
 
         public static bool IsChineseCulture(string cultureName)
         {
@@ -23,7 +25,7 @@ namespace CFD_COMMON.Localization
         public static readonly string[] CULTURE_LIST_Chinese = { "cn", "zh-CN", null };
         public static readonly string[] CULTURE_LIST_English = { "en" };
 
-        public static List<string> GetCultureNamesByThreadCulture()
+        public static List<string> GetCultureNamesForSQLLookupByThreadCulture()
         {
             //List<string> languages = new List<string>();
             if (IsEnglishCulture(Thread.CurrentThread.CurrentUICulture.Name))
