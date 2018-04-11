@@ -112,6 +112,20 @@ namespace CFD_API.DTO
         public bool? isAutoClosed { get; set; }
     }
 
+    public class PositionSummaryReportDTO
+    {
+        public decimal avgInvest { get; set; }
+        public decimal midInvest { get; set; }
+        public decimal maxInvest { get; set; }
+        public decimal minInvest { get; set; }
+        public decimal avgLev { get; set; }
+        public decimal midLev { get; set; }
+        public decimal maxLev { get; set; }
+        public decimal avgTradeValue { get; set; }
+        public decimal midTradeValue { get; set; }
+        public decimal minTradeValue { get; set; }
+    }
+
     public class PositionDailyReportDTO
     {
         public DateTime? date { get; set; }

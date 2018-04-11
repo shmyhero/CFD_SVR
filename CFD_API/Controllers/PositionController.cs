@@ -383,6 +383,44 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
+        [Route("~/api/position/live/report/summary")]
+        [IPAuth]
+        public PositionSummaryReportDTO GetPositionSummary(int day, int secId = 0)
+        {
+            var daysAgo = DateTime.UtcNow.AddDays(-day);
+
+            var positions = db.NewPositionHistory_live.Where(o => o.CreateTime > daysAgo && (secId == 0 || o.SecurityId == secId)).OrderByDescending(p => p.CreateTime).ToList();
+
+            var result = new PositionSummaryReportDTO
+            {
+                avgInvest = positions.Average(o => o.InvestUSD.Value),
+                avgLev = positions.Average(o => o.Leverage.Value),
+                avgTradeValue = positions.Average(o => o.InvestUSD.Value*o.Leverage.Value),
+                maxInvest = positions.Max(o => o.InvestUSD.Value),
+                maxLev = positions.Max(o => o.Leverage.Value),
+                midInvest = positions.Count%2 == 0
+                    ? (positions.ElementAt(positions.Count/2 - 1).InvestUSD.Value +
+                       positions.ElementAt(positions.Count/2).InvestUSD.Value)/2
+                    : positions.ElementAt(positions.Count/2).InvestUSD.Value,
+                midLev = positions.Count%2 == 0
+                    ? (positions.ElementAt(positions.Count/2 - 1).Leverage.Value +
+                       positions.ElementAt(positions.Count/2).Leverage.Value)/2
+                    : positions.ElementAt(positions.Count/2).Leverage.Value,
+                midTradeValue = positions.Count%2 == 0
+                    ? (positions.ElementAt(positions.Count/2 - 1).InvestUSD.Value*
+                       positions.ElementAt(positions.Count/2 - 1).Leverage.Value +
+                       positions.ElementAt(positions.Count/2).InvestUSD.Value*
+                       positions.ElementAt(positions.Count/2).Leverage.Value)/2
+                    : positions.ElementAt(positions.Count/2).InvestUSD.Value*
+                      positions.ElementAt(positions.Count/2).Leverage.Value,
+                minInvest = positions.Min(o => o.InvestUSD.Value),
+                minTradeValue = positions.Min(o => o.InvestUSD.Value*o.Leverage.Value)
+            };
+
+            return result;
+        }
+
+        [HttpGet]
         [Route("closed2")]
         [Route("live/closed2")]
         [BasicAuth]
