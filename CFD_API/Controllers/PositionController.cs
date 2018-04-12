@@ -956,7 +956,7 @@ namespace CFD_API.Controllers
             }
 
             List<SimplePositionDTO> results = new List<SimplePositionDTO>();
-            var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID && p.ClosedAt.HasValue).OrderByDescending(p=>p.Id).Take(20).ToList();
+            var positions = db.NewPositionHistory_live.Where(p => p.UserId == userID && p.ClosedAt.HasValue).OrderByDescending(p=>p.ClosedAt).Take(20).ToList();
             var cache = WebCache.GetInstance(true);
 
             positions.ForEach(p => {
