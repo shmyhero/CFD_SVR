@@ -286,7 +286,7 @@ namespace CFD_API.Controllers
                     var referee = db.Users.FirstOrDefault(u1 => u1.Id == refereeID);
                     if (referee != null)
                     {
-                        dto.channel = referee.Nickname;
+                        dto.channel = referee.AyondoUsername;
                     }
                 }
                 else if(!string.IsNullOrEmpty(u.Phone)) //如果不是推荐过来的，就去RewardHistory表找手机对应的活动号
