@@ -559,10 +559,10 @@ namespace CFD_COMMON.Service
             });
 
             //竞猜活动
-            decimal quizSettled = 0;
-            decimal quizUnSettled = 0;
             var quizRewards = db.QuizBets.Where(o => userIDList.Contains(o.UserID)).ToList();
             userIDList.ForEach(uID => {
+                decimal quizSettled = 0;
+                decimal quizUnSettled = 0;
                 var rewardDetail = result[uID];
                 var quizRewardsByUserID = quizRewards.Where(o => o.UserID == uID).ToList();
                 if (!(quizRewardsByUserID == null || quizRewardsByUserID.Count() == 0))
