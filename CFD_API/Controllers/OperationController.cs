@@ -162,6 +162,7 @@ namespace CFD_API.Controllers
         [AdminAuth]
         /// <summary>
         /// 模拟用户信息管理
+        /// 传入的参数phone，可以是模拟盘账号或手机号
         /// </summary>
         /// <returns></returns>
         public List<DemoUserDTO> SearchDemoUser(string phone, string start, string end)
@@ -178,6 +179,7 @@ namespace CFD_API.Controllers
 
             //var users = db.Users.Where(u => u.Phone.Contains(phone)).OrderByDescending(u => u.CreatedAt).ToList();
             List<User> users = new List<User>();
+            //phone可以是模拟盘账号或手机号
             if (string.IsNullOrEmpty(phone))
             {
                 //如果三个查询参数都为空，就返回当日实盘开户的信息
@@ -193,7 +195,14 @@ namespace CFD_API.Controllers
             }
             else
             {
-                users = db.Users.Where(u => (u.Phone.Contains(phone) && u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
+                if (phone.StartsWith("thcn"))//模拟盘账号
+                {
+                    users = db.Users.Where(u => (u.AyondoUsername.Contains(phone) && u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
+                }
+                else
+                {
+                    users = db.Users.Where(u => (u.Phone.Contains(phone) && u.CreatedAt >= startTime && u.CreatedAt <= endTime)).ToList();
+                }                
             }
 
             var phoneList = users.Select(u => u.Phone).ToList();
@@ -306,7 +315,7 @@ namespace CFD_API.Controllers
                     dto.channel = string.Empty;
                 }
                 //dto.isDeposited = db.AyondoTransferHistory_Live.Any(CFD_COMMON.Utils.Transfer.IsDeposit(u.AyLiveAccountId));
-                dto.isDeposited = depositHistory.Any(d => d.AccountId == u.AyLiveAccountId);
+                dto.isDeposited = depositHistory.Any(d => d.TradingAccountId == u.AyLiveAccountId);
 
                 result.Add(dto);
             });
