@@ -286,7 +286,7 @@ namespace CFD_JOBS.Ayondo
                     var autoClosedHistories =newTradeHistories.Where(x => x.UpdateType == "DELETE" && x.DeviceType == "NA").ToList();
 
                     //open/close operations
-                    var createDeleteHistories = newTradeHistories.Where(x => x.UpdateType == "DELETE" || x.UpdateType == "CREATE").ToList();
+                    //var createDeleteHistories = newTradeHistories.Where(x => x.UpdateType == "DELETE" || x.UpdateType == "CREATE").ToList();
 
                     if (autoClosedHistories.Count > 0)
                     {
@@ -294,11 +294,11 @@ namespace CFD_JOBS.Ayondo
                         NotifyUser(autoClosedHistories, isLive);
                     }
 
-                    if (isLive && createDeleteHistories.Count > 0)
-                    {
-                        CFDGlobal.LogLine("open/close records (to notify followers) count: " + createDeleteHistories.Count);
-                        NotifyFollower(createDeleteHistories);
-                    }
+                    //if (isLive && createDeleteHistories.Count > 0)
+                    //{
+                    //    CFDGlobal.LogLine("open/close records (to notify followers) count: " + createDeleteHistories.Count);
+                    //    NotifyFollower(createDeleteHistories);
+                    //}
                 }
                 catch (Exception e)
                 {
