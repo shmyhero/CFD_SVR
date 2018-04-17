@@ -59,6 +59,8 @@ namespace CFD_COMMON.Localization
             {"bitcoin/eur","比特币/欧元" },
             {"bitcoin/gbp","比特币/英镑" },
             {"bitcoin/usd","比特币/美元" },
+            {"ethereum/usd","以太币/美元" },
+            {"litecoin/usd","莱特币/美元" },
             {"cad/chf", "加元/瑞郎"},
             {"cad/jpy", "加元/日元"},
             {"chf/jpy", "瑞郎/日元"},

@@ -154,5 +154,9 @@
         /// culture string
         /// </summary>
         public string language { get; set; }
+
+        public bool? ShowMyFeed { get; set; }
+        public bool? ShowFollowingFeed { get; set; }
+        public bool? ShowHeadlineFeed { get; set; }
     }
 }

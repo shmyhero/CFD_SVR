@@ -21,4 +21,11 @@ namespace CFD_API.DTO
         public SecurityBaseDTO security { get; set; }
         public PositionBaseDTO position { get; set; }
     }
+
+    public class FeedFilterDTO
+    {
+        public bool showMy { get; set; }
+        public bool showFollowing { get; set; }
+        public bool showHeadline { get; set; }
+    }
 }

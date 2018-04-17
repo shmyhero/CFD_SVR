@@ -55,15 +55,21 @@ namespace CFD_API.Controllers
             //if (feedUserIds.Contains(tryGetAuthUser.Id))
             //        feedUserIds.Remove(tryGetAuthUser.Id);
 
-                //following user ids
-                var feedUserIds =
-                    db.UserFollows.Where(o => o.UserId == tryGetAuthUser.Id).Select(o => o.FollowingId).ToList();
+            List<int> feedUserIds = new List<int>();
+
+            //following user ids
+            if (tryGetAuthUser.ShowFollowingFeed ?? true)
+                feedUserIds =
+                    feedUserIds.Concat(
+                        db.UserFollows.Where(o => o.UserId == tryGetAuthUser.Id).Select(o => o.FollowingId).ToList())
+                        .ToList();
 
             //feedUserIds = feedUserIds.Concat(followingUserIds).ToList();
             //}
 
             //and myself
-            feedUserIds.Add(UserId);
+            if (tryGetAuthUser.ShowMyFeed ?? true)
+                feedUserIds.Add(UserId);
 
             var users = db.Users.Where(o => feedUserIds.Contains(o.Id)).ToList();
             var feedShowOpenCloseDataUserIds = feedUserIds.Where(o =>
@@ -119,29 +125,38 @@ namespace CFD_API.Controllers
                 })
                 .ToList();
 
-            //get system feed
-            var languages = Translator.GetCultureNamesForSQLLookupByThreadCulture();
-            var systemFeedsWhereClause = db.Headlines.Where(o => o.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(o.Language));
-            if (olderThan != null) systemFeedsWhereClause = systemFeedsWhereClause.Where(o => o.CreatedAt < olderThan);
-            var systemFeeds = systemFeedsWhereClause
-                .OrderByDescending(o => o.CreatedAt).Take(count)
-                .Select(o => new FeedDTO()
-                {
-                    user =
-                        new UserBaseDTO()
-                        {
-                            picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + "system1.png",
-                            nickname = "盈交易官方",
-                        },
-                    type = "system",
-                    time = o.CreatedAt.Value,
-                    body = o.Body,
-                    title = o.Header,
-                })
-                .ToList();
-
             //concat results
-            var @resultEnumerable = openFeeds.Concat(closeFeeds).Concat(statusFeeds).Concat(systemFeeds);
+            var @resultEnumerable = openFeeds.Concat(closeFeeds).Concat(statusFeeds);
+
+            //get system feed
+            if (tryGetAuthUser.ShowHeadlineFeed ?? true)
+            {
+                var languages = Translator.GetCultureNamesForSQLLookupByThreadCulture();
+                var systemFeedsWhereClause =
+                    db.Headlines.Where(
+                        o => o.Expiration.Value == SqlDateTime.MaxValue.Value && languages.Contains(o.Language));
+                if (olderThan != null)
+                    systemFeedsWhereClause = systemFeedsWhereClause.Where(o => o.CreatedAt < olderThan);
+                var systemFeeds = systemFeedsWhereClause
+                    .OrderByDescending(o => o.CreatedAt).Take(count)
+                    .Select(o => new FeedDTO()
+                    {
+                        user =
+                            new UserBaseDTO()
+                            {
+                                picUrl = CFDGlobal.USER_PIC_BLOB_CONTAINER_URL + "system1.png",
+                                nickname = "盈交易官方",
+                            },
+                        type = "system",
+                        time = o.CreatedAt.Value,
+                        body = o.Body,
+                        title = o.Header,
+                    })
+                    .ToList();
+
+                //add to results
+                @resultEnumerable = @resultEnumerable.Concat(systemFeeds);
+            }
 
             //filter by time param
             if (newerThan != null)
@@ -223,6 +238,33 @@ namespace CFD_API.Controllers
             }
 
             return result;
+        }
+
+        [HttpGet]
+        [Route("live/filter")]
+        [BasicAuth]
+        public FeedFilterDTO GetFeedFilter()
+        {
+            var user = GetUser();
+            return new FeedFilterDTO()
+            {
+                showFollowing = user.ShowFollowingFeed??true,
+                showHeadline = user.ShowHeadlineFeed??true,
+                showMy = user.ShowMyFeed??true,
+            };
+        }
+
+        [HttpPut]
+        [Route("live/filter")]
+        [BasicAuth]
+        public ResultDTO SetFeedFilter(FeedFilterDTO form)
+        {
+            var user = GetUser();
+            user.ShowFollowingFeed = form.showFollowing;
+            user.ShowHeadlineFeed = form.showHeadline;
+            user.ShowMyFeed = form.showMy;
+            db.SaveChanges();
+            return new ResultDTO(true);
         }
     }
 }
