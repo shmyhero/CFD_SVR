@@ -66,6 +66,12 @@ namespace CFD_API.DTO
         public string name { get; set; }
         public decimal pl { get; set; }
         public decimal rate { get; set; }
+
+        public DateTime? createdAt { get; set; }
+
+        public DateTime? closedAt { get; set; }
+
+        public bool isLong { get; set; }
     }
 
     public class PositionHistoryDTO

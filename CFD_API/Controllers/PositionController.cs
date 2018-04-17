@@ -228,6 +228,9 @@ namespace CFD_API.Controllers
 
                     dto.symbol = prodDef.Symbol;
                     dto.name = Translator.GetProductNameByThreadCulture(prodDef.Name);
+                    dto.createdAt = p.CreateTime;
+                    dto.closedAt = p.ClosedAt;
+                    dto.isLong = p.LongQty.HasValue;
                 }
 
                 results.Add(dto);
@@ -971,6 +974,10 @@ namespace CFD_API.Controllers
                     dto.symbol = prodDef.Symbol;
                     dto.name = Translator.GetProductNameByThreadCulture(prodDef.Name);
                 }
+
+                dto.createdAt = p.CreateTime;
+                dto.closedAt = p.ClosedAt;
+                dto.isLong = p.LongQty.HasValue;
 
                 results.Add(dto);
             });
