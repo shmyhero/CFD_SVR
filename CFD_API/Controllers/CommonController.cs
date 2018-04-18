@@ -114,14 +114,23 @@ namespace CFD_API.Controllers
 
             var Banks = GetBanks().Where(b=> { return depositBanks.Contains(b.cname); }).ToList();
 
+            var cache = WebCache.GetInstance(true);
+            var prod = cache.ProdDefs.FirstOrDefault(p => p.Name == "USD/CNY Outright");
+            var quote = cache.Quotes.FirstOrDefault(o => o.Id == prod.Id);
+            if (quote == null)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+            }
+            var fxRate = quote.Offer;
+
             if (refundSetting != null)
             {
                 var setting = JObject.Parse(refundSetting.Value);
-                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), alipay = setting["alipay"].Value<string>(), alipayPing = setting["alipay_ping"].Value<string>(),  alipayMax = setting["alipayMax"].Value<decimal>(), alipayMaxPing = setting["alipayMax_ping"].Value<decimal>(), alipayMin = setting["alipayMin"].Value<decimal>(), alipayMinPing = setting["alipayMin_ping"].Value<decimal>(), cupMax = setting["cupMax"].Value<decimal>(), cupMin = setting["cupMin"].Value<decimal>(), fxRate = FxRate("CNYUSD"), banks = Banks, notice = setting["notice"].Value<string>(), charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
+                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), alipay = setting["alipay"].Value<string>(), alipayPing = setting["alipay_ping"].Value<string>(),  alipayMax = setting["alipayMax"].Value<decimal>(), alipayMaxPing = setting["alipayMax_ping"].Value<decimal>(), alipayMin = setting["alipayMin"].Value<decimal>(), alipayMinPing = setting["alipayMin_ping"].Value<decimal>(), cupMax = setting["cupMax"].Value<decimal>(), cupMin = setting["cupMin"].Value<decimal>(), fxRate = fxRate, banks = Banks, notice = setting["notice"].Value<string>(), charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
             }
             else
             {
-                return new DepositSettingDTO { minimum = 100M, alipayMax=50M, alipayMin = 50M, cupMax = 20000M, cupMin = 50M, alipay= "单笔固定50美元", fxRate = FxRate("CNYUSD"), banks = Banks, notice = "注意：支付宝钱包入金手续费为1%，其出金手续费为1%；银联入金手续费为1%，其出金手续费为15美元 /每笔。", charge = new DepositChargeDTO() { minimum = 0, rate = 0 } };
+                return new DepositSettingDTO { minimum = 100M, alipayMax=50M, alipayMin = 50M, cupMax = 20000M, cupMin = 50M, alipay= "单笔固定50美元", fxRate = fxRate, banks = Banks, notice = "注意：支付宝钱包入金手续费为1%，其出金手续费为1%；银联入金手续费为1%，其出金手续费为15美元 /每笔。", charge = new DepositChargeDTO() { minimum = 0, rate = 0 } };
             }
         }
 
