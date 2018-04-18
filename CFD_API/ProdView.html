@@ -23,6 +23,13 @@
         #stockTable .loading td {
             text-align: left;
         }
+
+        .inactive {
+            color: #c3c3c3
+        }
+        .outright {
+            color: #909090
+        }
     </style>
 </head>
 <body>
@@ -89,7 +96,7 @@
         var ticker = 
                 $stockTable = $('#stockTable'),
             $stockTableBody = $stockTable.find('tbody'),
-            rowTemplate = '<tr data-symbol="{id}"><td>{Id}</td><td>{Name}</td><td>{Symbol}</td><td>{AssetClass}</td><td>{cname}</td><td>{QuoteType}</td><td>{Ccy2}</td><td>{Time}</td>'
+            rowTemplate = '<tr data-symbol="{id}" class="{classname}"><td>{Id}</td><td>{Name}</td><td>{Symbol}</td><td>{AssetClass}</td><td>{cname}</td><td>{QuoteType}</td><td>{Ccy2}</td><td>{Time}</td>'
                 + '<td>{Bid}</td><td>{Offer}</td>'
                 + '<td>{LastOpen}</td><td>{LastClose}</td><td>{PreClose}</td><td>{OpenBid}</td><td>{OpenAsk}</td><td>{CloseBid}</td><td>{CloseAsk}</td>'
                 + '<td>{MaxLeverage}</td><td>{Shortable}</td>'
@@ -113,7 +120,12 @@
                 $stockTableBody.empty();
                 $.each(stocks, function () {
                     var stock = formatStock(this);
-                    $stockTableBody.append(rowTemplate.supplant(stock).replace('{Shortable}',stock.Shortable));
+
+                    var classname = '';
+                    if (stock.QuoteType == 3) classname = 'inactive';
+                    else if (stock.Name.indexOf(' Outright') > 0) classname = 'outright';
+
+                    $stockTableBody.append(rowTemplate.supplant(stock).replace('{Shortable}', stock.Shortable).replace('{classname}', classname));
                 });
             });
         });
