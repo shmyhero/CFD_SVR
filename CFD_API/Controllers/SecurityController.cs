@@ -256,7 +256,10 @@ namespace CFD_API.Controllers
                 (/*isAndroid &&*/ o.AssetClass == CFDGlobal.ASSET_CLASS_CRYPTO_FX)
                 ).ToList();
 
-            var securityDtos = prodDefs.OrderBy(o => o.Symbol).Skip((page - 1)*perPage).Take(perPage).Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
+            var securityDtos = prodDefs.OrderByDescending(o=>o.AssetClass)//fx at the top and crypto at the bottom
+                .ThenBy(o => o.Symbol)
+                .Skip((page - 1)*perPage).Take(perPage)
+                .Select(o => Mapper.Map<SecurityLiteDTO>(o)).ToList();
 
             UpdateLastPrice(securityDtos);
 
