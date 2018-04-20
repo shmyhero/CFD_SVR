@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8"/>
+    <style>
+        body{font-size: 12px}
+        table{float: left; border-collapse: collapse;border: solid 1px; margin: 10px}
+        td{border: solid 1px grey}
+    </style>
+</head>
+<body>
+<div id="container">Loading...</div>
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+<script type="text/javascript">
+    $.getJSON('api/partner/report/all', function (result) {
+        $('#container').html(result);
+    }).done();
+</script>
+</body>
+</html>

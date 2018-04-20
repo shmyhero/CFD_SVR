@@ -238,6 +238,7 @@
     <Content Include="insight.html" />
     <Content Include="InvestLevView.html" />
     <Content Include="CumulativeTransferView.html" />
+    <Content Include="PartnerReport.html" />
     <Content Include="PLView.html" />
     <Content Include="ProdRankView.html" />
     <Content Include="ProdView.html" />
