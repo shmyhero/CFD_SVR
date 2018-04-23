@@ -416,15 +416,14 @@ namespace CFD_API.Controllers
             // Assumes that connection is a valid SqlConnection object.  
             string queryString =
               @" 
- ------ 所有入金用户  drop table #a drop table #b drop table #c
+  
+ ------ 所有入金用户  drop table #a
  select  * into #a from (
-select sum(amount) deposite, accountId, u.Nickname,u.id, a.Timestamp, u.AyLiveApproveAt
- from [dbo].[AyondoTransferHistory_Live] a join [user] u on u.AyLiveAccountId = a.TradingAccountId 
+select sum(amount) deposite, accountId, u.Nickname,u.id, a.Timestamp, u.AyLiveApproveAt from [dbo].[AyondoTransferHistory_Live] a join [user] u on u.AyLiveAccountId = a.TradingAccountId 
 where (transfertype= 'WeCollect - CUP' or transfertype = 'Adyen - Skrill' or (transfertype='bank wire' and amount>=0 and len(transferid)=36) )
 --and u.id =2026
  and (u.id > 3202) and u.id not in (3229, 3246, 3333, 3590, 5963,6098,6052)
-group by AccountId, u.Nickname,u.id,a.Timestamp,u.AyLiveApproveAt
- ) a order by deposite desc
+group by AccountId, u.Nickname,u.id,a.Timestamp,u.AyLiveApproveAt ) a order by deposite desc
 
  --select * from #a
    -- drop table #b
@@ -448,11 +447,11 @@ SELECT [UserId]   -- layer2,3 etc
  
    -- select * from #b  
    --分别得到介绍来的人的uid,和充值金额 
-   select (userid) , layer1, sum(deposite) 充值金额  from #b where OcrRealName <> layer1 group by layer1,userid order by layer1 
+   select (userid) 被推荐UserID, layer1 合伙人, sum(deposite) 充值金额  from #b where OcrRealName <> layer1 group by layer1,userid order by layer1 
     --得到介绍来的人的总充值金额 
-   select  layer1, sum(deposite) 充值金额  from #b where OcrRealName <> layer1 group by layer1
+   select  layer1 合伙人, sum(deposite) 充值金额  from #b where OcrRealName <> layer1 group by layer1
    ---- Layer1, Layer2 数目
-      select layer1 合伙人1级, count(distinct userid) 合伙人2级  from #b where OcrRealName <> layer1 group by layer1 --得到介绍来的人的uid,和充值金额
+      select layer1 合伙人, count(distinct userid) 推荐用户数  from #b where OcrRealName <> layer1 group by layer1 --得到介绍来的人的uid,和充值金额
 
 	----每个用户充值总数
  --  select count(userid) 每个用户充值笔数, layer1, sum(deposite) depositeSum,userid   from #b where OcrRealName <> layer1 group by userid,layer1
@@ -462,18 +461,18 @@ SELECT [UserId]   -- layer2,3 etc
    ----select layer1, sum(deposite) SelfDeposite from (select layer1,deposite  from #b where OcrRealName <> layer1 ) a 
    
    ----------------  合伙人的平均资金交易量和 非合伙人平均 之比
-   select avg(investUSD*leverage)  from  [NewPositionHistory_live]   where userid in ( select distinct userid  from #b where OcrRealName <> layer1 )
+   select avg(investUSD*leverage) 合伙人的平均资金交易量 from  [NewPositionHistory_live]   where userid in ( select distinct userid  from #b where OcrRealName <> layer1 )
    
-  select avg(investUSD*leverage) from [NewPositionHistory_live]  where (userid > 3202) and userid not in (3229, 3246, 3333, 3590, 5963,6098,6052) 
+  select avg(investUSD*leverage) 非合伙人平均交易量 from [NewPositionHistory_live]  where (userid > 3202) and userid not in (3229, 3246, 3333, 3590, 5963,6098,6052) 
   and userid not in ( select distinct userid  from #b where OcrRealName <> layer1 )
  ----------------  合伙人的总资金交易量和所有人 之比
-   select sum(investUSD*leverage)  from  [NewPositionHistory_live]   where userid in ( select distinct userid  from #b where OcrRealName <> layer1 )
+   select sum(investUSD*leverage) 合伙人的总资金交易量 from  [NewPositionHistory_live]   where userid in ( select distinct userid  from #b where OcrRealName <> layer1 )
    or userid in (3914,12566, 3807)  
  
-  select sum(investUSD*leverage) from [NewPositionHistory_live]  where (userid > 3202) and userid not in (3229, 3246, 3333, 3590, 5963,6098,6052) 
+  select sum(investUSD*leverage) 其余人总资金交易量 from [NewPositionHistory_live]  where (userid > 3202) and userid not in (3229, 3246, 3333, 3590, 5963,6098,6052) 
   and (userid not in ( select distinct userid  from #b where OcrRealName <> layer1 ) and userid not in (3914,12566, 3807))
   -- select 7895315.0000000000000/150913235.0000000000000 
-   select sum(investUSD*leverage) from [NewPositionHistory_live]  where (userid > 3202) and userid not in (3229, 3246, 3333, 3590, 5963,6098,6052) 
+   --select sum(investUSD*leverage) from [NewPositionHistory_live]  where (userid > 3202) and userid not in (3229, 3246, 3333, 3590, 5963,6098,6052) 
   and (userid not in ( select distinct userid  from #b where OcrRealName <> layer1 ))
   /*
   ----------------------  合伙人的平均留存时间和非合伙人 之比。
@@ -501,21 +500,22 @@ SELECT [UserId]   -- layer2,3 etc
 
 	 --  select distinct #b.userid,#b.*  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1 
 	   --1. report version 出金用户信息以及合伙人：
-	   select distinct #b.userid,nickname, #b.layer1  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1
+	   select distinct #b.userid 出金用户UID,nickname, #b.layer1  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1
 	   
 	   --select * from  [NewPositionHistory_live] where userid in (
 	   --select distinct #b.userid  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1)
 
 	   -----这些用户交易数据avg： 
+	   select N'出金用户交易数据' N'以下报表皆为'
 	      select sum(pl) TotalPL, avg(datediff(MINUTE, CreateTime, closedat)) avgHoldMINUTE,  sum(InvestUSD * leverage) / sum(InvestUSD) avgLeverage, avg(investusd) avgInvestUSD , count(*) tradeNum from  [NewPositionHistory_live] where userid in (
 	   select distinct #b.userid  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1) 
 
 	   -- details， 按用户分组最大持仓时间分布，单位 分钟:
-	   select max(datediff(SECOND, CreateTime, closedat)) 持仓时间,userid,count(*) 交易笔数,sum(pl) TotalPL, avg(datediff(MINUTE, CreateTime, closedat)) 平均持有时间min,  sum(InvestUSD * leverage) / sum(InvestUSD) 平均杠杆, avg(investusd) 平均交易本金  from  [NewPositionHistory_live] where userid in (
+	   select max(datediff(SECOND, CreateTime, closedat)) 持仓时间,userid 出金用户ID,count(*) 交易笔数,sum(pl) TotalPL, avg(datediff(MINUTE, CreateTime, closedat)) 平均持有时间min,  sum(InvestUSD * leverage) / sum(InvestUSD) 平均杠杆, avg(investusd) 平均交易本金  from  [NewPositionHistory_live] where userid in (
 	   select distinct #b.userid  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1)  group by userid order by userid 
 	   --- 交易品种:
 	    -- select * from [NewPositionHistory_live] 
-	   select  count(*) tradeNum,userid,p.Cname from  [NewPositionHistory_live] n join  ProductList_live p on SecurityId = p.id where userid in (
+	   select  count(*) tradeNum,userid 出金用户ID,p.Cname from  [NewPositionHistory_live] n join  ProductList_live p on SecurityId = p.id where userid in (
 	   select distinct #b.userid  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1)  group by userid,p.Cname order by userid 
 	   
 	   --select count(userid), userid from  [NewPositionHistory_live] where userid in (
@@ -526,12 +526,12 @@ SELECT [UserId]   -- layer2,3 etc
 	   --select * from [NewPositionHistory_live] where userid  in (12626, 12718)
 
 	   ----  这些出金用户出入金数量和时间分布 
-	   select deposite 入金数量, a.Amount 出金数量, Nickname, #a.id as userID, #a.Timestamp 入金时间, a.Timestamp 出金时间, datediff(day,#a.Timestamp,a.Timestamp) 出入金间隔天数 from #a left join (
+	   select deposite 入金数量, a.Amount 出金数量, Nickname, #a.id as 出金用户ID, #a.Timestamp 入金时间, a.Timestamp 出金时间, datediff(day,#a.Timestamp,a.Timestamp) 出入金间隔天数 from #a left join (
 select  u.id, a.Timestamp, a.Amount from [dbo].[AyondoTransferHistory_Live] a join [user] u on u.AyLiveAccountId = a.TradingAccountId  
 where  transfertype= 'eft'   -- or ( transfertype='bank wire' and amount>=0 and len(transferid)=36 and u.id = 2026)
 and (u.id > 3202) and u.id not in (3229, 3246, 3333, 3590, 5963,6098,6052) 
  ) a on #a.id = a.id
-	where #a.id in ( select distinct #b.userid  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1) order by userid
+	where #a.id in ( select distinct #b.userid  from #b join #c on #b.UserId= #c.UserId where OcrRealName <> layer1) --order by userid
 
 
 --	   -------------------- 查询其他合伙人是否在出金，以及交易情况
@@ -558,12 +558,12 @@ and (u.id > 3202) and u.id not in (3229, 3246, 3333, 3590, 5963,6098,6052)
 --group by AccountId, u.Nickname,u.id,a.Timestamp order by Timestamp desc
 
 --- 根据所有合伙人userid 【 select distinct userid  from #b where OcrRealName <> layer1 group by layer1,userid 】得到相应最后交易信息
-    select  #b.userid, count(n.id) tradeCount, max(ClosedAt) LastTradeTime  from #b left join [NewPositionHistory_live] n on #b.userid = n.UserId where OcrRealName <> layer1 and #b.userid not in (select userid from #c) group by layer1,#b.userid order by LastTradeTime
+    select  #b.userid 被推荐UserID, count(n.id) tradeCount, max(ClosedAt) LastTradeTime  from #b left join [NewPositionHistory_live] n on #b.userid = n.UserId where OcrRealName <> layer1 and #b.userid not in (select userid from #c) group by layer1,#b.userid order by LastTradeTime
 
 	-- Another Tab: ------- 按照日期统计合伙人数目
 	--select  distinct layer1, convert(varchar(12), AyLiveApproveAt, 111) layer1加入日期 from #b where OcrRealName = layer1 and layer1 in (select layer1 from #b where OcrRealName <> layer1)
-	select count(distinct userid) layer2人数, --layer1 
-	convert(varchar(12), AyLiveApproveAt, 111) layer2加入日期  from #b where OcrRealName <> layer1 group by convert(varchar(12), AyLiveApproveAt, 111) order by layer2加入日期";
+	select count(distinct userid) 被推荐UserID人数, --layer1 
+	convert(varchar(12), AyLiveApproveAt, 111) 被推荐用户加入日期  from #b where OcrRealName <> layer1 group by convert(varchar(12), AyLiveApproveAt, 111) order by 被推荐用户加入日期";
 
             SqlDataAdapter adapter = new SqlDataAdapter(queryString, CFDGlobal.GetDbConnectionString("CFDEntities"));
 
