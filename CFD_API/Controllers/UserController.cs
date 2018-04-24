@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -3135,6 +3137,89 @@ namespace CFD_API.Controllers
                 .ToList();
 
             return result;
+        }
+
+        [HttpGet]
+        [Route("live/report/weeklytransfer")]
+        [IPAuth]
+        public string GetWeeklyTransferReport()
+        {
+            string queryString = @"select  * into #a from (
+select sum(amount) deposite, accountId, u.Nickname,u.id, a.Timestamp from [dbo].[AyondoTransferHistory_Live] a join [user] u on u.AyLiveAccountId = a.TradingAccountId 
+where (transfertype= 'WeCollect - CUP' or transfertype = 'Adyen - Skrill' or (transfertype='bank wire' and amount>=0 and len(transferid)=36) )
+--and u.id =2026
+ and (u.id > 3202) and u.id not in (3229, 3246, 3333, 3590, 5963,6098,6052)  and timestamp > dateadd(week, -1,getdate())
+group by AccountId, u.Nickname,u.id,a.Timestamp) a order by deposite desc
+---  select * from #a
+select avg(deposite) 平均入金量 from #a  
+ select identity(int,1,1) id, sum(deposite) d into #t from (select  distinct deposite,id from #a ) a group by id order by d
+ declare @a int select @a= count(d)/2 from #t
+  select top 1 d 入金中位数 from ( select top (@a) d from #t order by d) t order by d desc
+
+ --select identity(int,1,1) id, investUSD into #t from [NewPositionHistory_live] where (userid > 3202) and userid not in (3229, 3246, 3333, 3590, 5963,6098,6052) order by investUSD   
+ -- declare @a int select @a= count(investUSD)/2 from #t
+ -- select top 1 investUSD from (select top (@a) investUSD from #t order by investUSD) t order by investUSD desc
+
+select avg(d) 平均入金笔数 from (select count(deposite) d, id from #a group by id) a     select max(deposite) 最大一笔入金 from #a --按每笔充值分组
+  select min(deposite) 最小一笔入金 from #a
+  select max(de) 按用户充值分组最大入金数 from  (select sum(deposite) de,id from #a group by id) a --按用户充值分组
+  select min(de) 按用户充值分组最小入金数 from  (select sum(deposite) de,id from #a group by id) a
+
+  -- withdraw?  drop table #b
+     select  * into #b from (
+select sum(amount) withdraw, accountId, u.Nickname,u.id, a.Timestamp from [dbo].[AyondoTransferHistory_Live] a join [user] u on u.AyLiveAccountId = a.TradingAccountId  
+where  transfertype= 'eft'   -- or ( transfertype='bank wire' and amount>=0 and len(transferid)=36 and u.id = 2026)
+and (u.id > 3202) and u.id not in (3229, 3246, 3333, 3590, 5963,6098,6052)  and timestamp > dateadd(week, -1,getdate())
+group by AccountId, u.Nickname,u.id,a.Timestamp) a order by withdraw desc
+
+ -- select * from #b
+select avg(withdraw) 近一周平均出金 from #b  -- select  (withdraw) from #b order by withdraw  
+
+ select identity(int,1,1) iid, w into #b2 from ( select  id, sum(withdraw) w from #b group by id) a  order by w
+ declare @a1 int select @a1= count(iid)  from #b2   --select @a
+ begin
+	if @a1%2 = 0
+   select w 出金中位数 from #b2 where iid = @a1/2
+   else if @a1%2 = 1
+   select w 出金中位数 from #b2 where iid = (@a1+1)/2
+  end 
+
+-- select count(d) from (select count(withdraw) d, id from #b group by id) a   
+select count(distinct id) 总出金人数 from #b --总出金人数
+ select min(w) 最大出金 from  (select sum(withdraw) w from #b group by id) a    select max(w) 最小出金 from  (select sum(withdraw) w from #b group by id) a  where w <0   --  select sum(withdraw) w, id from #b group by id order by w";
+
+            SqlDataAdapter adapter = new SqlDataAdapter(queryString, CFDGlobal.GetDbConnectionString("CFDEntities"));
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds);
+
+            var sb = new StringBuilder();
+
+            foreach (DataTable table in ds.Tables)
+            {
+                sb.Append("<table>");
+
+                sb.Append("<tr>");
+                foreach (DataColumn column in table.Columns)
+                {
+                    sb.Append("<td>" + column + "</td>");
+                }
+
+                sb.Append("</tr>");
+
+                foreach (DataRow dr in table.Rows)
+                {
+                    sb.Append("<tr>");
+                    foreach (var o in dr.ItemArray)
+                    {
+                        sb.Append("<td>" + o + "</td>");
+                    }
+                    sb.Append("</tr>");
+                }
+                sb.Append("</table>");
+            }
+
+            return sb.ToString();
         }
 
         [HttpPost]

@@ -254,6 +254,7 @@
     <Content Include="ThHoldingAccView.html" />
     <Content Include="TicksView.html" />
     <Content Include="TickView.html" />
+    <Content Include="TransferReport.html" />
     <Content Include="UserLiveIpLocationView.html" />
     <Content Include="UserLocationView.html" />
     <Content Include="UserStatusView.html" />
