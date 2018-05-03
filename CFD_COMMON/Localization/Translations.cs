@@ -64,7 +64,7 @@ namespace CFD_COMMON.Localization
             {"dash/usd","达世币/美元" },
             {"ethereum/usd","以太币/美元" },
             {"litecoin/usd","莱特币/美元" },
-            {"neo/usd","小蚁币/美元" },
+            //{"neo/usd","小蚁币/美元" },
             {"ripple/usd","瑞波币/美元" },
             {"cad/chf", "加元/瑞郎"},
             {"cad/jpy", "加元/日元"},
