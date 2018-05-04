@@ -105,7 +105,8 @@ namespace CFD_COMMON.Localization
                 .Replace(" TradeHero", String.Empty)
                 .Replace(" Mini", String.Empty)
                 .Replace(" Outright", String.Empty)
-                .Replace(" Spot", String.Empty);//;
+                .Replace(" Spot", String.Empty)
+                .Replace(" (1 EUR Contract)",string.Empty);//;
         }
 
         public static string AyondoOrderRejectMessageTranslate(string ayondoText)
