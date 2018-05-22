@@ -186,7 +186,7 @@ namespace CFD_API.Controllers
             var errorResponse = Request.CreateResponse(HttpStatusCode.Redirect);
             //errorResponse.Headers.Location = new Uri(currentUrl + "/error");
             errorResponse.Headers.Location = new Uri(
-                CFDGlobal.TH_WEB_HOST + "tradehub/live/login.html?client_id=62d275a211&redirect_uri=https://api.typhoontechnology.hk/api/live/oauth&loginError=error");
+                CFDGlobal.TH_WEB_HOST + "tradehub/live/login.html?client_id=62d275a211&redirect_uri=https://"+ CFDGlobal.WEB_API_PUB_HOST + "/api/live/oauth&loginError=error");
 
             var error = queryNameValuePairs.FirstOrDefault(o => o.Key == "error").Value;
             if (!string.IsNullOrWhiteSpace(error))

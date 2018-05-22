@@ -53,6 +53,8 @@ namespace CFD_COMMON
 
         public static readonly string TH_WEB_HOST = GetConfigurationSetting("THWebHost");
 
+        public static string WEB_API_PUB_HOST = "cfd-webapi.chinacloudapp.cn";
+
         public static string OAUTH_TOKEN_PUBLIC_KEY = @"-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlkG4r0XGWG8DO2043seO
 aQnoA426WXTliwAUf9dG7idMyTEcR5jrAY4a2nZtFRj1cstDbxZuSP3Gm2TenDxq

@@ -90,7 +90,7 @@ namespace CFD_API.Controllers
         {
             Misc refundSetting = null;
             CFDGlobal.LogInformation("deposit setting request uri " + Request.RequestUri.Host);
-            if (Request.RequestUri.Host == "api.typhoontechnology.hk")
+            if (Request.RequestUri.Host == CFDGlobal.WEB_API_PUB_HOST)
             {
                 refundSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "Deposit");
             }

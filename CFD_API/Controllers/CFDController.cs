@@ -64,7 +64,7 @@ namespace CFD_API.Controllers
             //get; set;
         }
 
-        public DateTime RequestStartAt { get; set; }
+        internal DateTime RequestStartAt { get; set; }
 
         /// <summary>
         /// localization

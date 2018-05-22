@@ -21,7 +21,7 @@
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="16D9A13BA237430914E76E629CF7DFF1321B0EEE" thumbprintAlgorithm="sha1" />
-      <Certificate name="CFD_API_CERT" thumbprint="3DBC6379C495CC21E76C1653BCA365EEFB255227" thumbprintAlgorithm="sha1" />
+      <Certificate name="CFD_API_CERT" thumbprint="7B6EFFDB933545DFFC1C78A375EE582C8B9A53D6" thumbprintAlgorithm="sha1" />
     </Certificates>
   </Role>
 </ServiceConfiguration>
