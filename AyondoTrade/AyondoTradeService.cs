@@ -666,7 +666,7 @@ namespace AyondoTrade
             return account;
         }
 
-        private static string GetAccount(string username, string password)
+        private static string GetAccount(string username, string password, bool tryLogin=true)
         {
             string account;
             //user in online list?
@@ -674,10 +674,12 @@ namespace AyondoTrade
             {
                 account = Global.FixApp.UsernameAccounts[username];
             }
-            else
+            else if (tryLogin)
             {
                 account = SendLoginRequestAndWait(username, password);
             }
+            else
+                return null;
             return account;
         }
 
@@ -905,12 +907,12 @@ namespace AyondoTrade
             return report;
         }
 
-        public void LogOut(string username)
+        public bool LogOut(string username)
         {
             string account = null;
             try
             {
-                account = GetAccount(username, null);
+                account = GetAccount(username, null, false);
             }
             catch (Exception e)
             {
@@ -941,6 +943,14 @@ namespace AyondoTrade
 
                 if (userResponse.Value == null)
                     throw new FaultException("fail logging out " + reqId);
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
 

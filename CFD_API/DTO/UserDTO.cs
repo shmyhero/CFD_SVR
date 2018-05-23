@@ -951,4 +951,10 @@ namespace CFD_API.DTO
         public string picUrl { get; set; }
         public string type { get; set; }
     }
+
+    public class AyondoLiveLoginFormDTO
+    {
+        public string username { get; set; }
+        public string password { get; set; }
+    }
 }

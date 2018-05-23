@@ -153,9 +153,9 @@ namespace AyondoTrade
             return base.Channel.GetCashTransferResult(guid);
         }
 
-        public void LogOut(string username)
+        public bool LogOut(string username)
         {
-            base.Channel.LogOut(username);
+            return base.Channel.LogOut(username);
         }
 
         //important

@@ -38,6 +38,7 @@ using System.Data.SqlTypes;
 using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using CFD_COMMON.IdentityVerify;
 using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
@@ -1897,6 +1898,47 @@ namespace CFD_API.Controllers
             {
                 clientHttp.LogOut(IsLiveUrl ? user.AyLiveUsername : user.AyondoUsername);
             }
+
+            return new ResultDTO(true);
+        }
+
+        [HttpPost]
+        [Route("live/login")]
+        [BasicAuth]
+        public ResultDTO AyondoLiveLogin(AyondoLiveLoginFormDTO form)
+        {
+            var user = GetUser();
+            string msg=null;
+
+            using (var clientHttp = new AyondoTradeClient(true))
+            {
+                //try
+                //{
+                //    var logOut = clientHttp.LogOut(user.AyLiveUsername);
+                //}
+                //catch (FaultException e)
+                //{
+                //    CFDGlobal.LogLine("logout error");
+                //    CFDGlobal.LogException(e);
+                //    msg = e.Message;
+                //}
+
+                //Thread.Sleep(3000);
+
+                try
+                {
+                    var balanceReport = clientHttp.GetBalance(form.username, form.password);
+                }
+                catch (FaultException e)
+                {
+                    //CFDGlobal.LogLine("get balance error");
+                    //CFDGlobal.LogException(e);
+                    msg = e.Message;
+                }
+            }
+
+            if(msg!=null)
+                return new ResultDTO(false) {message = msg};
 
             return new ResultDTO(true);
         }

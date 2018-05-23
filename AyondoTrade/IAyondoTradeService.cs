@@ -91,6 +91,6 @@ namespace AyondoTrade
         TransferReport GetCashTransferResult(string guid);
 
         [OperationContract]
-        void LogOut(string username);
+        bool LogOut(string username);
     }
 }
