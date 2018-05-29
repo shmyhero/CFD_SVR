@@ -242,7 +242,7 @@ namespace CFD_COMMON.Localization
 
             {"eu 50 rolling", "欧洲50"},
             {"france 40 rolling", "法国40"},
-            {"germany 30 rolling (1 eur contract)", "德国30"},
+            {"germany 30 rolling", "德国30"},
             {"uk 100 rolling", "英国100"},
             {"us 500 rolling", "美国标准500"},
             {"us tech 100 rolling", "美国科技股100"},
