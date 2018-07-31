@@ -46,9 +46,9 @@ namespace CFD_COMMON.Models.Cached
         public string Ccy2 { get; set; }
 
         public int Prec { get; set; }
-        public decimal SMD { get; set; }
-        public decimal GSMD { get; set; }
-        public decimal GSMS { get; set; }
+        public decimal? SMD { get; set; }
+        public decimal? GSMD { get; set; }
+        public decimal? GSMS { get; set; }
 
         public string SessionTime { get; set; }
         public string SessionZone { get; set; }

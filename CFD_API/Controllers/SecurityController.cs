@@ -514,10 +514,10 @@ namespace CFD_API.Controllers
             //GSMS limit
             var maxLongSize = prodDef.MaxSizeLong;
             var maxShortSize = prodDef.MaxSizeShort;
-            if (prodDef.GSMS > 0)
+            if (prodDef.GSMS !=null && prodDef.GSMS > 0)
             {
-                maxLongSize = prodDef.GSMS;
-                maxShortSize = prodDef.GSMS;
+                maxLongSize = prodDef.GSMS.Value;
+                maxShortSize = prodDef.GSMS.Value;
             }
 
             decimal minLong = perPriceCcy2*quote.Offer*prodDef.MinSizeLong;

@@ -165,9 +165,9 @@ namespace CFD_JOBS.Ayondo
                 var lotSize = message.GetDecimal(DD.FieldsByName["MDS_LOTSIZE"].Tag);
                 var ccy2 = message.GetString(DD.FieldsByName["MDS_CCY2"].Tag);
                 var prec = message.GetInt(DD.FieldsByName["MDS_PREC"].Tag);
-                var smd = message.GetDecimal(DD.FieldsByName["MDS_SMD"].Tag);
-                var gsmd = message.GetDecimal(DD.FieldsByName["MDS_GSMD"].Tag);
-                var gsms = message.GetDecimal(DD.FieldsByName["MDS_GSMS"].Tag);
+                var smd = message.Any(o => o.Key == DD.FieldsByName["MDS_SMD"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_SMD"].Tag) : (decimal?)null;
+                var gsmd = message.Any(o => o.Key == DD.FieldsByName["MDS_GSMD"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_GSMD"].Tag) : (decimal?)null;
+                var gsms = message.Any(o => o.Key == DD.FieldsByName["MDS_GSMS"].Tag) ? message.GetDecimal(DD.FieldsByName["MDS_GSMS"].Tag) : (decimal?)null;
 
                 //var sFactor = message.GetDecimal(DD.FieldsByName["MDS_SFACTOR"].Tag);
                 //var tickTime = message.Any(o=>o.Key== DD.FieldsByName["MDS_TICKTIME"].Tag)? message.GetDateTime(DD.FieldsByName["MDS_TICKTIME"].Tag):(DateTime?)null;
