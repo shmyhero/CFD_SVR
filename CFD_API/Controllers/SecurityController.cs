@@ -545,18 +545,20 @@ namespace CFD_API.Controllers
             Random r = new Random();
             result.longPct = (decimal) r.NextDouble();
 
-            //for single stocks and ..., reduct max lev so that gsmd will be much smaller than 100%
-            var lev = prodDef.AssetClass == CFDGlobal.ASSET_CLASS_STOCK ||
-                      (//prodDef.AssetClass == CFDGlobal.ASSET_CLASS_FX &&
-                      prodDef.Symbol.StartsWith("XBT"))
-                ? (int) (prodDef.MaxLeverage/2)
-                : (int) prodDef.MaxLeverage;
+            ////for single stocks and ..., reduct max lev so that gsmd will be much smaller than 100%
+            //var lev = prodDef.AssetClass == CFDGlobal.ASSET_CLASS_STOCK ||
+            //          (//prodDef.AssetClass == CFDGlobal.ASSET_CLASS_FX &&
+            //          prodDef.Symbol.StartsWith("XBT"))
+            //    ? (int) (prodDef.MaxLeverage/2)
+            //    : (int) prodDef.MaxLeverage;
+
+            var lev = (int)Math.Floor(result.maxLeverage.Value);
 
             if (lev*prodDef.GSMD > 0.5m)
                 CFDGlobal.LogWarning("max_lev * gsmd > 50% detected! sec_id:" + prodDef.Id);
 
             //lev to int
-            result.maxLeverage = Math.Floor(prodDef.MaxLeverage);
+            result.maxLeverage = lev;
 
             //generate lev list for client
             if (lev <= 10)

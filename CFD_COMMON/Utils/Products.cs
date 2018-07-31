@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CFD_COMMON.Localization;
+using CFD_COMMON.Models.Cached;
 
 namespace CFD_COMMON.Utils
 {
@@ -331,6 +333,25 @@ namespace CFD_COMMON.Utils
         public static bool HasChineseTranslation(string name)
         {
             return Translations.ProdCNames.ContainsKey(Translator.RemoveENameSuffix(name).ToLower());
+        }
+
+        public static decimal? GetLeverage(ProdDef src)
+        {
+            switch (src.AssetClass)
+            {
+                 case "Currencies":
+                     return 20;
+                case "Commodities":
+                    return 10;
+                case "Stock Indices":
+                    return 10;
+                case "Single Stocks":
+                    return 5;
+                case "Cryptocurrencies":
+                    return 2;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }
