@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Pingpp.Net;
@@ -56,7 +56,7 @@ namespace Pingpp.Models
         /// <returns></returns>
         public static BatchTransfer Create(Dictionary<string, object> btParams) 
         {
-            var batchTranster = Requestor.DoRequest(BaseUrl, "POST", btParams, true);
+            var batchTranster = Requestor.DoRequest(BaseUrl, "POST", btParams);
             return Mapper<BatchTransfer>.MapFromJson(batchTranster);
         }
 
@@ -82,28 +82,6 @@ namespace Pingpp.Models
             var url = Requestor.FormatUrl(BaseUrl, Requestor.CreateQuery(btParams));
             var batchTranster = Requestor.DoRequest(url, "GET");
             return Mapper<BatchTransferList>.MapFromJson(batchTranster);
-        }
-
-        public static BatchTransfer Cancel(String batchTransferNo)
-        {
-            var cancelParams = new Dictionary<string, object> {
-                {"status", "canceled"}
-            };
-            var batchTransfer = Requestor.DoRequest(String.Format("{0}/{1}", BaseUrl, batchTransferNo), "PUT", cancelParams, true);
-            return Mapper<BatchTransfer>.MapFromJson(batchTransfer);
-        }
-
-        /// <summary>
-        /// 更新批量付款对象（仅unionpay渠道支持）
-        /// </summary>
-        /// <param name="batchTransferNo"></param>
-        /// <param name="updateParams"></param>
-        /// <returns></returns>
-        public static BatchTransfer Update(string batchTransferNo, Dictionary<string, object> updateParams)
-        {
-            var url = string.Format("{0}/{1}", BaseUrl, batchTransferNo);
-            var batchTransfer = Requestor.DoRequest(url, "PUT", updateParams);
-            return Mapper<BatchTransfer>.MapFromJson(batchTransfer);
         }
     }
 }

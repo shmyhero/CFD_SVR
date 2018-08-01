@@ -1835,7 +1835,7 @@ namespace CFD_API.Controllers
 
             try
             {
-                Pingpp.Pingpp.SetPrivateKeyPath(HttpContext.Current.Server.MapPath("~/pingpp.txt"));
+                Pingpp.Pingpp.SetPrivateKeyPath(HttpContext.Current.Server.MapPath("~/App_Data/pingpp.txt"));
                 var charge = Pingpp.Models.Charge.Create(param);
 
                 return charge;

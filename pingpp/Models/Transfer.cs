@@ -68,7 +68,7 @@ namespace Pingpp.Models
 
         public static Transfer Create(Dictionary<string, object> trParams)
         {
-            var transfer = Requestor.DoRequest(BaseUrl, "POST", trParams, false);
+            var transfer = Requestor.DoRequest(BaseUrl, "POST", trParams);
             return Mapper<Transfer>.MapFromJson(transfer);
         }
 
@@ -76,13 +76,6 @@ namespace Pingpp.Models
         {
             var url = string.Format("{0}/{1}", BaseUrl, trId);
             var transfer = Requestor.DoRequest(url, "GET");
-            return Mapper<Transfer>.MapFromJson(transfer);
-        }
-
-        public static Transfer Cancel(string trId)
-        {
-            var url = string.Format("{0}/{1}", BaseUrl, trId);
-            var transfer = Requestor.DoRequest(url, "PUT", new Dictionary<string,object>{{"status", "canceled"}});
             return Mapper<Transfer>.MapFromJson(transfer);
         }
 
