@@ -1805,8 +1805,8 @@ namespace CFD_API.Controllers
             db.SaveChanges();
 
             //Pingpp.Pingpp.SetApiKey("sk_test_GGmvzTC88uz15OeXXTX1unLC");
-            Pingpp.Pingpp.SetApiKey("sk_live_OGa9m5znn1u9zLGyz91S8az5");
-            string appId = "app_HSunLGTi9Wf9P44e";
+            Pingpp.Pingpp.SetApiKey("sk_live_jfbb9O5OinP8y9G4i15CmjnD");
+            string appId = "app_90OKKC9ePOC0La9K";
 
             var extra = new Dictionary<string, object>();
 
