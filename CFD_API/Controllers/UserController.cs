@@ -1804,9 +1804,9 @@ namespace CFD_API.Controllers
             pOrder.OrderNumber = orderNo;
             db.SaveChanges();
 
-            //Pingpp.Pingpp.SetApiKey("sk_test_GGmvzTC88uz15OeXXTX1unLC");
-            Pingpp.Pingpp.SetApiKey("sk_live_OGa9m5znn1u9zLGyz91S8az5");
-            string appId = "app_HSunLGTi9Wf9P44e";
+            //Pingpp.Pingpp.SetApiKey("sk_test_XXHirPKGqnfDrX5e1GL40CyP");
+            Pingpp.Pingpp.SetApiKey("sk_live_jfbb9O5OinP8y9G4i15CmjnD");
+            string appId = "app_90OKKC9ePOC0La9K";
 
             var extra = new Dictionary<string, object>();
 
@@ -1835,6 +1835,7 @@ namespace CFD_API.Controllers
 
             try
             {
+                Pingpp.Pingpp.SetPrivateKeyPath(HttpContext.Current.Server.MapPath("~/pingpp.txt"));
                 var charge = Pingpp.Models.Charge.Create(param);
 
                 return charge;

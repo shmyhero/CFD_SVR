@@ -223,6 +223,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\pingpp.txt" />
     <Content Include="App_Readme\Elmah.txt" />
     <Content Include="CacheMonitor.html" />
     <Content Include="CacheClear.html" />
@@ -365,9 +366,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Data\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\AyondoTrade\AyondoTrade.csproj">
       <Project>{bba7bba6-7410-44a1-9948-b3a22ab76e7c}</Project>
