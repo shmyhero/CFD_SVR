@@ -1835,7 +1835,34 @@ namespace CFD_API.Controllers
 
             try
             {
-                Pingpp.Pingpp.SetPrivateKeyPath(HttpContext.Current.Server.MapPath("~/App_Data/pingpp.txt"));
+                Pingpp.Pingpp.SetPrivateKey(@"-----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEA5lywlsjUzbQa5ENFzxJx46BPRnMdWIKGy88YM7bD8vfrIeG+
+5Fh21KenDJ8KgUVwkmohlSgDEIQSFnVWjSGWZvGCyTSnFDqaFchSep523UCKxI2e
+cLnuFPU5swVw2/4wk5yLdUFq7f9BMZF0r/NBUyy57dUh4+3FE8UxUrLAIsVotYhz
+aw69zeeJbT+ncmjD3YLnLKHrxmdUqycE/zPV8YIYv/Wx8M2MLWV/M/0rkWMFO7id
+Jk41wcS5OwpP9TmD8gfbo3EJszu7SECNhhk9pU2mrMOtIKxnnr0gU8kHdCZ1gb1m
+BKwigqswXFmngW77sHDsbP1LLQV4YrqU/x5UAwIDAQABAoIBAA0bfwzFVp5xvgn4
+7fLvWL2b9IbMrAHKQ4M7QGRI5PNhOebOon75raFB/NZSAlYCrnoWQdzrzujUqvbO
+LGORYq5u1YM/VLZo8zWEFXVWqOrD7mFqsXY2jh5xKZxPFfHej8MGaET+uOfb20jH
+vvz3+WKTK+0lcG04rTsHwFu1Qgt4Vm8vonvxFF8Wa33pWeezGzePbToOB+bNRqBA
+GU66lTK4XKGEjauNLB7OdncX2VML5iDkWYIi10xYMx9zUZczj2zwizgw0H5v3aNm
+u13h9j0Bo82GtIjjXr1dgZlA+0ZRUUvo3+i0qNAkY9y10TRnOtXripys51yoQmBo
+FK4IiEkCgYEA81RMJ4v+UfqaRVTRLkjYt4r5JA+PUp4DxekVwc1h2gJEiIQrgGNP
+mpz+kqtupJMpF/X6TbcMxDbeisznykT2bRblykxQkWPSCt/1a7iKgAHi+BwxQsCB
+CzZH48eI4rpyHex1qd3p0qYqKlXr7rKw8ODZk6ex3YRa9qPBdoVVAd8CgYEA8luI
+YmsBS+Qiuy6vbgmSC3PtUiZBE/xwpAD4goC1OWzVZUQnEMyGRd58qu72b7o/EEyB
+zRn3i4xxpfnPPt+e+FcwD8eTNSbz4Ozm6tcCRbT/8Ug/V++5s0UV84UAmtp6og3R
+35qr9vjGOTthcG8mcbVow8hqzKIrkY8F82x0Gl0CgYA4NIaKs/mAsiQkU50l1cnJ
+S56Ux8tRSBKTCm3uICS0GMX/ypfJxibDDfR3qIWcGinp0PWKMfgO8qWg5ge8XwWU
+2S8m9U2+55HC1Ux5H11OiCEHMmvmgVTNZDJi2NozlOF7K/1ZyVqTP7KJqOMgdcIN
+QcLAKoIZKtNgGR884ztpfQKBgDKrnHonMSAy1GgaPKde7N/kHuwb/2M0VkCTy2FN
+k5YsAPmpJBnJCRG2kI4UZAW8BM9dj43YLf9JH8G51vCoRE5bvDqwWUC1oiuWnDjh
+NyJn01MY7dVu0359pTdCyXuWzijvhr+fUPDT1m3E0nx1YK5JZVv5nQqnpUBLjMz2
+EdgpAoGAJAdymob2NTa9YGWsdBBGCZyp3+h9MGYRVjoZ74l0BF38rVIAXGbfea31
+UWFg1cB1hoCC6PAca2VGFSerJou3pgPHkxMbrsQdxSl+/DdHIAOWPPoW3AYLeWdM
+fbSHXx0gw0hHzpKZTbL18TeMDhWQXm1c2D/9Gr0kxGRIIWXPRYE=
+-----END RSA PRIVATE KEY-----
+");
                 var charge = Pingpp.Models.Charge.Create(param);
 
                 return charge;
