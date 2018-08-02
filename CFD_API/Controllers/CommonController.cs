@@ -121,7 +121,7 @@ namespace CFD_API.Controllers
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
             }
-            var fxRate = quote.Offer;
+            var fxRate = quote.Bid;
 
             if (refundSetting != null)
             {
