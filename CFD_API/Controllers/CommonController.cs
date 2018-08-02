@@ -16,6 +16,7 @@ using Newtonsoft.Json.Linq;
 using CFD_COMMON;
 using CFD_API.Controllers.Attributes;
 using CFD_API.Caching;
+using CFD_COMMON.Utils;
 
 namespace CFD_API.Controllers
 {
@@ -121,7 +122,7 @@ namespace CFD_API.Controllers
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
             }
-            var fxRate = quote.Offer;
+            var fxRate = 1/quote.Offer;
 
             if (refundSetting != null)
             {
