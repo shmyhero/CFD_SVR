@@ -101,6 +101,7 @@ namespace CFD_API.DTO
         public decimal? minValueShort { get; set; }
         public decimal? maxValueLong { get; set; }
         public decimal? maxValueShort { get; set; }
+        public decimal? maxLeverageForRetailClient { get; set; }
     }
 
     public class ByPopularityDTO

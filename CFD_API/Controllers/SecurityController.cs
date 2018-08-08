@@ -359,6 +359,9 @@ namespace CFD_API.Controllers
                 {
                     //prodDTO.last = null;
                 }
+
+                prodDTO.maxLeverageForRetailClient =
+                    Products.GetLeverageForRetailClient(cache.ProdDefs.FirstOrDefault(o => o.Id == prodDTO.Id));
             }
 
             return result.OrderBy(o => o.AssetClass).ThenBy(o => o.Name).ToList();

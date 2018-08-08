@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CFD_COMMON.Localization;
 using CFD_COMMON.Models.Cached;
 
@@ -335,20 +336,41 @@ namespace CFD_COMMON.Utils
             return Translations.ProdCNames.ContainsKey(Translator.RemoveENameSuffix(name).ToLower());
         }
 
-        public static decimal? GetLeverage(ProdDef src)
+        private static readonly string[] MajorIndices = new[] { "DAX", "UKX", "CAC", "INDU", "SPX", "NDX", "NKY", "SX5E" };
+        private static readonly string[] MajorIndicesLeft2 = new[] { "GX", "Z ", "CF", "DM", "ES", "NQ", "NI", "VG" };
+
+        private static readonly string[] MajorFXLeft3 = new[] {"EUR", "USD", "JPY", "GBP", "CHF", "CAD"};
+        private static readonly string[] MajorFXRight3 = new[] { "EUR", "USD", "JPY", "GBP", "CHF", "CAD" };
+
+        public static decimal? GetLeverageForRetailClient(ProdDef src)
         {
             switch (src.AssetClass)
             {
-                 case "Currencies":
-                     return 20;
+                case "Currencies":
+                    if (MajorFXLeft3.Contains(src.Symbol.Substring(0, 3)) ||
+                        MajorFXRight3.Contains(src.Symbol.Substring(src.Symbol.Length - 3, 3)))
+                        return 30;
+                    else
+                        return 20;
+
                 case "Commodities":
-                    return 10;
+                    if (src.Symbol == "GOLDS" || src.Symbol.Substring(0, 2) == "GC")
+                        return 20;
+                    else
+                        return 10;
+
                 case "Stock Indices":
-                    return 10;
+                    if (MajorIndices.Contains(src.Symbol) || MajorIndicesLeft2.Contains(src.Symbol.Substring(0, 2)))
+                        return 20;
+                    else
+                        return 10;
+
                 case "Single Stocks":
                     return 5;
+
                 case "Cryptocurrencies":
                     return 2;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }

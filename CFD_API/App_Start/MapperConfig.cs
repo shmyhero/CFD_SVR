@@ -62,7 +62,7 @@ namespace CFD_API
                     .ForMember(dest => dest.tag, opt => opt.MapFrom(src => Products.GetStockTag(src.Symbol)))
                     .ForMember(dest => dest.dcmCount, opt => opt.MapFrom(src => src.Prec))
                     .ForMember(dest => dest.ccy, opt => opt.MapFrom(src => src.Ccy2))
-                    .ForMember(dest => dest.maxLeverage, opt => opt.MapFrom(src=>Math.Min(src.MaxLeverage, Products.GetLeverage(src).Value)));
+                    .ForMember(dest => dest.maxLeverage, opt => opt.MapFrom(src=>Math.Min(src.MaxLeverage, Products.GetLeverageForRetailClient(src).Value)));
 
                 cfg.CreateMap<ProdDef, ProdDefDTO>();
 
