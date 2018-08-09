@@ -85,6 +85,25 @@ namespace CFD_API.Controllers
         }
 
         [HttpPost]
+        [Route("edit")]
+        [AdminAuth]
+        public ResultDTO Edit(PartnerDTO form)
+        {
+            var partner = db.Partners.FirstOrDefault(p => p.PartnerCode == form.partnerCode);
+            if(partner != null)
+            {                
+                partner.PartnerGUID = form.partnerGUID;
+                db.SaveChanges();
+                return new ResultDTO() { success = true, message = "PartnerGUID修改成功" };
+            }
+            else
+            {
+                return new ResultDTO() { success = true, message = "PartnerCode错误" };
+            }
+            
+        }
+
+        [HttpPost]
         [Route("signup")]
         public ResultDTO SignUp(PartnerSignUpDTO form)
         {

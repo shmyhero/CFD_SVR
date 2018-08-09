@@ -37,6 +37,8 @@ namespace CFD_API.DTO
 
         public bool isAdmin { get; set; }
 
+        public string partnerGUID { get; set; }
+
         public DateTime? createdAt { get; set; }
     }
 
