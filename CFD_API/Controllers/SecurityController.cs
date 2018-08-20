@@ -491,6 +491,20 @@ namespace CFD_API.Controllers
             //mapping
             var result = Mapper.Map<SecurityDetailDTO>(prodDef);
 
+            if (IsLiveUrl)
+            {
+                var tryGetAuthUser = TryGetAuthUser();
+                if (tryGetAuthUser != null)
+                {
+                    if (tryGetAuthUser.Classification != null && tryGetAuthUser.Classification != "Retail")
+                        result.maxLeverage = prodDef.MaxLeverage;
+                }
+            }
+            else
+            {
+                result.maxLeverage = prodDef.MaxLeverage;
+            }
+
             //var security = db.AyondoSecurities.FirstOrDefault(o => o.Id == securityId);
             ////get cname
             //if (security != null && security.CName != null)

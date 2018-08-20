@@ -158,5 +158,7 @@
         public bool? ShowMyFeed { get; set; }
         public bool? ShowFollowingFeed { get; set; }
         public bool? ShowHeadlineFeed { get; set; }
+
+        public string Classification { get; set; }
     }
 }
