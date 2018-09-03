@@ -16,6 +16,8 @@ using Newtonsoft.Json.Linq;
 using CFD_COMMON;
 using CFD_API.Controllers.Attributes;
 using CFD_API.Caching;
+using Newtonsoft.Json;
+using CFD_COMMON.Service;
 
 namespace CFD_API.Controllers
 {
@@ -123,14 +125,50 @@ namespace CFD_API.Controllers
             }
             var fxRate = 1/quote.Offer;
 
+            #region
+            decimal availableReward = 0;
+            //如果验证信息不为空，就加上该用户的交易金总数
+            if (this.ActionContext.Request.Headers.Authorization != null)
+            {
+                int userId = 0;
+                string token = null;
+
+                
+                var split = this.ActionContext.Request.Headers.Authorization.Parameter.Split('_');
+                userId = Convert.ToInt32(split[0]);
+                token = split[1];
+
+                var user = db.Users.FirstOrDefault(o => o.Id == userId && o.Token == token);
+                if (user != null)
+                {
+                    RewardService service = new RewardService(db);
+                    var rewardDetail = service.GetTotalReward(user.Id);
+
+                    //总支出的交易金
+                    var transferredReward = db.RewardTransfers.Where(o => o.UserID == userId).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+                    //未结算的竞猜结果作为支出
+                    transferredReward += db.QuizBets.Where(o => o.UserID == userId && !o.SettledAt.HasValue).Select(o => o.PL).DefaultIfEmpty(0).Sum(o => Math.Abs(o.Value));
+
+                    //总交易金
+                    var totalReward = rewardDetail.referralReward + rewardDetail.liveRegister + rewardDetail.demoRegister + rewardDetail.totalCard + rewardDetail.totalDailySign + rewardDetail.totalDemoTransaction + rewardDetail.firstDeposit + rewardDetail.demoProfit + rewardDetail.quizSettled;
+
+                    if(totalReward > transferredReward)
+                    {
+                        availableReward = totalReward - transferredReward;
+                    }
+                }
+               
+            }
+            #endregion
+
             if (refundSetting != null)
             {
                 var setting = JObject.Parse(refundSetting.Value);
-                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), alipay = setting["alipay"].Value<string>(), alipayPing = setting["alipay_ping"].Value<string>(),  alipayMax = setting["alipayMax"].Value<decimal>(), alipayMaxPing = setting["alipayMax_ping"].Value<decimal>(), alipayMin = setting["alipayMin"].Value<decimal>(), alipayMinPing = setting["alipayMin_ping"].Value<decimal>(), cupMax = setting["cupMax"].Value<decimal>(), cupMin = setting["cupMin"].Value<decimal>(), fxRate = fxRate, banks = Banks, notice = setting["notice"].Value<string>(), charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() } };
+                return new DepositSettingDTO() { minimum = setting["min"].Value<decimal>(), alipay = setting["alipay"].Value<string>(), alipayPing = setting["alipay_ping"].Value<string>(),  alipayMax = setting["alipayMax"].Value<decimal>(), alipayMaxPing = setting["alipayMax_ping"].Value<decimal>(), alipayMin = setting["alipayMin"].Value<decimal>(), alipayMinPing = setting["alipayMin_ping"].Value<decimal>(), cupMax = setting["cupMax"].Value<decimal>(), cupMin = setting["cupMin"].Value<decimal>(), fxRate = fxRate, banks = Banks, notice = setting["notice"].Value<string>(), charge = new DepositChargeDTO() { minimum = setting["charge"]["min"].Value<decimal>(), rate = setting["charge"]["rate"].Value<decimal>() }, availableReward = availableReward };
             }
             else
             {
-                return new DepositSettingDTO { minimum = 100M, alipayMax=50M, alipayMin = 50M, cupMax = 20000M, cupMin = 50M, alipay= "单笔固定50美元", fxRate = fxRate, banks = Banks, notice = "注意：支付宝钱包入金手续费为1%，其出金手续费为1%；银联入金手续费为1%，其出金手续费为15美元 /每笔。", charge = new DepositChargeDTO() { minimum = 0, rate = 0 } };
+                return new DepositSettingDTO { minimum = 100M, alipayMax=50M, alipayMin = 50M, cupMax = 20000M, cupMin = 50M, alipay= "单笔固定50美元", fxRate = fxRate, banks = Banks, notice = "注意：支付宝钱包入金手续费为1%，其出金手续费为1%；银联入金手续费为1%，其出金手续费为15美元 /每笔。", charge = new DepositChargeDTO() { minimum = 0, rate = 0 }, availableReward = availableReward };
             }
         }
 
@@ -178,6 +216,7 @@ namespace CFD_API.Controllers
                 case "USDCNY": break;
                 case "CNYUSD": fxRate = 1 / fxRate; break;
             }
+                       
             return fxRate;
         }
 

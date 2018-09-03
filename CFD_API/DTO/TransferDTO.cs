@@ -47,6 +47,11 @@ namespace CFD_API.DTO
         public DepositChargeDTO charge { get; set; }
 
         public List<BankDTO> banks { get; set; }
+
+        /// <summary>
+        /// 可使用的交易金
+        /// </summary>
+        public decimal availableReward { get; set; }
     }
 
     public class DepositChargeDTO
