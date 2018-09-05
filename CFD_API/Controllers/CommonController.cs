@@ -159,6 +159,7 @@ namespace CFD_API.Controllers
 
                         //固定使用6.8作为汇率
                         availableReward = availableReward / rewardFxRate;
+                        availableReward = Math.Round(availableReward, 2);
                     }
                 }
                

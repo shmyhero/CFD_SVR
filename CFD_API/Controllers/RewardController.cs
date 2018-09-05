@@ -219,7 +219,7 @@ namespace CFD_API.Controllers
             result.Add(new RewardDTOV2() { name = Resources.Resource.DemoRegister, amount = rewardDTO.demoRegister });
             result.Add(new RewardDTOV2() { name = Resources.Resource.LiveRegister, amount = rewardDTO.liveRegister });
             result.Add(new RewardDTOV2() { name = Resources.Resource.ReferralReward, amount = rewardDTO.referralReward });
-            result.Add(new RewardDTOV2() { name = Resources.Resource.FirstDeposit, amount = rewardDTO.firstDeposit });
+            //result.Add(new RewardDTOV2() { name = Resources.Resource.FirstDeposit, amount = rewardDTO.firstDeposit });
             result.Add(new RewardDTOV2() { name = Resources.Resource.DemoProfit, amount = rewardDTO.demoProfit });
             result.Add(new RewardDTOV2() { name = Resources.Resource.Quiz, amount = rewardDTO.quiz });
             return result;
