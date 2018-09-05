@@ -1763,7 +1763,7 @@ namespace CFD_API.Controllers
         [HttpGet]
         [Route("live/deposit/pingpp")]
         [BasicAuth]
-        public Pingpp.Models.Charge NewPingppDeposit(decimal amount, string channel, string payment)
+        public Pingpp.Models.Charge NewPingppDeposit(decimal amount, string channel, string payment, decimal rewardAmount)
         {
             string[] acceptedChannels = new string[] {"isv_qr"};
             string[] acceptedPayments = new string[] {"alipay", "wx"};
@@ -1776,16 +1776,9 @@ namespace CFD_API.Controllers
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "错误的支付方式"));
             }
 
-            //decimal fxRate = 0;
-            //var exchangeRateProd = WebCache.GetInstance(true).ProdDefs.FirstOrDefault(p => p.Name == "USD/CNY Outright");
-            //if (exchangeRateProd != null)
-            //{
-            //    fxRate = exchangeRateProd.Offer.Value;
-            //}
-            //else
-            //{
-            //    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
-            //}
+            var today = DateTime.UtcNow.Date;
+            int orderRawNo = db.PingOrders.Where(p => p.CreatedAt > today).Count() + 1;
+            string orderNo = DateTime.Now.ToString("yyyyMMdd") + orderRawNo.ToString().PadLeft(8, '0');
 
             var pOrder = new PingOrder()
             {
@@ -1794,14 +1787,23 @@ namespace CFD_API.Controllers
                 //FxRateAt = exchangeRateProd.Time,
                 CreatedAt = DateTime.UtcNow,
                 AmountCNY = amount,
-                Channel = channel
+                Channel = channel,
+                OrderNumber = orderNo
             };
             db.PingOrders.Add(pOrder);
-            db.SaveChanges();
 
-            string orderNo = pOrder.Id.ToString();
-            orderNo = DateTime.Now.ToString("yyyyMMdd") + orderNo.PadLeft(8, '0');
-            pOrder.OrderNumber = orderNo;
+            if(rewardAmount > 0)
+            {
+                db.OrderRewardUsages.Add(new OrderRewardUsage()
+                {
+                    CreatedAt = DateTime.UtcNow,
+                    OrderNumber = orderNo,
+                    RewardAmountUSD = rewardAmount,
+                    RewardFxRate = CommonController.rewardFxRate,
+                    UserId = this.UserId
+                });
+            }
+
             db.SaveChanges();
 
             //Pingpp.Pingpp.SetApiKey("sk_test_XXHirPKGqnfDrX5e1GL40CyP");

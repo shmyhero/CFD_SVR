@@ -175,6 +175,11 @@ namespace CFD_JOBS
                 {
                     QuizJob.Run();
                 }
+
+                if (args.Contains("-RewardCashTransfer"))
+                {
+                    RewardCashTransfer.Run();
+                }
                 return 0;
             }
             catch (Exception ex)

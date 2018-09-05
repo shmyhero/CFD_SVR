@@ -46,7 +46,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Misc> Miscs { get; set; }
         public virtual DbSet<NewPositionHistory> NewPositionHistories { get; set; }
         public virtual DbSet<OperationUser> OperationUsers { get; set; }
-        //public virtual DbSet<PriceDownInterval> PriceDownIntervals { get; set; }
+        public virtual DbSet<OrderRewardUsage> OrderRewardUsages { get; set; }
         public virtual DbSet<Partner> Partners { get; set; }
         public virtual DbSet<PartnerView> PartnerViews { get; set; }
         public virtual DbSet<PartnerUserView> PartnerUserViews { get; set; }

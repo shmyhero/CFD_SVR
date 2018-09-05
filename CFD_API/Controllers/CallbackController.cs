@@ -20,6 +20,7 @@ using Org.BouncyCastle.OpenSsl;
 using CFD_COMMON.Utils;
 using CFD_COMMON.Models.Entities;
 using CFD_COMMON.Service;
+using System.Transactions;
 
 namespace CFD_API.Controllers
 {
@@ -440,6 +441,8 @@ namespace CFD_API.Controllers
                 thFeeRate = decimal.Parse(feeSetting.Value);
             }
 
+            //using (var transactionScope = new TransactionScope())
+            //{
             var pOrder = db.PingOrders.FirstOrDefault(p => p.OrderNumber == orderNumberStr);
             if (pOrder != null)
             {
@@ -457,16 +460,26 @@ namespace CFD_API.Controllers
                         pOrder.FxRateAt = quote.Time;
                         pOrder.AmountNet = amountNet;
                         pOrder.AmountAdjusted = pOrder.AmountCNY * (1 - thFeeRate);
-                        pOrder.AmountUSD = Decimals.RoundIfExceed(pOrder.AmountAdjusted.Value/quote.Offer, 2);
+                        pOrder.AmountUSD = Decimals.RoundIfExceed(pOrder.AmountAdjusted.Value / quote.Offer, 2);
                     }
                     else
                     {
                         throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
                     }
+
+                    //找到对应的订单，且该订单未被支付过
+                    var orderRewardUsage = db.OrderRewardUsages.FirstOrDefault(o => o.OrderNumber == orderNumberStr && !o.PingPaidAt.HasValue && !o.AyTransReqSentAt.HasValue);
+                    if (orderRewardUsage != null)
+                    {
+                        orderRewardUsage.PingPaidAt = DateTime.UtcNow;
+                    }
                 }
 
                 db.SaveChanges();
             }
+
+            //transactionScope.Complete();
+            //}
 
             return new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("success")};
         }

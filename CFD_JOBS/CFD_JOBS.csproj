@@ -100,6 +100,7 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -131,6 +132,7 @@
     <Compile Include="RankJob.cs" />
     <Compile Include="RemittanceReport.cs" />
     <Compile Include="Competition2.cs" />
+    <Compile Include="RewardCashTransfer.cs" />
     <Compile Include="StockAlert.cs" />
     <Compile Include="RedisToDbWorker.cs" />
     <Compile Include="TickChartWorker.cs" />
@@ -188,6 +190,10 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

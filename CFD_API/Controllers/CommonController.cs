@@ -24,6 +24,7 @@ namespace CFD_API.Controllers
     [RoutePrefix("api/common")]
     public class CommonController : CFDController
     {
+        public const decimal rewardFxRate = 6.8M;
         public CommonController(CFDEntities db, IMapper mapper) : base(db, mapper)
         {
         }
@@ -155,6 +156,9 @@ namespace CFD_API.Controllers
                     if(totalReward > transferredReward)
                     {
                         availableReward = totalReward - transferredReward;
+
+                        //固定使用6.8作为汇率
+                        availableReward = availableReward / rewardFxRate;
                     }
                 }
                
