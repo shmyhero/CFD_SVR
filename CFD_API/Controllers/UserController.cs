@@ -1792,7 +1792,9 @@ namespace CFD_API.Controllers
             };
             db.PingOrders.Add(pOrder);
 
-            if(rewardAmount > 0)
+            CFDGlobal.LogInformation("NewPingppDeposit - rewardAmount:" + rewardAmount + " UserID:" + this.UserId);
+
+            if (rewardAmount > 0)
             {
                 db.OrderRewardUsages.Add(new OrderRewardUsage()
                 {
