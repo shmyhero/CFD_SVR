@@ -5,13 +5,14 @@ using System.Threading;
 using AyondoTrade;
 using CFD_COMMON;
 using CFD_COMMON.Models.Context;
+using CFD_COMMON.Service;
 
 namespace CFD_JOBS
 {
     class RewardCashTransfer
     {
         private static readonly TimeSpan _sleepInterval = TimeSpan.FromSeconds(10);
-
+        private const decimal rewardFxRate = 6.8M;
         public static void Run()
         {
             CFDGlobal.LogLine("Starting...");
@@ -44,7 +45,7 @@ namespace CFD_JOBS
                             {
                                 try
                                 {
-                                    if (pay.AyTransReqSentAt == null)
+                                    if (pay.AyTransReqSentAt == null && HasEnoughReward(pay.UserId?? 0, pay.RewardAmountUSD?? 0 * rewardFxRate, db))
                                     {
                                         if (pay.User.AyLiveBalanceId == null || pay.User.AyLiveActorId == null)
                                             CFDGlobal.LogLine(pay.Id + ": user " + pay.UserId +
@@ -63,7 +64,7 @@ namespace CFD_JOBS
                                                     pay.User.AyLiveActorId.ToString());
 
                                                 pay.AyTransReqId = guid;
-
+                                               
                                                 CFDGlobal.LogLine(pay.Id + ": request sent " + pay.AyTransReqId);
                                             }
                                             catch (Exception e)
@@ -91,6 +92,13 @@ namespace CFD_JOBS
                                             pay.AyTransText = transferReport.Text;
 
                                             CFDGlobal.LogLine(pay.Id + ": transfer result updated " + pay.AyTransStatus);
+
+                                            db.RewardTransfers.Add(new CFD_COMMON.Models.Entities.RewardTransfer()
+                                            {
+                                                Amount = (pay.RewardAmountUSD ?? 0) * rewardFxRate,
+                                                UserID = pay.UserId ?? 0,
+                                                CreatedAt = DateTime.UtcNow
+                                            });
 
                                             db.SaveChanges();
                                         }
@@ -127,6 +135,31 @@ namespace CFD_JOBS
                 CFDGlobal.LogLine("");
                 Thread.Sleep(_sleepInterval);
             }
+        }
+
+        private static bool HasEnoughReward(int userId, decimal rewardToTransfer, CFDEntities db)
+        {
+            RewardService service = new RewardService(db);
+            var rewardDetail = service.GetTotalReward(userId);
+
+            //总支出的交易金
+            var transferredReward = db.RewardTransfers.Where(o => o.UserID == userId).Select(o => o.Amount).DefaultIfEmpty(0).Sum();
+            //未结算的竞猜结果作为支出
+            transferredReward += db.QuizBets.Where(o => o.UserID == userId && !o.SettledAt.HasValue).Select(o => o.PL).DefaultIfEmpty(0).Sum(o => Math.Abs(o.Value));
+
+            //总交易金
+            var totalReward = rewardDetail.referralReward + rewardDetail.liveRegister + rewardDetail.demoRegister + rewardDetail.totalCard + rewardDetail.totalDailySign + rewardDetail.totalDemoTransaction + rewardDetail.firstDeposit + rewardDetail.demoProfit + rewardDetail.quizSettled;
+
+            if((totalReward - transferredReward) >= rewardToTransfer)
+            {
+                return true;
+            }
+
+            else
+            {
+                return false;
+            }
+
         }
     }
 }
