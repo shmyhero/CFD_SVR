@@ -1670,7 +1670,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("~/api/live/position/chart/plClosed")]
+        [Route("live/chart/plClosed")]
         [IPAuth]
         public List<PosChartDTO> GetPLChartClosed()
         {
@@ -1724,6 +1724,82 @@ namespace CFD_API.Controllers
             #endregion
 
             return newResult;
+        }
+
+        [HttpGet]
+        [Route("live/exposure")]
+        [IPAuth]
+        public List<ExposureDTO> GetMarketExposure()
+        {
+            var openPositions = db.NewPositionHistory_live.Where(o => o.ClosedAt == null)
+                //.GroupBy(o => o.SecurityId)
+                //.Select(o => new ExposureDTO()
+                //{
+                //    id = o.Key.Value,
+                //    posCount = o.Count(),
+                //    longQty = o.Sum(p=>p.LongQty??0),
+                //    shortQty = o.Sum(p => p.ShortQty ?? 0),
+                //})
+                .ToList();
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
+            var exposureDtos = openPositions.GroupBy(o => o.SecurityId).Select(
+                delegate(IGrouping<int?, NewPositionHistory_live> group)
+                {
+                    var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == group.Key);
+                    return new ExposureDTO()
+                    {
+                        id = group.Key.Value,
+                        name = Translator.GetCName(prodDef.Name),
+                        posCount = group.Count(),
+                        userCount = group.GroupBy(p => p.UserId).Count(),
+                        //longQty = group.Sum(p => p.LongQty ?? 0),
+                        //shortQty = group.Sum(p => p.ShortQty ?? 0),
+                        positions = group.Select(delegate(NewPositionHistory_live p)
+                        {
+                            var quote = cache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(p.SecurityId));
+                            var r= new PositionExposureDTO()
+                            {
+                                id = p.Id.ToString(),
+                                //leverage = p.Leverage.Value,
+                                tradeValue = p.SettlePrice * prodDef.LotSize / prodDef.PLUnits * (p.LongQty ?? p.ShortQty),
+                                isLong = p.LongQty.HasValue,
+                                quantity = (decimal) (p.LongQty??p.ShortQty),
+                            };
+
+                            decimal upl = p.LongQty.HasValue ? r.tradeValue.Value * (quote.Bid / p.SettlePrice.Value - 1) : r.tradeValue.Value * (1 - quote.Offer / p.SettlePrice.Value);
+                            var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
+                            r.upl = uplUSD;
+
+                            return r;
+                        }).ToList()
+                    };
+                }).ToList();
+
+            foreach (var r in exposureDtos)
+            {
+                r.netTradeValue = r.positions.Sum(p => p.isLong ? p.tradeValue : -p.tradeValue);
+                r.grossTradeValue = r.positions.Sum(p =>  p.tradeValue);
+                r.netQuantity=r.positions.Sum(p => p.isLong ? p.quantity : -p.quantity);
+                r.grossQuantity = r.positions.Sum(p => p.quantity);
+            }
+            //foreach (var dto in openPositions)
+            //{
+            //    var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == dto.SecurityId);
+            //    //dto. = Translator.GetCName(prodDef.Name);
+
+            //    var posDTO = 
+
+            //    var quote = cache.Quotes.FirstOrDefault(o => o.Id == dto.id);
+
+            //    //************************************************************************
+            //    //TradeValue (to ccy2) = QuotePrice * (MDS_LOTSIZE / MDS_PLUNITS) * quantity
+            //    //************************************************************************
+            //    //var tradeValue = report.SettlPrice * prodDef.LotSize / prodDef.PLUnits * (report.LongQty ?? report.ShortQty);
+            //}
+
+            return exposureDtos.OrderByDescending(r=>r.grossTradeValue).ToList();
         }
 
         [HttpGet]

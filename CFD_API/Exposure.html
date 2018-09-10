@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+</head>
+<body>
+
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <div>
+        <a href="insight.html">&lt; 首页</a>
+    </div>
+
+    <div id="container" style="min-width: 310px; min-height: 1200px; margin: 0 auto">Loading...</div>
+
+    <script type="text/javascript">
+        $.getJSON('api/position/live/exposure',
+            function(result) {
+
+                //debugger;
+
+                var series = [{ name: 'Gross Exposure', data: [] }, { name: 'Net Exposure', data: [] }];
+                var categories = [];
+                for (var i = 0; i < result.length; i++) {
+                    var e = result[i];
+                    //debugger;
+                    categories.push(e.name);
+                    series[0].data.push(e.grossTradeValue);
+                    series[1].data.push(e.netTradeValue);
+                }
+
+                //debugger;
+
+                Highcharts.chart('container',
+                    {
+                        chart: {
+                type: 'bar',
+                zoomType: 'x',
+                panning: true,
+                panKey: 'shift'
+                        },
+                        title: {
+                            text: 'Exposure'
+                        },
+                        subtitle: {
+                            text: 'Click and drag to zoom in（放大）. Hold down shift key to pan（移动）.'
+                        },
+                        legend: {
+                            enabled: true,
+                            layout: 'vertical',
+                            align: 'right',
+                            verticalAlign: 'top',
+                            x: -40,
+                            y: 120,
+                            floating: true,
+                            borderWidth: 1
+                        },
+                        xAxis: {
+                            //type: 'datetime'
+                            categories: categories
+                        },
+                        yAxis: {
+                            //min: 0,
+                            title: {
+                                text: '美元'
+                            }
+                        },
+                        //tooltip: {
+                        //    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                        //    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                        //        '<td style="padding:0"><b>{point.y:.0f} USD</b></td></tr>',
+                        //    footerFormat: '</table>',
+                        //    shared: true,
+                        //    useHTML: true,
+                        //    xDateFormat: '%Y-%m-%d(周%w)'
+                        //},
+                        plotOptions: {
+                            //column: {
+                            //    pointPadding: 0.2,
+                            //    borderWidth: 0
+                            //}
+                            bar: {
+                                dataLabels: {
+                                    enabled: true
+                                }
+                            }
+                        },
+                        series: series
+                    });
+            });
+
+
+    </script>
+</body>
+</html>
