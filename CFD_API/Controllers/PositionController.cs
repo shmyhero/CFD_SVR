@@ -1727,9 +1727,9 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("live/exposure")]
+        [Route("live/exposure/open")]
         [IPAuth]
-        public List<ExposureDTO> GetMarketExposure()
+        public List<ExposureDTO> GetOpenExposure()
         {
             var openPositions = db.NewPositionHistory_live.Where(o => o.ClosedAt == null)
                 //.GroupBy(o => o.SecurityId)
@@ -1783,6 +1783,8 @@ namespace CFD_API.Controllers
                 r.grossTradeValue = r.positions.Sum(p =>  p.tradeValue);
                 r.netQuantity=r.positions.Sum(p => p.isLong ? p.quantity : -p.quantity);
                 r.grossQuantity = r.positions.Sum(p => p.quantity);
+
+                r.positions = r.positions.OrderByDescending(p => p.tradeValue).ToList();
             }
             //foreach (var dto in openPositions)
             //{
@@ -1800,6 +1802,65 @@ namespace CFD_API.Controllers
             //}
 
             return exposureDtos.OrderByDescending(r=>r.grossTradeValue).ToList();
+        }
+
+        [HttpGet]
+        [Route("live/exposure/closed/peak")]
+        [IPAuth]
+        public List<ExposureDTO> GetCloseExposurePeak()
+        {
+            var closePositions = db.NewPositionHistory_live.Where(o => o.ClosedAt.HasValue)
+                //.GroupBy(o => o.SecurityId)
+                //.Select(o => new ExposureDTO()
+                //{
+                //    id = o.Key.Value,
+                //    posCount = o.Count(),
+                //    longQty = o.Sum(p=>p.LongQty??0),
+                //    shortQty = o.Sum(p => p.ShortQty ?? 0),
+                //})
+                .ToList();
+
+            var dictionary=new Dictionary<int,ExposureDTO>();
+
+            var begin = closePositions.Min(p => p.CreateTime).Value;
+            begin = DateTime.SpecifyKind(begin, DateTimeKind.Utc);
+            var end = closePositions.Max(p => p.ClosedAt).Value;
+            end = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+
+            for (DateTime t = begin; t <= end; t = t.AddHours(1))
+            {
+                var exposureDtos = closePositions.Where(p => p.CreateTime <= t && p.ClosedAt >= t).GroupBy(p => p.SecurityId)
+                    .Select(g => new ExposureDTO
+                    {
+                        id = g.Key.Value,
+                        netTradeValue = g.Sum(p=>(p.LongQty.HasValue?1:-1)*p.InvestUSD*p.Leverage),
+                        t=t,
+                    }).ToList();
+
+                foreach (var exposureDto in exposureDtos)
+                {
+                    if(!dictionary.ContainsKey(exposureDto.id))
+                        dictionary.Add(exposureDto.id,exposureDto);
+                    else
+                    {
+                       if(Math.Abs(exposureDto.netTradeValue.Value) > Math.Abs( dictionary[exposureDto.id].netTradeValue.Value))
+                       {
+                           dictionary[exposureDto.id] = exposureDto;
+                       }
+                    }
+                }
+            }
+
+            var cache = WebCache.GetInstance(IsLiveUrl);
+
+            foreach (var exposureDto in dictionary)
+            {
+                var prodDef = cache.ProdDefs.FirstOrDefault(o => o.Id == exposureDto.Key);
+                exposureDto.Value.name = Translator.GetCName(prodDef.Name);
+            }
+
+            var result = dictionary.Select(pair=>pair.Value).OrderByDescending(o=>Math.Abs(o.netTradeValue.Value)).ToList();
+            return result;
         }
 
         [HttpGet]

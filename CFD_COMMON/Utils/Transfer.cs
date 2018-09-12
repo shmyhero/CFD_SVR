@@ -19,7 +19,7 @@ namespace CFD_COMMON.Utils
             return
                 o =>
                     Transfer.DepositTypes.Contains(o.TransferType) ||
-                    (o.TransferType == "Bank Wire" && o.Amount > 0 && o.TransferId.Length == 36);
+                    (o.TransferType == "Bank Wire" && o.Amount > 0 /*&& o.TransferId.Length == 36*/);
         }
 
         public static Expression<Func<AyondoTransferHistory_Live, bool>> IsDeposit(long? ayLiveAccountId)
@@ -27,7 +27,7 @@ namespace CFD_COMMON.Utils
             return
                 o => o.TradingAccountId == ayLiveAccountId && 
                     (Transfer.DepositTypes.Contains(o.TransferType) ||
-                    (o.TransferType == "Bank Wire" && o.Amount > 0 && o.TransferId.Length == 36));
+                    (o.TransferType == "Bank Wire" && o.Amount > 0 /*&& o.TransferId.Length == 36*/));
         }
 
         public static Expression<Func<AyondoTransferHistory_Live, bool>> IsDeposit(List<long?> ayLiveAccountIdList)
@@ -35,7 +35,7 @@ namespace CFD_COMMON.Utils
             return
                 o => ayLiveAccountIdList.Contains(o.TradingAccountId) &&
                     (Transfer.DepositTypes.Contains(o.TransferType) ||
-                    (o.TransferType == "Bank Wire" && o.Amount > 0 && o.TransferId.Length == 36));
+                    (o.TransferType == "Bank Wire" && o.Amount > 0 /*&& o.TransferId.Length == 36*/));
         }
 
         public static Expression<Func<AyondoTransferHistory_Live, bool>> IsRemittance(long? ayLiveAccountId)
@@ -49,7 +49,7 @@ namespace CFD_COMMON.Utils
         public static bool IsDepositData(AyondoTransferHistoryBase o)
         {
             return Transfer.DepositTypes.Contains(o.TransferType) ||
-                    (o.TransferType == "Bank Wire" && o.Amount > 0 && o.TransferId.Length == 36);
+                    (o.TransferType == "Bank Wire" && o.Amount > 0 /*&& o.TransferId.Length == 36*/);
         }
 
         //public static bool IsDeposit(string transferType)

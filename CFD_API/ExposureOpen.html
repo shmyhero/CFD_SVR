@@ -8,7 +8,7 @@
 
     <script src="Scripts/jquery-1.6.4.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
 
     <div>
         <a href="insight.html">&lt; 首页</a>
@@ -17,7 +17,7 @@
     <div id="container" style="min-width: 310px; min-height: 1200px; margin: 0 auto">Loading...</div>
 
     <script type="text/javascript">
-        $.getJSON('api/position/live/exposure',
+        $.getJSON('api/position/live/exposure/open',
             function(result) {
 
                 //debugger;
@@ -28,8 +28,8 @@
                     var e = result[i];
                     //debugger;
                     categories.push(e.name);
-                    series[0].data.push(e.grossTradeValue);
-                    series[1].data.push(e.netTradeValue);
+                    series[0].data.push(parseFloat(e.grossTradeValue.toFixed(0)));
+                    series[1].data.push(parseFloat(e.netTradeValue.toFixed(0)));
                 }
 
                 //debugger;
@@ -37,13 +37,13 @@
                 Highcharts.chart('container',
                     {
                         chart: {
-                type: 'bar',
-                zoomType: 'x',
-                panning: true,
-                panKey: 'shift'
+                            type: 'bar',
+                            zoomType: 'x',
+                            panning: true,
+                            panKey: 'shift'
                         },
                         title: {
-                            text: 'Exposure'
+                            text: 'Exposure (Open Positions)'
                         },
                         subtitle: {
                             text: 'Click and drag to zoom in（放大）. Hold down shift key to pan（移动）.'

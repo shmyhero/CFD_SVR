@@ -229,7 +229,8 @@
     <Content Include="CacheClear.html" />
     <Content Include="CacheSwitcher.html" />
     <Content Include="CompetitionView.html" />
-    <Content Include="Exposure.html" />
+    <Content Include="ExposureClosed.html" />
+    <Content Include="ExposureOpen.html" />
     <Content Include="DailyClosePositionView.html" />
     <Content Include="DailyTransferView.html" />
     <Content Include="DailyPositionView.html" />

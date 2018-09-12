@@ -178,8 +178,8 @@ namespace CFD_API.DTO
     {
         public int id { get; set; }
         public string name { get; set; }
-        public int userCount { get; set; }
-        public int posCount { get; set; }
+        public int? userCount { get; set; }
+        public int? posCount { get; set; }
         public decimal? grossQuantity { get; set; }
         public decimal? netQuantity { get; set; }
         //public decimal? longQty { get; set; }
@@ -187,6 +187,7 @@ namespace CFD_API.DTO
         public decimal? grossTradeValue { get; set; }
         public decimal? netTradeValue { get; set; }
         public List<PositionExposureDTO> positions { get; set; }
+        public DateTime? t { get; set; }
     }
 
     public class PositionExposureDTO : PositionDTO
