@@ -1805,7 +1805,7 @@ namespace CFD_API.Controllers
         }
 
         [HttpGet]
-        [Route("live/exposure/closed/peak")]
+        [Route("live/exposure/closed")]
         [IPAuth]
         public List<ExposureDTO> GetCloseExposurePeak()
         {
@@ -1827,13 +1827,14 @@ namespace CFD_API.Controllers
             var end = closePositions.Max(p => p.ClosedAt).Value;
             end = DateTime.SpecifyKind(end, DateTimeKind.Utc);
 
+            //peak value
             for (DateTime t = begin; t <= end; t = t.AddHours(1))
             {
                 var exposureDtos = closePositions.Where(p => p.CreateTime <= t && p.ClosedAt >= t).GroupBy(p => p.SecurityId)
                     .Select(g => new ExposureDTO
                     {
                         id = g.Key.Value,
-                        netTradeValue = g.Sum(p=>(p.LongQty.HasValue?1:-1)*p.InvestUSD*p.Leverage),
+                        netTradeValue = g.Sum(p => (p.LongQty.HasValue ? 1 : -1) * p.InvestUSD * p.Leverage),
                         t=t,
                     }).ToList();
 
@@ -1849,6 +1850,13 @@ namespace CFD_API.Controllers
                        }
                     }
                 }
+            }
+
+            //accumulative sum
+            foreach (var exposureDto in dictionary)
+            {
+                exposureDto.Value.grossTradeValue = closePositions.Where(p => p.SecurityId == exposureDto.Key)
+                    .Sum(p => (p.LongQty.HasValue ? 1 : -1) * p.InvestUSD * p.Leverage);
             }
 
             var cache = WebCache.GetInstance(IsLiveUrl);

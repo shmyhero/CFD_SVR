@@ -14,15 +14,15 @@
         <a href="insight.html">&lt; 首页</a>
     </div>
 
-    <div id="container" style="min-width: 310px; min-height: 1200px; margin: 0 auto">Loading...</div>
+    <div id="container" style="min-width: 310px; min-height: 2400px; margin: 0 auto">Loading...</div>
 
     <script type="text/javascript">
-        $.getJSON('api/position/live/exposure/closed/peak',
+        $.getJSON('api/position/live/exposure/closed',
             function(result) {
 
                 //debugger;
 
-                var series = [{ name: 'Net Exposure', data: [] }];
+                var series = [{ name: 'Historic Peak', data: [] }, { name: 'Accumulative Sum', data: [] }];
                 var categories = [];
                 for (var i = 0; i < result.length; i++) {
                     var e = result[i];
@@ -31,7 +31,11 @@
                     series[0].data.push({
                         y: parseFloat(e.netTradeValue.toFixed(0)),
                         t: (new Date(e.t)).toLocaleString()
-                });
+                    });
+                    series[1].data.push({
+                        y: parseFloat(e.grossTradeValue.toFixed(0)),
+                        t: null
+                    });
                     //series[1].data.push(parseFloat(e.netTradeValue.toFixed(0)));
                 }
 
@@ -46,7 +50,7 @@
                             panKey: 'shift'
                         },
                         title: {
-                            text: 'Exposure Peak (Closed Positions)'
+                            text: 'Net Exposure (Closed Positions)'
                         },
                         subtitle: {
                             text: 'Click and drag to zoom in（放大）. Hold down shift key to pan（移动）.'
