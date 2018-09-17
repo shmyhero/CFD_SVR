@@ -3,6 +3,49 @@
 <head>
     <title></title>
     <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: "Microsoft YaHei","黑体",'Segoe UI', Arial, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 2px 6px;
+        }
+
+        table td {
+            text-align: right;
+        }
+
+        .loading td {
+            text-align: left;
+        }
+
+        .phoneLink {
+            cursor: pointer;
+            color: cornflowerblue;
+        }
+
+        .phoneLink:hover {
+            color: blue;
+        }
+
+        .highlight {
+            color: deeppink;
+        }
+
+        .lowlight {
+            color: #c5006a;
+        }
+
+        a:visited, a {
+            color:navy
+        }
+    </style>
 </head>
 <body>
 
@@ -14,83 +57,114 @@
         <a href="insight.html">&lt; 首页</a>
     </div>
 
-    <div id="container" style="min-width: 310px; min-height: 1200px; margin: 0 auto">Loading...</div>
+<div id="container" style="min-width: 310px; min-height: 1200px; margin: 0 auto">Loading...</div>
 
-    <script type="text/javascript">
-        $.getJSON('api/position/live/exposure/open',
-            function(result) {
+    <div id="container2"></div>
 
+<script type="text/javascript">
+    $.getJSON('api/position/live/exposure/open',
+        function(result) {
+
+            //debugger;
+
+            var series = [{ name: 'Gross Exposure', data: [] }, { name: 'Net Exposure', data: [] }];
+            var categories = [];
+            for (var i = 0; i < result.length; i++) {
+                var e = result[i];
                 //debugger;
+                categories.push(e.name);
+                series[0].data.push(parseFloat(e.grossTradeValue.toFixed(0)));
+                series[1].data.push(parseFloat(e.netTradeValue.toFixed(0)));
+            }
 
-                var series = [{ name: 'Gross Exposure', data: [] }, { name: 'Net Exposure', data: [] }];
-                var categories = [];
-                for (var i = 0; i < result.length; i++) {
-                    var e = result[i];
-                    //debugger;
-                    categories.push(e.name);
-                    series[0].data.push(parseFloat(e.grossTradeValue.toFixed(0)));
-                    series[1].data.push(parseFloat(e.netTradeValue.toFixed(0)));
-                }
+            //debugger;
 
-                //debugger;
-
-                Highcharts.chart('container',
-                    {
-                        chart: {
-                            type: 'bar',
-                            zoomType: 'x',
-                            panning: true,
-                            panKey: 'shift'
-                        },
+            Highcharts.chart('container',
+                {
+                    chart: {
+                        type: 'bar',
+                        zoomType: 'x',
+                        panning: true,
+                        panKey: 'shift'
+                    },
+                    title: {
+                        text: 'Exposure (Open Positions)'
+                    },
+                    subtitle: {
+                        text: 'Click and drag to zoom in（放大）. Hold down shift key to pan（移动）.'
+                    },
+                    legend: {
+                        enabled: true,
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'top',
+                        x: -40,
+                        y: 120,
+                        floating: true,
+                        borderWidth: 1
+                    },
+                    xAxis: {
+                        //type: 'datetime'
+                        categories: categories
+                    },
+                    yAxis: {
+                        //min: 0,
                         title: {
-                            text: 'Exposure (Open Positions)'
-                        },
-                        subtitle: {
-                            text: 'Click and drag to zoom in（放大）. Hold down shift key to pan（移动）.'
-                        },
-                        legend: {
-                            enabled: true,
-                            layout: 'vertical',
-                            align: 'right',
-                            verticalAlign: 'top',
-                            x: -40,
-                            y: 120,
-                            floating: true,
-                            borderWidth: 1
-                        },
-                        xAxis: {
-                            //type: 'datetime'
-                            categories: categories
-                        },
-                        yAxis: {
-                            //min: 0,
-                            title: {
-                                text: '美元'
+                            text: '美元'
+                        }
+                    },
+                    //tooltip: {
+                    //    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    //    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    //        '<td style="padding:0"><b>{point.y:.0f} USD</b></td></tr>',
+                    //    footerFormat: '</table>',
+                    //    shared: true,
+                    //    useHTML: true,
+                    //    xDateFormat: '%Y-%m-%d(周%w)'
+                    //},
+                    plotOptions: {
+                        //column: {
+                        //    pointPadding: 0.2,
+                        //    borderWidth: 0
+                        //}
+                        bar: {
+                            dataLabels: {
+                                enabled: true
                             }
-                        },
-                        //tooltip: {
-                        //    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                        //    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                        //        '<td style="padding:0"><b>{point.y:.0f} USD</b></td></tr>',
-                        //    footerFormat: '</table>',
-                        //    shared: true,
-                        //    useHTML: true,
-                        //    xDateFormat: '%Y-%m-%d(周%w)'
-                        //},
-                        plotOptions: {
-                            //column: {
-                            //    pointPadding: 0.2,
-                            //    borderWidth: 0
-                            //}
-                            bar: {
-                                dataLabels: {
-                                    enabled: true
-                                }
-                            }
-                        },
-                        series: series
-                    });
-            });
+                        }
+                    },
+                    series: series
+                });
+
+            //detail table
+            var div = $('#container2');
+            for (var i = 0; i < result.length; i++) {
+                //debugger;
+                var exp = result[i];
+                var html = '<p>' + exp.name + '</p><table><thead><tr><th>昵称</th><th>实盘账号</th><th>本金</th><th>杠杆</th><th>方向</th><th>交易额</th><th>开仓时间</th></tr></thead><tbody>';
+                for (var j = 0; j < exp.positions.length; j++) {
+                    var pos = exp.positions[j];
+                    html += '<tr><td>' +
+                        pos.nickname +
+                        '</td><td>' +
+                        pos.ayLiveUsername +
+                        '</td><td>' +
+                        pos.invest +
+                        '</td><td>' +
+                        pos.leverage +
+                        '</td><td>' +
+                        (pos.isLong ? '+' : '-') +
+                        '</td><td>' +
+                        pos.tradeValue +
+                        '</td><td>' +
+                        pos.createAt +
+                        '</td></tr>';
+                }
+                html += '</tbody></table>';
+                div.append(html+'<hr/>');
+            }
+        }
+    );
 
 
     </script>

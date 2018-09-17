@@ -1742,6 +1742,9 @@ namespace CFD_API.Controllers
                 //})
                 .ToList();
 
+            var userIds = openPositions.Select(p => p.UserId).Distinct().ToList();
+            var users = db.Users.Where(u => userIds.Contains(u.Id)).ToList();
+
             var cache = WebCache.GetInstance(IsLiveUrl);
 
             var exposureDtos = openPositions.GroupBy(o => o.SecurityId).Select(
@@ -1758,19 +1761,27 @@ namespace CFD_API.Controllers
                         //shortQty = group.Sum(p => p.ShortQty ?? 0),
                         positions = group.Select(delegate(NewPositionHistory_live p)
                         {
-                            var quote = cache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(p.SecurityId));
+                            //var quote = cache.Quotes.FirstOrDefault(o => o.Id == Convert.ToInt32(p.SecurityId));
+                            var user = users.FirstOrDefault(o => o.Id == p.UserId);
                             var r= new PositionExposureDTO()
                             {
                                 id = p.Id.ToString(),
-                                //leverage = p.Leverage.Value,
-                                tradeValue = p.SettlePrice * prodDef.LotSize / prodDef.PLUnits * (p.LongQty ?? p.ShortQty),
+                                leverage = p.Leverage.Value,
+                                invest = p.InvestUSD.Value,
+                                tradeValue = p.Leverage.Value * p.InvestUSD.Value, //p.SettlePrice * prodDef.LotSize / prodDef.PLUnits * (p.LongQty ?? p.ShortQty),
                                 isLong = p.LongQty.HasValue,
-                                quantity = (decimal) (p.LongQty??p.ShortQty),
+                                //quantity = (decimal) (p.LongQty??p.ShortQty),
+
+                                createAt = DateTime.SpecifyKind(p.CreateTime.Value,DateTimeKind.Utc),
+
+                                nickname = user.Nickname,
+                                userId=user.Id,
+                                ayLiveUsername = user.AyLiveUsername,
                             };
 
-                            decimal upl = p.LongQty.HasValue ? r.tradeValue.Value * (quote.Bid / p.SettlePrice.Value - 1) : r.tradeValue.Value * (1 - quote.Offer / p.SettlePrice.Value);
-                            var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
-                            r.upl = uplUSD;
+                            //decimal upl = p.LongQty.HasValue ? r.tradeValue.Value * (quote.Bid / p.SettlePrice.Value - 1) : r.tradeValue.Value * (1 - quote.Offer / p.SettlePrice.Value);
+                            //var uplUSD = FX.ConvertPlByOutright(upl, prodDef.Ccy2, "USD", cache.ProdDefs, cache.Quotes);
+                            //r.upl = uplUSD;
 
                             return r;
                         }).ToList()
@@ -1781,8 +1792,8 @@ namespace CFD_API.Controllers
             {
                 r.netTradeValue = r.positions.Sum(p => p.isLong ? p.tradeValue : -p.tradeValue);
                 r.grossTradeValue = r.positions.Sum(p =>  p.tradeValue);
-                r.netQuantity=r.positions.Sum(p => p.isLong ? p.quantity : -p.quantity);
-                r.grossQuantity = r.positions.Sum(p => p.quantity);
+                //r.netQuantity=r.positions.Sum(p => p.isLong ? p.quantity : -p.quantity);
+                //r.grossQuantity = r.positions.Sum(p => p.quantity);
 
                 r.positions = r.positions.OrderByDescending(p => p.tradeValue).ToList();
             }

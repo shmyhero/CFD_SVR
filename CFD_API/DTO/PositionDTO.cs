@@ -193,5 +193,9 @@ namespace CFD_API.DTO
     public class PositionExposureDTO : PositionDTO
     {
         public decimal? tradeValue { get; set; }
+        public string nickname { get; set; }
+        public string ayLiveUsername { get; set; }
+        public string phone { get; set; }
+        public int? userId { get; set; }
     }
 }
