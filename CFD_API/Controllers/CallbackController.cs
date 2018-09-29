@@ -483,5 +483,82 @@ namespace CFD_API.Controllers
 
             return new HttpResponseMessage(HttpStatusCode.OK) {Content = new StringContent("success")};
         }
+
+        [HttpPost]
+        [Route("kuaiqian/success")]
+        public HttpResponseMessage KuaiQianSuccess()
+        {
+            string requestStr = Request.Content.ReadAsStringAsync().Result;
+            CFDGlobal.LogInformation("kuaiqian payment success, request body:" + requestStr);
+
+            var jObject = JObject.Parse(requestStr);
+            //快钱的支付方式
+            var payType = jObject.Property("payType")==null? string.Empty : jObject["payType"].Value<string>();
+            //银行代码
+            var bankId = jObject.Property("bankId") == null ? string.Empty : jObject["bankId"].Value<string>();
+            //银行卡号
+            var bankCardId = jObject.Property("bankCardId") == null ? string.Empty : jObject["bankCardId"].Value<string>();
+            //订单号
+            var orderNumber = jObject.Property("orderId") == null ? string.Empty : jObject["orderId"].Value<string>();
+            //订单金额
+            decimal orderAmount = jObject.Property("orderAmount") == null ? 0 : jObject["orderAmount"].Value<decimal>();
+            //快钱的交易Id
+            string dealId = jObject.Property("dealId") == null ? string.Empty : jObject["dealId"].Value<string>();
+            //支付金额
+            decimal payAmount = jObject.Property("payAmount") == null ? 0 : jObject["payAmount"].Value<decimal>();
+            //快钱收取的手续费
+            decimal fee = jObject.Property("fee") == null ? 0 : jObject["fee"].Value<decimal>();
+            //处理结果， 10支付成功，11 支付失败，00订单申请成功，01 订单申请失败
+            string payResult = jObject.Property("payResult") == null ? string.Empty : jObject["payResult"].Value<string>();
+
+            decimal thFeeRate = 0.01M; //TradeHero收取的手续费
+            Misc feeSetting = db.Miscs.OrderByDescending(o => o.Id).FirstOrDefault(o => o.Key == "PingFeeRate");
+            if (feeSetting != null)
+            {
+                thFeeRate = decimal.Parse(feeSetting.Value);
+            }
+
+            var kOrder = db.KuaiQianOrders.FirstOrDefault(k => k.OrderNumber == orderNumber);
+            if (kOrder != null)
+            {
+                var cache = WebCache.GetInstance(true);
+                var prod = cache.ProdDefs.FirstOrDefault(p => p.Name == "USD/CNY Outright");
+                var quote = cache.Quotes.FirstOrDefault(o => o.Id == prod.Id);
+                if (quote != null)
+                {
+                    kOrder.PayType = payType;
+                    kOrder.BankId = bankId;
+                    kOrder.BankCardId = bankCardId;
+                    kOrder.OrderNumber = orderNumber;
+                    kOrder.DealId = dealId;
+                    kOrder.OrderAmount = orderAmount;
+                    kOrder.PayAmount = payAmount;
+                    kOrder.KuaiQianFee = fee;
+                    kOrder.ReceiveAt = DateTime.UtcNow;
+                    kOrder.ReceiveResult = payResult;
+
+                    kOrder.FxRate = quote.Offer;
+                    kOrder.FxRateAt = quote.Time;
+                    kOrder.PayAmountAdjusted = kOrder.PayAmount * (1 - thFeeRate);
+                    kOrder.PayAmountUSD = Decimals.RoundIfExceed(kOrder.PayAmountAdjusted.Value / quote.Offer, 2);
+
+                }
+                else
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "获取汇率失败"));
+                }
+
+                ////找到对应的订单，且该订单未被支付过
+                //var orderRewardUsage = db.OrderRewardUsages.FirstOrDefault(o => o.OrderNumber == orderNumber && !o.PingPaidAt.HasValue && !o.AyTransReqSentAt.HasValue);
+                //if (orderRewardUsage != null)
+                //{
+                //    orderRewardUsage.PingPaidAt = DateTime.UtcNow;
+                //}
+
+                db.SaveChanges();
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("success") };
+        }
     }
 }

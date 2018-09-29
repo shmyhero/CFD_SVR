@@ -1879,6 +1879,46 @@ fbSHXx0gw0hHzpKZTbL18TeMDhWQXm1c2D/9Gr0kxGRIIWXPRYE=
         }
 
         [HttpGet]
+        [Route("live/deposit/kuaiqian")]
+        [BasicAuth]
+        public ResultDTO NewKuaiQianDeposit(decimal amount, decimal rewardAmount)
+        {
+            string orderNo = "KQ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            var kOrder = new KuaiQianOrder()
+            {
+                UserId = UserId,
+                CreatedAt = DateTime.UtcNow,
+                OrderNumber = orderNo,
+                 OrderAmount = amount,
+            };
+            db.KuaiQianOrders.Add(kOrder);
+
+            CFDGlobal.LogInformation("NewKuaiQianDeposit - rewardAmount:" + rewardAmount + " UserID:" + this.UserId);
+
+            if (rewardAmount > 0)
+            {
+                db.OrderRewardUsages.Add(new OrderRewardUsage()
+                {
+                    CreatedAt = DateTime.UtcNow,
+                    OrderNumber = orderNo,
+                    RewardAmountUSD = rewardAmount,
+                    RewardFxRate = CommonController.rewardFxRate,
+                    UserId = this.UserId
+                });
+            }
+
+            db.SaveChanges();
+
+            ResultDTO result = new ResultDTO();
+            result.success = true;
+            result.message = orderNo;
+
+            return result;
+        }
+
+
+        [HttpGet]
         [Route("live/deposit/pingpp/result/{order}")]
         [BasicAuth]
         public bool GetPingDepositResult(string order)

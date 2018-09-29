@@ -39,6 +39,7 @@ namespace CFD_COMMON.Models.Context
         public virtual DbSet<Headline> Headlines { get; set; }
         public virtual DbSet<IP2City> IP2City { get; set; }
         public virtual DbSet<IP2Country> IP2Country { get; set; }
+        public virtual DbSet<KuaiQianOrder> KuaiQianOrders { get; set; }
         public virtual DbSet<LikeHistory> LikeHistories { get; set; }
         public virtual DbSet<LiveRank> LiveRanks { get; set; }
         public virtual DbSet<LiveRegisterReward> LiveRegisterRewards { get; set; }
