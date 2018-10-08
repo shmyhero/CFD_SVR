@@ -60,6 +60,7 @@
 <div id="container" style="min-width: 310px; min-height: 1200px; margin: 0 auto">Loading...</div>
 
     <div id="container2"></div>
+    <div id="container3"></div>
 
 <script type="text/javascript">
     $.getJSON('api/position/live/exposure/open',
@@ -166,7 +167,26 @@
         }
     );
 
-
+    $.getJSON('api/position/live/exposure/realtime',
+        function (result) {
+            var div = $('#container3');
+            var html = '<table><thead><tr><th>code</th><th>name</th><th>risk</th></tr></thead><tbody>';
+            for (var i = 0; i < result.length; i++) {
+                var tuple = result[i];                                                    
+                    html += '<tr><td>' +
+                        tuple['m_Item1'] +
+                        '</td><td>' +
+                        tuple['m_Item2'] +
+                        '</td><td>' +
+                        tuple['m_Item3'] +                      
+                        '</td></tr>';
+                }
+            html += '</tbody></table>';
+            //alert(html);
+            div.append(html + '<hr/>');
+            }
+        
+        );
     </script>
 </body>
 </html>
