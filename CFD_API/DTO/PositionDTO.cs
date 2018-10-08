@@ -74,6 +74,20 @@ namespace CFD_API.DTO
         public bool isLong { get; set; }
     }
 
+
+    public class RealTimeOpenPositionExposureDTO
+    {
+        public int? UserId { get; set; }
+        public int? SecurityId { get; set; }         
+        public decimal? LongQty { get; set; }
+        public decimal? ShortQty { get; set; }
+        public decimal? SettlePrice { get; set; }
+        public decimal? Leverage { get; set; }
+        public decimal? InvestUSD { get; set; }        
+        public string NickName { get; set; }
+    }
+
+
     public class PositionHistoryDTO
     {
         public string id { get; set; }

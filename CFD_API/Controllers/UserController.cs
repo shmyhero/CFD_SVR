@@ -43,6 +43,7 @@ using CFD_COMMON.IdentityVerify;
 using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
 using Pingpp;
+using System.Security.Cryptography.X509Certificates;
 
 namespace CFD_API.Controllers
 {
@@ -1881,8 +1882,9 @@ fbSHXx0gw0hHzpKZTbL18TeMDhWQXm1c2D/9Gr0kxGRIIWXPRYE=
         [HttpGet]
         [Route("live/deposit/kuaiqian")]
         [BasicAuth]
-        public ResultDTO NewKuaiQianDeposit(decimal amount, decimal rewardAmount)
+        public ResultDTO NewKuaiQianDeposit(decimal amount)
         {
+            var user = GetUser();
             string orderNo = "KQ" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
             var kOrder = new KuaiQianOrder()
@@ -1894,29 +1896,87 @@ fbSHXx0gw0hHzpKZTbL18TeMDhWQXm1c2D/9Gr0kxGRIIWXPRYE=
             };
             db.KuaiQianOrders.Add(kOrder);
 
-            CFDGlobal.LogInformation("NewKuaiQianDeposit - rewardAmount:" + rewardAmount + " UserID:" + this.UserId);
-
-            if (rewardAmount > 0)
-            {
-                db.OrderRewardUsages.Add(new OrderRewardUsage()
-                {
-                    CreatedAt = DateTime.UtcNow,
-                    OrderNumber = orderNo,
-                    RewardAmountUSD = rewardAmount,
-                    RewardFxRate = CommonController.rewardFxRate,
-                    UserId = this.UserId
-                });
-            }
-
+            CFDGlobal.LogInformation("NewKuaiQianDeposit - amount:" + amount + " UserID:" + this.UserId);           
             db.SaveChanges();
 
-            ResultDTO result = new ResultDTO();
-            result.success = true;
-            result.message = orderNo;
+            string merchantAcctId = "1001213884201";
+            string inputCharset = "1";
+            string pageUrl = "";
+            string bgUrl = "http://300f8c59436243fe920fce09eb87d765.chinacloudapp.cn/api/kuaiqian/success";
+            string version = "v2.0";
+            string language = "1";
+            string signType = "4";
+            string payerName = user.Nickname;
+            string payerContactType = "1";
+            string payerContact = user.Phone;
+            string orderId = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string orderAmount = ((int)(amount * 100M)).ToString();
+            string orderTime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string productName = "TradeHero";
+            string productNum = "1";
+            string payType = "00";
 
-            return result;
+            string signMsgVal = "";
+            signMsgVal = appendParam(signMsgVal, "inputCharset", inputCharset);
+            signMsgVal = appendParam(signMsgVal, "pageUrl", pageUrl);
+            signMsgVal = appendParam(signMsgVal, "bgUrl", bgUrl);
+            signMsgVal = appendParam(signMsgVal, "version", version);
+            signMsgVal = appendParam(signMsgVal, "language", language);
+            signMsgVal = appendParam(signMsgVal, "signType", signType);
+            signMsgVal = appendParam(signMsgVal, "merchantAcctId", merchantAcctId);
+            signMsgVal = appendParam(signMsgVal, "payerName", payerName);
+            signMsgVal = appendParam(signMsgVal, "payerContactType", payerContactType);
+            signMsgVal = appendParam(signMsgVal, "payerContact", payerContact);
+            signMsgVal = appendParam(signMsgVal, "orderId", orderId);
+            signMsgVal = appendParam(signMsgVal, "orderAmount", orderAmount);
+            signMsgVal = appendParam(signMsgVal, "orderTime", orderTime);
+            signMsgVal = appendParam(signMsgVal, "productName", productName);
+            signMsgVal = appendParam(signMsgVal, "productNum", productNum);
+            //signMsgVal = appendParam(signMsgVal, "productId", productId);
+            //signMsgVal = appendParam(signMsgVal, "productDesc", productDesc);
+            //signMsgVal = appendParam(signMsgVal, "ext1", ext1);
+            //signMsgVal = appendParam(signMsgVal, "ext2", ext2);
+            signMsgVal = appendParam(signMsgVal, "payType", payType);
+            //signMsgVal = appendParam(signMsgVal, "redoFlag", redoFlag);
+            //signMsgVal = appendParam(signMsgVal, "pid", pid);
+
+            string signMsg = "";
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(signMsgVal);
+            X509Certificate2 cert = new X509Certificate2(HttpContext.Current.Server.MapPath("~/Certificate/99bill-rsa.pfx"), "123456", X509KeyStorageFlags.MachineKeySet);
+            RSACryptoServiceProvider rsapri = (RSACryptoServiceProvider)cert.PrivateKey;
+            RSAPKCS1SignatureFormatter f = new RSAPKCS1SignatureFormatter(rsapri);
+            byte[] result;
+            f.SetHashAlgorithm("SHA1");
+            SHA1CryptoServiceProvider sha = new SHA1CryptoServiceProvider();
+            result = sha.ComputeHash(bytes);
+            signMsg = System.Convert.ToBase64String(f.CreateSignature(result)).ToString();
+
+
+            ResultDTO resultDTO = new ResultDTO();
+            resultDTO.success = true;
+            resultDTO.message = signMsgVal + "&signMsg=" + signMsg;
+
+            return resultDTO;
         }
 
+        public string appendParam(string returnStr, string paramId, string paramValue)
+        {
+            if (returnStr != "")
+            {
+                if (paramValue != "")
+                {
+                    returnStr += "&" + paramId + "=" + paramValue;
+                }
+            }
+            else
+            {
+                if (paramValue != "")
+                {
+                    returnStr = paramId + "=" + paramValue;
+                }
+            }
+            return returnStr;
+        }
 
         [HttpGet]
         [Route("live/deposit/pingpp/result/{order}")]

@@ -307,7 +307,11 @@ namespace CFD_API.Controllers
         [Route("live/all")]
         public List<ProdDefDTO> GetAllList(int page = 1, int perPage = 20)
         {
-            var cache = Request.RequestUri.AbsolutePath.EndsWith("live/all") ? WebCache.Live : WebCache.Demo;
+            var cache = WebCache.Live;
+            if (Request != null)
+            {
+                cache = Request.RequestUri.AbsolutePath.EndsWith("live/all") ? WebCache.Live : WebCache.Demo;
+            }
 
             //var redisProdDefClient = RedisClient.As<ProdDef>();
             //var redisQuoteClient = RedisClient.As<Quote>();
@@ -366,6 +370,7 @@ namespace CFD_API.Controllers
 
             return result.OrderBy(o => o.AssetClass).ThenBy(o => o.Name).ToList();
         }
+
 
         [HttpGet]
         [Route("live/tradable")]

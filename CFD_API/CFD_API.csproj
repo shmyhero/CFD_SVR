@@ -237,6 +237,7 @@
     <Content Include="DailyUserApplicationView.html" />
     <Content Include="DAUView.html" />
     <Content Include="Global.asax" />
+    <Content Include="Certificate\99bill-rsa.pfx" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="insight.html" />
     <Content Include="InvestLevView.html" />
