@@ -67,8 +67,18 @@
                 var html = '<table><thead><tr><th>id</th><th>name</th><th>leverage risk</th><th>hold time risk</th><th>frequency risk</th><th> invest risk</th><th>total risk</th></tr></thead><tbody>';
                 for (var i = 0; i < result.length; i++) {
                     var record = result[i];
-                    html += '<tr><td>' +
-                        record['UserId'] +
+                    //html += '<tr><td>'
+                    //html += '<tr style="background-color:green">';
+                    if (record['Index'] > 70) {
+                        html += '<tr style="background-color:lightSalmon"><td>';
+                    }
+                    else if (record['Index'] > 50) {
+                        html += '<tr style="background-color:khaki"><td>';
+                    }
+                    else {
+                        html += '<tr style="background-color:yellowgreen"><td>';
+                    }
+                    html += record['UserId'] +
                         '</td><td>' +
                         record['NickName'] +
                         '</td><td>' +
@@ -83,7 +93,7 @@
                         record['Index'].toFixed(2) +
                         '</td></tr>';
                 }
-                html += '</tbody></table>';
+                html += '</tbody></table>'; 
                 //alert(html);
                 div.append(html + '<hr/>');
             }
