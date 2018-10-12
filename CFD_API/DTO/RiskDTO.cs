@@ -36,15 +36,19 @@ namespace CFD_API.DTO
         /// </summary>
         public decimal Invest { get; set; }
 
+        public int PosCount { get; set; }
+
+        public decimal TotalInvest { get; set; }
+
         private decimal correctIndex(decimal index)
         {
             if (index < 0)
             {
                 return 0;
             }
-            else if (index > 25)
+            else if (index > 100)
             {
-                return 25;
+                return 100;
             }
             else
             {
@@ -56,7 +60,7 @@ namespace CFD_API.DTO
         {
             get
             {
-                decimal index = (this.Leverage - 10m) * 0.28m;
+                decimal index = (this.Leverage - 10m) * 0.28m*4;
                 return this.correctIndex(index);
             }
         }
@@ -65,7 +69,7 @@ namespace CFD_API.DTO
         {
             get
             {
-                decimal index = (this.HoldTime - 9000m) * 0.000045m;
+                decimal index = (this.HoldTime - 9000m) * 0.000045m*4;
                 return this.correctIndex(index);
             }
         }
@@ -74,7 +78,7 @@ namespace CFD_API.DTO
         {
             get
             {
-                decimal index = this.Frequency * 119m;
+                decimal index = this.Frequency * 119m*4;
                 return this.correctIndex(index);
             }
         }
@@ -83,7 +87,7 @@ namespace CFD_API.DTO
         {
             get
             {
-                decimal index = (this.Invest - 0.15m) * 27.5m;
+                decimal index = (this.Invest - 0.15m) * 27.5m*4;
                 return this.correctIndex(index);
             }
         }
@@ -92,7 +96,7 @@ namespace CFD_API.DTO
         {
             get
             {                
-                return this.LeverageIndex + this.HoldTimeIndex + this.FrequencyIndex + this.InvestIndex;
+                return (this.LeverageIndex + this.HoldTimeIndex + this.FrequencyIndex + this.InvestIndex)/4.0m;
             }
         }
     }

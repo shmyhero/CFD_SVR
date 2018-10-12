@@ -58,13 +58,188 @@
         <a href="insight.html">&lt; 首页</a>
     </div>
 
-    <div id="container"><h2>User risks.</h2></div>
+    <div id="riskTable"><h2>User risks.</h2></div>
+    <div id="positionTable" style="display: none">
+        <table border="1" style="white-space: nowrap">
+            <thead>
+                <tr>
+                    <th>产品</th>
+                    <th>涨跌</th>
+                    <th>本金</th>
+                    <th>杠杆</th>
+                    <th>开仓时间↓</th>
+                    <th>开仓价</th>
+                    <th>收益</th>
+                    <th>收益率</th>
+                    <th>平仓时间</th>
+                    <th>持仓时间</th>
+                    <th>平仓价</th>
+                    <th>系统平仓?</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="loading"><td colspan="11">loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <input id="txtUserId" type="hidden" value="" />
 
     <script type="text/javascript">
+
+        function getQueryStringByName(name) {
+            var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+            if (result == null || result.length < 1) {
+                return "";
+            }
+            return result[1];
+        }
+        // A simple templating method for replacing placeholders enclosed in curly braces.
+        if (!String.prototype.supplant) {
+            String.prototype.supplant = function (o) {
+                return this.replace(/{([^{}]*)}/g,
+                    function (a, b) {
+                        //debugger;
+                        var r = o[b];
+                        //return typeof r === 'string' || typeof r === 'number' ? r : a;
+                        if (b == 'picUrl') {
+                            if (r == null)
+                                r = '';
+                            //else
+                            return '<img src="' + r + '" style="width:30px;height:30px" />';
+                        }
+
+                        if (b == 'roi') {
+                            if (r >= 0)
+                                return '<font style="color:#f4415f">' + (Math.round(r * 10000) / 100).toFixed(2) + '%</font>';
+                            else
+                                return '<font style="color:#32c17a">' + (Math.round(r * 10000) / 100).toFixed(2) + '%</font>';
+                        }
+
+                        if (b == 'winRate')
+                            return (Math.round(r * 10000) / 100).toFixed(2) + '%';
+
+                        //if (b == 'posCount')
+                        //    return '<a href="#" onclick="showPositions('+o.id+');return false;">'+r+'</a>';
+
+                        if (b == 'pl') {
+                            if (r >= 0)
+                                return '<font style="color:#f4415f; font-weight:' + Math.floor((r + 100 > 900 ? 900 : r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                            else
+                                return '<font style="color:#32c17a; font-weight:' + Math.floor((-r + 100 > 900 ? 900 : -r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                        }
+
+                        if (b == 'closeAt' && r == null)
+                            return '';
+
+                        if (b == 'openAt' || b == 'closeAt') {
+                            var dt = new Date(r);
+                            dt.setTime(dt.getTime() + (8 * 60 * 60 * 1000));
+                            return dt.toLocaleString();
+                        }
+
+                        if (b == 'closePrice' && r == null)
+                            return '';
+
+                        if (b == 'security.name')
+                            return o.security.name;
+
+                        if (b == 'isLong') {
+                            if (r)
+                                return '↗';
+                            else
+                                return '↘';
+                        }
+
+                        if (b == 'isAutoClosed') {
+                            if (r)
+                                return '✔';
+                            else
+                                return '';
+                        }
+
+                        if (b == 'totalDeposit') {
+                            return '<font style="color:#f4415f; font-weight:' + Math.floor((r + 100 > 900 ? 900 : r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                        }
+
+                        if (b == 'totalRemittance') {
+                            return '<font style="color:#32c17a; font-weight:' + Math.floor((r + 100 > 900 ? 900 : r + 100) / 100) + '00">' + r.toFixed(2) + '</font>';
+                        }
+                        //debugger;
+
+                        return r;
+                    }
+                );
+            };
+        }
+
+        if (getQueryStringByName('demo')) {
+            $('input[type="button"]').css("display", "none");
+        }
+
+
+        function formatPositionData(data) {
+            //return $.extend(stock, {
+            //    Offer: stock.Offer.toFixed(2),
+            //    PercentChange: (stock.last*1.03 * 100).toFixed(2) + '%',
+            //    Direction: stock.Change === 0 ? '' : stock.Change >= 0 ? up : down
+            //});
+            data.roi = data.pl / data.invest;
+            return data;
+        }
+
+        function loadPosData() {
+            var userId = document.getElementById('txtUserId').value;            
+            var url = 'api/position/' + (getQueryStringByName('demo') ? '' : 'live/') + 'report?userId=' + userId;
+
+            $positionTable = $('#positionTable'),
+            $positionTableBody = $positionTable.find('tbody'),
+            positionRowTemplate = '<tr data-symbol="{id}"><td>{security.name}</td><td>{isLong}</td><td>{invest}</td><td>{leverage}</td><td>{openAt}</td><td>{openPrice}</td>'
+        + '<td>{pl}</td><td>{roi}</td>'
+        + '<td>{closeAt}</td><td>{duration}</td><td>{closePrice}</td>'
+        + '<td>{isAutoClosed}</td>'
+        //+ '<td>{MaxLeverage}</td><td>{Shortable}</td><td>{MinSizeShort}</td><td>{MaxSizeShort}</td><td>{MinSizeLong}</td><td>{MaxSizeLong}</td>'
+        + '</tr>';
+
+            $positionTableBody.empty();
+            $positionTableBody.append('<td style="text-align:left" colspan="11">loading...</td>');
+
+            $.ajax(url).done(function (datas) {
+                $positionTableBody.empty();
+                $.each(datas, function () {
+                    var data = formatPositionData(this);
+                    $positionTableBody.append(positionRowTemplate.supplant(data) //.replace('{Shortable}', stock.Shortable)
+                    );
+                });
+            });
+        }
+
+        function showPositions(obj, id) {
+            $('#riskTable tr').each(function () { this.style.background = '#fff'; });
+
+            obj.parentNode.parentNode.style.background = '#ffcd91';
+
+            var div = document.getElementById('positionTable');
+
+            div.style.display = '';
+            div.style.position = 'absolute';
+
+            var base = $(obj).parent();
+            //debugger;
+
+            $(div).offset({
+                left: base.offset().left + base.outerWidth() + 5,
+                top: base.offset().top //+ base.height()
+            });
+
+            //alert('Id is: ' + id);
+            document.getElementById('txtUserId').value = id;
+            loadPosData();
+        }
+
         $.getJSON('api/risk/user',
             function (result) {
-                var div = $('#container');
-                var html = '<table><thead><tr><th>id</th><th>name</th><th>leverage risk</th><th>hold time risk</th><th>frequency risk</th><th> invest risk</th><th>total risk</th></tr></thead><tbody>';
+                var div = $('#riskTable');
+                var html = '<table border="1" style="white-space: nowrap"><thead><tr><th>id</th><th>name</th><th>pos count</th><th>total invest</th><th>leverage risk</th><th>hold time risk</th><th>frequency risk</th><th> invest risk</th><th>total risk</th><th></th></tr></thead><tbody>';
                 for (var i = 0; i < result.length; i++) {
                     var record = result[i];
                     //html += '<tr><td>'
@@ -73,24 +248,63 @@
                         html += '<tr style="background-color:lightSalmon"><td>';
                     }
                     else if (record['Index'] > 50) {
-                        html += '<tr style="background-color:khaki"><td>';
+                        html += '<tr style="background-color:PaleGoldenrod"><td>';
                     }
                     else {
                         html += '<tr style="background-color:yellowgreen"><td>';
+                        //html += '<tr><td>';
                     }
                     html += record['UserId'] +
                         '</td><td>' +
                         record['NickName'] +
                         '</td><td>' +
-                        record['LeverageIndex'].toFixed(2) +
+                        record['PosCount'] +
                         '</td><td>' +
-                        record['HoldTimeIndex'].toFixed(2) +
-                        '</td><td>' +
-                        record['FrequencyIndex'].toFixed(2) +
-                        '</td><td>' +
-                        record['InvestIndex'].toFixed(2) +
+                        record['TotalInvest'].toFixed(2) +
+                        '</td>';
+                    if (record['LeverageIndex'] > 90) {
+                        html += '<td style="background-color:lightSalmon">';
+                    }
+                    else if (record['LeverageIndex'] > 70) {
+                        html += '<td style="background-color:PaleGoldenrod">';
+                    }
+                    else {
+                        html += '<td style="background-color:yellowgreen">';
+                    }
+                    html += record['LeverageIndex'].toFixed(2) + '</td>';
+                    if (record['HoldTimeIndex'] > 80) {
+                        html += '<td style="background-color:lightSalmon">';
+                    }
+                    else if (record['HoldTimeIndex'] > 60) {
+                        html += '<td style="background-color:PaleGoldenrod">';
+                    }
+                    else {
+                        html += '<td style="background-color:yellowgreen">';
+                    }
+                    html += record['HoldTimeIndex'].toFixed(2) + '</td>'; 
+                    if (record['FrequencyIndex'] > 80) {
+                        html += '<td style="background-color:lightSalmon">';
+                    }
+                    else if (record['FrequencyIndex'] > 60) {
+                        html += '<td style="background-color:PaleGoldenrod">';
+                    }
+                    else {
+                        html += '<td style="background-color:yellowgreen">';
+                    }
+                    html += record['FrequencyIndex'].toFixed(2) + '</td>';
+                    if (record['InvestIndex'] > 80) {
+                        html += '<td style="background-color:lightSalmon">';
+                    }
+                    else if (record['InvestIndex'] > 60) {
+                        html += '<td style="background-color:PaleGoldenrod">';
+                    }
+                    else {
+                        html += '<td style="background-color:yellowgreen">';
+                    }
+                    html += record['InvestIndex'].toFixed(2) +
                         '</td><td>' +
                         record['Index'].toFixed(2) +
+                        '</td><td><a href="#" onclick="showPositions(this,' + record['UserId'] + ');return false;">明细</a>' +
                         '</td></tr>';
                 }
                 html += '</tbody></table>'; 

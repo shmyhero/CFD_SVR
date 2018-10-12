@@ -109,7 +109,9 @@ order by sum_pl";
                 userRiskDTO.Frequency = (decimal)dr["posCreateFrequency_posPerHour"];
                 userRiskDTO.HoldTime = (int)dr["avg_HoldingTime_second"];
                 userRiskDTO.Invest = (decimal)(double)dr["cv_Invest"];
-                Console.WriteLine(userRiskDTO.Index);
+                userRiskDTO.PosCount = (int)dr["posCount"];
+                userRiskDTO.TotalInvest = (decimal)dr["sum_Invest"];
+                //Console.WriteLine(userRiskDTO.Index);
                 userRisks.Add(userRiskDTO);
             }
             userRisks.Sort((x, y) => y.Index.CompareTo(x.Index));
