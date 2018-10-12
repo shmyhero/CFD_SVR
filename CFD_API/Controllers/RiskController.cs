@@ -111,6 +111,8 @@ order by sum_pl";
                 userRiskDTO.Invest = (decimal)(double)dr["cv_Invest"];
                 userRiskDTO.PosCount = (int)dr["posCount"];
                 userRiskDTO.TotalInvest = (decimal)dr["sum_Invest"];
+                userRiskDTO.TotalPL = (decimal)dr["sum_PL"];
+                userRiskDTO.AveragePL = (decimal)dr["avg_PL"];
                 //Console.WriteLine(userRiskDTO.Index);
                 userRisks.Add(userRiskDTO);
             }

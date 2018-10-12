@@ -1845,7 +1845,7 @@ namespace CFD_API.Controllers
             {
                 if (securityIds.Contains(proddef.Id))
                 {
-                    securityPriceDic[proddef.Id] = ((decimal)proddef.CloseBid + (decimal)proddef.CloseAsk) / 2;
+                    securityPriceDic[proddef.Id] = ((decimal)proddef.Bid + (decimal)proddef.Offer) / 2;
                     securityNameDic[proddef.Id] = proddef.cname;
                 }
             }           

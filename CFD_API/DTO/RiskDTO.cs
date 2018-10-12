@@ -40,6 +40,10 @@ namespace CFD_API.DTO
 
         public decimal TotalInvest { get; set; }
 
+        public decimal TotalPL { get; set; }
+
+        public decimal AveragePL { get; set; }
+
         private decimal correctIndex(decimal index)
         {
             if (index < 0)
