@@ -96,11 +96,24 @@ namespace CFD_API.DTO
             }
         }
 
+        public decimal PLIndex
+        {
+            get
+            {
+                decimal index = 100 + this.TotalPL * 1000 / this.TotalInvest;
+                return this.correctIndex(index);
+            }
+        }
+
         public decimal Index
         {
             get
             {                
-                return (this.LeverageIndex + this.HoldTimeIndex + this.FrequencyIndex + this.InvestIndex)/4.0m;
+                return this.LeverageIndex * 0.125m + 
+                       this.HoldTimeIndex * 0.125m + 
+                       this.FrequencyIndex * 0.125m +
+                       this.InvestIndex *0.125m +
+                       this.PLIndex * 0.5m;
             }
         }
     }

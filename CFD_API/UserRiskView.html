@@ -239,7 +239,7 @@
         $.getJSON('api/risk/user',
             function (result) {
                 var div = $('#riskTable');
-                var html = '<table border="1" style="white-space: nowrap"><thead><tr><th>id</th><th>name</th><th>pos count</th><th>total invest</th><th>total PL</th><th>leverage risk</th><th>hold time risk</th><th>frequency risk</th><th> invest risk</th><th>total risk</th><th></th></tr></thead><tbody>';
+                var html = '<table border="1" style="white-space: nowrap"><thead><tr><th>id</th><th>name</th><th>pos count</th><th>total invest</th><th>total PL</th><th>leverage risk</th><th>hold time risk</th><th>frequency risk</th><th> invest risk</th><th>PL risk</th><th>total risk</th><th></th></tr></thead><tbody>';
                 for (var i = 0; i < result.length; i++) {
                     var record = result[i];
                     //html += '<tr><td>'
@@ -303,8 +303,18 @@
                     else {
                         html += '<td style="background-color:yellowgreen">';
                     }
-                    html += record['InvestIndex'].toFixed(2) +
-                        '</td><td>' +
+                    html += record['InvestIndex'].toFixed(2) +'</td>';
+                    if (record['PLIndex'] > 80) {
+                        html += '<td style="background-color:lightSalmon">';
+                    }
+                    else if (record['PLIndex'] > 60) {
+                        html += '<td style="background-color:PaleGoldenrod">';
+                    }
+                    else {
+                         html += '<td style="background-color:yellowgreen">';
+                    }
+                html += record['PLIndex'].toFixed(2) +
+                    '</td><td>' +
                         record['Index'].toFixed(2) +
                         '</td><td><a href="#" onclick="showPositions(this,' + record['UserId'] + ');return false;">明细</a>' +
                         '</td></tr>';
