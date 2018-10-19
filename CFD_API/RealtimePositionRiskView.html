@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: "Microsoft YaHei","黑体",'Segoe UI', Arial, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+            table th, table td {
+                padding: 2px 6px;
+            }
+
+            table td {
+                text-align: right;
+            }
+
+        .loading td {
+            text-align: left;
+        }
+
+        .phoneLink {
+            cursor: pointer;
+            color: cornflowerblue;
+        }
+
+            .phoneLink:hover {
+                color: blue;
+            }
+
+        .highlight {
+            color: deeppink;
+        }
+
+        .lowlight {
+            color: #c5006a;
+        }
+
+        a:visited, a {
+            color: navy;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <div>
+        <a href="insight.html">&lt; 首页</a>
+    </div>
+    <div id="container3"><h2>Real time open position risk.</h2></div>
+
+    <script type="text/javascript">
+    $.getJSON('api/risk/position/realtime',
+    function (result) {
+    var div = $('#container3');
+    var html = '<table border="1" style="white-space: nowrap"><thead><tr><th>code</th><th>name</th><th>risk</th></tr></thead><tbody>';
+            for (var i = 0; i < result.length; i++) {
+            var tuple = result[i];
+            html += '<tr><td>' +
+                    tuple['m_Item1'] +
+                    '</td><td>' +
+                    tuple['m_Item2'] +
+                    '</td><td>' +
+                    tuple['m_Item3'] +
+                    '</td></tr>';
+            }
+            html += '</tbody></table>';
+    //alert(html);
+    div.append(html + '<hr />');
+    }
+
+    );
+    </script>
+</body>
+</html>

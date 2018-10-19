@@ -119,5 +119,70 @@ order by sum_pl";
             userRisks.Sort((x, y) => y.Index.CompareTo(x.Index));
             return userRisks;
         }
+
+        [HttpGet]
+        [Route("position/realtime")]
+        [IPAuth]        
+        public List<Tuple<int, string, decimal>> GetRealTimeOpenPositionRisk()
+        {
+            var openPositions = db.NewPositionHistory_live.Where(o => o.ClosedAt == null)
+                .ToList();
+            List<int> testUserIds = new List<int>() { 5165, 5963, 3256 };
+            var query = from p in db.NewPositionHistory_live
+                        join u in db.Users on (int)p.UserId equals u.Id
+                        where p.ClosedAt == null && p.UserId == u.Id && !testUserIds.Contains(u.Id) && u.Id >= 3202
+                        select new RealTimeOpenPositionExposureDTO()
+                        {
+                            UserId = p.UserId,
+                            SecurityId = p.SecurityId,
+                            LongQty = p.LongQty,
+                            ShortQty = p.ShortQty,
+                            SettlePrice = p.SettlePrice,
+                            Leverage = p.Leverage,
+                            InvestUSD = p.InvestUSD,
+                            NickName = u.Nickname
+                        };
+            List<RealTimeOpenPositionExposureDTO> positionList = query.ToList();
+            List<int> securityIds = positionList.Select(x => (int)x.SecurityId).ToList();
+            List<ProdDefDTO> proddefList = new SecurityController(this.db, this.Mapper).GetAllList(1, 1000);
+            Dictionary<int, decimal> securityPriceDic = new Dictionary<int, decimal>();
+            Dictionary<int, string> securityNameDic = new Dictionary<int, string>();
+            foreach (var proddef in proddefList)
+            {
+                if (securityIds.Contains(proddef.Id))
+                {
+                    securityPriceDic[proddef.Id] = ((decimal)proddef.Bid + (decimal)proddef.Offer) / 2;
+                    securityNameDic[proddef.Id] = proddef.cname;
+                }
+            }
+            Dictionary<int, decimal> securityRiskDic = new Dictionary<int, decimal>();
+            foreach (RealTimeOpenPositionExposureDTO position in positionList)
+            {
+                int securityId = (int)position.SecurityId;
+                decimal currentPrice = securityPriceDic[securityId];
+                if (!securityRiskDic.Keys.Contains(securityId))
+                {
+                    securityRiskDic[securityId] = 0;
+                }
+                if (position.LongQty != null)
+                {
+                    securityRiskDic[securityId] += (decimal)position.Leverage * (decimal)position.InvestUSD * (currentPrice / (decimal)position.SettlePrice - 1);
+                }
+                else
+                {
+                    securityRiskDic[securityId] += (decimal)position.Leverage * (decimal)position.InvestUSD * (1 - currentPrice / (decimal)position.SettlePrice);
+                }
+            }
+
+            List<Tuple<int, string, decimal>> result = new List<Tuple<int, string, decimal>>();
+            foreach (KeyValuePair<int, decimal> pair in securityRiskDic)
+            {
+                result.Add(new Tuple<int, string, decimal>(pair.Key, securityNameDic[pair.Key], pair.Value));
+            }
+            result.Sort((x, y) => y.Item3.CompareTo(x.Item3));
+            return result;
+        }
+
     }
+
 }
