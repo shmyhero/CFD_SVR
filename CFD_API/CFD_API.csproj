@@ -265,6 +265,7 @@
     <Content Include="UserRankView.html" />
     <Content Include="VerifyCodeView.html" />
     <Content Include="UserRiskView.html" />
+    <Content Include="RealtimePositionRiskView.html" />
     <Content Include="WebsocketAlert.html" />
     <Content Include="WebsocketCountView.html" />
     <Content Include="WebsocketQuote.html" />
